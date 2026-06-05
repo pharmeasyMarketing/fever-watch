@@ -1,0 +1,13 @@
+# Fever Watch dependencies
+#
+# Core builders are STDLIB-ONLY (urllib + json) by design, mirroring Mosquito
+# Watch: NASA POWER, the mock trends/positivity providers, the grid builder, and
+# the SSG pre-render all run on the Python standard library. That keeps GitHub
+# Actions fast and the supply chain small.
+#
+# Optional, only for one-off brand-asset generation (src/build_assets.py):
+#   Pillow>=10.0
+#
+# A real Google Trends provider may add a dependency later (e.g. pytrends or an
+# HTTP client for SerpApi), but it stays behind the trends-provider interface and
+# is NOT required for the default mock build.

@@ -1,0 +1,34 @@
+{
+  "_comment": "Transparent, tunable weather-shaping per disease family (NOT machine learning). Each family maps trailing daily weather into a 0-100 environmental-favourability sub-score that feeds the 'weather' signal of the consolidation engine. Mosquito: unimodal temperature response peaking near temp_optimal_c, times lagged rainfall (standing water) and humidity. Waterborne: recent plus lagged rainfall as a contamination proxy, temperature minor. Febrile: humidity and day-to-day temperature variability. Refine weights against intuition during the weather eyeball pass.",
+  "model_version": "FW-WEATHER-0.1.0",
+  "families": {
+    "mosquito": {
+      "weights": {"temp": 0.45, "rain_lagged": 0.35, "humidity": 0.20},
+      "temp_optimal_c": 29.0,
+      "temp_min_c": 14.0,
+      "temp_max_c": 38.0,
+      "temp_width": 13.0,
+      "rain_window_days": 14,
+      "rain_lag_days": 14,
+      "rain_saturation_mm": 60.0,
+      "humidity_floor_pct": 40.0,
+      "humidity_ceiling_pct": 90.0
+    },
+    "waterborne": {
+      "weights": {"rain_recent": 0.6, "rain_lagged": 0.4},
+      "rain_recent_days": 7,
+      "rain_window_days": 14,
+      "rain_lag_days": 14,
+      "rain_saturation_mm": 80.0
+    },
+    "febrile": {
+      "weights": {"humidity": 0.45, "temp_swing": 0.30, "rain": 0.25},
+      "humidity_floor_pct": 40.0,
+      "humidity_ceiling_pct": 95.0,
+      "temp_swing_saturation_c": 10.0,
+      "rain_window_days": 14,
+      "rain_saturation_mm": 50.0
+    }
+  },
+  "sanity": {"plausible_temp_min_c": -10.0, "plausible_temp_max_c": 55.0, "max_fail_fraction": 0.5}
+}

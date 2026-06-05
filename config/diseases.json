@@ -1,0 +1,10 @@
+{
+  "_comment": "v1 = top monsoon fevers in India. 'family' selects the weather-shaping model in src/build_weather.py: mosquito (unimodal temperature near temp_optimal_c, times lagged rainfall for standing water, times humidity), waterborne (recent + lagged rainfall as a contamination proxy), febrile (humidity + day-to-day temperature variability). seasonal_push is a coarse monsoon-amplitude prior used only by the MOCK trends/positivity providers until the real feeds land. flagship drives the seasonal hero rotation.",
+  "diseases": [
+    {"id": "dengue",      "label": "Dengue",       "emoji": "🦟", "family": "mosquito",   "vector": "Aedes aegypti",       "flagship": true,  "seasonal_push": 0.85},
+    {"id": "malaria",     "label": "Malaria",      "emoji": "🦟", "family": "mosquito",   "vector": "Anopheles",           "flagship": false, "seasonal_push": 0.70},
+    {"id": "chikungunya", "label": "Chikungunya",  "emoji": "🦟", "family": "mosquito",   "vector": "Aedes albopictus",    "flagship": false, "seasonal_push": 0.60},
+    {"id": "typhoid",     "label": "Typhoid",      "emoji": "🤒", "family": "waterborne", "vector": "Contaminated water",  "flagship": false, "seasonal_push": 0.65},
+    {"id": "viral_fever", "label": "Viral Fever",  "emoji": "🤒", "family": "febrile",    "vector": "Person to person",    "flagship": false, "seasonal_push": 0.75}
+  ]
+}

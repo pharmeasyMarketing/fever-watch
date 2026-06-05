@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Fever Watch | Mobile flow</title>
+<link rel="stylesheet" href="./tokens.css" />
+<style>
+  body { padding-top: 56px; }
+
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--pe-green); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 40; }
+  .topbar img.navlock { height: 23px; display: block; }
+  .ham { width: 38px; height: 38px; border: none; background: transparent; display: grid; place-items: center; }
+  .ham span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; box-shadow: 0 -5px 0 #fff, 0 5px 0 #fff; }
+
+  .hero { background: linear-gradient(160deg, var(--pe-green-dark), var(--pe-green) 78%); color: #fff; padding: 24px 16px 34px; }
+  .hero h1 { font-size: 24px; line-height: 1.28; font-weight: 700; margin: 0 0 8px; letter-spacing: -.2px; }
+  .hero h1 em { font-style: normal; color: var(--pe-gold); }
+  .hero p { font-size: 13px; line-height: 1.55; margin: 0; color: #d8efed; }
+  .searchwrap { margin: -20px 16px 0; position: relative; z-index: 5; }
+  .searchfield { width: 100%; background: #fff; border: none; border-radius: 14px; box-shadow: var(--shadow); padding: 15px 16px; display: flex; align-items: center; gap: 11px; font-size: 15px; color: var(--pe-muted); font-weight: 500; }
+  .searchfield .ico { color: var(--pe-green); font-size: 16px; }
+  .searchnote { font-size: 11.5px; color: var(--pe-muted-2); margin: 9px 4px 0; }
+
+  .wrap { padding: 18px 16px 28px; }
+  .citymeta { display: flex; align-items: center; justify-content: space-between; margin: 2px 2px 14px; }
+  .citymeta h2 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.2; }
+  .citymeta .date { font-size: 12px; color: var(--pe-muted); margin-top: 2px; }
+  .changecity { font-size: 13px; color: var(--pe-green); font-weight: 600; background: none; border: none; padding: 6px 4px; }
+
+  .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 18px; margin-bottom: 14px; }
+  .sectiontitle { font-size: 16px; font-weight: 700; margin: 0; }
+  .sectionsub { font-size: 12.5px; color: var(--pe-muted); margin: 4px 0 14px; }
+
+  /* risk card */
+  .rtop { display: flex; gap: 14px; align-items: center; }
+  .gaugewrap { position: relative; flex-shrink: 0; }
+  .gaugewrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gaugewrap .num b { font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
+  .gaugewrap .num span { font-size: 10px; color: var(--pe-muted-2); margin-top: 2px; }
+  .rhead .ov { font-size: 12px; color: var(--pe-muted); font-weight: 600; }
+  .rhead .bandlbl { font-size: 25px; font-weight: 700; line-height: 1.1; margin: 2px 0 0; letter-spacing: -.3px; }
+  .driverrow { margin-top: 13px; }
+  .driver { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: var(--pill); line-height: 1.35; }
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
+  .dpill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--pe-line); border-radius: var(--pill); padding: 6px 11px; font-size: 12px; font-weight: 600; }
+  .dpill .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dpill b { font-weight: 700; }
+  .rfoot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
+  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 700; font-size: 13px; padding: 11px 18px; border-radius: var(--pill); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+
+  /* breakdown */
+  .acc { border: 1px solid var(--pe-line); border-radius: var(--radius-sm); overflow: hidden; }
+  .acc + .acc { margin-top: 8px; }
+  .acchead { width: 100%; background: #fff; border: none; padding: 13px 14px; display: flex; align-items: center; gap: 11px; text-align: left; }
+  .acchead .emoji { font-size: 17px; }
+  .acchead .name { flex: 1; font-size: 14px; font-weight: 600; }
+  .acchead .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .acchead .sc { font-size: 14px; font-weight: 700; min-width: 22px; text-align: right; }
+  .acchead .chev { color: var(--pe-muted-2); font-size: 11px; transition: transform .2s; }
+  .acc.open .acchead .chev { transform: rotate(180deg); }
+  .accbody { padding: 6px 14px 16px; background: var(--pe-bg); display: none; }
+  .acc.open .accbody { display: block; }
+  .sig { margin: 13px 0; }
+  .sig .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .sig .lbl { font-size: 13px; font-weight: 600; }
+  .sig .v { font-size: 12.5px; font-weight: 700; }
+  .sig .tag { font-size: 11px; color: var(--pe-muted); margin: 0 0 6px; }
+  .track { height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 5px; }
+  .accnote { font-size: 11.5px; color: var(--pe-ink-2); line-height: 1.55; margin: 12px 0 0; padding-top: 11px; border-top: 1px dashed var(--pe-line); }
+
+  /* actions */
+  .actcard { display: flex; align-items: center; gap: 13px; padding: 13px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); margin-bottom: 10px; background: #fff; }
+  .actcard .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; background: var(--pe-green-100); flex-shrink: 0; }
+  .actcard .tx { flex: 1; }
+  .actcard .tx b { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+  .actcard .tx span { font-size: 11.5px; color: var(--pe-muted); line-height: 1.4; }
+  .actcard .go { color: var(--pe-muted-2); font-size: 20px; }
+  .ctabig { width: 100%; border: none; color: #fff; font-weight: 700; font-size: 14.5px; padding: 14px; border-radius: var(--radius-sm); margin-top: 4px; }
+
+  /* methodology */
+  .methhead { width: 100%; background: none; border: none; padding: 0; display: flex; align-items: center; justify-content: space-between; }
+  .methtog { color: var(--pe-green); font-weight: 700; font-size: 12.5px; }
+  .methbody { display: none; margin-top: 14px; font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.65; }
+  .methbody.open { display: block; }
+  .methbody h4 { font-size: 13px; margin: 16px 0 5px; color: var(--pe-ink); }
+  .methbody h4:first-child { margin-top: 0; }
+  .methbody code { background: var(--pe-bg-2); padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+  .methbody ul { margin: 6px 0; padding-left: 18px; }
+  .methbody li { margin: 4px 0; }
+  .cite { font-size: 11.5px; margin: 6px 0; padding-left: 14px; text-indent: -14px; color: var(--pe-ink-2); }
+
+  /* leaderboard */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+  .chip { border: 1px solid var(--pe-line); background: #fff; border-radius: var(--pill); padding: 7px 11px; font-size: 12px; font-weight: 600; color: var(--pe-ink-2); display: inline-flex; gap: 5px; align-items: center; }
+  .chip.on { background: var(--pe-green); border-color: var(--pe-green); color: #fff; }
+  .lbrow { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--pe-bg-2); font-size: 13.5px; }
+  .lbrow .rk { width: 20px; color: var(--pe-muted-2); font-weight: 700; text-align: center; }
+  .lbrow .nm { flex: 1; }
+  .lbrow.you { font-weight: 700; }
+  .lbrow.you .nm:after { content: " you"; color: var(--pe-green); font-size: 10px; font-weight: 700; }
+  .lbbar { width: 62px; height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
+  .lbbar i { display: block; height: 100%; border-radius: 5px; }
+  .lbrow .v { width: 26px; text-align: right; font-weight: 700; }
+  .lbmore { font-size: 11.5px; color: var(--pe-muted); text-align: center; margin-top: 12px; }
+
+  .pfoot { padding: 8px 4px 24px; color: var(--pe-muted-2); font-size: 10.5px; line-height: 1.6; }
+  .pfoot .disc { margin-bottom: 8px; }
+
+  /* sheets */
+  .scrim { position: fixed; inset: 0; background: rgba(15,28,27,.5); z-index: 60; display: none; }
+  .scrim.open { display: block; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 20px 20px 0 0; z-index: 70; transform: translateY(100%); transition: transform .25s ease; max-height: 90vh; display: flex; flex-direction: column; }
+  .sheet.open { transform: translateY(0); }
+  .sheet.full { top: 0; bottom: 0; border-radius: 0; max-height: none; }
+  .sheethead { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--pe-bg-2); }
+  .sheethead h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .sheethead .x { border: none; background: var(--pe-bg-2); width: 32px; height: 32px; border-radius: 50%; font-size: 15px; color: var(--pe-ink); }
+  .sheetbody { overflow-y: auto; padding: 14px 16px 28px; }
+  .citysearch { width: 100%; padding: 13px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); font-size: 15px; margin-bottom: 6px; }
+  .locrow { display: flex; align-items: center; gap: 10px; padding: 13px 4px; color: var(--pe-green); font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--pe-bg-2); }
+  .cityopt { width: 100%; text-align: left; background: none; border: none; padding: 13px 4px; border-bottom: 1px solid var(--pe-bg-2); font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+  .cityopt small { color: var(--pe-muted); font-size: 12px; }
+  .cityopt .sb { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pill); }
+
+  /* branded share card */
+  .sharecard { border-radius: 18px; overflow: hidden; background: linear-gradient(155deg, var(--pe-green) 0%, var(--pe-green-dark) 100%); color: #fff; }
+  .sc-head { display: flex; align-items: center; gap: 11px; padding: 16px 18px 4px; }
+  .sc-head img { height: 19px; }
+  .sc-head .fw { font-size: 13px; font-weight: 700; padding-left: 11px; border-left: 1px solid rgba(255,255,255,.35); }
+  .sc-body { text-align: center; padding: 10px 18px 16px; }
+  .sc-emoji { font-size: 40px; }
+  .sc-score { font-size: 56px; font-weight: 700; line-height: 1; margin: 4px 0 8px; letter-spacing: -1px; }
+  .sc-score span { font-size: 20px; opacity: .8; font-weight: 600; }
+  .sc-band { display: inline-block; background: #fff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 5px 14px; border-radius: var(--pill); }
+  .sc-title { font-size: 15px; font-weight: 600; margin-top: 12px; }
+  .sc-sub { font-size: 12px; opacity: .85; margin-top: 3px; }
+  .sc-foot { background: rgba(0,0,0,.16); padding: 11px 18px; font-size: 11px; text-align: center; opacity: .95; }
+  .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 16px 0; }
+  .sharebtns { display: flex; gap: 8px; }
+  .sharebtns button { flex: 1; border: none; color: #fff; padding: 13px; border-radius: 11px; font-weight: 700; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="topbar"><img class="navlock" src="../assets/img/fever-watch-lockup-white.svg" alt="PharmEasy Fever Watch" /><button class="ham" aria-label="Menu"><span></span></button></div>
+<div id="app"><div class="wrap"><p style="color:var(--pe-muted)">Loading Fever Watch...</p></div></div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet full" id="citysheet">
+  <div class="sheethead"><h3>Choose your city</h3><button class="x" data-act="closeCity">✕</button></div>
+  <div class="sheetbody">
+    <input class="citysearch" id="citysearch" placeholder="Type a city name" />
+    <div class="locrow" data-act="useLoc">◎ Use my location</div>
+    <div id="citylist"></div>
+    <p class="searchnote" style="margin-top:14px">Available in select cities, more coming soon.</p>
+  </div>
+</div>
+<div class="sheet" id="sharesheet">
+  <div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>
+  <div class="sheetbody" id="sharebody"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var LOGO = "../assets/img/pe_logo-white.svg";
+  var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
+  var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
+  var SIG = {
+    weather: { c: "#15ACA5", label: "🌧 Breeding weather", tag: "Leading. Conditions weeks ahead." },
+    trends: { c: "#7C6CD6", label: "🔍 Google Search Interest", tag: "Coincident. Public concern." },
+    positivity: { c: "#3661B0", label: "🧪 PharmEasy lab signal", tag: "Lagging. Confirmed positivity." }
+  };
+  var ACTIONS = [
+    { ic: "🛡", t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "#" },
+    { ic: "💉", t: "Vaccination: does it work?", s: "What helps, what does not", href: "#" },
+    { ic: "🌡", t: "Fever? Follow our framework", s: "When to test, when to wait", href: "#" },
+    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "#" }
+  ];
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var DATA = null, state = { cityId: null, expanded: null, leader: null }, app = document.getElementById("app");
+
+  fetch("../data/grid.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
+    DATA = j;
+    state.cityId = DATA.cities.some(function (c) { return c.id === "bengaluru"; }) ? "bengaluru" : DATA.cities[0].id;
+    state.leader = (DATA.diseases.filter(function (d) { return d.flagship; })[0] || DATA.diseases[0]).id;
+    state.expanded = cityObj(state.cityId).blend.driver;
+    document.addEventListener("click", onClick);
+    document.getElementById("citysearch").addEventListener("input", renderCityList);
+    renderCityList(); render();
+  }).catch(function (e) { app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
+
+  function cityObj(id) { return DATA.cities.filter(function (c) { return c.id === id; })[0]; }
+  function diseaseObj(id) { return DATA.diseases.filter(function (d) { return d.id === id; })[0]; }
+  function cellFor(city, dis) { return DATA.grid.filter(function (r) { return r.city === city && r.disease === dis; })[0]; }
+  function fmtDate(iso) { if (!iso) return ""; var d = new Date(iso); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+
+  function render() {
+    var c = cityObj(state.cityId), b = c.blend;
+    app.innerHTML =
+      '<div class="hero"><h1>Live monsoon-fever risk for your city, in <em>one score</em>.</h1>' +
+      '<p>Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
+      '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">🔎</span> Search your city</div>' +
+      '<p class="searchnote">Available in select cities, more coming soon.</p></div>' +
+      '<div class="wrap">' +
+        '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
+        '<button class="changecity" data-act="openCity">Change</button></div>' +
+        riskCard(c, b) + breakdownCard(c) + actionsCard(c) + methodologyCard() + leaderboardCard(c) + footer() +
+      '</div>';
+  }
+
+  function riskCard(c, b) {
+    var col = RISK[b.band], drv = diseaseObj(b.driver), drvCell = cellFor(c.id, b.driver);
+    var pills = DATA.diseases.map(function (d) {
+      var cell = cellFor(c.id, d.id);
+      return '<span class="dpill"><span class="dot" style="background:' + RISK[cell.band] + '"></span>' + d.emoji + ' ' + d.label + ' <b>' + cell.score + '</b></span>';
+    }).join("");
+    return '<div class="card"><div class="rtop">' + gauge(b.score, col, 116) +
+      '<div class="rhead"><div class="ov">Overall monsoon-fever risk</div>' +
+      '<div class="bandlbl" style="color:' + col + '">' + b.band + '</div></div></div>' +
+      '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT[drvCell.band] + ';color:' + RISK[drvCell.band] + '">Top concern: ' + drv.emoji + ' ' + drv.label + ' ' + drvCell.band + ' (' + b.driver_score + ')</span></div>' +
+      '<div class="pills">' + pills + '</div>' +
+      '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>' +
+      '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
+  }
+
+  function breakdownCard(c) {
+    var accs = DATA.diseases.map(function (d) {
+      var cell = cellFor(c.id, d.id), open = state.expanded === d.id, s = cell.signals, w = cell.weights;
+      var body = '<div class="accbody">' + sig(SIG.weather, s.weather, w.weather) + sig(SIG.trends, s.trends, w.trends) +
+        sig(SIG.positivity, s.positivity, w.positivity) + '<p class="accnote">' + cell.note + '</p></div>';
+      return '<div class="acc' + (open ? ' open' : '') + '"><button class="acchead" data-act="expand" data-id="' + d.id + '">' +
+        '<span class="emoji">' + d.emoji + '</span><span class="name">' + d.label + '</span>' +
+        '<span class="dot" style="background:' + RISK[cell.band] + '"></span><span class="sc" style="color:' + RISK[cell.band] + '">' + cell.score + '</span>' +
+        '<span class="chev">▾</span></button>' + body + '</div>';
+    }).join("");
+    return '<div class="card"><p class="sectiontitle">Why this score?</p><p class="sectionsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
+  }
+
+  function sig(meta, value, weight) {
+    var absent = value == null;
+    return '<div class="sig"><div class="row"><span class="lbl">' + meta.label + '</span>' +
+      '<span class="v" style="color:' + meta.c + '">' + (absent ? "no data" : value + " (" + weight + "%)") + '</span></div>' +
+      '<div class="tag">' + (absent ? "No confirmed-case data here yet." : meta.tag) + '</div>' +
+      '<div class="track"><div class="fill" style="width:' + (absent ? 0 : value) + '%;background:' + meta.c + '"></div></div></div>';
+  }
+
+  function actionsCard(c) {
+    var high = c.blend.band === "HIGH";
+    var cards = ACTIONS.map(function (a) {
+      return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
+    }).join("");
+    return '<div class="card"><p class="sectiontitle">So, what should I do?</p><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
+      '<button class="ctabig" style="background:' + (high ? RISK.HIGH : "var(--pe-green)") + '">' + (high ? "Book a fever panel test" : "Shop monsoon prevention essentials") + '</button></div>';
+  }
+
+  function methodologyCard() {
+    return '<div class="card"><button class="methhead" data-act="method"><span class="sectiontitle">How we calculate this</span><span class="methtog" id="methtog">Show ▾</span></button>' +
+      '<div class="methbody" id="methbody">' + METHOD + '</div></div>';
+  }
+
+  function leaderboardCard(c) {
+    var dis = diseaseObj(state.leader);
+    var chips = DATA.diseases.map(function (d) { return '<button class="chip' + (d.id === state.leader ? ' on' : '') + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
+    var rows = DATA.cities.map(function (ci) { return { id: ci.id, name: ci.name, score: cellFor(ci.id, state.leader).score, band: cellFor(ci.id, state.leader).band }; }).sort(function (a, b) { return b.score - a.score; });
+    var rowHtml = rows.map(function (r, i) {
+      return '<div class="lbrow' + (r.id === state.cityId ? ' you' : '') + '"><span class="rk">' + (i + 1) + '</span><span class="nm">' + r.name + '</span>' +
+        '<span class="lbbar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></span><span class="v" style="color:' + RISK[r.band] + '">' + r.score + '</span></div>';
+    }).join("");
+    return '<div class="card" id="others"><p class="sectiontitle">🏆 What is happening in other cities?</p><p class="sectionsub">' + dis.label + ' risk leaderboard this week.</p>' +
+      '<div class="chips">' + chips + '</div>' + rowHtml + '<p class="lbmore">Showing select cities. Top 100 coming soon.</p></div>';
+  }
+
+  function footer() {
+    return '<div class="pfoot"><p class="disc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases or mosquitoes.</p>' +
+      '<p>Live weather via NASA POWER (public domain). Google search and lab signals are simulated in this preview. Updated ' + fmtDate(DATA.generated_at) + '.</p></div>';
+  }
+
+  function gauge(score, color, size) {
+    var sw = 11, cx = size / 2, r = (size - sw) / 2 - 1, C = 2 * Math.PI * r, arc = 0.75;
+    var track = (arc * C).toFixed(1), gap = (C - arc * C).toFixed(1), prog = (Math.max(0, Math.min(100, score)) / 100 * arc * C).toFixed(1);
+    return '<div class="gaugewrap" style="width:' + size + 'px;height:' + size + 'px">' +
+      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="#e9eef5" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap + '" transform="rotate(135 ' + cx + ' ' + cx + ')"/>' +
+      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + prog + ' ' + (C * 2).toFixed(1) + '" transform="rotate(135 ' + cx + ' ' + cx + ')" style="transition:stroke-dasharray 1s ease"/>' +
+      '</svg><div class="num"><b style="color:' + color + '">' + score + '</b><span>/ 100</span></div></div>';
+  }
+
+  function renderCityList() {
+    var q = (document.getElementById("citysearch").value || "").toLowerCase();
+    document.getElementById("citylist").innerHTML = DATA.cities.filter(function (c) { return c.name.toLowerCase().indexOf(q) >= 0; }).map(function (c) {
+      var b = c.blend;
+      return '<button class="cityopt" data-act="pickCity" data-id="' + c.id + '"><span>📍 ' + c.name + ' <small>' + c.state + '</small></span>' +
+        '<span class="sb" style="background:' + RISK_SOFT[b.band] + ';color:' + RISK[b.band] + '">' + b.band + ' ' + b.score + '</span></button>';
+    }).join("");
+  }
+
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver); return cell.band + " risk for " + drv.label + " in " + c.name + ", " + b.driver_score + "/100, modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more."; }
+  function renderShare() {
+    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver), col = RISK[cell.band];
+    document.getElementById("sharebody").innerHTML =
+      '<div class="sharecard"><div class="sc-head"><img src="' + LOGO + '" alt="PharmEasy"><span class="fw">Fever Watch</span></div>' +
+      '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-score">' + b.driver_score + '<span>/100</span></div>' +
+      '<span class="sc-band" style="color:' + col + '">' + cell.band + ' RISK</span>' +
+      '<div class="sc-title">' + drv.label + ' risk in ' + c.name + '</div><div class="sc-sub">This week, ' + fmtDate(DATA.generated_at) + '</div></div>' +
+      '<div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
+      '<div class="sharetext">' + shareText(c) + '</div>' +
+      '<div class="sharebtns"><button style="background:#25D366">WhatsApp</button><button style="background:#111">Instagram</button><button style="background:var(--pe-blue)">Copy link</button></div>';
+  }
+
+  function openSheet(id) { document.getElementById("scrim").classList.add("open"); document.getElementById(id).classList.add("open"); }
+  function closeSheets() { document.getElementById("scrim").classList.remove("open"); document.getElementById("citysheet").classList.remove("open"); document.getElementById("sharesheet").classList.remove("open"); }
+
+  function onClick(e) {
+    var el = e.target.closest ? e.target.closest("[data-act]") : null; if (!el) return;
+    var a = el.getAttribute("data-act");
+    if (a === "openCity") { renderCityList(); openSheet("citysheet"); }
+    else if (a === "closeCity" || a === "closeShare") closeSheets();
+    else if (a === "pickCity") { state.cityId = el.getAttribute("data-id"); state.expanded = cityObj(state.cityId).blend.driver; closeSheets(); render(); window.scrollTo(0, 0); }
+    else if (a === "useLoc") closeSheets();
+    else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
+    else if (a === "leader") { state.leader = el.getAttribute("data-id"); render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
+    else if (a === "method") { var bdy = document.getElementById("methbody"); bdy.classList.toggle("open"); document.getElementById("methtog").textContent = bdy.classList.contains("open") ? "Hide ▴" : "Show ▾"; }
+    else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
+  }
+  document.getElementById("scrim").addEventListener("click", closeSheets);
+
+  var METHOD =
+    '<p>Every score is a transparent weighted formula, not a black box. It is built in three layers.</p>' +
+    '<h4>1. Per-disease environmental score (0 to 100)</h4>' +
+    '<p>From trailing daily weather, shaped by disease family:</p><ul>' +
+    '<li><b>Mosquito-borne</b> (dengue, malaria, chikungunya): a unimodal temperature response peaking near <code>29&deg;C</code> (Aedes and Anopheles breed fastest at 25 to 30&deg;C, activity falls below ~18&deg;C and above ~35&deg;C), times lagged rainfall over the past ~14 days (standing-water sites emerge 1 to 2 weeks after rain), times relative humidity (above ~60% extends mosquito lifespan). Weights ~0.45 / 0.35 / 0.20.</li>' +
+    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li>' +
+    '<li><b>Febrile</b> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>' +
+    '<h4>2. Three independent signals</h4><ul>' +
+    '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
+    '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone (news-driven).</li>' +
+    '<li><b>PharmEasy lab signal</b> (lagging, ground truth): aggregate, de-identified test-positivity trend.</li></ul>' +
+    '<h4>3. Confirmation-weighted ensemble</h4>' +
+    '<p>Not a flat average. With lab data present it dominates (weights ~<code>30 / 22 / 48</code> weather / search / positivity) and agreement across all three raises confidence. Without it, a capped <code>forecast-only</code> mode (max 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a max-dominant blend (<code>0.8 &times; the top disease + 0.2 &times; the mean of the rest</code>) with the driver disease named.</p>' +
+    '<h4>Data sources</h4><ul><li>Weather: NASA POWER (NASA Langley, US public domain / CC0)</li><li>Search: Google Trends</li><li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>' +
+    '<h4>Selected research</h4>' +
+    '<p class="cite">Ginsberg et al. Detecting influenza epidemics using search engine query data. <i>Nature</i>, 2009.</p>' +
+    '<p class="cite">Mordecai et al. Thermal biology of mosquito-borne disease. <i>Ecology Letters</i>, 2019 (peak transmission ~29&deg;C).</p>' +
+    '<p class="cite">Liu-Helmersson et al. Vectorial capacity of Aedes aegypti: effects of temperature and implications for dengue. <i>PLOS ONE</i>, 2014.</p>' +
+    '<p class="cite">Brady et al. Modelling adult Aedes survival at different temperatures. <i>Parasites &amp; Vectors</i>, 2013.</p>' +
+    '<p class="cite">Naish et al. Climate change and dengue: a systematic review. <i>BMC Infectious Diseases</i>, 2014.</p>' +
+    '<p class="cite">IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</p>' +
+    '<p style="margin-top:12px;color:var(--pe-muted-2)">A risk indicator, not a diagnosis or a case count.</p>';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "_comment": "Confirmation-weighted ensemble (the deliberate INVERSE of Mosquito Watch, which keeps its layers separate and never blends them). Ported from the What's Going Around prototype. Three signals sit at different points in the illness pipeline: weather (leading), trends (coincident), positivity (lagging ground truth). When positivity exists it dominates and agreement across all three applies a confidence multiplier. With no positivity, 'Forecast only' mode blends weather and trends and CAPS the score one point below the HIGH band floor (so score_cap 69 vs HIGH at 70), which means a conditions-only read can never reach HIGH, a credibility guard. The output is always decomposable; never a mystery number.",
+  "model_version": "FW-ENSEMBLE-0.1.0",
+  "with_positivity": {
+    "weights": {"weather": 0.30, "trends": 0.22, "positivity": 0.48},
+    "agreement_spread_max": 22,
+    "agree_multiplier": 1.08,
+    "disagree_multiplier": 0.96
+  },
+  "forecast_only": {
+    "weights": {"weather": 0.60, "trends": 0.40},
+    "score_cap": 69
+  },
+  "signal_floor": 4,
+  "city_blend": {
+    "_comment": "Headline city score: max-dominant blend = top_weight x highest disease + rest_weight x mean of the rest. Kept max-dominant so a single HIGH disease keeps the city near HIGH; the driver disease is always named alongside.",
+    "top_weight": 0.8,
+    "rest_weight": 0.2
+  },
+  "bands": [
+    {"label": "HIGH",         "min": 70, "color": "#d64545", "soft": "#fbe9e9", "emoji": "🔴"},
+    {"label": "MODERATE",     "min": 45, "color": "#d98a2b", "soft": "#fbf1e3", "emoji": "🟠"},
+    {"label": "LOW-MODERATE", "min": 25, "color": "#c2a93a", "soft": "#f9f6e7", "emoji": "🟡"},
+    {"label": "LOW",          "min": 0,  "color": "#3f9d6f", "soft": "#e8f5ee", "emoji": "🟢"}
+  ]
+}

@@ -1,0 +1,56 @@
+/* PharmEasy design tokens for Fever Watch, extracted from the PharmEasy Figma
+   system (Order Medicine web + Med PDP SEO). Shared by the mobile and desktop
+   prototypes so both flows speak the real product's design language. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand greens */
+  --pe-green: #10847E;        /* G600 "Porcelain Green" (primary) */
+  --pe-green-dark: #0A534F;   /* G1000 */
+  --pe-green-bright: #15ACA5; /* G400 */
+  --pe-green-100: #CEEAE8;    /* tint */
+
+  /* Accents / semantic */
+  --pe-gold: #EFD06C;         /* Y400 "Plus" accent */
+  --pe-blue: #3661B0;         /* B800 diagnostics / labs */
+  --pe-blue-100: #B5CDF7;
+  --pe-red: #F47779;          /* R600 error / HIGH */
+  --pe-success: #62BF9F;      /* M600 / LOW */
+
+  /* Neutrals */
+  --pe-ink: #30363C;          /* N800 */
+  --pe-ink-2: #4F585E;        /* N600 */
+  --pe-muted: #6E787E;        /* N400 */
+  --pe-muted-2: #8897A2;      /* N200 */
+  --pe-line: #D7DFE5;         /* N100 */
+  --pe-bg: #F5F8FC;           /* N10 */
+  --pe-bg-2: #EDF2F9;         /* N20 */
+  --pe-white: #FFFFFF;
+
+  /* Risk ramp (mapped onto PharmEasy semantics) */
+  --risk-low: #62BF9F;
+  --risk-lowmod: #9FC95B;
+  --risk-mod: #EFB451;
+  --risk-high: #F47779;
+
+  /* Signal colors */
+  --sig-weather: #15ACA5;     /* teal */
+  --sig-search: #7C6CD6;      /* violet */
+  --sig-lab: #3661B0;         /* diagnostics blue */
+
+  /* Shape & elevation (Figma: Elevation 12 DP) */
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-lg: 20px;
+  --pill: 999px;
+  --shadow: 0 5px 5px rgba(0,0,0,.08), 0 3px 14px rgba(0,0,0,.04), 0 8px 10px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--font); color: var(--pe-ink); background: var(--pe-bg); -webkit-font-smoothing: antialiased; }
+button, input, select { font-family: inherit; }
+a { color: var(--pe-green); text-decoration: none; }
+img, svg { max-width: 100%; }
