@@ -1,8 +1,8 @@
 # Fever Watch - Project State & Handoff
 
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
-> verified, what is mock/pending, every locked decision, how to run everything, and a ready-to-build
-> spec for the next big piece (the SSG).
+> verified, what is mock/pending, every locked decision, and how to run everything. The SSG is now
+> BUILT (section 9, AS BUILT); the next big piece is GitHub Actions + wiring real feeds (section 7).
 >
 > Fever Watch is a sibling to **Mosquito Watch** (`../Monsoon Disease Project`) but architecturally the
 > INVERSE: Mosquito Watch keeps its three layers separate and never blends them; Fever Watch blends
@@ -32,10 +32,13 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Providers: serpapi (weekly) / googlesheet (daily) / cached, config-driven | **DONE** | googlesheet tested on sample; cached state->city verified; all compile |
 | Geolocation module (`assets/js/geo.js`, BigDataCloud + freeipapi) | **DONE** | nearest-city snapping verified nationwide |
 | Share-image export module (`assets/js/share.js`) | **DONE** | module built (canvas PNG + native/WhatsApp) |
-| Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE** | rendered + screenshot-verified across many iterations |
+| Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE (frozen)** | the locked design source; now extracted into the SSG runtime (`assets/`), so prototypes are reference-only |
 | Co-branded nav lockup (`assets/img/fever-watch-lockup-white.svg`) | **DONE** | rendered both navs |
-| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **NOT BUILT** | see section 9 |
-| **GitHub Actions (daily/weekly/deploy)** | **NOT BUILT** | see section 7 item 2 |
+| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE** | `build_site.py` -> 120 pages; headless-verified (JSON-LD no-medical, sitemap 120, canonical, baked fallback). Section 9 (AS BUILT). |
+| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app`; media-gated CSS (no FOUC); JS syntax-verified |
+| Per-city OG score cards (`src/build_og.py`) | **DONE** | 119 cards 1200x630 from grid.json; each page's `og:image` -> its card |
+| Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
+| **GitHub Actions (daily/weekly/deploy)** | **NOT BUILT** | the next step. See section 7 item 2 |
 | Real trends + lab feeds | **MOCK** | flip via `config/signals.json` when feeds are ready |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
@@ -47,20 +50,21 @@ Everything runs on the **Python standard library** (no third-party deps). `requi
 Serverless by design: scheduled scripts write static JSON, a static device-adaptive site reads it.
 
 ```
-GitHub Actions (cron)                          [NOT BUILT YET]
-  daily.yml : build_weather (NASA POWER) + build_daily (reads signals.json) -> grid.json + SSG + deploy
+GitHub Actions (cron)                          [NOT BUILT - the next step]
+  daily.yml : build_weather + build_daily -> grid.json ; build_og + build_site -> dist/ ; deploy
   weekly.yml: build_trends (SerpApi x5) -> trends.json
        |
        v
 data/*.json  (committed; weather.json, grid.json[, trends.json])
        |
        v
-SSG: src/build_site.py  [NOT BUILT]  ->  /fever-watch/{city}/index.html per city (SEO baked + #fw-app)
+SSG: src/build_og.py (per-city OG cards) + src/build_site.py   [BUILT]
+   -> dist/fever-watch/{city}/index.html per city (SEO baked + #fw-app) + landing + robots/sitemap/manifest
        |
        v
-Static front end (device-adaptive): one URL serves the MOBILE flow or the DESKTOP flow,
-chosen by device at load. Reads grid.json for switching + leaderboard.
-Hosting: GitHub Pages; production = pharmeasy.in/research/... subpath via reverse-proxy (mirrors Mosquito Watch).
+Static front end (device-adaptive): one URL serves the MOBILE flow or the DESKTOP flow, chosen at load
+(media-gated CSS in <head> + fw-loader.js injects the active flow's JS). Reads grid.json for switching + leaderboard.
+Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirrors Mosquito Watch).
 ```
 
 ### The 3-signal engine (the heart, built + tested)
@@ -116,9 +120,33 @@ Hosting: GitHub Pages; production = pharmeasy.in/research/... subpath via revers
 iterated against detailed feedback (symmetric 270deg dial, branded share card, full methodology + 6 citations,
 collapsible sections, leaderboard, co-branded lockup). These are the **design source of truth** for the SSG.
 
-**Front-end modules (ready to wire into the SSG):** `assets/js/geo.js`, `assets/js/share.js`.
+Extended in the 2026-06-05 UI pass (both flows unless noted), all verified headlessly:
+- **PharmEasy global nav ported from Mosquito Watch:** Healthcare / Health Hub / Editorial Policy / Research and
+  Insights with 11 real pharmeasy.in links; desktop = click dropdowns, mobile = hamburger accordion (`wireNav`). Logo
+  links to pharmeasy.in; the Fever Watch lockup stays the brand mark.
+- **Leaderboard ("other cities"):** an **Overall** tab (default, ranks by the city blend) before the per-disease tabs,
+  a city search box, and pagination at 10/page (`leaderRow` / `leaderboardInner` / `pager` / partial `renderLeaderboard`).
+- **"Why this score" ordering:** the mobile breakdown, the desktop heatmap and the headline pills now sort diseases by
+  score, high to low (`orderedDiseases`).
+- **Methodology placement:** desktop sidebar label is **"Scoring methodology"** and the section sits above "What to do";
+  mobile shows "How we calculate this" above "Why this score".
+- **Desktop footer** rebuilt to mirror pharmeasy.in/diagnostics (5 link columns + 33 links, social, payment chips,
+  NABL/ISO trust strip, copyright + mission); the Fever Watch risk-indicator disclaimer is retained.
+- **"Further reading from PharmEasy"** section (sidebar label **"Monsoon reads"**) ported from Mosquito Watch: 3 columns
+  (Dengue / Malaria / Mosquito bites and monsoon health), 11 blog links, placed after the leaderboard.
+- **Desktop TOC** is now a scroll-spy (active link tracks the section in view across `s-week|s-method|s-do|s-other|s-reads`,
+  `wireScrollSpy`); "Other cities" renamed to **"City-level insights"**.
+- **Robustness:** the `grid.json` fetch retries (`loadGrid`) so a transient load race cannot strand the page on
+  "Failed to fetch".
 
-**Brand assets:** `assets/img/pe_logo-white.svg` (self-hosted), `assets/img/fever-watch-lockup-white.svg`.
+**Front-end modules (wired into the SSG):** `assets/js/geo.js`, `assets/js/share.js`.
+
+**Brand assets:** `assets/img/pe_logo-white.svg` (self-hosted), `assets/img/fever-watch-lockup-white.svg`, plus
+`src/build_assets.py`-generated placeholders (favicon, PWA icons, og-fever-watch.png).
+
+**SSG + device-adaptive runtime (BUILT, verified headlessly):** `src/build_site.py` (120 pages + robots/sitemap/
+manifest), `src/build_og.py` (per-city OG cards), `src/build_assets.py` (brand placeholders), and the extracted
+`assets/css/{mobile,desktop}.css` + `assets/js/{mobile,desktop}.js` + `assets/js/fw-loader.js`. Details in section 9.
 
 ---
 
@@ -137,14 +165,20 @@ collapsible sections, leaderboard, co-branded lockup). These are the **design so
 
 ## 7. Next up (prioritized)
 
-1. **SSG `/fever-watch/{city}` (device-adaptive).** The big one. Full build spec in **section 9**.
-2. **GitHub Actions:** `daily.yml` (weather + lab read + grid + SSG + commit + deploy), `weekly.yml` (SerpApi trends),
-   `deploy.yml` (push + manual). Mirror Mosquito Watch's workflows. 5 SerpApi keys as secrets. Fail loudly if a source fails.
-3. **Wire the real feeds** (Sheet URL + SerpApi keys) and flip `signals.json` mock -> real.
-4. **Repo + hosting:** create the public repo, enable Pages (Actions source), set `config/site.json base_url`, and ask
-   PharmEasy infra for the `/research/fever-watch-.../` reverse-proxy route + apex robots allowance.
-5. **Coords QA, self-host Inter, brand sign-off, compliance/counsel pass, 3-signal backtest** before any public
-   "early warning" claim.
+The SSG is built (section 9, AS BUILT). The remaining path to launch:
+
+0. **Commit everything first.** A large body of work is uncommitted (section 14): the 2026-06-05 UI pass, the entire
+   SSG, the batch UX changes, and the generated brand placeholders. Suggested:
+   `git add -A && git commit -m "Fever Watch: UI pass + device-adaptive SSG (pages, OG cards, brand assets)"`.
+1. **GitHub Actions (the next big piece):** `daily.yml` (build_weather + build_daily + **build_og + build_site** + commit
+   + deploy to Pages), `weekly.yml` (SerpApi trends), `deploy.yml` (manual). Mirror Mosquito Watch's workflows. 5 SerpApi
+   keys as secrets. Fail loud if a source fails. NOTE: `build_og` must run BEFORE `build_site` each refresh so the OG
+   cards reflect the latest scores.
+2. **Wire the real feeds** (Sheet URL + SerpApi keys) and flip `signals.json` mock -> real.
+3. **Repo + hosting:** create the public repo, enable Pages (Source = Actions), set `config/site.json base_url`; ask
+   PharmEasy infra for the reverse-proxy route + apex robots allowance.
+4. **Replace placeholder brand art** (favicon/OG/PWA icons), **coords QA, self-host Inter, compliance/counsel pass,
+   3-signal backtest** before any public "early warning" claim.
 
 ---
 
@@ -162,10 +196,16 @@ python src/consolidate.py               # smoke-test the ensemble engine
 #   positivity.provider: "mock" -> "googlesheet"  (+ set googlesheet.csv_url)
 #   trends.provider:     "mock" -> "cached"        (after a weekly build_trends run)
 
-# Preview the prototypes (the .claude/launch.json "fever-watch" server runs this on :8137)
+# Build the static site (after grid.json exists). Order matters: OG cards BEFORE pages.
+python src/build_assets.py              # one-off: brand favicon/PWA/OG placeholders -> assets/img/
+python src/build_og.py                  # each data refresh: per-city OG score cards -> assets/img/og/ (needs Pillow)
+python src/build_site.py                # each data refresh: dist/fever-watch/ (pages + robots/sitemap/manifest)
+SITE_ENV=production python src/build_site.py   # production canonical (default staging -> github.io/fever-watch/)
+
+# Preview (.claude/launch.json "fever-watch" server runs http.server on :8137 from the repo root)
 python -m http.server 8137
-#   http://localhost:8137/prototypes/mobile.html
-#   http://localhost:8137/prototypes/desktop.html
+#   prototypes (FROZEN reference): http://localhost:8137/prototypes/mobile.html , /prototypes/desktop.html
+#   the SSG:                       http://localhost:8137/dist/fever-watch/  and  /dist/fever-watch/bengaluru/
 ```
 
 Note: the harness preview tool's screenshot capture occasionally wedges after edits; a `preview_stop` +
@@ -173,10 +213,35 @@ Note: the harness preview tool's screenshot capture occasionally wedges after ed
 
 ---
 
-## 9. SSG build spec (ready for the next session)
+## 9. SSG - AS BUILT
 
-Goal: one indexable static page per city at `/fever-watch/{city}/index.html` that serves the **mobile OR desktop
-flow** by device, with SEO content baked for crawlers. Architecture decision is **locked: device-adaptive, one page.**
+`src/build_site.py` (stdlib) generates a self-contained `dist/fever-watch/`: 1 landing + 119 city pages, each
+device-adaptive (one URL serves the mobile OR desktop flow, chosen at load), SEO baked for crawlers.
+`SITE_ENV=staging|production`. Modeled on Mosquito Watch's `build_site.py`. As-built details (note the deviations
+from the original spec, which is kept below for reference):
+
+- **Output / paths:** `dist/fever-watch/` (gitignored); pages at the literal `/fever-watch/{city}/`. In-page paths are
+  RELATIVE via a per-page depth prefix; `base_url` (config/site.json) is absolute ONLY in canonical/OG/JSON-LD/sitemap/
+  robots. Staging canonicalizes to `staging_url` (github.io/fever-watch/), production to `base_url`. Swapping the
+  production URL = one-line config edit + rebuild.
+- **Device-adaptive, no FOUC:** both flow stylesheets are `media`-gated `<link>`s in `<head>` (matching one is
+  render-blocking, the other idles), so first paint is styled. `assets/js/fw-loader.js` then injects ONLY the active
+  flow's JS (`assets/js/{mobile,desktop}.js`) and sets `body.fw-{mode}`.
+- **Baked then hydrate:** baked server-side = one unified `<header class="fw-nav">` (logo + pe-topnav + burger, styled two
+  ways by each flow's CSS), the PharmEasy `<footer>`, and a crawler/no-JS `<main class="fw-fallback">` INSIDE `#fw-app`
+  (h1 + blend + 5 disease scores, "no lab data yet" for forecast-only cells, methodology summary, FAQ, disclaimer). The
+  flow JS replaces `#fw-app` on hydration; nav/footer persist. Sheets/scrim/popover are created dynamically by the JS.
+- **JSON-LD `@graph`:** Organization + WebSite + WebPage + Dataset (license CC0, NASA) + FAQPage per city; landing adds a
+  non-medical WebApplication. NO medical types (verified).
+- **`window.FW`** per page: `{city?, gridUrl, base, logo, canonicalBase}`. Picking a city / geo-detect updates the URL
+  (history.pushState/replaceState, CITY_ROOT-relative, popstate-aware); share text appends `Know More here: {url}` using
+  `canonicalBase + city` so links are the deployed URL even on localhost. CTA pinned to "Book a fever panel test".
+- **Per-city OG:** `src/build_og.py` (Pillow) renders `assets/img/og/{city}.png` (1200x630) from grid.json; each page's
+  `og:image` -> its card. Run BEFORE `build_site.py`. `assets/img/og/` is gitignored (regenerated from data).
+- **Colors reconciled:** `tokens.css --risk-*` now matches the JS `RISK` map = the locked brand ramp. (grid.json still
+  carries the old consolidation.json band colors, unused by the front-end - regenerate or ignore.)
+
+### The page contract (original spec, mostly as-built above)
 
 ### The page contract (what `build_site.py` emits, what the front-end expects)
 - `<head>`: per-city `<title>`, meta description, **canonical** = `base_url + fever-watch/{city}/`, Open Graph/Twitter,
@@ -204,6 +269,13 @@ flow** by device, with SEO content baked for crawlers. Architecture decision is 
     offer it as the default with a "Showing {city}, not you? change" affordance (never a hard lock);
   - wire the Share button(s) to `FeverWatchShare` (render the card -> `nativeShare` on mobile, download + WhatsApp on
     desktop), passing `{emoji, score, band, bandColor, title, sub}` for the driver disease.
+  - carry over the 2026-06-05 additions: the PharmEasy nav + hamburger (`wireNav`), the rebuilt footer, the
+    "Monsoon reads" section, the desktop TOC scroll-spy (`wireScrollSpy`), and the leaderboard Overall/search/pagination.
+- The header nav + footer are identical on every page: emit them server-side from `build_site.py` as baked HTML so they
+  are crawlable, and let the JS only wire behavior (dropdowns, hamburger, scroll-spy) rather than build the markup.
+- **Reconcile the risk colours into one source of truth.** Three ramps currently disagree: `consolidation.json` bands
+  (baked into `grid.json`), `tokens.css` `--risk-*`, and the per-prototype JS `RISK` map (which is what actually renders
+  today). Pick one and have the baked HTML fallback, the JS app and the tokens all read it.
 
 ### Also generate
 - A **landing page** at `/fever-watch/index.html`: the city search + geo (default to detected city, link to its page).
@@ -255,15 +327,19 @@ data/     weather.json  grid.json        (trends.json appears after a weekly bui
 scripts/  gen_cities.py                  one-off city-config generator
 src/
   build_weather.py  build_daily.py  build_trends.py  consolidate.py  weather_score.py  httputil.py
+  build_site.py     SSG -> dist/fever-watch/ (120 pages + robots/sitemap/manifest), stdlib
+  build_og.py       per-city OG score cards -> assets/img/og/ (Pillow)
+  build_assets.py   placeholder favicon/PWA/OG -> assets/img/ (Pillow, stdlib fallback)
   providers/        weather: nasa_power(DEFAULT), open_meteo(alt), base, __init__(registry)
   signals/          base, mock(default), googlesheet, serpapi, cached, __init__(registry, config-driven)
-prototypes/         mobile.html  desktop.html  tokens.css   <- design source of truth for the SSG
+prototypes/         mobile.html  desktop.html  tokens.css   <- FROZEN design reference (extracted into assets/)
 assets/
-  img/  pe_logo-white.svg  fever-watch-lockup-white.svg
-  js/   geo.js  share.js                <- ready to wire into the SSG front-end
+  css/  mobile.css  desktop.css          <- extracted from prototypes (tokens.css copied from prototypes/ at build time)
+  js/   geo.js  share.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime
+  img/  pe_logo-white.svg  fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.png (generated)
+dist/   fever-watch/...                  GENERATED SSG output (gitignored)
 docs/   lab_feed_format.md  lab_feed_sample.csv  PROJECT_STATE.md
-index.html                              LEGACY: the early 8-city vanilla-JS port (pre-PharmEasy redesign);
-                                        superseded by prototypes/ and to be replaced by the SSG. Safe to delete.
+index.html                              LEGACY: the early 8-city vanilla-JS port; superseded by the SSG. Safe to delete.
 ```
 
 ---
@@ -281,10 +357,14 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 
 ## 14. Session housekeeping (done at handoff)
 
-- Git: the repo is `git init`-ed but **not yet committed**. Suggested first action in the new session:
-  `git add -A && git commit -m "Fever Watch: data layer, providers, prototypes, geo/share modules"`.
-- The temporary `fever-watch` entry that had been added to the OLD repo's `.claude/launch.json`
-  (`../Monsoon Disease Project`) has been **reverted**; that repo is clean again.
-- Fever Watch now has its own `.claude/launch.json` (preview server `fever-watch` on :8137).
-- `data/grid.json` is in its **mock** state (trends + positivity = mock); no stray `trends.json` committed.
+- Git: initial commit `9a68ba4` exists; **everything since is UNCOMMITTED** and large - the 2026-06-05 UI pass, the entire
+  SSG (`src/build_site.py`, `build_og.py`, `build_assets.py`; `assets/css/{mobile,desktop}.css`; `assets/js/{mobile,
+  desktop,fw-loader}.js`; `tokens.css` color fix; `share.js` path fix), the batch UX changes (footer trims, pinned CTA,
+  FOUC fix, city/geo URL sync, share URL, per-city OG), and the generated brand placeholder images. `dist/` and
+  `assets/img/og/` are gitignored. **First action next session: commit it all** (message in section 7 item 0).
+- `.claude/launch.json` runs `http.server` on :8137 from the repo root (serves both `prototypes/` and `dist/`).
+- `data/grid.json` is in its **mock** state (trends + positivity = mock); no `trends.json` committed.
+- Verification this session was **headless** (HTML / JSON-LD / sitemap / JS-syntax + served-page checks) because the
+  harness screenshot renderer was wedged all session. A real-browser eyeball of `dist/fever-watch/` (mobile + desktop,
+  resize across 819px, city-switch, share) is still worth doing.
 ```

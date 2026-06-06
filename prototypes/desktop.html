@@ -8,14 +8,36 @@
 <style>
   body { background: var(--pe-bg); }
 
-  /* header (teal, white logo + mock nav links) */
+  /* header (teal, white logo + PharmEasy global nav, ported from Mosquito Watch) */
   .nav { position: sticky; top: 0; z-index: 30; background: var(--pe-green); }
-  .navin { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 32px; padding: 14px 24px; }
+  .navin { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 24px; position: relative; }
+  .pe-logo { display: flex; align-items: center; text-decoration: none; }
   .navin img.navlock { height: 25px; display: block; }
-  .navlinks { display: flex; gap: 26px; align-items: center; }
-  .navlinks a { color: #fff; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; opacity: .95; }
-  .navlinks a.cur { font-weight: 700; border-bottom: 2px solid var(--pe-gold); padding-bottom: 2px; }
-  .navlinks a .cv { font-size: 9px; opacity: .8; }
+  /* PharmEasy top navigation (dropdowns + mobile hamburger) */
+  .pe-topnav { display: flex; align-items: center; gap: 4px; }
+  .pe-nav-item { position: relative; }
+  .pe-nav-btn, .pe-nav-link { display: inline-flex; align-items: center; gap: 5px; background: none; border: 0; color: #fff; font-family: var(--font); font-size: 13.5px; font-weight: 600; opacity: .95; cursor: pointer; padding: 8px 10px; border-radius: 7px; text-decoration: none; white-space: nowrap; }
+  .pe-nav-btn:hover, .pe-nav-link:hover, .pe-nav-item.open .pe-nav-btn { opacity: 1; background: rgba(255,255,255,.14); }
+  .pe-caret { font-size: 9px; transition: transform .15s; }
+  .pe-nav-item.open .pe-caret { transform: rotate(180deg); }
+  .pe-nav-drop { position: absolute; top: calc(100% + 6px); left: 0; min-width: 210px; background: #fff; border: 1px solid var(--pe-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16,24,40,.18); padding: 6px; display: none; z-index: 1300; }
+  .pe-nav-item:last-child .pe-nav-drop { left: auto; right: 0; }
+  .pe-nav-item.open .pe-nav-drop { display: block; }
+  .pe-nav-drop a { display: block; padding: 9px 12px; color: var(--pe-ink); font-size: 13.5px; font-weight: 500; text-decoration: none; border-radius: 7px; white-space: nowrap; }
+  .pe-nav-drop a:hover { background: var(--pe-green-100); color: var(--pe-green-dark); }
+  .pe-burger { display: none; background: none; border: 0; color: #fff; font-size: 21px; line-height: 1; cursor: pointer; padding: 4px 9px; border-radius: 7px; }
+  .pe-burger:hover { background: rgba(255,255,255,.14); }
+  @media (max-width: 820px) {
+    .pe-burger { display: block; }
+    .pe-topnav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; background: var(--pe-green-dark); padding: 8px; box-shadow: 0 10px 22px rgba(0,0,0,.22); z-index: 1300; }
+    .pe-topnav.open { display: flex; }
+    .pe-nav-item { position: static; }
+    .pe-nav-btn, .pe-nav-link { width: 100%; justify-content: space-between; font-size: 15px; padding: 12px; }
+    .pe-nav-drop { position: static; display: none; min-width: 0; background: rgba(255,255,255,.06); border: 0; box-shadow: none; border-radius: 8px; margin: 2px 0 4px; padding: 4px 4px 4px 10px; }
+    .pe-nav-item.open .pe-nav-drop { display: block; }
+    .pe-nav-drop a { color: #eafffb; }
+    .pe-nav-drop a:hover { background: rgba(255,255,255,.12); color: #fff; }
+  }
 
   /* search hero (white) */
   .srch { background: #fff; border-bottom: 1px solid var(--pe-line); }
@@ -120,14 +142,37 @@
   .lbtable .bar i { display: inline-block; height: 8px; border-radius: 5px; vertical-align: middle; }
   .lbtable .bd { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--pill); }
   .lbnote { font-size: 12px; color: var(--pe-muted); margin-top: 12px; }
+  .lbsearch { width: 100%; max-width: 320px; padding: 10px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); font-size: 14px; margin-bottom: 14px; display: block; }
+  .lbpager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
+  .pgbtn { border: 1px solid var(--pe-line); background: #fff; border-radius: var(--pill); padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--pe-green); cursor: pointer; }
+  .pgbtn:disabled { color: var(--pe-muted-2); opacity: .5; cursor: default; }
+  .pginfo { font-size: 12.5px; color: var(--pe-muted); font-weight: 600; }
+
+  /* Further reading (PharmEasy blog interlinks, ported from Mosquito Watch) */
+  .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px 24px; }
+  .related-col h4 { margin: 0 0 9px; font-size: 14px; color: var(--pe-ink); padding-left: 9px; border-left: 3px solid var(--pe-green); }
+  .related-col ul { list-style: none; margin: 0; padding: 0; }
+  .related-col li { margin: 0 0 9px; }
+  .related-col a { font-size: 13.5px; color: var(--pe-green-dark); text-decoration: none; font-weight: 500; }
+  .related-col a:hover { text-decoration: underline; }
 
   /* footer */
   .footer { background: #fff; border-top: 1px solid var(--pe-line); margin-top: 24px; }
-  .footin { max-width: 1200px; margin: 0 auto; padding: 34px 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .foottrust { max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--pe-bg-2); }
+  .trustpill { font-size: 12px; font-weight: 600; color: var(--pe-green-dark); background: var(--pe-green-100); border-radius: var(--pill); padding: 6px 12px; }
+  .footin { max-width: 1200px; margin: 0 auto; padding: 34px 24px 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; align-items: start; }
   .footin h5 { font-size: 13px; margin: 0 0 12px; }
   .footin a { display: block; font-size: 12.5px; color: var(--pe-muted); margin: 7px 0; }
+  .footin a:hover { color: var(--pe-green); }
+  .footmission { max-width: 1200px; margin: 0 auto; padding: 0 24px 14px; font-size: 12px; color: var(--pe-muted); }
+  .footmeta { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--pe-bg-2); }
+  .footsocial, .footpay { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--pe-muted); }
+  .footsocial > span, .footpay > span { font-weight: 700; color: var(--pe-ink-2); }
+  .footsocial a { color: var(--pe-green); font-weight: 600; }
+  .paychip { border: 1px solid var(--pe-line); border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--pe-ink-2); background: var(--pe-bg); }
   .footbar { border-top: 1px solid var(--pe-bg-2); }
   .footbarin { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; gap: 16px; font-size: 11.5px; color: var(--pe-muted-2); }
+  .footdisc { max-width: 820px; }
 
   /* share popover */
   .scrim { position: fixed; inset: 0; background: rgba(15,28,27,.5); z-index: 60; display: none; place-items: center; }
@@ -156,11 +201,36 @@
 </head>
 <body>
 <header class="nav"><div class="navin">
-  <img class="navlock" src="../assets/img/fever-watch-lockup-white.svg" alt="PharmEasy Fever Watch" />
-  <nav class="navlinks">
-    <a>Medicine</a><a>Healthcare <span class="cv">▾</span></a><a>Doctor Consult</a><a>Lab Tests <span class="cv">▾</span></a>
-    <a>PLUS</a><a class="cur">Health Insights <span class="cv">▾</span></a><a>Offers</a>
+  <a class="pe-logo" href="https://pharmeasy.in/" aria-label="PharmEasy home"><img class="navlock" src="../assets/img/fever-watch-lockup-white.svg" alt="PharmEasy Fever Watch" /></a>
+  <nav class="pe-topnav" id="pe-topnav" aria-label="PharmEasy">
+    <div class="pe-nav-item">
+      <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Healthcare <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
+      <div class="pe-nav-drop">
+        <a href="https://pharmeasy.in/online-medicine-order?src=homecard">Medicines</a>
+        <a href="https://pharmeasy.in/diagnostics?src=homecard">Lab tests</a>
+        <a href="https://pharmeasy.in/online-doctor-consultation/">Doctor consult</a>
+        <a href="https://pharmeasy.in/health-care?src=homecard">Healthcare products</a>
+      </div>
+    </div>
+    <div class="pe-nav-item">
+      <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Health Hub <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
+      <div class="pe-nav-drop">
+        <a href="https://pharmeasy.in/blog?src=homecard">Blog</a>
+        <a href="https://pharmeasy.in/conditions">Conditions</a>
+        <a href="https://pharmeasy.in/qna">AskEasy</a>
+      </div>
+    </div>
+    <a class="pe-nav-link" href="https://pharmeasy.in/legal/editorial-policy">Editorial Policy</a>
+    <div class="pe-nav-item">
+      <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Research &amp; Insights <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
+      <div class="pe-nav-drop">
+        <a href="https://pharmeasy.in/research/dengue">Dengue Research 2025</a>
+        <a href="https://pharmeasy.in/research/diabetes">Diabetes Research</a>
+        <a href="https://pharmeasy.in/research/branded-vs-generics">Generic Medicines Research</a>
+      </div>
+    </div>
   </nav>
+  <button type="button" class="pe-burger" aria-label="Open menu" aria-expanded="false" aria-controls="pe-topnav">&#9776;</button>
 </div></header>
 
 <div id="app"><div class="shell"><p style="color:var(--pe-muted)">Loading Fever Watch...</p></div></div>
@@ -181,12 +251,23 @@
     { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", lnk: "Book a consult" }
   ];
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  var DATA = null, state = { cityId: null, leader: null, comboOpen: false, methodOpen: false }, app = document.getElementById("app");
+  var DATA = null, state = { cityId: null, leader: "overall", comboOpen: false, methodOpen: false, lbQuery: "", lbPage: 0 }, app = document.getElementById("app");
 
-  fetch("../data/grid.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
+  function loadGrid(tries) {
+    return fetch("../data/grid.json", { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).catch(function (e) {
+      if (tries > 1) return new Promise(function (res) { setTimeout(res, 500); }).then(function () { return loadGrid(tries - 1); });
+      throw e;
+    });
+  }
+
+  wireNav();  // PharmEasy header dropdowns + hamburger, independent of the data layer
+
+  loadGrid(4).then(function (j) {
     DATA = j;
     state.cityId = DATA.cities.some(function (c) { return c.id === "bengaluru"; }) ? "bengaluru" : DATA.cities[0].id;
-    state.leader = (DATA.diseases.filter(function (d) { return d.flagship; })[0] || DATA.diseases[0]).id;
     document.addEventListener("click", onClick);
     render();
   }).catch(function (e) { app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
@@ -195,13 +276,74 @@
   function diseaseObj(id) { return DATA.diseases.filter(function (d) { return d.id === id; })[0]; }
   function cellFor(city, dis) { return DATA.grid.filter(function (r) { return r.city === city && r.disease === dis; })[0]; }
   function fmtDate(iso) { if (!iso) return ""; var d = new Date(iso); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  function orderedDiseases(c) { return DATA.diseases.slice().sort(function (a, b) { return cellFor(c.id, b.id).score - cellFor(c.id, a.id).score; }); }
+  function leaderRow(ci) { if (state.leader === "overall") return { score: ci.blend.score, band: ci.blend.band }; var cell = cellFor(ci.id, state.leader); return { score: cell.score, band: cell.band }; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]; }); }
+
+  function wireNav() {
+    var burger = document.querySelector(".pe-burger");
+    var topnav = document.getElementById("pe-topnav");
+    function closeDrops() {
+      Array.prototype.forEach.call(document.querySelectorAll(".pe-nav-item.open"), function (o) {
+        o.classList.remove("open");
+        var b = o.querySelector(".pe-nav-btn"); if (b) b.setAttribute("aria-expanded", "false");
+      });
+    }
+    function closePanel() { if (topnav) topnav.classList.remove("open"); if (burger) { burger.setAttribute("aria-expanded", "false"); burger.innerHTML = "&#9776;"; } }
+    if (burger && topnav) {
+      burger.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var open = topnav.classList.toggle("open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+        burger.innerHTML = open ? "&#10005;" : "&#9776;";
+        if (!open) closeDrops();
+      });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".pe-nav-btn"), function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var item = btn.parentNode, willOpen = !item.classList.contains("open");
+        closeDrops();
+        if (willOpen) { item.classList.add("open"); btn.setAttribute("aria-expanded", "true"); }
+      });
+    });
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!(t.closest && (t.closest(".pe-topnav") || t.closest(".pe-burger")))) { closeDrops(); closePanel(); }
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.keyCode === 27) { closeDrops(); closePanel(); } });
+  }
+
+  // Scroll-spy: highlight the TOC link for the section currently in view as the page scrolls.
+  function spyScroll() {
+    if (spyScroll.lock && Date.now() < spyScroll.lock) return;
+    var ids = ["s-week", "s-method", "s-do", "s-other", "s-reads"], cur = ids[0];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el && el.getBoundingClientRect().top <= 110) cur = ids[i];
+    }
+    var doc = document.documentElement;
+    if ((window.innerHeight + (window.scrollY || window.pageYOffset || 0)) >= (doc.scrollHeight - 4)) cur = ids[ids.length - 1];
+    var links = document.querySelectorAll(".toc a");
+    for (var j = 0; j < links.length; j++) links[j].classList.toggle("cur", links[j].getAttribute("data-jump") === cur);
+  }
+  function wireScrollSpy() {
+    if (!wireScrollSpy.wired) {
+      window.addEventListener("scroll", spyScroll, { passive: true });
+      window.addEventListener("resize", spyScroll, { passive: true });
+      wireScrollSpy.wired = true;
+    }
+    spyScroll();
+  }
 
   function render() {
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML = searchHero(c) +
       '<div class="shell"><aside class="toc">' +
-        '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-do">What to do</a><a data-jump="s-method">Methodology</a><a data-jump="s-other">Other cities</a>' +
-      '</aside><div class="main">' + weekSection(c, b) + doSection(c) + methodSection() + otherSection(c) + '</div></div>' + footer();
+        '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a><a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a><a data-jump="s-reads">Monsoon reads</a>' +
+      '</aside><div class="main">' + weekSection(c, b) + methodSection() + doSection(c) + otherSection(c) + readsSection() + '</div></div>' + footer();
+    wireLeaderboard();
+    wireScrollSpy();
   }
 
   function searchHero(c) {
@@ -217,7 +359,7 @@
 
   function weekSection(c, b) {
     var col = RISK[b.band], drvCell = cellFor(c.id, b.driver), drv = diseaseObj(b.driver);
-    var pills = DATA.diseases.map(function (d) { var cell = cellFor(c.id, d.id); return '<span class="dpill"><span class="dot" style="background:' + RISK[cell.band] + '"></span>' + d.emoji + ' ' + d.label + ' <b>' + cell.score + '</b></span>'; }).join("");
+    var pills = orderedDiseases(c).map(function (d) { var cell = cellFor(c.id, d.id); return '<span class="dpill"><span class="dot" style="background:' + RISK[cell.band] + '"></span>' + d.emoji + ' ' + d.label + ' <b>' + cell.score + '</b></span>'; }).join("");
     var card = '<div class="card risk"><div class="rtop">' + gauge(b.score, col, 112) +
       '<div class="rhead"><div class="ov">Overall monsoon-fever risk, this week</div><div class="bandlbl" style="color:' + col + '">' + b.band + '</div></div></div>' +
       '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT[drvCell.band] + ';color:' + RISK[drvCell.band] + '">Top concern: ' + drv.emoji + ' ' + drv.label + ' ' + drvCell.band + ' (' + b.driver_score + ')</span></div>' +
@@ -231,7 +373,7 @@
   function heatmapCard(c) {
     var sigs = ["weather", "trends", "positivity"];
     var head = '<tr><th class="dis">Disease</th>' + sigs.map(function (s) { return '<th>' + SIGNAME[s] + '</th>'; }).join("") + '<th>Score</th></tr>';
-    var rows = DATA.diseases.map(function (d) {
+    var rows = orderedDiseases(c).map(function (d) {
       var cell = cellFor(c.id, d.id);
       var tds = sigs.map(function (s) {
         var v = cell.signals[s];
@@ -262,24 +404,99 @@
   }
 
   function otherSection(c) {
-    var dis = diseaseObj(state.leader);
-    var tabs = DATA.diseases.map(function (d) { return '<button class="lbtab' + (d.id === state.leader ? " on" : "") + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    var rows = DATA.cities.map(function (ci) { var cell = cellFor(ci.id, state.leader); return { id: ci.id, name: ci.name, state: ci.state, score: cell.score, band: cell.band }; }).sort(function (a, b) { return b.score - a.score; });
-    var body = rows.map(function (r, i) {
-      return '<tr class="' + (r.id === state.cityId ? "you" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + (i + 1) + '</td><td>' + r.name + (r.id === state.cityId ? " (you)" : "") + '</td>' +
+    var isOverall = state.leader === "overall";
+    var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
+    var tabs = '<button class="lbtab' + (isOverall ? " on" : "") + '" data-act="leader" data-id="overall">📊 Overall</button>' +
+      DATA.diseases.map(function (d) { return '<button class="lbtab' + (d.id === state.leader ? " on" : "") + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
+    return '<section id="s-other"><h3 class="sechead">What is happening in other cities?</h3><p class="secsub">' + label + ' risk leaderboard this week. Pick a disease to re-rank.</p>' +
+      '<div class="lbtabs">' + tabs + '</div>' +
+      '<input class="lbsearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" />' +
+      '<div id="lbcontainer">' + leaderboardInner(c) + '</div></section>';
+  }
+
+  function leaderboardInner(c) {
+    var PER = 10;
+    var ranked = DATA.cities.map(function (ci) { var lr = leaderRow(ci); return { id: ci.id, name: ci.name, state: ci.state, score: lr.score, band: lr.band }; }).sort(function (a, b) { return b.score - a.score; });
+    ranked.forEach(function (r, i) { r.rank = i + 1; });
+    var q = (state.lbQuery || "").toLowerCase();
+    var filtered = q ? ranked.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0 || (r.state || "").toLowerCase().indexOf(q) >= 0; }) : ranked;
+    var pages = Math.max(1, Math.ceil(filtered.length / PER));
+    var page = Math.min(state.lbPage || 0, pages - 1);
+    var slice = filtered.slice(page * PER, page * PER + PER);
+    var body = slice.map(function (r) {
+      return '<tr class="' + (r.id === state.cityId ? "you" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + r.rank + '</td><td>' + r.name + (r.id === state.cityId ? " (you)" : "") + '</td>' +
         '<td style="color:var(--pe-muted)">' + r.state + '</td><td class="bar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></td>' +
         '<td><span class="bd" style="background:' + RISK_SOFT[r.band] + ';color:' + RISK[r.band] + '">' + r.band + '</span></td><td style="font-weight:700;color:' + RISK[r.band] + '">' + r.score + '</td></tr>';
     }).join("");
-    return '<section id="s-other"><h3 class="sechead">What is happening in other cities?</h3><p class="secsub">' + dis.label + ' risk leaderboard this week. Pick a disease to re-rank.</p>' +
-      '<div class="lbtabs">' + tabs + '</div><table class="lbtable"><thead><tr><th>#</th><th>City</th><th>State</th><th>Risk</th><th>Band</th><th>Score</th></tr></thead><tbody>' + body + '</tbody></table>' +
-      '<p class="lbnote">Showing select cities. Top 100 plus an India map coming soon. Each row opens that city.</p></section>';
+    var table = '<table class="lbtable"><thead><tr><th>#</th><th>City</th><th>State</th><th>Risk</th><th>Band</th><th>Score</th></tr></thead><tbody>' +
+      (body || '<tr><td colspan="6" style="text-align:center;color:var(--pe-muted);padding:18px">No city matches "' + esc(state.lbQuery) + '".</td></tr>') + '</tbody></table>';
+    return table + pager(page, pages, filtered.length);
+  }
+
+  function pager(page, pages, total) {
+    if (pages <= 1) return '<p class="lbnote">Showing all ' + total + ' cities. Each row opens that city.</p>';
+    return '<div class="lbpager"><button class="pgbtn" data-act="lbpage" data-page="' + (page - 1) + '"' + (page === 0 ? " disabled" : "") + '>‹ Prev</button>' +
+      '<span class="pginfo">Page ' + (page + 1) + ' of ' + pages + ' (' + total + ' cities)</span>' +
+      '<button class="pgbtn" data-act="lbpage" data-page="' + (page + 1) + '"' + (page >= pages - 1 ? " disabled" : "") + '>Next ›</button></div>';
+  }
+
+  function renderLeaderboard() { var el = document.getElementById("lbcontainer"); if (el) el.innerHTML = leaderboardInner(cityObj(state.cityId)); }
+  function wireLeaderboard() { var s = document.getElementById("lbsearch"); if (s) s.oninput = function () { state.lbQuery = s.value; state.lbPage = 0; renderLeaderboard(); }; }
+
+  function readsSection() {
+    var groups = [
+      ["Dengue", [
+        ["How to avoid dengue fever", "https://pharmeasy.in/blog/5-ways-to-avoid-dengue-fever/"],
+        ["Home remedies for dengue", "https://pharmeasy.in/blog/home-remedies-for-dengue-by-dr-siddharth-gupta/"],
+        ["Food for dengue: what to eat and avoid", "https://pharmeasy.in/blog/food-for-dengue-what-to-eat-and-what-to-avoid/"],
+        ["Diabetes and dengue risk", "https://pharmeasy.in/blog/diabetes-can-make-dengue-more-lethal/"]
+      ]],
+      ["Malaria", [
+        ["Types of malaria: symptoms and treatment", "https://pharmeasy.in/blog/types-of-malaria-symptoms-causes-and-treatment/"],
+        ["Foods for malaria", "https://pharmeasy.in/blog/foods-for-malaria-what-to-eat-and-what-to-avoid/"],
+        ["Home remedies for malaria", "https://pharmeasy.in/blog/home-remedies-for-malaria-by-dr-siddharth-gupta/"]
+      ]],
+      ["Mosquito bites and monsoon health", [
+        ["Mosquito bite remedies", "https://pharmeasy.in/blog/home-remedies-for-mosquito-bite-by-dr-siddharth-gupta/"],
+        ["Mosquito bites on babies", "https://pharmeasy.in/blog/child-care-mosquito-bites-on-babies-home-remedies-treatment-and-prevention/"],
+        ["Common monsoon illnesses in India", "https://pharmeasy.in/blog/common-illnesses-during-monsoons-in-india/"],
+        ["Monsoon health tips", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/"]
+      ]]
+    ];
+    var cols = groups.map(function (g) {
+      var lis = g[1].map(function (l) { return '<li><a href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '</a></li>'; }).join("");
+      return '<div class="related-col"><h4>' + g[0] + '</h4><ul>' + lis + '</ul></div>';
+    }).join("");
+    return '<section id="s-reads"><h3 class="sechead">Further reading from PharmEasy</h3>' +
+      '<div class="card"><div class="related-grid">' + cols + '</div></div></section>';
   }
 
   function footer() {
-    var cols = [["Company", ["About Us", "Careers", "Blog", "PharmEasy PLUS"]], ["For Patients", ["Order Medicines", "Book Lab Tests", "Healthcare Products", "Health Articles"]], ["Fever Watch", ["Methodology", "All cities", "Data sources", "For media"]], ["Policy", ["Editorial Policy", "Privacy Policy", "Terms & Conditions", "Contact Us"]]];
-    var colHtml = cols.map(function (cl) { return '<div><h5>' + cl[0] + '</h5>' + cl[1].map(function (l) { return '<a href="#">' + l + '</a>'; }).join("") + '</div>'; }).join("");
-    return '<footer class="footer"><div class="footin">' + colHtml + '</div><div class="footbar"><div class="footbarin">' +
-      '<span>Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search and lab signals simulated in this preview.</span><span>© 2026 PharmEasy</span></div></div></footer>';
+    var cols = [
+      ["Company", [["About Us", "https://pharmeasy.in/about-us"], ["Careers", "https://pharmeasy.in/careers"], ["Blog", "https://pharmeasy.in/blog"], ["Partner with PharmEasy", "https://pharmeasy.in/franchisestores"]]],
+      ["Our Services", [["Healthcare Products", "https://pharmeasy.in/health-care"], ["Lab Tests", "https://pharmeasy.in/diagnostics"]]],
+      ["Featured Categories", [["Must Haves", "https://pharmeasy.in/health-care/top-products-9297"], ["Vitamin Store", "https://pharmeasy.in/health-care/fitness-supplements-623"], ["Sexual Wellness", "https://pharmeasy.in/health-care/sexual-wellness-575"], ["Personal Care", "https://pharmeasy.in/health-care/personal-care-877"], ["Homeopathy Care", "https://pharmeasy.in/health-care/homeopathy-care-12811"], ["Summer Store", "https://pharmeasy.in/health-care/summer-store-16709"], ["Health Food and Drinks", "https://pharmeasy.in/health-care/health-food-and-drinks-648"], ["Diabetes Essentials", "https://pharmeasy.in/health-care/diabetic-care-145"], ["Ayurvedic Care", "https://pharmeasy.in/health-care/ayurvedic-care-765"], ["Mother and Baby Care", "https://pharmeasy.in/health-care/mother-and-baby-care-838"], ["Mobility & Elderly Care", "https://pharmeasy.in/health-care/elderly-care-750"], ["Sports Nutrition", "https://pharmeasy.in/health-care/sports-nutrition-12931"], ["Healthcare Devices", "https://pharmeasy.in/health-care/healthcare-devices-717"], ["Skin Care", "https://pharmeasy.in/health-care/skin-care-93"], ["Health Concerns", "https://pharmeasy.in/health-care/health-condition-693"], ["Explore More", "https://pharmeasy.in/health-care/health-essentials-15393"]]],
+      ["Need Help", [["Browse All Molecules", "https://pharmeasy.in/molecules"], ["Browse All Cities & Areas", "https://pharmeasy.in/online-medicine-order/browse/areas"], ["FAQs", "https://pharmeasy.in/help"]]],
+      ["Policy Info", [["Editorial Policy", "https://pharmeasy.in/legal/editorial-policy"], ["Privacy Policy", "https://pharmeasy.in/legal/privacy-policy"], ["Vulnerability Disclosure Policy", "https://pharmeasy.in/vulnerability-disclosure-policy"], ["Terms and condition", "https://pharmeasy.in/terms-and-conditions"], ["Declaration on Dark Pattern", "https://assets.pharmeasy.in/web-assets/legal/circulars/Axelia_Self-Declaration_Dark_Patterns.pdf"], ["Customer Support Policy", "https://pharmeasy.in/customer-support-policy"], ["Return Policy", "https://pharmeasy.in/return-policy"], ["Smartbuy Policy", "https://pharmeasy.in/smartbuy-policy"]]]
+    ];
+    var colHtml = cols.map(function (cl) {
+      return '<div><h5>' + cl[0] + '</h5>' + cl[1].map(function (l) { return '<a href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '</a>'; }).join("") + '</div>';
+    }).join("");
+    var social = [["Instagram", "https://www.instagram.com/pharmeasyapp/"], ["Facebook", "https://www.facebook.com/pharmeasy/"], ["YouTube", "https://www.youtube.com/channel/UCDats_DLX-bGZH3-KGu8JhA"], ["Twitter", "https://www.twitter.com/pharmeasyapp/"]];
+    var socialHtml = social.map(function (s) { return '<a href="' + s[1] + '" target="_blank" rel="noopener">' + s[0] + '</a>'; }).join("");
+    var pays = ["Visa", "Mastercard", "RuPay", "Maestro", "Diners", "Google Pay", "Paytm", "Amazon Pay", "PhonePe", "Mobikwik", "Airtel Money", "Ola Money"];
+    var payHtml = pays.map(function (p) { return '<span class="paychip">' + p + '</span>'; }).join("");
+    var trust = ["100% NABL & ISO Certified Labs", "700+ Collection Centers", "7,000 Quality & Trained Phlebotomists"];
+    var trustHtml = trust.map(function (t) { return '<span class="trustpill">✓ ' + t + '</span>'; }).join("");
+    return '<footer class="footer">' +
+      '<div class="foottrust">' + trustHtml + '</div>' +
+      '<div class="footin">' + colHtml + '</div>' +
+      '<div class="footmission">PharmEasy: making lab test bookings affordable, high-quality, and easily accessible across India.</div>' +
+      '<div class="footmeta"><div class="footsocial"><span>Follow us</span>' + socialHtml + '</div>' +
+      '<div class="footpay"><span>We accept</span>' + payHtml + '</div></div>' +
+      '<div class="footbar"><div class="footbarin">' +
+      '<span class="footdisc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search and lab signals are simulated in this preview.</span>' +
+      '<span>© 2026 PharmEasy. All Rights Reserved</span></div></div></footer>';
   }
 
   function gauge(score, color, size) {
@@ -316,11 +533,12 @@
     if (e.target.id === "scrim") { document.getElementById("scrim").classList.remove("open"); return; }
     var el = e.target.closest ? e.target.closest("[data-act],[data-jump]") : null;
     if (!el) { if (state.comboOpen) { state.comboOpen = false; render(); } return; }
-    if (el.hasAttribute("data-jump")) { var t = document.getElementById(el.getAttribute("data-jump")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); el.classList.add("cur"); return; }
+    if (el.hasAttribute("data-jump")) { var t = document.getElementById(el.getAttribute("data-jump")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); el.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
     var a = el.getAttribute("data-act");
     if (a === "combo") { state.comboOpen = !state.comboOpen; render(); if (state.comboOpen) { var inp = document.getElementById("cityinput"); renderCombo(); inp.addEventListener("input", renderCombo); inp.focus(); } e.stopPropagation(); }
     else if (a === "pickCity" || a === "pickrow") { state.cityId = el.getAttribute("data-id"); state.comboOpen = false; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
-    else if (a === "leader") { state.leader = el.getAttribute("data-id"); render(); document.getElementById("s-other").scrollIntoView({ behavior: "smooth" }); }
+    else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("s-other").scrollIntoView({ behavior: "smooth" }); }
+    else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "method") { state.methodOpen = !state.methodOpen; var bdy = document.getElementById("methbody"); bdy.classList.toggle("open", state.methodOpen); document.getElementById("methtog").textContent = state.methodOpen ? "Hide details ▴" : "Show details ▾"; }
     else if (a === "share") openShare();
     else if (a === "closeShare") document.getElementById("scrim").classList.remove("open");

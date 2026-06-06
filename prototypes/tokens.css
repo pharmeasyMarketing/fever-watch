@@ -27,11 +27,11 @@
   --pe-bg-2: #EDF2F9;         /* N20 */
   --pe-white: #FFFFFF;
 
-  /* Risk ramp (mapped onto PharmEasy semantics) */
-  --risk-low: #62BF9F;
-  --risk-lowmod: #9FC95B;
-  --risk-mod: #EFB451;
-  --risk-high: #F47779;
+  /* Risk ramp (the locked brand ramp; matches the JS RISK map and the SSG baked HTML) */
+  --risk-low: #2FA66F;
+  --risk-lowmod: #C7A93C;
+  --risk-mod: #E8923A;
+  --risk-high: #E4572E;
 
   /* Signal colors */
   --sig-weather: #15ACA5;     /* teal */

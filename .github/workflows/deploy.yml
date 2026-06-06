@@ -1,0 +1,53 @@
+name: Deploy Fever Watch to GitHub Pages (staging)
+
+# Builds the device-adaptive SSG and publishes dist/fever-watch/ to GitHub Pages.
+# Builds from the committed data/grid.json (currently MOCK trends + positivity), so this is
+# a staging deploy: SITE_ENV defaults to "staging", which canonicalises to the github.io URL
+# and emits a Disallow-all robots.txt (keeps the staging origin out of search).
+#
+# One-time setup in the repo: Settings > Pages > Source = "GitHub Actions".
+# When the daily/weekly data cron is added later, point its final step at this same build.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Pillow (for brand + per-city OG images)
+        run: python -m pip install --upgrade pip Pillow
+      - name: Build the static site
+        run: |
+          python src/build_assets.py   # brand favicons / PWA icons / default OG
+          python src/build_og.py       # per-city OG score cards from grid.json
+          python src/build_site.py     # dist/fever-watch/ : 120 pages + robots/sitemap/manifest
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/fever-watch
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

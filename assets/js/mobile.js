@@ -1,225 +1,7 @@
-<!DOCTYPE html>
-<html lang="en-IN">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Fever Watch | Mobile flow</title>
-<link rel="stylesheet" href="./tokens.css" />
-<style>
-  body { padding-top: 56px; }
-
-  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--pe-green); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 40; }
-  .topbar img.navlock { height: 23px; display: block; }
-  .ham { width: 38px; height: 38px; border: none; background: transparent; display: grid; place-items: center; }
-  .ham span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; box-shadow: 0 -5px 0 #fff, 0 5px 0 #fff; }
-  .pe-logo { display: flex; align-items: center; text-decoration: none; }
-
-  /* PharmEasy hamburger menu (nav structure + links ported from Mosquito Watch) */
-  .pe-topnav { display: none; position: fixed; top: 56px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; background: var(--pe-green-dark); padding: 8px; box-shadow: 0 12px 22px rgba(0,0,0,.24); z-index: 50; max-height: calc(100vh - 56px); overflow-y: auto; }
-  .pe-topnav.open { display: flex; }
-  .pe-nav-item { position: static; }
-  .pe-nav-btn, .pe-nav-link { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 5px; background: none; border: 0; color: #fff; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; padding: 12px; border-radius: 8px; text-decoration: none; }
-  .pe-nav-btn:hover, .pe-nav-link:hover, .pe-nav-item.open .pe-nav-btn { background: rgba(255,255,255,.12); }
-  .pe-caret { font-size: 9px; transition: transform .15s; }
-  .pe-nav-item.open .pe-caret { transform: rotate(180deg); }
-  .pe-nav-drop { display: none; background: rgba(255,255,255,.06); border-radius: 8px; margin: 2px 0 4px; padding: 4px 4px 4px 10px; }
-  .pe-nav-item.open .pe-nav-drop { display: block; }
-  .pe-nav-drop a { display: block; padding: 11px 12px; color: #eafffb; font-size: 14px; font-weight: 500; text-decoration: none; border-radius: 7px; }
-  .pe-nav-drop a:hover { background: rgba(255,255,255,.12); color: #fff; }
-
-  .hero { background: linear-gradient(160deg, var(--pe-green-dark), var(--pe-green) 78%); color: #fff; padding: 24px 16px 34px; }
-  .hero h1 { font-size: 24px; line-height: 1.28; font-weight: 700; margin: 0 0 8px; letter-spacing: -.2px; }
-  .hero h1 em { font-style: normal; color: var(--pe-gold); }
-  .hero p { font-size: 13px; line-height: 1.55; margin: 0; color: #d8efed; }
-  .searchwrap { margin: -20px 16px 0; position: relative; z-index: 5; }
-  .searchfield { width: 100%; background: #fff; border: none; border-radius: 14px; box-shadow: var(--shadow); padding: 15px 16px; display: flex; align-items: center; gap: 11px; font-size: 15px; color: var(--pe-muted); font-weight: 500; }
-  .searchfield .ico { color: var(--pe-green); font-size: 16px; }
-  .searchnote { font-size: 11.5px; color: var(--pe-muted-2); margin: 9px 4px 0; }
-
-  .wrap { padding: 18px 16px 28px; }
-  .citymeta { display: flex; align-items: center; justify-content: space-between; margin: 2px 2px 14px; }
-  .citymeta h2 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.2; }
-  .citymeta .date { font-size: 12px; color: var(--pe-muted); margin-top: 2px; }
-  .changecity { font-size: 13px; color: var(--pe-green); font-weight: 600; background: none; border: none; padding: 6px 4px; }
-
-  .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 18px; margin-bottom: 14px; }
-  .sectiontitle { font-size: 16px; font-weight: 700; margin: 0; }
-  .sectionsub { font-size: 12.5px; color: var(--pe-muted); margin: 4px 0 14px; }
-
-  /* risk card */
-  .rtop { display: flex; gap: 14px; align-items: center; }
-  .gaugewrap { position: relative; flex-shrink: 0; }
-  .gaugewrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .gaugewrap .num b { font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
-  .gaugewrap .num span { font-size: 10px; color: var(--pe-muted-2); margin-top: 2px; }
-  .rhead .ov { font-size: 12px; color: var(--pe-muted); font-weight: 600; }
-  .rhead .bandlbl { font-size: 25px; font-weight: 700; line-height: 1.1; margin: 2px 0 0; letter-spacing: -.3px; }
-  .driverrow { margin-top: 13px; }
-  .driver { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: var(--pill); line-height: 1.35; }
-  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
-  .dpill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--pe-line); border-radius: var(--pill); padding: 6px 11px; font-size: 12px; font-weight: 600; }
-  .dpill .dot { width: 9px; height: 9px; border-radius: 50%; }
-  .dpill b { font-weight: 700; }
-  .rfoot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
-  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 700; font-size: 13px; padding: 11px 18px; border-radius: var(--pill); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
-
-  /* breakdown */
-  .acc { border: 1px solid var(--pe-line); border-radius: var(--radius-sm); overflow: hidden; }
-  .acc + .acc { margin-top: 8px; }
-  .acchead { width: 100%; background: #fff; border: none; padding: 13px 14px; display: flex; align-items: center; gap: 11px; text-align: left; }
-  .acchead .emoji { font-size: 17px; }
-  .acchead .name { flex: 1; font-size: 14px; font-weight: 600; }
-  .acchead .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .acchead .sc { font-size: 14px; font-weight: 700; min-width: 22px; text-align: right; }
-  .acchead .chev { color: var(--pe-muted-2); font-size: 11px; transition: transform .2s; }
-  .acc.open .acchead .chev { transform: rotate(180deg); }
-  .accbody { padding: 6px 14px 16px; background: var(--pe-bg); display: none; }
-  .acc.open .accbody { display: block; }
-  .sig { margin: 13px 0; }
-  .sig .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-  .sig .lbl { font-size: 13px; font-weight: 600; }
-  .sig .v { font-size: 12.5px; font-weight: 700; }
-  .sig .tag { font-size: 11px; color: var(--pe-muted); margin: 0 0 6px; }
-  .track { height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
-  .fill { height: 100%; border-radius: 5px; }
-  .accnote { font-size: 11.5px; color: var(--pe-ink-2); line-height: 1.55; margin: 12px 0 0; padding-top: 11px; border-top: 1px dashed var(--pe-line); }
-
-  /* actions */
-  .actcard { display: flex; align-items: center; gap: 13px; padding: 13px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); margin-bottom: 10px; background: #fff; }
-  .actcard .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; background: var(--pe-green-100); flex-shrink: 0; }
-  .actcard .tx { flex: 1; }
-  .actcard .tx b { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
-  .actcard .tx span { font-size: 11.5px; color: var(--pe-muted); line-height: 1.4; }
-  .actcard .go { color: var(--pe-muted-2); font-size: 20px; }
-  .ctabig { width: 100%; border: none; color: #fff; font-weight: 700; font-size: 14.5px; padding: 14px; border-radius: var(--radius-sm); margin-top: 4px; }
-
-  /* methodology */
-  .methhead { width: 100%; background: none; border: none; padding: 0; display: flex; align-items: center; justify-content: space-between; }
-  .methtog { color: var(--pe-green); font-weight: 700; font-size: 12.5px; }
-  .methbody { display: none; margin-top: 14px; font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.65; }
-  .methbody.open { display: block; }
-  .methbody h4 { font-size: 13px; margin: 16px 0 5px; color: var(--pe-ink); }
-  .methbody h4:first-child { margin-top: 0; }
-  .methbody code { background: var(--pe-bg-2); padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
-  .methbody ul { margin: 6px 0; padding-left: 18px; }
-  .methbody li { margin: 4px 0; }
-  .cite { font-size: 11.5px; margin: 6px 0; padding-left: 14px; text-indent: -14px; color: var(--pe-ink-2); }
-
-  /* leaderboard */
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
-  .chip { border: 1px solid var(--pe-line); background: #fff; border-radius: var(--pill); padding: 7px 11px; font-size: 12px; font-weight: 600; color: var(--pe-ink-2); display: inline-flex; gap: 5px; align-items: center; }
-  .chip.on { background: var(--pe-green); border-color: var(--pe-green); color: #fff; }
-  .lbrow { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--pe-bg-2); font-size: 13.5px; }
-  .lbrow .rk { width: 20px; color: var(--pe-muted-2); font-weight: 700; text-align: center; }
-  .lbrow .nm { flex: 1; }
-  .lbrow.you { font-weight: 700; }
-  .lbrow.you .nm:after { content: " you"; color: var(--pe-green); font-size: 10px; font-weight: 700; }
-  .lbbar { width: 62px; height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
-  .lbbar i { display: block; height: 100%; border-radius: 5px; }
-  .lbrow .v { width: 26px; text-align: right; font-weight: 700; }
-  .lbmore { font-size: 11.5px; color: var(--pe-muted); text-align: center; margin-top: 12px; }
-  .lbpager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
-  .pgbtn { border: 1px solid var(--pe-line); background: #fff; border-radius: var(--pill); padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: var(--pe-green); }
-  .pgbtn:disabled { color: var(--pe-muted-2); opacity: .5; }
-  .pginfo { font-size: 12px; color: var(--pe-muted); font-weight: 600; }
-
-  .pfoot { padding: 8px 4px 24px; color: var(--pe-muted-2); font-size: 10.5px; line-height: 1.6; }
-  .pfoot .disc { margin-bottom: 8px; }
-
-  /* Further reading (PharmEasy blog interlinks, ported from Mosquito Watch) */
-  .related-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 4px; }
-  .related-col h4 { margin: 0 0 8px; font-size: 14px; color: var(--pe-ink); padding-left: 9px; border-left: 3px solid var(--pe-green); }
-  .related-col ul { list-style: none; margin: 0; padding: 0; }
-  .related-col li { margin: 0 0 10px; }
-  .related-col a { font-size: 13.5px; color: var(--pe-green-dark); text-decoration: none; font-weight: 500; }
-  .related-col a:hover { text-decoration: underline; }
-
-  /* sheets */
-  .scrim { position: fixed; inset: 0; background: rgba(15,28,27,.5); z-index: 60; display: none; }
-  .scrim.open { display: block; }
-  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 20px 20px 0 0; z-index: 70; transform: translateY(100%); transition: transform .25s ease; max-height: 90vh; display: flex; flex-direction: column; }
-  .sheet.open { transform: translateY(0); }
-  .sheet.full { top: 0; bottom: 0; border-radius: 0; max-height: none; }
-  .sheethead { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--pe-bg-2); }
-  .sheethead h3 { margin: 0; font-size: 16px; font-weight: 700; }
-  .sheethead .x { border: none; background: var(--pe-bg-2); width: 32px; height: 32px; border-radius: 50%; font-size: 15px; color: var(--pe-ink); }
-  .sheetbody { overflow-y: auto; padding: 14px 16px 28px; }
-  .citysearch { width: 100%; padding: 13px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); font-size: 15px; margin-bottom: 6px; }
-  .locrow { display: flex; align-items: center; gap: 10px; padding: 13px 4px; color: var(--pe-green); font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--pe-bg-2); }
-  .cityopt { width: 100%; text-align: left; background: none; border: none; padding: 13px 4px; border-bottom: 1px solid var(--pe-bg-2); font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
-  .cityopt small { color: var(--pe-muted); font-size: 12px; }
-  .cityopt .sb { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pill); }
-
-  /* branded share card */
-  .sharecard { border-radius: 18px; overflow: hidden; background: linear-gradient(155deg, var(--pe-green) 0%, var(--pe-green-dark) 100%); color: #fff; }
-  .sc-head { display: flex; align-items: center; gap: 11px; padding: 16px 18px 4px; }
-  .sc-head img { height: 19px; }
-  .sc-head .fw { font-size: 13px; font-weight: 700; padding-left: 11px; border-left: 1px solid rgba(255,255,255,.35); }
-  .sc-body { text-align: center; padding: 10px 18px 16px; }
-  .sc-emoji { font-size: 40px; }
-  .sc-score { font-size: 56px; font-weight: 700; line-height: 1; margin: 4px 0 8px; letter-spacing: -1px; }
-  .sc-score span { font-size: 20px; opacity: .8; font-weight: 600; }
-  .sc-band { display: inline-block; background: #fff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 5px 14px; border-radius: var(--pill); }
-  .sc-title { font-size: 15px; font-weight: 600; margin-top: 12px; }
-  .sc-sub { font-size: 12px; opacity: .85; margin-top: 3px; }
-  .sc-foot { background: rgba(0,0,0,.16); padding: 11px 18px; font-size: 11px; text-align: center; opacity: .95; }
-  .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 16px 0; }
-  .sharebtns { display: flex; gap: 8px; }
-  .sharebtns button { flex: 1; border: none; color: #fff; padding: 13px; border-radius: 11px; font-weight: 700; font-size: 13px; }
-</style>
-</head>
-<body>
-<div class="topbar"><a class="pe-logo" href="https://pharmeasy.in/" aria-label="PharmEasy home"><img class="navlock" src="../assets/img/fever-watch-lockup-white.svg" alt="PharmEasy Fever Watch" /></a><button class="ham" aria-label="Open menu" aria-expanded="false" aria-controls="pe-topnav"><span></span></button></div>
-<nav class="pe-topnav" id="pe-topnav" aria-label="PharmEasy">
-  <div class="pe-nav-item">
-    <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Healthcare <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
-    <div class="pe-nav-drop">
-      <a href="https://pharmeasy.in/online-medicine-order?src=homecard">Medicines</a>
-      <a href="https://pharmeasy.in/diagnostics?src=homecard">Lab tests</a>
-      <a href="https://pharmeasy.in/online-doctor-consultation/">Doctor consult</a>
-      <a href="https://pharmeasy.in/health-care?src=homecard">Healthcare products</a>
-    </div>
-  </div>
-  <div class="pe-nav-item">
-    <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Health Hub <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
-    <div class="pe-nav-drop">
-      <a href="https://pharmeasy.in/blog?src=homecard">Blog</a>
-      <a href="https://pharmeasy.in/conditions">Conditions</a>
-      <a href="https://pharmeasy.in/qna">AskEasy</a>
-    </div>
-  </div>
-  <a class="pe-nav-link" href="https://pharmeasy.in/legal/editorial-policy">Editorial Policy</a>
-  <div class="pe-nav-item">
-    <button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Research &amp; Insights <span class="pe-caret" aria-hidden="true">&#9662;</span></button>
-    <div class="pe-nav-drop">
-      <a href="https://pharmeasy.in/research/dengue">Dengue Research 2025</a>
-      <a href="https://pharmeasy.in/research/diabetes">Diabetes Research</a>
-      <a href="https://pharmeasy.in/research/branded-vs-generics">Generic Medicines Research</a>
-    </div>
-  </div>
-</nav>
-<div id="app"><div class="wrap"><p style="color:var(--pe-muted)">Loading Fever Watch...</p></div></div>
-
-<div class="scrim" id="scrim"></div>
-<div class="sheet full" id="citysheet">
-  <div class="sheethead"><h3>Choose your city</h3><button class="x" data-act="closeCity">✕</button></div>
-  <div class="sheetbody">
-    <input class="citysearch" id="citysearch" placeholder="Type a city name" />
-    <div class="locrow" data-act="useLoc">◎ Use my location</div>
-    <div id="citylist"></div>
-    <p class="searchnote" style="margin-top:14px">Available in select cities, more coming soon.</p>
-  </div>
-</div>
-<div class="sheet" id="sharesheet">
-  <div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>
-  <div class="sheetbody" id="sharebody"></div>
-</div>
-
-<script>
 (function () {
   "use strict";
-  var LOGO = "../assets/img/pe_logo-white.svg";
+  var FW = window.FW || {};
+  var LOGO = FW.logo || "assets/img/pe_logo-white.svg";
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
   var SIG = {
@@ -234,10 +16,10 @@
     { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "#" }
   ];
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  var DATA = null, state = { cityId: null, expanded: null, leader: "overall", lbQuery: "", lbPage: 0 }, app = document.getElementById("app");
+  var DATA = null, state = { cityId: null, expanded: null, leader: "overall", lbQuery: "", lbPage: 0 }, app = document.getElementById("fw-app");
 
   function loadGrid(tries) {
-    return fetch("../data/grid.json", { cache: "no-store" }).then(function (r) {
+    return fetch(FW.gridUrl || "data/grid.json", { cache: "no-store" }).then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     }).catch(function (e) {
@@ -246,16 +28,47 @@
     });
   }
 
+  injectChrome();
   wireNav();  // PharmEasy hamburger menu, independent of the data layer
+  window.addEventListener("popstate", onPop);
 
   loadGrid(4).then(function (j) {
     DATA = j;
-    state.cityId = DATA.cities.some(function (c) { return c.id === "bengaluru"; }) ? "bengaluru" : DATA.cities[0].id;
+    state.cityId = pickDefaultCity();
     state.expanded = cityObj(state.cityId).blend.driver;
     document.addEventListener("click", onClick);
     document.getElementById("citysearch").addEventListener("input", renderCityList);
-    renderCityList(); render();
+    renderCityList(); render(); maybeGeo();
   }).catch(function (e) { app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
+
+  function pickDefaultCity() {
+    if (FW.city && DATA.cities.some(function (c) { return c.id === FW.city; })) return FW.city;
+    return DATA.cities.some(function (c) { return c.id === "bengaluru"; }) ? "bengaluru" : DATA.cities[0].id;
+  }
+  function maybeGeo() {
+    if (FW.city || !window.FeverWatchGeo) return;  // city pages respect the URL; geo only steers the landing default
+    window.FeverWatchGeo.resolve(DATA.cities).then(function (res) {
+      if (res && res.cityId && res.cityId !== state.cityId && DATA.cities.some(function (c) { return c.id === res.cityId; })) {
+        state.cityId = res.cityId; state.expanded = cityObj(state.cityId).blend.driver;
+        try { history.replaceState(null, "", cityHref(res.cityId)); } catch (e) {}
+        render();
+      }
+    }).catch(function () {});
+  }
+  function injectChrome() {
+    if (document.getElementById("scrim")) return;
+    var html =
+      '<div class="scrim" id="scrim"></div>' +
+      '<div class="sheet full" id="citysheet"><div class="sheethead"><h3>Choose your city</h3><button class="x" data-act="closeCity">✕</button></div>' +
+      '<div class="sheetbody"><input class="citysearch" id="citysearch" placeholder="Type a city name" />' +
+      '<div class="locrow" data-act="useLoc">◎ Use my location</div><div id="citylist"></div>' +
+      '<p class="searchnote" style="margin-top:14px">Available in select cities, more coming soon.</p></div></div>' +
+      '<div class="sheet" id="sharesheet"><div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>' +
+      '<div class="sheetbody" id="sharebody"></div></div>';
+    var wrap = document.createElement("div");
+    wrap.innerHTML = html;
+    while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
+  }
 
   function cityObj(id) { return DATA.cities.filter(function (c) { return c.id === id; })[0]; }
   function diseaseObj(id) { return DATA.diseases.filter(function (d) { return d.id === id; })[0]; }
@@ -265,8 +78,28 @@
   function leaderRow(ci) { if (state.leader === "overall") return { score: ci.blend.score, band: ci.blend.band }; var cell = cellFor(ci.id, state.leader); return { score: cell.score, band: cell.band }; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]; }); }
 
+  // City <-> URL sync. CITY_ROOT is the absolute path of /fever-watch/ on this origin.
+  var CITY_ROOT = FW.city
+    ? location.pathname.replace(/[^/]+\/?$/, "")
+    : location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
+  function cityHref(id) { return CITY_ROOT + id + "/"; }
+  function cityFromPath() { return location.pathname.replace(/\/(index\.html)?$/, "").split("/").pop(); }
+  function setCity(id, push) {
+    state.cityId = id;
+    state.expanded = cityObj(id).blend.driver;
+    if (push) { try { history.pushState(null, "", cityHref(id)); } catch (e) {} }
+    render();
+  }
+  function onPop() {
+    if (!DATA) return;
+    var id = cityFromPath();
+    if (id && id !== state.cityId && DATA.cities.some(function (c) { return c.id === id; })) {
+      state.cityId = id; state.expanded = cityObj(id).blend.driver; render(); window.scrollTo(0, 0);
+    }
+  }
+
   function wireNav() {
-    var burger = document.querySelector(".ham");
+    var burger = document.querySelector(".pe-burger");
     var topnav = document.getElementById("pe-topnav");
     if (!burger || !topnav) return;
     function closeDrops() {
@@ -292,7 +125,7 @@
     });
     document.addEventListener("click", function (e) {
       var t = e.target;
-      if (!(t.closest && (t.closest(".pe-topnav") || t.closest(".ham")))) { closeDrops(); closePanel(); }
+      if (!(t.closest && (t.closest(".pe-topnav") || t.closest(".pe-burger")))) { closeDrops(); closePanel(); }
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.keyCode === 27) { closeDrops(); closePanel(); } });
   }
@@ -307,9 +140,10 @@
       '<div class="wrap">' +
         '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
         '<button class="changecity" data-act="openCity">Change</button></div>' +
-        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + readsCard() + footer() +
+        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + readsCard() +
       '</div>';
     wireLeaderboard();
+    document.body.classList.add("fw-hydrated");
   }
 
   function riskCard(c, b) {
@@ -349,12 +183,11 @@
   }
 
   function actionsCard(c) {
-    var high = c.blend.band === "HIGH";
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<div class="card"><p class="sectiontitle">So, what should I do?</p><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
-      '<button class="ctabig" style="background:' + (high ? RISK.HIGH : "var(--pe-green)") + '">' + (high ? "Book a fever panel test" : "Shop monsoon prevention essentials") + '</button></div>';
+      '<button class="ctabig" style="background:var(--pe-green)">Book a fever panel test</button></div>';
   }
 
   function methodologyCard() {
@@ -429,11 +262,6 @@
       '<div class="related-grid">' + cols + '</div></div>';
   }
 
-  function footer() {
-    return '<div class="pfoot"><p class="disc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases or mosquitoes.</p>' +
-      '<p>Live weather via NASA POWER (public domain). Google search and lab signals are simulated in this preview. Updated ' + fmtDate(DATA.generated_at) + '.</p></div>';
-  }
-
   function gauge(score, color, size) {
     var sw = 11, cx = size / 2, r = (size - sw) / 2 - 1, C = 2 * Math.PI * r, arc = 0.75;
     var track = (arc * C).toFixed(1), gap = (C - arc * C).toFixed(1), prog = (Math.max(0, Math.min(100, score)) / 100 * arc * C).toFixed(1);
@@ -453,7 +281,8 @@
     }).join("");
   }
 
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver); return cell.band + " risk for " + drv.label + " in " + c.name + ", " + b.driver_score + "/100, modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more."; }
+  function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver); return cell.band + " risk for " + drv.label + " in " + c.name + ", " + b.driver_score + "/100, modelled from breeding weather, Google search interest and PharmEasy lab signals. Know More here: " + shareUrl(); }
   function renderShare() {
     var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver), col = RISK[cell.band];
     document.getElementById("sharebody").innerHTML =
@@ -463,7 +292,7 @@
       '<div class="sc-title">' + drv.label + ' risk in ' + c.name + '</div><div class="sc-sub">This week, ' + fmtDate(DATA.generated_at) + '</div></div>' +
       '<div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
       '<div class="sharetext">' + shareText(c) + '</div>' +
-      '<div class="sharebtns"><button style="background:#25D366">WhatsApp</button><button style="background:#111">Instagram</button><button style="background:var(--pe-blue)">Copy link</button></div>';
+      '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:#111">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>';
   }
 
   function openSheet(id) { document.getElementById("scrim").classList.add("open"); document.getElementById(id).classList.add("open"); }
@@ -474,13 +303,33 @@
     var a = el.getAttribute("data-act");
     if (a === "openCity") { renderCityList(); openSheet("citysheet"); }
     else if (a === "closeCity" || a === "closeShare") closeSheets();
-    else if (a === "pickCity") { state.cityId = el.getAttribute("data-id"); state.expanded = cityObj(state.cityId).blend.driver; closeSheets(); render(); window.scrollTo(0, 0); }
+    else if (a === "pickCity") { closeSheets(); setCity(el.getAttribute("data-id"), true); window.scrollTo(0, 0); }
     else if (a === "useLoc") closeSheets();
     else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "method") { var bdy = document.getElementById("methbody"); bdy.classList.toggle("open"); document.getElementById("methtog").textContent = bdy.classList.contains("open") ? "Hide ▴" : "Show ▾"; }
     else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
+    else if (a === "shareWA") doShare("wa");
+    else if (a === "shareDL") doShare("dl");
+    else if (a === "shareCopy") doShare("copy");
+  }
+
+  function shareCardData() {
+    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver);
+    return {
+      card: { emoji: drv.emoji, score: b.driver_score, band: cell.band, bandColor: RISK[cell.band], title: drv.label + " risk in " + c.name, sub: "This week, " + fmtDate(DATA.generated_at) },
+      text: shareText(c), url: shareUrl()
+    };
+  }
+  function doShare(kind) {
+    if (!window.FeverWatchShare) return;
+    var d = shareCardData(), fn = "fever-watch-" + state.cityId + ".png";
+    if (kind === "copy") { window.FeverWatchShare.copyLink(d.url); return; }
+    window.FeverWatchShare.renderCard(d.card).then(function (canvas) {
+      if (kind === "wa") window.FeverWatchShare.nativeShare(canvas, d.text, "", fn);  // URL is already in d.text
+      else window.FeverWatchShare.download(canvas, fn);
+    });
   }
   document.getElementById("scrim").addEventListener("click", closeSheets);
 
@@ -507,6 +356,3 @@
     '<p class="cite">IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</p>' +
     '<p style="margin-top:12px;color:var(--pe-muted-2)">A risk indicator, not a diagnosis or a case count.</p>';
 })();
-</script>
-</body>
-</html>

@@ -8,7 +8,7 @@
  */
 window.FeverWatchShare = (function () {
   "use strict";
-  var LOGO_SRC = "/assets/img/pe_logo-white.svg";
+  var LOGO_SRC = (window.FW && window.FW.logo) || "assets/img/pe_logo-white.svg";
 
   function loadImg(src) {
     return new Promise(function (res, rej) {
@@ -92,7 +92,7 @@ window.FeverWatchShare = (function () {
   }
 
   function whatsapp(text, url) {
-    window.open("https://wa.me/?text=" + encodeURIComponent(text + " " + url), "_blank");
+    window.open("https://wa.me/?text=" + encodeURIComponent(url ? text + " " + url : text), "_blank");
   }
 
   function copyLink(url) {
@@ -106,7 +106,9 @@ window.FeverWatchShare = (function () {
     return toBlob(canvas).then(function (blob) {
       var file = new File([blob], filename || "fever-watch.png", { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        return navigator.share({ files: [file], text: text, url: url });
+        var payload = { files: [file], text: text };
+        if (url) payload.url = url;
+        return navigator.share(payload);
       }
       download(canvas, filename);
       whatsapp(text, url);
