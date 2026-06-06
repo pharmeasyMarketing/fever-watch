@@ -2,7 +2,7 @@
   "_comment": "Provider selection + config for signal 2 (Google Trends) and signal 3 (PharmEasy lab positivity). MOCK is the default until the real feeds are wired. Signal 1 (weather) is configured in scoring.json + src/providers/. Cadence: weather daily, trends weekly (SerpApi x5 -> data/trends.json), lab daily (Google Sheet).",
 
   "trends": {
-    "provider": "mock",
+    "provider": "cached",
     "cached": { "path": "data/trends.json" },
     "serpapi": {
       "_note": "Used by the WEEKLY build_trends.py (5 keys in Actions secrets, failover). Google Trends granularity is sub-region (state), so a city inherits its state's interest. terms are OR-joined per disease.",

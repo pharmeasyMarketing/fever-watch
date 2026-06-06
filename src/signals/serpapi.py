@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Optional
@@ -64,7 +65,14 @@ class SerpApiTrendsProvider:
                     self._ki = (self._ki + 1) % len(self.keys)
                     continue
                 return data
-            except Exception as e:  # network / parse / HTTP error -> rotate key
+            except urllib.error.HTTPError as e:  # surface SerpApi's real message (quota / bad params)
+                try:
+                    last_err = json.loads(e.read().decode("utf-8", "ignore")).get("error") or ("HTTP %s" % e.code)
+                except Exception:
+                    last_err = "HTTP %s" % e.code
+                self._ki = (self._ki + 1) % len(self.keys)
+                time.sleep(0.3)
+            except Exception as e:  # network / parse error -> rotate key
                 last_err = str(e)
                 self._ki = (self._ki + 1) % len(self.keys)
                 time.sleep(0.5)
@@ -72,9 +80,11 @@ class SerpApiTrendsProvider:
 
     def interest_by_region(self, query: str) -> dict:
         """Return {state_name: value 0-100} across India for a query (GEO_MAP)."""
+        # GEO_MAP_0 = "interest by region" for a SINGLE query. (GEO_MAP is the
+        # compared/multi-query breakdown and 400s on one term.)
         data = self._get({
             "engine": "google_trends",
-            "data_type": "GEO_MAP",
+            "data_type": "GEO_MAP_0",
             "q": query,
             "geo": self.geo,
             "region": "REGION",

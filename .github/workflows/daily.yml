@@ -1,0 +1,103 @@
+name: Daily refresh + deploy (Fever Watch)
+
+# Pulls fresh weather (NASA POWER, no key) + real Google Trends (SerpApi, 5 keys via
+# Actions secrets) DAILY, recomputes the grid, commits the refreshed data back (durable
+# history + future RF training set), rebuilds the SSG and deploys to Pages.
+#
+# Trends provider is 'cached' (TRENDS_PROVIDER=cached) and reads the trends.json this job
+# writes. If SerpApi fails, build_trends writes nothing and build_daily falls back to mock
+# trends, so a SerpApi hiccup never blocks the deploy (weather stays real). Lab positivity
+# stays mock until config/signals.json positivity.csv_url is set.
+#
+# Trigger now: Actions tab -> "Daily refresh + deploy (Fever Watch)" -> Run workflow. That
+# first run also VERIFIES the SerpApi Actions secrets (the "Check secrets" step + build_trends).
+
+on:
+  schedule:
+    - cron: "30 1 * * *"          # ~07:00 IST daily
+  workflow_dispatch:
+
+permissions:
+  contents: write                  # commit refreshed data back to master
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Pillow (for OG / brand images)
+        run: python -m pip install --upgrade pip Pillow
+      - name: Fonts for OG card text + emoji
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core fonts-noto-color-emoji
+
+      - name: Check SerpApi secrets are present (values never printed)
+        env:
+          K1: ${{ secrets.SERPAPI_KEY }}
+          K2: ${{ secrets.SERPAPI_KEY_2 }}
+          K3: ${{ secrets.SERPAPI_KEY_3 }}
+          K4: ${{ secrets.SERPAPI_KEY_4 }}
+          K5: ${{ secrets.SERPAPI_KEY_5 }}
+        run: |
+          n=0
+          for v in "$K1" "$K2" "$K3" "$K4" "$K5"; do [ -n "$v" ] && n=$((n+1)); done
+          echo "SerpApi keys present: $n / 5"
+          if [ "$n" -eq 0 ]; then echo "::error::No SerpApi secrets found - add SERPAPI_KEY..._5"; exit 1; fi
+
+      - name: Build weather (NASA POWER)
+        run: python src/build_weather.py
+
+      - name: Build trends (SerpApi, real)
+        continue-on-error: true
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SERPAPI_KEY_2: ${{ secrets.SERPAPI_KEY_2 }}
+          SERPAPI_KEY_3: ${{ secrets.SERPAPI_KEY_3 }}
+          SERPAPI_KEY_4: ${{ secrets.SERPAPI_KEY_4 }}
+          SERPAPI_KEY_5: ${{ secrets.SERPAPI_KEY_5 }}
+        run: python src/build_trends.py || echo "::warning::build_trends failed; build_daily will fall back to mock trends"
+
+      - name: Build grid (cached real trends; mock fallback if trends missing)
+        env:
+          TRENDS_PROVIDER: cached
+        run: python src/build_daily.py
+
+      - name: Commit refreshed data back
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/weather.json data/trends.json data/grid.json
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "data: daily refresh (weather + real trends + grid) [skip ci]"
+            git push || echo "::warning::data push failed (non-fatal)"
+          fi
+
+      - name: Build static site
+        run: |
+          python src/build_assets.py
+          python src/build_og.py
+          python src/build_site.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/fever-watch
+
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
