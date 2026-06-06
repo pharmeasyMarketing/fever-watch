@@ -232,15 +232,18 @@ def _dashed(d, x0, x1, y, color, dash=10, gap=8, width=2):
         x += dash + gap
 
 
-def _info_card(img, d, box, rows, label_f, value_f, badge_r, pad):
-    """Glass card with stacked icon rows. rows = [(icon, label, [value_lines]), ...]."""
+def _info_card(img, d, box, rows, label_f, vmax, vmin, badge_r, pad):
+    """Glass card with stacked icon rows. rows = [(icon, label, value_str), ...].
+    Each value is shrink-to-fit (then a 2-line comma split, then an ellipsis) so a
+    long city + state never overflows the card, whatever the width."""
     x0, y0, x1, y1 = box
     _glass(img, box, radius=int((y1 - y0) * 0.12))
     n = len(rows)
     seg = (y1 - y0) / n
     bx = x0 + pad + badge_r
     tx = bx + badge_r + pad * 0.7
-    for i, (icon, label, lines) in enumerate(rows):
+    max_w = (x1 - pad) - tx
+    for i, (icon, label, value) in enumerate(rows):
         cy = int(y0 + seg * (i + 0.5))
         _badge(img, bx, cy, badge_r)
         if icon == "pin":
@@ -249,14 +252,14 @@ def _info_card(img, d, box, rows, label_f, value_f, badge_r, pad):
             g = _emoji_img(icon, int(badge_r * 1.2))
             if g:
                 img.paste(g, (int(bx - g.width / 2), int(cy - g.height / 2)), g)
-        # label + value(s), vertically centred as a block
-        lh = value_f.size + 6
+        lines, vf = _fit_value(d, value, max_w, vmax, vmin)
+        lh = vf.size + 6
         block_h = label_f.size + 8 + lh * len(lines)
         ty = cy - block_h / 2
         d.text((tx, ty), label, font=label_f, fill=ACCENT, anchor="lt")
         vy = ty + label_f.size + 8
         for ln in lines:
-            d.text((tx, vy), ln, font=value_f, fill=WHITE, anchor="lt")
+            d.text((tx, vy), ln, font=vf, fill=WHITE, anchor="lt")
             vy += lh
         if i < n - 1:
             _dashed(d, tx, x1 - pad, int(y0 + seg * (i + 1)), (255, 255, 255, 55))
@@ -282,23 +285,31 @@ def _footer(img, d, W, H, top, align_left):
     d.text((x, cy), url, font=uf, fill=ACCENT, anchor="lm")
 
 
-def _wrap_place(d, text, fnt, max_w):
-    if _w(d, text, fnt) <= max_w:
-        return [text]
-    if ", " in text:
-        a, b = text.split(", ", 1)
-        return [a + ",", b]
-    words, lines, cur = text.split(), [], ""
-    for wd in words:
-        t = (cur + " " + wd).strip()
-        if _w(d, t, fnt) <= max_w:
-            cur = t
-        else:
-            lines.append(cur)
-            cur = wd
-    if cur:
-        lines.append(cur)
-    return lines
+def _truncate(d, s, fnt, max_w):
+    if _w(d, s, fnt) <= max_w:
+        return s
+    while s and _w(d, s + "…", fnt) > max_w:
+        s = s[:-1]
+    return (s + "…") if s else s
+
+
+def _fit_value(d, text, max_w, max_size, min_size, weight="bold"):
+    """Largest font (max..min) at which `text` fits one line; else a two-line comma
+    split at that size; else (last resort) the min size with an ellipsis."""
+    parts = text.split(", ", 1)
+    size = int(max_size)
+    while size >= int(min_size):
+        f = font(size, weight)
+        if _w(d, text, f) <= max_w:
+            return [text], f
+        if len(parts) == 2:
+            l1, l2 = parts[0] + ",", parts[1]
+            if _w(d, l1, f) <= max_w and _w(d, l2, f) <= max_w:
+                return [l1, l2], f
+        size -= 2
+    f = font(int(min_size), weight)
+    lines = [parts[0] + ",", parts[1]] if len(parts) == 2 else [text]
+    return [_truncate(d, ln, f, max_w) for ln in lines], f
 
 
 def render_card(ctx: dict, story: bool = False) -> "Image.Image":
@@ -322,10 +333,9 @@ def render_card(ctx: dict, story: bool = False) -> "Image.Image":
         d.text((W / 2 - 56 + sw / 2 + 26, 640), "/100", font=font(70, "bold"), fill=ACCENT, anchor="lm")
         _pill(img, d, W / 2, 790, band + " RISK", rc, 58, 54, 100)
         card_box = (120, 905, 960, 1155)
-        lf, vf = font(30, "semi"), font(46, "bold")
-        rows = [("pin", "Location", _wrap_place(d, loc, vf, 600)),
-                (drv_emoji, "Top concern", [ctx["driver_label"]])]
-        _info_card(img, d, card_box, rows, lf, vf, badge_r=58, pad=34)
+        lf = font(30, "semi")
+        rows = [("pin", "Location", loc), (drv_emoji, "Top concern", ctx["driver_label"])]
+        _info_card(img, d, card_box, rows, lf, 46, 32, badge_r=58, pad=34)
         cg = _emoji_img("\U0001F4C5", 38)
         date_f = font(36, "semi")
         dw = _w(d, ctx["date"], date_f) + (cg.width + 12 if cg else 0)
@@ -348,11 +358,10 @@ def render_card(ctx: dict, story: bool = False) -> "Image.Image":
     sw = _w(d, str(ctx["score"]), sf)
     d.text((lx + sw + 18, 392), "/100", font=font(46, "bold"), fill=ACCENT, anchor="lm")
     _pill(img, d, lx, 480, band + " RISK", rc, 40, 40, 76, align="left")
-    card_box = (700, 150, 1150, 500)
-    lf, vf = font(27, "semi"), font(40, "bold")
-    rows = [("pin", "Location", _wrap_place(d, loc, vf, 300)),
-            (drv_emoji, "Top concern", [ctx["driver_label"]])]
-    _info_card(img, d, card_box, rows, lf, vf, badge_r=50, pad=30)
+    card_box = (690, 150, 1150, 500)
+    lf = font(27, "semi")
+    rows = [("pin", "Location", loc), (drv_emoji, "Top concern", ctx["driver_label"])]
+    _info_card(img, d, card_box, rows, lf, 40, 26, badge_r=50, pad=30)
     _footer(img, d, W, H, 562, align_left=True)
     return img.convert("RGB")
 
