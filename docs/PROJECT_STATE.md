@@ -1,8 +1,9 @@
 # Fever Watch - Project State & Handoff
 
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
-> verified, what is mock/pending, every locked decision, and how to run everything. The SSG is now
-> BUILT (section 9, AS BUILT); the next big piece is GitHub Actions + wiring real feeds (section 7).
+> verified, what is mock/pending, every locked decision, and how to run everything. The SSG is built and
+> **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/** ; the next big piece
+> is the daily/weekly data cron + wiring real feeds (section 7).
 >
 > Fever Watch is a sibling to **Mosquito Watch** (`../Monsoon Disease Project`) but architecturally the
 > INVERSE: Mosquito Watch keeps its three layers separate and never blends them; Fever Watch blends
@@ -38,7 +39,8 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app`; media-gated CSS (no FOUC); JS syntax-verified |
 | Per-city OG score cards (`src/build_og.py`) | **DONE** | 119 cards 1200x630 from grid.json; each page's `og:image` -> its card |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
-| **GitHub Actions (daily/weekly/deploy)** | **NOT BUILT** | the next step. See section 7 item 2 |
+| **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds + publishes on push to master; live at https://pharmeasymarketing.github.io/fever-watch/ (staging, mock data, robots Disallow) |
+| **Daily/weekly data cron (GitHub Actions)** | **NOT BUILT** | the next step. See section 7 item 1 |
 | Real trends + lab feeds | **MOCK** | flip via `config/signals.json` when feeds are ready |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
@@ -165,18 +167,18 @@ manifest), `src/build_og.py` (per-city OG cards), `src/build_assets.py` (brand p
 
 ## 7. Next up (prioritized)
 
-The SSG is built (section 9, AS BUILT). The remaining path to launch:
+The SSG is built AND **LIVE on GitHub Pages staging** (https://pharmeasymarketing.github.io/fever-watch/). Committed +
+pushed to `pharmeasyMarketing/fever-watch`; `.github/workflows/deploy.yml` rebuilds + republishes on every push to
+`master`. Remaining path to launch:
 
-0. **Commit everything first.** A large body of work is uncommitted (section 14): the 2026-06-05 UI pass, the entire
-   SSG, the batch UX changes, and the generated brand placeholders. Suggested:
-   `git add -A && git commit -m "Fever Watch: UI pass + device-adaptive SSG (pages, OG cards, brand assets)"`.
-1. **GitHub Actions (the next big piece):** `daily.yml` (build_weather + build_daily + **build_og + build_site** + commit
-   + deploy to Pages), `weekly.yml` (SerpApi trends), `deploy.yml` (manual). Mirror Mosquito Watch's workflows. 5 SerpApi
-   keys as secrets. Fail loud if a source fails. NOTE: `build_og` must run BEFORE `build_site` each refresh so the OG
-   cards reflect the latest scores.
-2. **Wire the real feeds** (Sheet URL + SerpApi keys) and flip `signals.json` mock -> real.
-3. **Repo + hosting:** create the public repo, enable Pages (Source = Actions), set `config/site.json base_url`; ask
-   PharmEasy infra for the reverse-proxy route + apex robots allowance.
+1. **Daily/weekly data cron (the next big piece):** add `daily.yml` (build_weather + build_daily -> grid.json, commit,
+   then build_og + build_site, deploy) and `weekly.yml` (SerpApi trends -> trends.json). Today's deploy builds from the
+   COMMITTED grid.json (mock); the cron makes the site self-refresh. Reuse the existing deploy job (build_og BEFORE
+   build_site). Mirror Mosquito Watch. Fail loud if a source fails.
+2. **Wire the real feeds** (lab Sheet CSV URL + 5 SerpApi keys as Actions secrets) and flip `config/signals.json`
+   mock -> real (googlesheet / cached). Then the cron publishes real scores; drop the robots Disallow when ready to index.
+3. **Production hosting:** set `config/site.json base_url` to the final pharmeasy.in route; ask PharmEasy infra for the
+   reverse-proxy + apex robots allowance. (Staging stays on github.io; production is a one-line base_url change + rebuild.)
 4. **Replace placeholder brand art** (favicon/OG/PWA icons), **coords QA, self-host Inter, compliance/counsel pass,
    3-signal backtest** before any public "early warning" claim.
 
@@ -348,7 +350,9 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 
 - [ ] Provide the PharmEasy lab **Google Sheet published-CSV URL** -> `config/signals.json` + provider `googlesheet`.
 - [ ] Add the **5 SerpApi keys** as Actions secrets -> trends provider `cached` (weekly `build_trends.py`).
-- [ ] Create the **public repo** + enable **GitHub Pages** (Source = Actions); set `config/site.json base_url`.
+- [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
+  GitHub Actions, `github-pages` env opened to allow `master`. Staging: https://pharmeasymarketing.github.io/fever-watch/
+  Production `base_url` still TBD (staging auto-canonicalises to the github.io URL).
 - [ ] PharmEasy infra: `/research/fever-watch-.../` reverse-proxy route + apex robots allowance.
 - [ ] Brand sign-off on the co-branded lockup; provide the exact lockup asset if the rebuilt SVG is not pixel-perfect.
 - [ ] QA the 119 city coordinates.
@@ -357,11 +361,14 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 
 ## 14. Session housekeeping (done at handoff)
 
-- Git: initial commit `9a68ba4` exists; **everything since is UNCOMMITTED** and large - the 2026-06-05 UI pass, the entire
-  SSG (`src/build_site.py`, `build_og.py`, `build_assets.py`; `assets/css/{mobile,desktop}.css`; `assets/js/{mobile,
-  desktop,fw-loader}.js`; `tokens.css` color fix; `share.js` path fix), the batch UX changes (footer trims, pinned CTA,
-  FOUC fix, city/geo URL sync, share URL, per-city OG), and the generated brand placeholder images. `dist/` and
-  `assets/img/og/` are gitignored. **First action next session: commit it all** (message in section 7 item 0).
+- Git: **committed + pushed + LIVE.** Remote `origin` = `https://github.com/pharmeasyMarketing/fever-watch.git`, branch
+  `master`. The SSG + UI + batch work landed in commit `13e381d` (plus a couple of CI / empty re-trigger commits -
+  harmless, squashable). `.github/workflows/deploy.yml` auto-builds (build_assets + build_og + build_site, from the
+  COMMITTED mock `grid.json`) and deploys `dist/fever-watch/` to Pages on every push to `master`. `dist/` and
+  `assets/img/og/` stay gitignored (regenerated in CI). **To redeploy: just push to master.**
+- **Deploy gotchas (resolved; noted so they are not re-hit):** Pages Source must be "GitHub Actions"; and the
+  auto-created `github-pages` environment blocked `master` until its deployment-branch policy was opened (Settings >
+  Environments > github-pages > "No restriction"). Live pages were fetched + verified 200 (landing, city, OG, grid.json).
 - `.claude/launch.json` runs `http.server` on :8137 from the repo root (serves both `prototypes/` and `dist/`).
 - `data/grid.json` is in its **mock** state (trends + positivity = mock); no `trends.json` committed.
 - Verification this session was **headless** (HTML / JSON-LD / sitemap / JS-syntax + served-page checks) because the
