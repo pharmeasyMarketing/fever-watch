@@ -5,6 +5,14 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/** ; the next big piece
 > is the daily/weekly data cron + wiring real feeds (section 7).
 >
+> **2026-06-06 pass (staging-feedback fixes, all verified):** the SSG now pre-renders the FULL page
+> content (not a stub) with a clean H1>H2>H3 heading hierarchy across the baked HTML and both JS flows;
+> the OG + WhatsApp share cards were redesigned to the approved "glass card" look (textured teal,
+> co-branded lockup, OVERALL score as the hero with the top disease named) and reconciled so the live
+> canvas matches the Pillow OG card; the share logo is now a rasterized PNG (`assets/img/pe_logo-white.png`)
+> so it never drops on Android; "Use my location" is wired on both flows; per-city H1; meta says "this
+> week"; and `og:image` carries a `?v={generated_at}` cache-bust so previews refresh when scores do.
+>
 > Fever Watch is a sibling to **Mosquito Watch** (`../Monsoon Disease Project`) but architecturally the
 > INVERSE: Mosquito Watch keeps its three layers separate and never blends them; Fever Watch blends
 > three signals into one *decomposable* score. The repos are independent.
@@ -31,15 +39,15 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Data layer (configs, weather, consolidation engine, grid) | **DONE** | engine smoke-tested; grid 595 cells |
 | Top-120 city config (`scripts/gen_cities.py` -> 119 cities) | **DONE** | coord ranges validated; needs gazetteer QA |
 | Providers: serpapi (weekly) / googlesheet (daily) / cached, config-driven | **DONE** | googlesheet tested on sample; cached state->city verified; all compile |
-| Geolocation module (`assets/js/geo.js`, BigDataCloud + freeipapi) | **DONE** | nearest-city snapping verified nationwide |
-| Share-image export module (`assets/js/share.js`) | **DONE** | module built (canvas PNG + native/WhatsApp) |
+| Geolocation module (`assets/js/geo.js`, BigDataCloud + freeipapi) | **DONE** | nearest-city snapping verified; "Use my location" now wired on BOTH flows (GPS->IP), verified switches city |
+| Share-image export (`assets/js/share.js`) | **DONE (redesigned)** | canvas matches the OG card (textured teal + glass card + OVERALL score); PNG logo (reliable on Android); WhatsApp text starts "This Week:"; live render verified HIGH+MODERATE |
 | Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE (frozen)** | the locked design source; now extracted into the SSG runtime (`assets/`), so prototypes are reference-only |
 | Co-branded nav lockup (`assets/img/fever-watch-lockup-white.svg`) | **DONE** | rendered both navs |
-| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE** | `build_site.py` -> 120 pages; headless-verified (JSON-LD no-medical, sitemap 120, canonical, baked fallback). Section 9 (AS BUILT). |
-| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app`; media-gated CSS (no FOUC); JS syntax-verified |
-| Per-city OG score cards (`src/build_og.py`) | **DONE** | 119 cards 1200x630 from grid.json; each page's `og:image` -> its card |
+| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE (full pre-render)** | `build_site.py` -> 120 pages; bakes the ENTIRE page (hero, score, why-this-score table, full methodology, what-to-do, 119-city table, FAQ, reads) + clean H1>H2>H3 hierarchy. Section 9 (AS BUILT). |
+| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app` (no flash; boot-script hides baked block pre-paint, failsafe re-reveals); per-city H1 + H2/H3 headings + live "Common questions" FAQ verified both flows |
+| Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 119 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
-| **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds + publishes on push to master; live at https://pharmeasymarketing.github.io/fever-watch/ (staging, mock data, robots Disallow) |
+| **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds (build_assets + build_og + build_site) + publishes on push to master; staging, mock data, robots Disallow. CI installs `fonts-noto-color-emoji` for the OG mosquito badge (Linux render NOT yet eyeballed - check first deploy). |
 | **Daily/weekly data cron (GitHub Actions)** | **NOT BUILT** | the next step. See section 7 item 1 |
 | Real trends + lab feeds | **MOCK** | flip via `config/signals.json` when feeds are ready |
 
@@ -229,17 +237,31 @@ from the original spec, which is kept below for reference):
 - **Device-adaptive, no FOUC:** both flow stylesheets are `media`-gated `<link>`s in `<head>` (matching one is
   render-blocking, the other idles), so first paint is styled. `assets/js/fw-loader.js` then injects ONLY the active
   flow's JS (`assets/js/{mobile,desktop}.js`) and sets `body.fw-{mode}`.
-- **Baked then hydrate:** baked server-side = one unified `<header class="fw-nav">` (logo + pe-topnav + burger, styled two
-  ways by each flow's CSS), the PharmEasy `<footer>`, and a crawler/no-JS `<main class="fw-fallback">` INSIDE `#fw-app`
-  (h1 + blend + 5 disease scores, "no lab data yet" for forecast-only cells, methodology summary, FAQ, disclaimer). The
-  flow JS replaces `#fw-app` on hydration; nav/footer persist. Sheets/scrim/popover are created dynamically by the JS.
+- **Baked then hydrate (FULL pre-render, 2026-06-06):** baked server-side = one unified `<header class="fw-nav">`, the
+  PharmEasy `<footer>`, and the COMPLETE page inside `#fw-app` (`render_content` / `render_landing` in build_site.py):
+  per-city `<h1>` "Live monsoon-fever risk for {City}, in one score.", lede + search, the score block, a "Why this score"
+  signal table, the full "How we calculate this" methodology, "So, what should I do?", the **119-city table** (every city
+  linked, great for crawl + internal links), "Common questions" (FAQ), and "Further reading". A tiny render-blocking boot
+  script sets `<html class="js">` so the baked block (`.fw-fallback`) is hidden for JS users pre-paint (no flash); a 6s
+  failsafe re-reveals it if hydration never sets `body.fw-hydrated` (no-JS / broken-JS safety). The flow JS REPLACES
+  `#fw-app` on hydration (so no duplicate H1); nav/footer persist; sheets/scrim/popover created dynamically.
+- **Heading hierarchy (2026-06-06):** one `<h1>` (hero), `<h2>` per section, `<h3>` per subsection (methodology parts,
+  reads categories), footer columns `<h2>`. Applied to the baked HTML AND both JS flows (Google renders JS) AND
+  `footer_html`. Verified: 1xH1, no skipped levels, 0xH4/H5; methodology heading moved out of its `<button>` (was invalid).
 - **JSON-LD `@graph`:** Organization + WebSite + WebPage + Dataset (license CC0, NASA) + FAQPage per city; landing adds a
   non-medical WebApplication. NO medical types (verified).
 - **`window.FW`** per page: `{city?, gridUrl, base, logo, canonicalBase}`. Picking a city / geo-detect updates the URL
   (history.pushState/replaceState, CITY_ROOT-relative, popstate-aware); share text appends `Know More here: {url}` using
   `canonicalBase + city` so links are the deployed URL even on localhost. CTA pinned to "Book a fever panel test".
-- **Per-city OG:** `src/build_og.py` (Pillow) renders `assets/img/og/{city}.png` (1200x630) from grid.json; each page's
-  `og:image` -> its card. Run BEFORE `build_site.py`. `assets/img/og/` is gitignored (regenerated from data).
+- **Per-city OG + share card (redesigned 2026-06-06):** `src/build_og.py` (Pillow) renders `assets/img/og/{city}.png`
+  (1200x630) from grid.json. Design = dark textured teal (gradient + rain + glow) + co-branded PharmEasy+Fever Watch
+  lockup (rasterized `assets/img/pe_logo-white.png`) + OVERALL score hero + "X RISK" pill + a frosted glass card
+  (Location pin row + Top-concern disease-emoji row). `render_card(ctx, story=True)` renders the 1080x1350 share variant;
+  `assets/js/share.js` mirrors the SAME design on a `<canvas>` so the OG and the WhatsApp/Stories image are identical.
+  Color emoji: Segoe UI Emoji locally, `fonts-noto-color-emoji` in CI (emoji_font tries strike sizes). Run BEFORE
+  `build_site.py`. `assets/img/og/` is gitignored; `pe_logo-white.png` IS committed (CI needs it).
+- **OG cache-bust:** `og:image` + `twitter:image` carry `?v={og_version(generated_at)}` (compact YYYYMMDDHHMMSS) so social
+  platforms re-fetch the preview when scores are recomputed; JSON-LD `primaryImageOfPage` and the landing OG stay clean.
 - **Colors reconciled:** `tokens.css --risk-*` now matches the JS `RISK` map = the locked brand ramp. (grid.json still
   carries the old consolidation.json band colors, unused by the front-end - regenerate or ignore.)
 
@@ -338,7 +360,8 @@ prototypes/         mobile.html  desktop.html  tokens.css   <- FROZEN design ref
 assets/
   css/  mobile.css  desktop.css          <- extracted from prototypes (tokens.css copied from prototypes/ at build time)
   js/   geo.js  share.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime
-  img/  pe_logo-white.svg  fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.png (generated)
+  img/  pe_logo-white.svg  pe_logo-white.png (rasterized, used by share.js canvas + build_og.py; COMMITTED)
+        fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.png (generated, gitignored)
 dist/   fever-watch/...                  GENERATED SSG output (gitignored)
 docs/   lab_feed_format.md  lab_feed_sample.csv  PROJECT_STATE.md
 index.html                              LEGACY: the early 8-city vanilla-JS port; superseded by the SSG. Safe to delete.
@@ -361,17 +384,26 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 
 ## 14. Session housekeeping (done at handoff)
 
+- **2026-06-06 session (staging-feedback fixes, committed + pushed to master):** full-content SSG + H1>H2>H3 heading
+  hierarchy; redesigned OG + WhatsApp share cards (glass-card look, OVERALL score, top disease named) with the live
+  canvas reconciled to the Pillow OG; rasterized PNG logo (`assets/img/pe_logo-white.png`, committed); "Use my location"
+  wired on both flows; per-city H1; "Common questions" FAQ in the live view; meta "today"->"this week"; `og:image`
+  `?v` cache-bust; WhatsApp text starts "This Week:"; `deploy.yml` now installs `fonts-noto-color-emoji`. All verified
+  (see the per-area notes); the push triggers a fresh Pages deploy.
 - Git: **committed + pushed + LIVE.** Remote `origin` = `https://github.com/pharmeasyMarketing/fever-watch.git`, branch
-  `master`. The SSG + UI + batch work landed in commit `13e381d` (plus a couple of CI / empty re-trigger commits -
-  harmless, squashable). `.github/workflows/deploy.yml` auto-builds (build_assets + build_og + build_site, from the
-  COMMITTED mock `grid.json`) and deploys `dist/fever-watch/` to Pages on every push to `master`. `dist/` and
-  `assets/img/og/` stay gitignored (regenerated in CI). **To redeploy: just push to master.**
+  `master`. The original SSG + UI + batch work landed in commit `13e381d`. `.github/workflows/deploy.yml` auto-builds
+  (build_assets + build_og + build_site, from the COMMITTED mock `grid.json`) and deploys `dist/fever-watch/` to Pages on
+  every push to `master`. `dist/` and `assets/img/og/` stay gitignored (regenerated in CI). **To redeploy: just push to master.**
 - **Deploy gotchas (resolved; noted so they are not re-hit):** Pages Source must be "GitHub Actions"; and the
   auto-created `github-pages` environment blocked `master` until its deployment-branch policy was opened (Settings >
   Environments > github-pages > "No restriction"). Live pages were fetched + verified 200 (landing, city, OG, grid.json).
 - `.claude/launch.json` runs `http.server` on :8137 from the repo root (serves both `prototypes/` and `dist/`).
 - `data/grid.json` is in its **mock** state (trends + positivity = mock); no `trends.json` committed.
-- Verification this session was **headless** (HTML / JSON-LD / sitemap / JS-syntax + served-page checks) because the
-  harness screenshot renderer was wedged all session. A real-browser eyeball of `dist/fever-watch/` (mobile + desktop,
-  resize across 819px, city-switch, share) is still worth doing.
+- Verification (2026-06-06): real-browser via a **robust local server on :8139** (the default :8137 preview server
+  reset the 436KB `grid.json` fetch under concurrent instrumented loads - a local-only flake, fine on Pages; the harness
+  screenshot tool was also wedged). Confirmed: both flows hydrate with no flash, clean heading outlines, "Use my
+  location" switches city, the live canvas share image matches the design (HIGH + MODERATE), in-app preview + WhatsApp
+  text use the OVERALL score, zero console errors. OG/share cards were eyeballed as rendered PNGs.
+- **Still worth doing:** a real-device WhatsApp/Instagram share test (caption-drop behaviour, image fidelity), and a
+  glance at the first deployed OG card to confirm the Linux/CI mosquito emoji rendered (Noto Color Emoji).
 ```

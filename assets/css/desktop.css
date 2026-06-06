@@ -46,6 +46,8 @@
   .combopanel { display: none; position: absolute; top: 62px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: var(--shadow); z-index: 20; overflow: hidden; text-align: left; }
   .combopanel.open { display: block; }
   .combopanel input { width: 100%; border: none; border-bottom: 1px solid var(--pe-bg-2); padding: 14px 16px; font-size: 14px; }
+  .comboloc { padding: 12px 16px; color: var(--pe-green); font-weight: 600; font-size: 13.5px; cursor: pointer; border-bottom: 1px solid var(--pe-bg-2); }
+  .comboloc:hover { background: var(--pe-bg); }
   .combolist { max-height: 300px; overflow-y: auto; }
   .cityopt { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--pe-bg-2); padding: 12px 16px; font-size: 14.5px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .cityopt:hover { background: var(--pe-bg); }
@@ -111,9 +113,19 @@
   .methtog { color: var(--pe-green); font-weight: 700; font-size: 13px; }
   .methbody { display: none; margin-top: 16px; }
   .methbody.open { display: block; }
+
+  /* Common questions (live FAQ; mirrors the baked SEO fallback) */
+  #s-faq .faqwrap { padding: 4px 24px; }
+  #s-faq .faqitem { border-top: 1px solid var(--pe-bg-2); }
+  #s-faq .faqitem:first-of-type { border-top: none; }
+  #s-faq summary { font-weight: 600; font-size: 15px; cursor: pointer; padding: 16px 30px 16px 0; list-style: none; position: relative; }
+  #s-faq summary::-webkit-details-marker { display: none; }
+  #s-faq summary::after { content: "▾"; position: absolute; right: 4px; top: 16px; color: var(--pe-muted); font-size: 13px; }
+  #s-faq .faqitem[open] summary::after { content: "▴"; }
+  #s-faq .faqitem p { font-size: 14px; color: var(--pe-ink-2); line-height: 1.65; margin: 0 0 16px; }
   .methgrid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; font-size: 13px; color: var(--pe-ink-2); line-height: 1.65; }
-  .methgrid h4 { font-size: 13.5px; margin: 16px 0 5px; color: var(--pe-ink); }
-  .methgrid h4:first-child { margin-top: 0; }
+  .methgrid h3 { font-size: 13.5px; margin: 16px 0 5px; color: var(--pe-ink); font-weight: 700; }
+  .methgrid h3:first-child { margin-top: 0; }
   .methgrid code { background: var(--pe-bg-2); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
   .methgrid ul { padding-left: 18px; margin: 6px 0; }
   .methgrid li { margin: 4px 0; }
@@ -143,7 +155,7 @@
   /* Further reading (PharmEasy blog interlinks, ported from Mosquito Watch) */
   #s-reads .sechead { margin-bottom: 16px; }
   .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px 24px; }
-  .related-col h4 { margin: 0 0 9px; font-size: 14px; color: var(--pe-ink); padding-left: 9px; border-left: 3px solid var(--pe-green); }
+  .related-col h3 { margin: 0 0 9px; font-size: 14px; color: var(--pe-ink); padding-left: 9px; border-left: 3px solid var(--pe-green); font-weight: 700; }
   .related-col ul { list-style: none; margin: 0; padding: 0; }
   .related-col li { margin: 0 0 9px; }
   .related-col a { font-size: 13.5px; color: var(--pe-green-dark); text-decoration: none; font-weight: 500; }
@@ -154,7 +166,7 @@
   .foottrust { max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--pe-bg-2); }
   .trustpill { font-size: 12px; font-weight: 600; color: var(--pe-green-dark); background: var(--pe-green-100); border-radius: var(--pill); padding: 6px 12px; }
   .footin { max-width: 1200px; margin: 0 auto; padding: 34px 24px 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; align-items: start; }
-  .footin h5 { font-size: 13px; margin: 0 0 12px; }
+  .footin h2 { font-size: 13px; font-weight: 700; margin: 0 0 12px; }
   .footin a { display: block; font-size: 12.5px; color: var(--pe-muted); margin: 7px 0; }
   .footin a:hover { color: var(--pe-green); }
   .footmission { max-width: 1200px; margin: 0 auto; padding: 0 24px 14px; font-size: 12px; color: var(--pe-muted); }
@@ -181,6 +193,7 @@
   .sc-head .fw { font-size: 13px; font-weight: 700; padding-left: 11px; border-left: 1px solid rgba(255,255,255,.35); }
   .sc-body { text-align: center; padding: 8px 18px 16px; }
   .sc-emoji { font-size: 40px; }
+  .sc-label { font-size: 12.5px; font-weight: 600; opacity: .82; margin-top: 4px; }
   .sc-score { font-size: 54px; font-weight: 700; line-height: 1; margin: 4px 0 8px; letter-spacing: -1px; }
   .sc-score span { font-size: 20px; opacity: .8; font-weight: 600; }
   .sc-band { display: inline-block; background: #fff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 5px 14px; border-radius: var(--pill); }

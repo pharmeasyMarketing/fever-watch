@@ -66,6 +66,67 @@ METHOD_SUMMARY = (
     "locations are capped below the HIGH band."
 )
 
+# Full methodology baked into the page (H3 subsections under the "How we calculate this" H2).
+METHOD_HTML = (
+    "<h3>1. Per-disease environmental score (0 to 100)</h3>"
+    "<p>From trailing daily weather, shaped by disease family:</p><ul>"
+    "<li><strong>Mosquito-borne</strong> (dengue, malaria, chikungunya): a unimodal temperature response "
+    "peaking near 29C (Aedes and Anopheles breed fastest at 25 to 30C; activity falls below about 18C and "
+    "above about 35C), times lagged rainfall over the past 14 days (standing-water sites emerge 1 to 2 weeks "
+    "after rain), times relative humidity (above about 60% extends mosquito lifespan).</li>"
+    "<li><strong>Waterborne</strong> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a "
+    "contamination and runoff proxy; temperature secondary.</li>"
+    "<li><strong>Febrile</strong> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>"
+    "<h3>2. Three independent signals</h3><ul>"
+    "<li><strong>Breeding weather</strong> (leading, weeks ahead): the environmental score above.</li>"
+    "<li><strong>Google Search Interest</strong> (coincident): symptom-search attention, smoothed and "
+    "down-weighted when it spikes alone.</li>"
+    "<li><strong>PharmEasy lab signal</strong> (lagging, ground truth): aggregate, de-identified "
+    "test-positivity trend.</li></ul>"
+    "<h3>3. Confirmation-weighted ensemble</h3>"
+    "<p>Not a flat average. With lab data present it dominates (weights about 30 / 22 / 48 weather / search / "
+    "positivity) and agreement across all three raises confidence. Without it, a capped forecast-only mode "
+    "(maximum 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a "
+    "max-dominant blend (0.8 times the top disease plus 0.2 times the mean of the rest) with the driver disease named.</p>"
+    "<h3>Data sources</h3><ul>"
+    "<li>Weather: NASA POWER (NASA Langley, US public domain / CC0)</li>"
+    "<li>Search: Google Trends</li>"
+    "<li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>"
+    "<h3>Selected research</h3><ul>"
+    "<li>Mordecai et al. Thermal biology of mosquito-borne disease. Ecology Letters, 2019.</li>"
+    "<li>Liu-Helmersson et al. Vectorial capacity of Aedes aegypti and temperature. PLOS ONE, 2014.</li>"
+    "<li>Ginsberg et al. Detecting influenza epidemics using search engine query data. Nature, 2009.</li>"
+    "<li>IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</li></ul>"
+)
+
+ACTIONS = [
+    ("Monsoon precautions", "Cut breeding sites and bites"),
+    ("Vaccination: does it work?", "What helps, what does not"),
+    ("Fever? Follow our framework", "When to test, when to wait"),
+    ("Not sure? Talk to a doctor", "Online consult on PharmEasy"),
+]
+CTA_LABEL, CTA_HREF = "Book a fever panel test", "https://pharmeasy.in/diagnostics"
+
+READS = [
+    ("Dengue", [
+        ("How to avoid dengue fever", "https://pharmeasy.in/blog/5-ways-to-avoid-dengue-fever/"),
+        ("Home remedies for dengue", "https://pharmeasy.in/blog/home-remedies-for-dengue-by-dr-siddharth-gupta/"),
+        ("Food for dengue: what to eat and avoid", "https://pharmeasy.in/blog/food-for-dengue-what-to-eat-and-what-to-avoid/"),
+        ("Diabetes and dengue risk", "https://pharmeasy.in/blog/diabetes-can-make-dengue-more-lethal/"),
+    ]),
+    ("Malaria", [
+        ("Types of malaria: symptoms and treatment", "https://pharmeasy.in/blog/types-of-malaria-symptoms-causes-and-treatment/"),
+        ("Foods for malaria", "https://pharmeasy.in/blog/foods-for-malaria-what-to-eat-and-what-to-avoid/"),
+        ("Home remedies for malaria", "https://pharmeasy.in/blog/home-remedies-for-malaria-by-dr-siddharth-gupta/"),
+    ]),
+    ("Mosquito bites and monsoon health", [
+        ("Mosquito bite remedies", "https://pharmeasy.in/blog/home-remedies-for-mosquito-bite-by-dr-siddharth-gupta/"),
+        ("Mosquito bites on babies", "https://pharmeasy.in/blog/child-care-mosquito-bites-on-babies-home-remedies-treatment-and-prevention/"),
+        ("Common monsoon illnesses in India", "https://pharmeasy.in/blog/common-illnesses-during-monsoons-in-india/"),
+        ("Monsoon health tips", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/"),
+    ]),
+]
+
 PAGE = """<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -76,8 +137,10 @@ PAGE = """<!DOCTYPE html>
 <link rel="stylesheet" href="{rel}assets/css/tokens.css">
 <link rel="stylesheet" href="{rel}assets/css/mobile.css" media="(max-width: 819px), (pointer: coarse)">
 <link rel="stylesheet" href="{rel}assets/css/desktop.css" media="(min-width: 820px) and (pointer: fine)">
+{bootcss}
 </head>
 <body>
+{bootjs}
 {nav}
 <div id="fw-app">{fallback}</div>
 {footer}
@@ -88,6 +151,17 @@ PAGE = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+# Anti-flash: a tiny render-blocking script marks <html class="js"> before first paint, so the baked
+# crawler/no-JS fallback (#fw-app .fw-fallback) is hidden for JS users and never flashes before the
+# flow hydrates. A 6s failsafe re-reveals it if hydration never sets body.fw-hydrated (broken JS /
+# data fetch), so no-JS robustness is preserved either way.
+BOOT_CSS = '<style>html.js .fw-fallback{display:none}</style>'
+BOOT_JS = (
+    "<script>(function(){var h=document.documentElement;h.className+=' js';"
+    "setTimeout(function(){if(!(document.body&&document.body.classList.contains('fw-hydrated')))"
+    "h.className=h.className.replace(/\\bjs\\b/,'');},6000);})();</script>"
+)
 
 
 def esc(s) -> str:
@@ -102,6 +176,12 @@ def load_json(path: str) -> dict:
 
 def iso_date(iso) -> str:
     return (iso or "")[:10]
+
+
+def og_version(iso) -> str:
+    """Compact digits of generated_at (YYYYMMDDHHMMSS) used as an og:image cache-bust,
+    so social platforms fetch a fresh preview whenever the scores are recomputed."""
+    return "".join(ch for ch in (iso or "") if ch.isdigit())[:14]
 
 
 # --- shared baked chrome -----------------------------------------------------
@@ -173,7 +253,7 @@ FOOTER_TRUST = ["100% NABL & ISO Certified Labs", "700+ Collection Centers", "7,
 
 def footer_html() -> str:
     cols = "".join(
-        '<div><h5>' + esc(h) + '</h5>' + "".join(
+        '<div><h2>' + esc(h) + '</h2>' + "".join(
             '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + '</a>' for t, u in links
         ) + '</div>' for h, links in FOOTER_COLS)
     social = "".join('<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + '</a>' for t, u in FOOTER_SOCIAL)
@@ -282,31 +362,114 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
     return '<script type="application/ld+json">\n' + body + '\n</script>'
 
 
-# --- baked fallback ----------------------------------------------------------
+# --- baked full content (crawler / no-JS; hidden for JS users, which hydrate over it) ---------
 
-def render_fallback(city: dict, diseases: list, cells_by: dict, generated_at: str, disclaimer: str) -> str:
+SIG_COLS = [("weather", "Breeding weather"), ("trends", "Search interest"), ("positivity", "Lab positivity")]
+
+
+def _faq_html() -> str:
+    return "".join('<details><summary>' + esc(q) + '</summary><p>' + esc(a) + '</p></details>' for q, a in FAQ_ITEMS)
+
+
+def _reads_html() -> str:
+    cols = ""
+    for title, links in READS:
+        lis = "".join('<li><a href="' + esc(u) + '" rel="noopener">' + esc(t) + '</a></li>' for t, u in links)
+        cols += '<div><h3>' + esc(title) + '</h3><ul>' + lis + '</ul></div>'
+    return '<div class="fw-reads">' + cols + '</div>'
+
+
+def _cities_table(all_cities: list, rel: str) -> str:
+    ranked = sorted(all_cities, key=lambda c: c["blend"]["score"], reverse=True)
+    rows = ""
+    for i, c in enumerate(ranked):
+        b = c["blend"]
+        rows += ('<tr><td>' + str(i + 1) + '</td>'
+                 '<td><a href="' + rel + esc(c["id"]) + '/">' + esc(c["name"]) + '</a></td>'
+                 '<td>' + esc(c.get("state", "")) + '</td>'
+                 '<td>' + esc(b["band"]) + '</td>'
+                 '<td><strong>' + str(b["score"]) + '</strong></td></tr>')
+    return ('<table class="fw-table"><thead><tr><th scope="col">#</th><th scope="col">City</th>'
+            '<th scope="col">State</th><th scope="col">Band</th><th scope="col">Score</th></tr></thead>'
+            '<tbody>' + rows + '</tbody></table>')
+
+
+def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
+                   generated_at: str, disclaimer: str, rel: str) -> str:
     blend = city["blend"]
     driver = next((d for d in diseases if d["id"] == blend["driver"]), diseases[0])
     ordered = sorted(diseases, key=lambda d: cells_by[(city["id"], d["id"])]["score"], reverse=True)
-    rows = []
-    for d in ordered:
-        cell = cells_by[(city["id"], d["id"])]
-        pos = cell.get("signals", {}).get("positivity")
-        lab = ("lab positivity signal " + str(pos) + " / 100") if pos is not None else "no lab data yet (forecast only)"
-        rows.append('<li><strong>' + esc(d["emoji"] + " " + d["label"]) + '</strong>: '
-                    + str(cell["score"]) + ' / 100, ' + esc(cell["band"]) + ' risk (' + lab + ')</li>')
-    faq = "".join('<details><summary>' + esc(q) + '</summary><p>' + esc(a) + '</p></details>' for q, a in FAQ_ITEMS)
-    return (
-        '<article class="fw-fallback">'
-        '<h1>Monsoon fever risk in ' + esc(city["name"]) + ', ' + esc(city["state"]) + '</h1>'
-        '<p>Overall risk this week is <strong>' + str(blend["score"]) + ' / 100 (' + esc(blend["band"]) + ')</strong>, '
-        'driven by ' + esc(driver["emoji"] + " " + driver["label"]) + '. Updated ' + esc(iso_date(generated_at)) + '.</p>'
-        '<h2>Risk by disease</h2><ul>' + "".join(rows) + '</ul>'
-        '<h2>How this is calculated</h2><p>' + esc(METHOD_SUMMARY) + '</p>'
-        '<h2>Common questions</h2>' + faq +
-        '<p>' + esc(disclaimer) + '</p>'
-        '</article>'
+    upd = iso_date(generated_at)
+    cid = city["id"]
+
+    hero = (
+        '<header class="fw-hero">'
+        '<h1>Live monsoon-fever risk for ' + esc(city["name"]) + ', in one score.</h1>'
+        '<p class="lede">Dengue, malaria, chikungunya, typhoid and viral fever for ' + esc(city["name"]) + ', '
+        + esc(city["state"]) + ', blended from breeding weather, Google search interest and PharmEasy lab signals.</p>'
+        '<div class="fw-search" aria-hidden="true">Search your city</div>'
+        '<p class="microcopy">Available in select cities, more coming soon.</p></header>'
     )
+
+    pills = "".join(
+        '<li>' + esc(d["emoji"] + " " + d["label"]) + ': <strong>' + str(cells_by[(cid, d["id"])]["score"])
+        + ' / 100</strong> (' + esc(cells_by[(cid, d["id"])]["band"]) + ')</li>' for d in ordered)
+    score_sec = (
+        '<section><h2>' + esc(city["name"]) + ', this week</h2>'
+        '<p>Overall monsoon-fever risk this week is <strong>' + str(blend["score"]) + ' / 100 ('
+        + esc(blend["band"]) + ')</strong>, with ' + esc(driver["emoji"] + " " + driver["label"])
+        + ' the top concern. Updated ' + esc(upd) + '.</p>'
+        '<ul class="fw-scores">' + pills + '</ul></section>'
+    )
+
+    head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
+    rows = ""
+    for d in ordered:
+        cell = cells_by[(cid, d["id"])]
+        sigs = cell.get("signals", {})
+        tds = "".join('<td>' + ("no data" if sigs.get(k) is None else str(sigs.get(k))) + '</td>' for k, _ in SIG_COLS)
+        rows += ('<tr><th scope="row">' + esc(d["emoji"] + " " + d["label"]) + '</th>' + tds
+                 + '<td><strong>' + str(cell["score"]) + '</strong></td></tr>')
+    why_sec = (
+        '<section><h2>Why this score</h2>'
+        '<p>Each disease score is a confirmation-weighted blend of three signals (0 to 100 each), shown below.</p>'
+        '<table class="fw-table"><thead><tr><th scope="col">Disease</th>' + head
+        + '<th scope="col">Score</th></tr></thead><tbody>' + rows + '</tbody></table></section>'
+    )
+
+    method_sec = '<section><h2>How we calculate this</h2>' + METHOD_HTML + '</section>'
+
+    acts = "".join('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>' for t, s in ACTIONS)
+    do_sec = ('<section><h2>So, what should I do?</h2><ul class="fw-actions">' + acts + '</ul>'
+              '<p><a class="fw-cta" href="' + esc(CTA_HREF) + '">' + esc(CTA_LABEL) + '</a></p></section>')
+
+    other_sec = ('<section><h2>What is happening in other cities?</h2>'
+                 '<p>Overall monsoon-fever risk this week across ' + str(len(all_cities))
+                 + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
+
+    faq_sec = '<section><h2>Common questions</h2>' + _faq_html() + '</section>'
+    reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
+
+    return ('<div class="fw-fallback">' + hero + score_sec + why_sec + method_sec + do_sec
+            + other_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
+
+
+def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str) -> str:
+    hero = (
+        '<header class="fw-hero">'
+        '<h1>Fever Watch: live monsoon-fever risk for your city, in one score.</h1>'
+        '<p class="lede">' + esc(cfg["description"]) + '</p>'
+        '<div class="fw-search" aria-hidden="true">Search your city</div>'
+        '<p class="microcopy">Available in select cities, more coming soon.</p></header>'
+    )
+    other_sec = ('<section><h2>Monsoon fever risk by city, this week</h2>'
+                 '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'
+                 + _cities_table(all_cities, "") + '</section>')
+    method_sec = '<section><h2>How we calculate this</h2>' + METHOD_HTML + '</section>'
+    faq_sec = '<section><h2>Common questions</h2>' + _faq_html() + '</section>'
+    reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
+    return ('<div class="fw-fallback">' + hero + other_sec + method_sec + faq_sec + reads_sec
+            + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
 
 
 # --- page assembly -----------------------------------------------------------
@@ -317,12 +480,12 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> 
     generated_at = grid.get("generated_at", "")
     disclaimer = grid.get("disclaimer", "")
     if city:
-        title = city["name"] + " monsoon fever risk today | Dengue, malaria, typhoid | Fever Watch"
-        desc = ("Today's dengue, malaria, chikungunya, typhoid and viral fever risk for " + city["name"]
+        title = city["name"] + " monsoon fever risk this week | Dengue, malaria, typhoid | Fever Watch"
+        desc = ("This week's dengue, malaria, chikungunya, typhoid and viral fever risk for " + city["name"]
                 + ", " + city["state"] + ": one decomposable score from breeding weather, search interest "
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
-        fallback = render_fallback(city, diseases, cells_by, generated_at, disclaimer)
+        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel)
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
               "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"]}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".png"
@@ -331,20 +494,21 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> 
         title = cfg["title"]
         desc = cfg["description"]
         canonical = cfg["base_url"]
-        fallback = ('<article class="fw-fallback"><h1>Fever Watch: monsoon fever risk for your city</h1>'
-                    '<p>' + esc(cfg["description"]) + '</p>'
-                    '<h2>Common questions</h2>'
-                    + "".join('<details><summary>' + esc(q) + '</summary><p>' + esc(a) + '</p></details>' for q, a in FAQ_ITEMS)
-                    + '<p>' + esc(disclaimer) + '</p></article>')
+        fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer)
         fw = {"gridUrl": "data/grid.json", "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"]}
         og_url = cfg["base_url"] + cfg.get("og_image", "")
         og_alt = cfg.get("og_image_alt", "")
+    # Cache-bust the per-city OG card on the social meta so platforms re-fetch the preview when
+    # scores are recomputed (keyed on grid.generated_at). JSON-LD keeps the clean URL.
+    ver = og_version(generated_at)
+    og_meta = (og_url + "?v=" + ver) if (city and ver) else og_url
     return PAGE.format(
         lang=cfg.get("language", "en-IN"),
-        head=head_meta(cfg, env, title, desc, canonical, rel, og_url, og_alt),
+        head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
         jsonld=jsonld(cfg, generated_at, diseases, city, og_url),
         rel=rel, nav=nav_html(rel), fallback=fallback, footer=footer_html(),
         fw=json.dumps(fw, ensure_ascii=False),
+        bootcss=BOOT_CSS, bootjs=BOOT_JS,
     )
 
 

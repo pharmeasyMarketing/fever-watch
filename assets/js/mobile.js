@@ -45,6 +45,19 @@
     if (FW.city && DATA.cities.some(function (c) { return c.id === FW.city; })) return FW.city;
     return DATA.cities.some(function (c) { return c.id === "bengaluru"; }) ? "bengaluru" : DATA.cities[0].id;
   }
+  function useMyLocation() {
+    if (!window.FeverWatchGeo) return;
+    var row = document.querySelector('#citysheet [data-act="useLoc"]');
+    if (row) { row.dataset.orig = row.dataset.orig || row.innerHTML; row.innerHTML = "◎ Finding your location..."; row.style.opacity = ".65"; }
+    window.FeverWatchGeo.resolve(DATA.cities, { allowGPS: true }).then(function (res) {
+      if (row) { row.innerHTML = row.dataset.orig; row.style.opacity = ""; }
+      if (res && res.cityId && DATA.cities.some(function (c) { return c.id === res.cityId; })) {
+        closeSheets(); setCity(res.cityId, true); window.scrollTo(0, 0);
+      } else if (row) { row.innerHTML = "◎ Could not detect your location - pick a city below"; }
+    }).catch(function () {
+      if (row) { row.innerHTML = "◎ Location unavailable - pick a city below"; row.style.opacity = ""; }
+    });
+  }
   function maybeGeo() {
     if (FW.city || !window.FeverWatchGeo) return;  // city pages respect the URL; geo only steers the landing default
     window.FeverWatchGeo.resolve(DATA.cities).then(function (res) {
@@ -133,14 +146,14 @@
   function render() {
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML =
-      '<div class="hero"><h1>Live monsoon-fever risk for your city, in <em>one score</em>.</h1>' +
+      '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ', in <em>one score</em>.</h1>' +
       '<p>Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
       '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">🔎</span> Search your city</div>' +
       '<p class="searchnote">Available in select cities, more coming soon.</p></div>' +
       '<div class="wrap">' +
         '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
         '<button class="changecity" data-act="openCity">Change</button></div>' +
-        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + readsCard() +
+        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + faqCard() + readsCard() +
       '</div>';
     wireLeaderboard();
     document.body.classList.add("fw-hydrated");
@@ -171,7 +184,7 @@
         '<span class="dot" style="background:' + RISK[cell.band] + '"></span><span class="sc" style="color:' + RISK[cell.band] + '">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
-    return '<div class="card"><p class="sectiontitle">Why this score?</p><p class="sectionsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
+    return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
   }
 
   function sig(meta, value, weight) {
@@ -186,12 +199,13 @@
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
-    return '<div class="card"><p class="sectiontitle">So, what should I do?</p><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
+    return '<div class="card"><h2 class="sectiontitle">So, what should I do?</h2><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
       '<button class="ctabig" style="background:var(--pe-green)">Book a fever panel test</button></div>';
   }
 
   function methodologyCard() {
-    return '<div class="card"><button class="methhead" data-act="method"><span class="sectiontitle">How we calculate this</span><span class="methtog" id="methtog">Show ▾</span></button>' +
+    return '<div class="card"><h2 class="sectiontitle" style="margin-bottom:6px">How we calculate this</h2>' +
+      '<button class="methhead" data-act="method"><span class="methsub">A transparent, decomposable formula, not a black box.</span><span class="methtog" id="methtog">Show ▾</span></button>' +
       '<div class="methbody" id="methbody">' + METHOD + '</div></div>';
   }
 
@@ -200,7 +214,7 @@
     var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
     var chips = '<button class="chip' + (isOverall ? ' on' : '') + '" data-act="leader" data-id="overall">📊 Overall</button>' +
       DATA.diseases.map(function (d) { return '<button class="chip' + (d.id === state.leader ? ' on' : '') + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    return '<div class="card" id="others"><p class="sectiontitle">🏆 What is happening in other cities?</p><p class="sectionsub">' + label + ' risk leaderboard this week.</p>' +
+    return '<div class="card" id="others"><h2 class="sectiontitle">🏆 What is happening in other cities?</h2><p class="sectionsub">' + label + ' risk leaderboard this week.</p>' +
       '<div class="chips">' + chips + '</div>' +
       '<input class="citysearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" style="margin-bottom:10px" />' +
       '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div>';
@@ -256,10 +270,17 @@
     ];
     var cols = groups.map(function (g) {
       var lis = g[1].map(function (l) { return '<li><a href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '</a></li>'; }).join("");
-      return '<div class="related-col"><h4>' + g[0] + '</h4><ul>' + lis + '</ul></div>';
+      return '<div class="related-col"><h3>' + g[0] + '</h3><ul>' + lis + '</ul></div>';
     }).join("");
-    return '<div class="card" id="reads"><p class="sectiontitle">Further reading from PharmEasy</p>' +
+    return '<div class="card" id="reads"><h2 class="sectiontitle">Further reading from PharmEasy</h2>' +
       '<div class="related-grid">' + cols + '</div></div>';
+  }
+
+  function faqCard() {
+    var items = FAQ.map(function (f) {
+      return '<details class="faqitem"><summary>' + f[0] + '</summary><p>' + f[1] + '</p></details>';
+    }).join("");
+    return '<div class="card" id="faq"><h2 class="sectiontitle">Common questions</h2>' + items + '</div>';
   }
 
   function gauge(score, color, size) {
@@ -282,17 +303,20 @@
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver); return cell.band + " risk for " + drv.label + " in " + c.name + ", " + b.driver_score + "/100, modelled from breeding weather, Google search interest and PharmEasy lab signals. Know More here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know More here: " + shareUrl(); }
   function renderShare() {
-    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver), col = RISK[cell.band];
+    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), col = RISK[b.band];
     document.getElementById("sharebody").innerHTML =
       '<div class="sharecard"><div class="sc-head"><img src="' + LOGO + '" alt="PharmEasy"><span class="fw">Fever Watch</span></div>' +
-      '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-score">' + b.driver_score + '<span>/100</span></div>' +
-      '<span class="sc-band" style="color:' + col + '">' + cell.band + ' RISK</span>' +
-      '<div class="sc-title">' + drv.label + ' risk in ' + c.name + '</div><div class="sc-sub">This week, ' + fmtDate(DATA.generated_at) + '</div></div>' +
+      '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-label">Monsoon Fever Risk Score</div>' +
+      '<div class="sc-score">' + b.score + '<span>/100</span></div>' +
+      '<span class="sc-band" style="color:' + col + '">' + b.band + ' RISK</span>' +
+      '<div class="sc-title">📍 ' + c.name + ', ' + c.state + '</div>' +
+      '<div class="sc-sub">' + drv.emoji + ' Top concern: ' + drv.label + '. This week, ' + fmtDate(DATA.generated_at) + '</div></div>' +
       '<div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
       '<div class="sharetext">' + shareText(c) + '</div>' +
-      '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:#111">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>';
+      '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:#111">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>' +
+      '<p class="sharehint" style="font-size:11.5px;color:var(--pe-muted-2);margin:11px 2px 0;line-height:1.5">On some Android phones WhatsApp attaches only the image and drops the caption. Tap Copy link to send the text and link too.</p>';
   }
 
   function openSheet(id) { document.getElementById("scrim").classList.add("open"); document.getElementById(id).classList.add("open"); }
@@ -304,7 +328,7 @@
     if (a === "openCity") { renderCityList(); openSheet("citysheet"); }
     else if (a === "closeCity" || a === "closeShare") closeSheets();
     else if (a === "pickCity") { closeSheets(); setCity(el.getAttribute("data-id"), true); window.scrollTo(0, 0); }
-    else if (a === "useLoc") closeSheets();
+    else if (a === "useLoc") useMyLocation();
     else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
@@ -316,9 +340,9 @@
   }
 
   function shareCardData() {
-    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), cell = cellFor(c.id, b.driver);
+    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver);
     return {
-      card: { emoji: drv.emoji, score: b.driver_score, band: cell.band, bandColor: RISK[cell.band], title: drv.label + " risk in " + c.name, sub: "This week, " + fmtDate(DATA.generated_at) },
+      card: { score: b.score, band: b.band, bandColor: RISK[b.band], city: c.name, state: c.state, driverLabel: drv.label, driverEmoji: drv.emoji, date: "This week, " + fmtDate(DATA.generated_at) },
       text: shareText(c), url: shareUrl()
     };
   }
@@ -333,21 +357,30 @@
   }
   document.getElementById("scrim").addEventListener("click", closeSheets);
 
+  var FAQ = [
+    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya, typhoid and viral fever), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
+    ["Is this a diagnosis or medical advice?", "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."],
+    ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
+    ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
+    ["How often is it updated?", "Weather is refreshed daily from NASA POWER, search interest weekly, and the lab signal daily. The score for each city is recomputed every day."],
+    ["Which cities are covered?", "Fever Watch currently covers around 120 Indian cities, with more planned. Use the city search to see the read for your city."]
+  ];
+
   var METHOD =
     '<p>Every score is a transparent weighted formula, not a black box. It is built in three layers.</p>' +
-    '<h4>1. Per-disease environmental score (0 to 100)</h4>' +
+    '<h3>1. Per-disease environmental score (0 to 100)</h3>' +
     '<p>From trailing daily weather, shaped by disease family:</p><ul>' +
     '<li><b>Mosquito-borne</b> (dengue, malaria, chikungunya): a unimodal temperature response peaking near <code>29&deg;C</code> (Aedes and Anopheles breed fastest at 25 to 30&deg;C, activity falls below ~18&deg;C and above ~35&deg;C), times lagged rainfall over the past ~14 days (standing-water sites emerge 1 to 2 weeks after rain), times relative humidity (above ~60% extends mosquito lifespan). Weights ~0.45 / 0.35 / 0.20.</li>' +
     '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li>' +
     '<li><b>Febrile</b> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>' +
-    '<h4>2. Three independent signals</h4><ul>' +
+    '<h3>2. Three independent signals</h3><ul>' +
     '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
     '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone (news-driven).</li>' +
     '<li><b>PharmEasy lab signal</b> (lagging, ground truth): aggregate, de-identified test-positivity trend.</li></ul>' +
-    '<h4>3. Confirmation-weighted ensemble</h4>' +
+    '<h3>3. Confirmation-weighted ensemble</h3>' +
     '<p>Not a flat average. With lab data present it dominates (weights ~<code>30 / 22 / 48</code> weather / search / positivity) and agreement across all three raises confidence. Without it, a capped <code>forecast-only</code> mode (max 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a max-dominant blend (<code>0.8 &times; the top disease + 0.2 &times; the mean of the rest</code>) with the driver disease named.</p>' +
-    '<h4>Data sources</h4><ul><li>Weather: NASA POWER (NASA Langley, US public domain / CC0)</li><li>Search: Google Trends</li><li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>' +
-    '<h4>Selected research</h4>' +
+    '<h3>Data sources</h3><ul><li>Weather: NASA POWER (NASA Langley, US public domain / CC0)</li><li>Search: Google Trends</li><li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>' +
+    '<h3>Selected research</h3>' +
     '<p class="cite">Ginsberg et al. Detecting influenza epidemics using search engine query data. <i>Nature</i>, 2009.</p>' +
     '<p class="cite">Mordecai et al. Thermal biology of mosquito-borne disease. <i>Ecology Letters</i>, 2019 (peak transmission ~29&deg;C).</p>' +
     '<p class="cite">Liu-Helmersson et al. Vectorial capacity of Aedes aegypti: effects of temperature and implications for dengue. <i>PLOS ONE</i>, 2014.</p>' +

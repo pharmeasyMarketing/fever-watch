@@ -35,8 +35,8 @@ jobs:
           python-version: "3.11"
       - name: Install Pillow (for brand + per-city OG images)
         run: python -m pip install --upgrade pip Pillow
-      - name: Fonts for OG card text
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core
+      - name: Fonts for OG card text + emoji (mosquito badge)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core fonts-noto-color-emoji
       - name: Build the static site
         run: |
           python src/build_assets.py   # brand favicons / PWA icons / default OG
