@@ -40,6 +40,8 @@ jobs:
           python src/build_og.py       # per-city OG score cards from grid.json
           python src/build_site.py     # dist/fever-watch/ : 120 pages + robots/sitemap/manifest
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/fever-watch
