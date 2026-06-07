@@ -16,7 +16,7 @@
   // CSS for both flows is media-gated in <head> (so first paint is styled, no FOUC); here we only
   // load the active flow's JS, so the inactive flow's script never downloads.
   var script = document.createElement("script");
-  script.src = base + "assets/js/" + mode + ".js";
+  script.src = base + "assets/js/" + mode + ".js" + (FW.ver ? "?v=" + FW.ver : "");
   script.defer = true;
   document.body.appendChild(script);
 })();

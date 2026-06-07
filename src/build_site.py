@@ -21,6 +21,7 @@ Usage (from the project root):
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -134,9 +135,9 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {head}
 {jsonld}
-<link rel="stylesheet" href="{rel}assets/css/tokens.css">
-<link rel="stylesheet" href="{rel}assets/css/mobile.css" media="(max-width: 819px), (pointer: coarse)">
-<link rel="stylesheet" href="{rel}assets/css/desktop.css" media="(min-width: 820px) and (pointer: fine)">
+<link rel="stylesheet" href="{rel}assets/css/tokens.css?v={av}">
+<link rel="stylesheet" href="{rel}assets/css/mobile.css?v={av}" media="(max-width: 819px), (pointer: coarse)">
+<link rel="stylesheet" href="{rel}assets/css/desktop.css?v={av}" media="(min-width: 820px) and (pointer: fine)">
 {bootcss}
 </head>
 <body>
@@ -145,9 +146,9 @@ PAGE = """<!DOCTYPE html>
 <div id="fw-app">{fallback}</div>
 {footer}
 <script>window.FW = {fw};</script>
-<script src="{rel}assets/js/geo.js" defer></script>
-<script src="{rel}assets/js/share.js" defer></script>
-<script src="{rel}assets/js/fw-loader.js" defer></script>
+<script src="{rel}assets/js/geo.js?v={av}" defer></script>
+<script src="{rel}assets/js/share.js?v={av}" defer></script>
+<script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 </body>
 </html>
 """
@@ -182,6 +183,23 @@ def og_version(iso) -> str:
     """Compact digits of generated_at (YYYYMMDDHHMMSS) used as an og:image cache-bust,
     so social platforms fetch a fresh preview whenever the scores are recomputed."""
     return "".join(ch for ch in (iso or "") if ch.isdigit())[:14]
+
+
+def asset_version() -> str:
+    """Short content hash of the CSS/JS bundle, appended as ?v= to every asset URL so a new
+    release busts the browser cache (GitHub Pages serves files by URL with max-age=600, so an
+    unversioned mobile.js stays stale on a phone that already cached it). Hash is content-based,
+    so a data-only daily rebuild keeps the same version and does not force a needless refetch."""
+    h = hashlib.md5()
+    for rel in ("prototypes/tokens.css", "assets/css/mobile.css", "assets/css/desktop.css",
+                "assets/js/geo.js", "assets/js/share.js", "assets/js/fw-loader.js",
+                "assets/js/mobile.js", "assets/js/desktop.js"):
+        try:
+            with open(os.path.join(ROOT, rel), "rb") as fh:
+                h.update(fh.read())
+        except OSError:
+            pass
+    return h.hexdigest()[:10]
 
 
 # --- shared baked chrome -----------------------------------------------------
@@ -476,7 +494,7 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
 
 # --- page assembly -----------------------------------------------------------
 
-def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> str:
+def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av: str) -> str:
     rel = "../" if city else ""
     diseases = grid["diseases"]
     generated_at = grid.get("generated_at", "")
@@ -489,7 +507,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> 
         canonical = cfg["base_url"] + city["id"] + "/"
         fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel)
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
-              "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"]}
+              "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".png"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
@@ -497,7 +515,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> 
         desc = cfg["description"]
         canonical = cfg["base_url"]
         fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer)
-        fw = {"gridUrl": "data/grid.json", "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"]}
+        fw = {"gridUrl": "data/grid.json", "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
         og_url = cfg["base_url"] + cfg.get("og_image", "")
         og_alt = cfg.get("og_image_alt", "")
     # Cache-bust the per-city OG card on the social meta so platforms re-fetch the preview when
@@ -509,7 +527,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str) -> 
         head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
         jsonld=jsonld(cfg, generated_at, diseases, city, og_url),
         rel=rel, nav=nav_html(rel), fallback=fallback, footer=footer_html(),
-        fw=json.dumps(fw, ensure_ascii=False),
+        fw=json.dumps(fw, ensure_ascii=False), av=av,
         bootcss=BOOT_CSS, bootjs=BOOT_JS,
     )
 
@@ -590,10 +608,11 @@ def main() -> int:
     shutil.copy(grid_path, os.path.join(DIST, "data", "grid.json"))
 
     # landing
-    _write("index.html", page(cfg, grid, cells_by, None, env))
+    av = asset_version()
+    _write("index.html", page(cfg, grid, cells_by, None, env, av))
     # cities
     for c in cities:
-        _write(os.path.join(c["id"], "index.html"), page(cfg, grid, cells_by, c, env))
+        _write(os.path.join(c["id"], "index.html"), page(cfg, grid, cells_by, c, env, av))
 
     write_robots(cfg, env)
     write_sitemap(cfg, cities, grid.get("generated_at", ""))
