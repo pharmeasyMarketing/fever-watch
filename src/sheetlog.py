@@ -13,8 +13,9 @@ Payload (text/plain JSON, so the webhook is a CORS-simple request):
 
 Columns the Apps Script expects:
   run_log : timestamp, run_id, trigger, step, status, detail
-  raw_data: date, run_id, city, state, disease, weather, trends, positivity,
-            news_spike, score, band, mode
+  raw_data: date, run_id, city, state, disease, weather, trends, positivity, news_spike
+            (INPUTS only; score/band/mode in cols J-L are in-sheet FORMULAS the Apps
+            Script writes, mirroring config/consolidation.json - see docs/sheets_logging.md)
 
 CLI (used by .github/workflows/daily.yml so build scripts stay untouched):
   python src/sheetlog.py log <step> <status> [detail]
@@ -75,8 +76,7 @@ def push_raw(grid: dict) -> int:
             date, RUN_ID, c.get("name", r["city"]), c.get("state", ""),
             labels.get(r["disease"], r["disease"]),
             s.get("weather"), s.get("trends"), s.get("positivity"), s.get("news_spike"),
-            r.get("score"), r.get("band"), r.get("mode"),
-        ])
+        ])  # inputs only; score/band/mode (J-L) are formulas set by the Apps Script
     sent = 0
     for i in range(0, len(rows), CHUNK):
         if _post("raw_data", rows[i:i + CHUNK]):
