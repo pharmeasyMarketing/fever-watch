@@ -4,6 +4,8 @@
   var LOGO = FW.logo || "assets/img/pe_logo-white.svg";
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
+  var BEACON_DUR = { "HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s" };
+  function beacon(band) { return '<span class="beacon" style="--c:' + (RISK[band] || "#888") + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>'; }
   var SIGCOL = { weather: [21, 172, 165], trends: [124, 108, 214], positivity: [54, 97, 176] };
   var SIGNAME = { weather: "Breeding weather", trends: "Google Search Interest", positivity: "PharmEasy labs" };
   var ACTIONS = [
@@ -179,7 +181,7 @@
     var col = RISK[b.band], drvCell = cellFor(c.id, b.driver), drv = diseaseObj(b.driver);
     var pills = orderedDiseases(c).map(function (d) { var cell = cellFor(c.id, d.id); return '<span class="dpill"><span class="dot" style="background:' + RISK[cell.band] + '"></span>' + d.emoji + ' ' + d.label + ' <b>' + cell.score + '</b></span>'; }).join("");
     var card = '<div class="card risk"><div class="rtop">' + gauge(b.score, col, 112) +
-      '<div class="rhead"><div class="ov">Overall monsoon-fever risk, this week</div><div class="bandlbl" style="color:' + col + '">' + b.band + '</div></div></div>' +
+      '<div class="rhead"><div class="ov">Overall monsoon-fever risk, this week</div><div class="bandlbl" style="color:' + col + '">' + beacon(b.band) + b.band + '</div></div></div>' +
       '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT[drvCell.band] + ';color:' + RISK[drvCell.band] + '">Top concern: ' + drv.emoji + ' ' + drv.label + ' ' + drvCell.band + ' (' + b.driver_score + ')</span></div>' +
       '<div class="pills">' + pills + '</div>' +
       '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span><button class="sharebtn" data-act="share">⤴ Share</button></div></div>';
