@@ -13,8 +13,9 @@
 >
 > **2026-06-07:** coverage extended to **228 cities** (live); a per-band **risk beacon** (pulsing alert light)
 > added inline next to the band label on both score cards; card text overflow fixed (long city+state). Google
-> Sheets logging wired (`src/sheetlog.py` + `daily.yml`) - run logs + raw city x disease data + an in-sheet
-> date-level summary - PENDING the user's Apps Script webhook setup (see `docs/sheets_logging.md`).
+> Sheets logging is **LIVE** (`src/sheetlog.py` + `daily.yml` -> Apps Script webhook, secrets set, verified
+> 1,140 raw rows pushed): `run_log` + a `raw_data` tab whose `score`/`band`/`mode` are **in-sheet formulas**
+> over the raw signals, + a `daily_summary` with date- and city-level scores by formula. See `docs/sheets_logging.md`.
 >
 > **2026-06-06 pass (staging-feedback fixes, all verified):** the SSG now pre-renders the FULL page
 > content (not a stub) with a clean H1>H2>H3 heading hierarchy across the baked HTML and both JS flows;
@@ -63,7 +64,7 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | **Google Trends (SerpApi, 5 keys)** | **LIVE (real)** | 5 keys in Actions secrets (verified `5/5` in CI); `trends.provider=cached`; `build_trends.py` pulls real state-level interest daily. Fixed a `GEO_MAP_0` bug (GEO_MAP 400s on single query). ~10 searches/refresh; ~1,000+/mo headroom. |
 | Lab positivity feed | **MOCK** | the last real feed; needs the PharmEasy Sheet published-CSV URL -> flip `positivity.provider=googlesheet` |
 | Risk beacon (pulsing band light) | **DONE** | inline next to the band label, both flows; colour=band, speed=urgency; CSS in tokens.css; reduced-motion fallback; verified live |
-| Google Sheets logging (`src/sheetlog.py`) | **WIRED (needs webhook)** | run_log + raw_data + in-sheet date-level summary; activates once the user adds the Apps Script `SHEETS_WEBHOOK_URL` secret. See `docs/sheets_logging.md` |
+| Google Sheets logging (`src/sheetlog.py`) | **LIVE (verified)** | webhook secrets set; a run pushed 1,140 raw rows OK. Logs sheet = `1Iz9nAf38...`. `raw_data` = raw inputs (A-I) + `score`/`band`/`mode` as **in-sheet formulas** (mirror consolidation.json); `daily_summary` = date x disease avg + daily avg/peak + **city overall blend** (0.75*peak+0.25*avg), all by formula. See `docs/sheets_logging.md` |
 | Card text overflow (long city+state) | **DONE** | `build_og.py` shrink-to-fit + 2-line + ellipsis; verified Visakhapatnam / Thiruvananthapuram |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
@@ -389,8 +390,9 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 ## 13. Pending user/account actions
 
 - [ ] Provide the PharmEasy lab **Google Sheet published-CSV URL** -> `config/signals.json` + provider `googlesheet`.
-- [ ] **Sheets logging:** deploy the Apps Script Web App (`docs/sheets_logging.md`) on the tracking sheet and add
-  `SHEETS_WEBHOOK_URL` (+ `SHEETS_TOKEN`) as Actions secrets -> `daily.yml` then logs run_log + raw_data automatically.
+- [x] ~~**Sheets logging:** deploy the Apps Script + add secrets~~ **DONE + LIVE** (logs sheet `1Iz9nAf38...`; verified
+  1,140 raw rows pushed). If you change `Code.gs` (e.g. the score formulas), re-deploy a **new version**; to apply the
+  formula columns to the existing tabs, delete `raw_data` + `daily_summary` first (see `docs/sheets_logging.md`).
 - [x] ~~Add the **5 SerpApi keys** as Actions secrets~~ **DONE + LIVE**: keys set, verified `5/5` in CI; `trends.provider=cached`;
   `daily.yml` pulls real trends daily. (Keys are shared with Mosquito Watch; combined free pool ~1,250 searches/mo.)
 - [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
