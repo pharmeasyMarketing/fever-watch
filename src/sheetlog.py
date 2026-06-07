@@ -44,7 +44,14 @@ def _post(sheet: str, rows: list) -> bool:
             URL, data=body, method="POST",
             headers={"Content-Type": "text/plain;charset=utf-8"})
         with urllib.request.urlopen(req, timeout=25) as r:
-            r.read()
+            resp = r.read().decode("utf-8", "ignore")
+        try:
+            ok = json.loads(resp).get("ok", True)
+        except Exception:
+            ok = True  # non-JSON (e.g. an Apps Script wrapper) -> assume delivered
+        if not ok:
+            print("sheetlog: webhook returned not-ok for %s: %s" % (sheet, resp[:200]), file=sys.stderr)
+            return False
         return True
     except Exception as e:  # logging is best-effort; never fail the build
         print("sheetlog: POST to %s failed: %s" % (sheet, e), file=sys.stderr)
