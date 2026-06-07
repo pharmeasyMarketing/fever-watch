@@ -53,7 +53,7 @@ FAQ_ITEMS = [
      "Weather is refreshed daily from NASA POWER, search interest weekly, and the lab signal daily. "
      "The score for each city is recomputed every day."),
     ("Which cities are covered?",
-     "Fever Watch currently covers around 120 Indian cities, with more planned. Use the city search "
+     "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search "
      "to see the read for your city."),
 ]
 
@@ -211,8 +211,10 @@ def nav_html(rel: str) -> str:
     )
     return (
         '<header class="fw-nav"><div class="navin">'
-        '<a class="pe-logo" href="https://pharmeasy.in/" aria-label="PharmEasy home">'
-        '<img class="navlock" src="' + rel + 'assets/img/fever-watch-lockup-white.svg" alt="PharmEasy Fever Watch"></a>'
+        '<a class="pe-logo" href="https://pharmeasy.in/" aria-label="PharmEasy Fever Watch home">'
+        '<img class="pe-mark" src="' + rel + 'assets/img/pe_logo-white.svg" alt="PharmEasy">'
+        '<span class="pe-rule" aria-hidden="true"></span>'
+        '<span class="fw-word">Fever Watch</span></a>'
         '<nav class="pe-topnav" id="pe-topnav" aria-label="PharmEasy">' + items + '</nav>'
         '<button type="button" class="pe-burger" aria-label="Open menu" aria-expanded="false" aria-controls="pe-topnav">&#9776;</button>'
         '</div></header>'

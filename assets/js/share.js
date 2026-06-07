@@ -149,7 +149,7 @@ window.FeverWatchShare = (function () {
       ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.strokeStyle = "rgba(255,255,255,0.20)"; ctx.lineWidth = 2;
       rr(ctx, bx, by, bw, bh, 30); ctx.fill(); ctx.stroke();
       var rows = [
-        { icon: "pin", label: "Location", lines: wrapValue(ctx, (card.city + (card.state ? ", " + card.state : "")), bw - 260) },
+        { icon: "pin", label: "Location", lines: wrapValue(ctx, card.city, bw - 260) },
         { icon: card.driverEmoji || "🦟", label: "Top concern", lines: [card.driverLabel || ""] }
       ];
       var seg = bh / rows.length, badgeR = 58, padL = 34;
@@ -195,8 +195,11 @@ window.FeverWatchShare = (function () {
       return c;
     }
 
-    if (_logo) return Promise.resolve(paint());
-    return loadImg(LOGO_SRC).then(function (img) { _logo = img; return paint(); }).catch(function () { return paint(); });
+    // Wait for the page webfont (Inter) so the canvas paints in the same family as the site,
+    // then ensure the co-branded logo is loaded, before drawing.
+    var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    var logoP = _logo ? Promise.resolve() : loadImg(LOGO_SRC).then(function (img) { _logo = img; }, function () {});
+    return logoP.then(function () { return ready; }).then(paint);
   }
 
   function wrapValue(ctx, text, maxW) {

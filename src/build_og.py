@@ -52,23 +52,38 @@ _EMOJI = ["seguiemj.ttf", "C:/Windows/Fonts/seguiemj.ttf", "NotoColorEmoji.ttf",
           "/System/Library/Fonts/Apple Color Emoji.ttc"]
 _DIRS = ["", "C:/Windows/Fonts/", "/usr/share/fonts/truetype/dejavu/",
          "/usr/share/fonts/truetype/liberation/", "/Library/Fonts/"]
+# Self-hosted Inter (the same family the web UI uses) so the card typography matches the
+# site. One variable file; the weight axis is driven per call. Falls back to the lists above.
+INTER_VAR = os.path.join(ROOT, "assets", "fonts", "Inter-Variable.ttf")
+_WGHT = {"reg": 400, "semi": 600, "bold": 800}  # mirror the JS share-canvas weights
 
 
 def font(size: int, weight: str = "bold"):
     key = (size, weight)
     if key in _FONT_CACHE:
         return _FONT_CACHE[key]
-    names = {"bold": _BOLD, "semi": _SEMI, "reg": _REG}[weight]
     f = None
-    for d in _DIRS:
-        for n in names:
-            try:
-                f = ImageFont.truetype(d + n, size)
+    # Prefer self-hosted Inter, driving its weight via the variable-font axis so the OG/share
+    # card uses the exact family + weights as the website.
+    try:
+        f = ImageFont.truetype(INTER_VAR, size)
+        try:
+            f.set_variation_by_axes([max(14, min(32, int(size * 0.5))), _WGHT.get(weight, 700)])
+        except Exception:
+            pass
+    except Exception:
+        f = None
+    if f is None:
+        names = {"bold": _BOLD, "semi": _SEMI, "reg": _REG}[weight]
+        for d in _DIRS:
+            for n in names:
+                try:
+                    f = ImageFont.truetype(d + n, size)
+                    break
+                except Exception:
+                    continue
+            if f:
                 break
-            except Exception:
-                continue
-        if f:
-            break
     if f is None:
         try:
             f = ImageFont.load_default(size=size)
@@ -315,7 +330,7 @@ def _fit_value(d, text, max_w, max_size, min_size, weight="bold"):
 def render_card(ctx: dict, story: bool = False) -> "Image.Image":
     band = ctx["band"]
     rc = RISK.get(band, BG_BOT)
-    loc = ctx["city"] + ", " + ctx["state"] if ctx.get("state") else ctx["city"]
+    loc = ctx["city"]  # city only (state dropped) so long names never overflow the card
     drv_emoji = ctx.get("driver_emoji") or "\U0001FA9F"
 
     if story:

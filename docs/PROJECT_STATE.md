@@ -17,6 +17,19 @@
 > 1,140 raw rows pushed): `run_log` + a `raw_data` tab whose `score`/`band`/`mode` are **in-sheet formulas**
 > over the raw signals, + a `daily_summary` with date- and city-level scores by formula. See `docs/sheets_logging.md`.
 >
+> **2026-06-07 (share + cards + granular logging pass):** share-surface chrome added per the handoff - a live
+> **city ticker under the header** (clickable cities, marquee, pauses on hover / touch-hold) on BOTH flows, a
+> **desktop bottom-right share dock** (Share + copy link; no embed) and a **mobile floating share CTA bar**; all
+> Share buttons unified to one design. **Cards + logo now use Inter** (bundled `assets/fonts/Inter-Variable.ttf`,
+> driven via the variable weight axis in `build_og.py`; the share canvas waits for `fonts.ready`); the header
+> "Fever Watch" lockup is now **live Inter text** (was an SVG `<img>`). The share/OG card **drops the state**
+> (city only) to stop WhatsApp overflow; share text reads "Know more here". Desktop `.srch` tinted `#10847e0f`.
+> JS leaderboards + tickers now emit real `<a href>` city links (SEO interlinking survives JS hydration).
+> **Sheets `raw_data` is now fully granular** (cols A-S: raw weather temp/humidity/rain, signal sub-scores,
+> trends keywords, weights, confidence) with `score`/`band`/`mode` (T-V) + a per-city **OVERALL** blend row,
+> all by in-sheet formula. ACTION: re-deploy the Apps Script (`docs/sheets_logging.md`) and delete the old
+> `raw_data` + `daily_summary` tabs once, to pick up the expanded columns.
+>
 > **2026-06-06 pass (staging-feedback fixes, all verified):** the SSG now pre-renders the FULL page
 > content (not a stub) with a clean H1>H2>H3 heading hierarchy across the baked HTML and both JS flows;
 > the OG + WhatsApp share cards were redesigned to the approved "glass card" look (textured teal,
@@ -35,7 +48,7 @@
 
 A consumer-facing, PharmEasy-branded web tool that gives **one daily risk score per city** for India's
 top monsoon fevers, with the per-disease breakdown underneath. City-first: one page per city at
-`/fever-watch/{city}`. **Top ~120 cities** (expandable).
+`/fever-watch/{city}`. **Top ~230 cities** (expandable).
 
 - **Diseases (v1):** dengue (flagship), malaria, chikungunya, typhoid, viral fever.
 - **The score:** a confirmation-weighted ensemble of 3 signals -> a city headline blend + 5 disease scores.
@@ -55,9 +68,9 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Share-image export (`assets/js/share.js`) | **DONE (redesigned)** | canvas matches the OG card (textured teal + glass card + OVERALL score); PNG logo (reliable on Android); WhatsApp text starts "This Week:"; live render verified HIGH+MODERATE |
 | Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE (frozen)** | the locked design source; now extracted into the SSG runtime (`assets/`), so prototypes are reference-only |
 | Co-branded nav lockup (`assets/img/fever-watch-lockup-white.svg`) | **DONE** | rendered both navs |
-| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE (full pre-render)** | `build_site.py` -> 120 pages; bakes the ENTIRE page (hero, score, why-this-score table, full methodology, what-to-do, 119-city table, FAQ, reads) + clean H1>H2>H3 hierarchy. Section 9 (AS BUILT). |
+| **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE (full pre-render)** | `build_site.py` -> 228 pages; bakes the ENTIRE page (hero, score, why-this-score table, full methodology, what-to-do, 228-city table, FAQ, reads) + clean H1>H2>H3 hierarchy. Section 9 (AS BUILT). |
 | Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app` (no flash; boot-script hides baked block pre-paint, failsafe re-reveals); per-city H1 + H2/H3 headings + live "Common questions" FAQ verified both flows |
-| Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 119 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
+| Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 228 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
 | **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds (build_assets + build_og + build_site) + publishes on push to master; staging (real trends + mock positivity), robots Disallow. CI installs `fonts-noto-color-emoji`; OG mosquito badge confirmed rendering on the deployed cards. |
 | **Daily data cron (`.github/workflows/daily.yml`)** | **DONE - LIVE** | daily 01:30 UTC + workflow_dispatch: weather + real trends -> grid -> commit data back [skip ci] -> OG + SSG -> deploy. First run verified green (run 27069051641). |
@@ -126,7 +139,7 @@ Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirr
 
 ## 5. What is built + verified (detail)
 
-**Config (`config/`):** `site.json` (SEO identity, single source for base_url), `cities.json` (119 cities, generated),
+**Config (`config/`):** `site.json` (SEO identity, single source for base_url), `cities.json` (228 cities, generated),
 `diseases.json` (5, with family + seasonal_push), `scoring.json` (per-family weather shaping), `consolidation.json`
 (ensemble + bands + city_blend), `signals.json` (trends/positivity provider selection + config).
 
@@ -171,7 +184,7 @@ Extended in the 2026-06-05 UI pass (both flows unless noted), all verified headl
 **Brand assets:** `assets/img/pe_logo-white.svg` (self-hosted), `assets/img/fever-watch-lockup-white.svg`, plus
 `src/build_assets.py`-generated placeholders (favicon, PWA icons, og-fever-watch.png).
 
-**SSG + device-adaptive runtime (BUILT, verified headlessly):** `src/build_site.py` (120 pages + robots/sitemap/
+**SSG + device-adaptive runtime (BUILT, verified headlessly):** `src/build_site.py` (228 pages + robots/sitemap/
 manifest), `src/build_og.py` (per-city OG cards), `src/build_assets.py` (brand placeholders), and the extracted
 `assets/css/{mobile,desktop}.css` + `assets/js/{mobile,desktop}.js` + `assets/js/fw-loader.js`. Details in section 9.
 
@@ -213,8 +226,8 @@ pushed to `pharmeasyMarketing/fever-watch`; `.github/workflows/deploy.yml` rebui
 
 ```
 # Data (from the project root)
-python scripts/gen_cities.py            # regenerate config/cities.json (119 cities)
-python src/build_weather.py             # NASA POWER -> data/weather.json   (daily; ~2 min for 119 cities)
+python scripts/gen_cities.py            # regenerate config/cities.json (228 cities)
+python src/build_weather.py             # NASA POWER -> data/weather.json   (daily; ~2 min for 228 cities)
 python src/build_daily.py               # compose the grid (reads signals.json) -> data/grid.json
 python src/build_trends.py              # WEEKLY: SerpApi -> data/trends.json (needs SERPAPI_KEY in env)
 python src/consolidate.py               # smoke-test the ensemble engine
@@ -242,7 +255,7 @@ Note: the harness preview tool's screenshot capture occasionally wedges after ed
 
 ## 9. SSG - AS BUILT
 
-`src/build_site.py` (stdlib) generates a self-contained `dist/fever-watch/`: 1 landing + 119 city pages, each
+`src/build_site.py` (stdlib) generates a self-contained `dist/fever-watch/`: 1 landing + 228 city pages, each
 device-adaptive (one URL serves the mobile OR desktop flow, chosen at load), SEO baked for crawlers.
 `SITE_ENV=staging|production`. Modeled on Mosquito Watch's `build_site.py`. As-built details (note the deviations
 from the original spec, which is kept below for reference):
@@ -257,7 +270,7 @@ from the original spec, which is kept below for reference):
 - **Baked then hydrate (FULL pre-render, 2026-06-06):** baked server-side = one unified `<header class="fw-nav">`, the
   PharmEasy `<footer>`, and the COMPLETE page inside `#fw-app` (`render_content` / `render_landing` in build_site.py):
   per-city `<h1>` "Live monsoon-fever risk for {City}, in one score.", lede + search, the score block, a "Why this score"
-  signal table, the full "How we calculate this" methodology, "So, what should I do?", the **119-city table** (every city
+  signal table, the full "How we calculate this" methodology, "So, what should I do?", the **228-city table** (every city
   linked, great for crawl + internal links), "Common questions" (FAQ), and "Further reading". A tiny render-blocking boot
   script sets `<html class="js">` so the baked block (`.fw-fallback`) is hidden for JS users pre-paint (no flash); a 6s
   failsafe re-reveals it if hydration never sets `body.fw-hydrated` (no-JS / broken-JS safety). The flow JS REPLACES
@@ -320,7 +333,7 @@ from the original spec, which is kept below for reference):
 
 ### Also generate
 - A **landing page** at `/fever-watch/index.html`: the city search + geo (default to detected city, link to its page).
-- `sitemap.xml` (all 119 city URLs + landing), `robots.txt` (Disallow-all on staging via `SITE_ENV`, like Mosquito
+- `sitemap.xml` (all 228 city URLs + landing), `robots.txt` (Disallow-all on staging via `SITE_ENV`, like Mosquito
   Watch; canonical always points at production), `site.webmanifest`, favicons.
 - Output dir: pick `dist/` (or in-place); mirror Mosquito Watch's `build_site.py` conventions (stdlib, idempotent,
   `SITE_ENV=staging|production`).
@@ -363,12 +376,12 @@ pre-render). Adapt its patterns; drop the medical bits; make it multi-page (per 
 ```
 CLAUDE.md  README.md  requirements.txt  .gitignore
 .claude/launch.json            preview server config (fever-watch on :8137)
-config/   site cities(119) diseases(5) scoring consolidation signals
+config/   site cities(228) diseases(5) scoring consolidation signals
 data/     weather.json  grid.json        (trends.json appears after a weekly build_trends run)
 scripts/  gen_cities.py                  one-off city-config generator
 src/
   build_weather.py  build_daily.py  build_trends.py  consolidate.py  weather_score.py  httputil.py
-  build_site.py     SSG -> dist/fever-watch/ (120 pages + robots/sitemap/manifest), stdlib
+  build_site.py     SSG -> dist/fever-watch/ (228 pages + robots/sitemap/manifest), stdlib
   build_og.py       per-city OG + share cards -> assets/img/og/ (Pillow; shrink-to-fit text)
   sheetlog.py       best-effort Google Sheet logger (run_log + raw_data via Apps Script webhook; stdlib)
   build_assets.py   placeholder favicon/PWA/OG -> assets/img/ (Pillow, stdlib fallback)

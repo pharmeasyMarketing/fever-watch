@@ -2,9 +2,11 @@
 
   .fw-nav { position: fixed; top: 0; left: 0; right: 0; background: var(--pe-green); z-index: 40; }
   .navin { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
-  .navin img.navlock { height: 23px; display: block; }
+  .navin img.pe-mark { height: 20px; width: auto; display: block; }
+  .pe-rule { width: 1px; height: 16px; background: rgba(255,255,255,.45); flex-shrink: 0; }
+  .fw-word { color: #fff; font-family: var(--font); font-size: 15px; font-weight: 600; letter-spacing: .2px; line-height: 1; white-space: nowrap; }
   .pe-burger { width: 40px; height: 40px; border: none; background: transparent; color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; }
-  .pe-logo { display: flex; align-items: center; text-decoration: none; }
+  .pe-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
 
   /* PharmEasy hamburger menu (nav structure + links ported from Mosquito Watch) */
   .pe-topnav { display: none; position: fixed; top: 56px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; background: var(--pe-green-dark); padding: 8px; box-shadow: 0 12px 22px rgba(0,0,0,.24); z-index: 50; max-height: calc(100vh - 56px); overflow-y: auto; }
@@ -54,7 +56,7 @@
   .dpill b { font-weight: 700; }
   .rfoot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
-  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 700; font-size: 13px; padding: 11px 18px; border-radius: var(--pill); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 800; font-size: 13.5px; padding: 11px 16px; border-radius: 12px; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 6px 18px rgba(16,132,126,.28); }
 
   /* breakdown */
   .acc { border: 1px solid var(--pe-line); border-radius: var(--radius-sm); overflow: hidden; }
@@ -196,3 +198,31 @@
   .fw-fallback li { font-size: 13.5px; color: var(--pe-ink-2); margin: 6px 0; line-height: 1.55; }
   .fw-fallback details { margin: 6px 0; border-top: 1px solid var(--pe-bg-2); padding-top: 6px; }
   .fw-fallback summary { font-weight: 600; font-size: 14px; cursor: pointer; padding: 6px 0; }
+
+  /* leaderboard city link (SEO interlink + tap target) */
+  .lbcity { color: inherit; text-decoration: none; }
+  .lbcity:hover { color: var(--pe-green); text-decoration: underline; }
+
+  /* live ticker under the header (clickable cities; same component as desktop) */
+  .fw-ticker { background: #10847e0f; border-bottom: 1px solid var(--pe-line); }
+  .fw-ticker-in { display: flex; align-items: center; gap: 10px; padding: 7px 14px; }
+  .fw-ticker-label { font-size: 10.5px; font-weight: 800; color: var(--pe-green-dark); text-transform: uppercase; letter-spacing: .05em; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; }
+  .fw-ticker-label .livedot { width: 7px; height: 7px; border-radius: 50%; background: var(--pe-green-bright); box-shadow: 0 0 0 3px rgba(21,172,165,.18); animation: fwLive 1.6s ease-in-out infinite; }
+  .fw-ticker-vp { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+  .fw-ticker-track { display: inline-flex; animation: fwMarquee 38s linear infinite; will-change: transform; }
+  .fw-tick { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--pe-ink-2); white-space: nowrap; padding-right: 20px; text-decoration: none; }
+  .fw-tick .tdot { width: 7px; height: 7px; border-radius: 50%; }
+  .fw-tick b { font-weight: 800; }
+  .fw-tick .tpill { font-size: 9.5px; font-weight: 800; border-radius: 999px; padding: 1px 7px; }
+  .fw-ticker:hover .fw-ticker-track, .fw-ticker.held .fw-ticker-track { animation-play-state: paused; }
+
+  /* floating awareness + share CTA bar (single balanced row; ticker now under the header) */
+  body.fw-hydrated { padding-bottom: 92px; }
+  .fw-foot { position: fixed; left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); background: #fff; border: 1px solid var(--pe-line); border-radius: 16px; box-shadow: 0 10px 30px rgba(28,31,34,.16); z-index: 45; }
+  .fw-foot-cta { padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .fw-foot-text { flex: 1; line-height: 1.3; min-width: 0; }
+  .fw-foot-title { font-size: 13.5px; font-weight: 800; color: var(--pe-ink); }
+  .fw-foot-sub { font-size: 11px; color: var(--pe-muted); margin-top: 2px; }
+  @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } }

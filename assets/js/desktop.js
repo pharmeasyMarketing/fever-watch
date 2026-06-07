@@ -35,7 +35,7 @@
     DATA = j;
     state.cityId = pickDefaultCity();
     document.addEventListener("click", onClick);
-    render(); maybeGeo();
+    render(); buildTicker(); buildDock(); maybeGeo();
   }).catch(function (e) { app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 
   function pickDefaultCity() {
@@ -163,6 +163,7 @@
       '</aside><div class="main">' + weekSection(c, b) + methodSection() + doSection(c) + otherSection(c) + faqSection() + readsSection() + '</div></div>';
     wireLeaderboard();
     wireScrollSpy();
+    updateDock();
     document.body.classList.add("fw-hydrated");
   }
 
@@ -244,7 +245,7 @@
     var page = Math.min(state.lbPage || 0, pages - 1);
     var slice = filtered.slice(page * PER, page * PER + PER);
     var body = slice.map(function (r) {
-      return '<tr class="' + (r.id === state.cityId ? "you" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + r.rank + '</td><td>' + r.name + (r.id === state.cityId ? " (you)" : "") + '</td>' +
+      return '<tr class="' + (r.id === state.cityId ? "you" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + r.rank + '</td><td><a class="lbcity" href="' + cityHref(r.id) + '">' + r.name + '</a>' + (r.id === state.cityId ? " (you)" : "") + '</td>' +
         '<td style="color:var(--pe-muted)">' + r.state + '</td><td class="bar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></td>' +
         '<td><span class="bd" style="background:' + RISK_SOFT[r.band] + ';color:' + RISK[r.band] + '">' + r.band + '</span></td><td style="font-weight:700;color:' + RISK[r.band] + '">' + r.score + '</td></tr>';
     }).join("");
@@ -315,15 +316,51 @@
     }).join("");
   }
 
+  // Share-surface chrome (handoff): live ticker under the header + bottom-right share dock.
+  function tickerItems() {
+    return DATA.cities.slice().sort(function (a, b) { return b.blend.score - a.blend.score; }).slice(0, 12).map(function (c) {
+      var b = c.blend, col = RISK[b.band] || "#888", soft = RISK_SOFT[b.band] || "#eee";
+      return '<a class="fw-tick" href="' + cityHref(c.id) + '" data-act="pickrow" data-id="' + c.id + '">' +
+        '<span class="tdot" style="background:' + col + '"></span>' + esc(c.name) + ' <b style="color:' + col + '">' + b.score + '</b>' +
+        '<span class="tpill" style="color:' + col + ';background:' + soft + '">' + b.band + '</span></a>';
+    }).join("");
+  }
+  function buildTicker() {
+    if (document.getElementById("fwticker") || !DATA) return;
+    var header = document.querySelector(".fw-nav"); if (!header) return;
+    var row = tickerItems(), el = document.createElement("div");
+    el.className = "fw-ticker"; el.id = "fwticker";
+    el.innerHTML = '<div class="fw-ticker-in"><span class="fw-ticker-label"><span class="livedot"></span> Live this week</span>' +
+      '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + row + row + '</div></div></div>';
+    header.insertAdjacentElement("afterend", el);
+    el.addEventListener("touchstart", function () { el.classList.add("held"); }, { passive: true });
+    ["touchend", "touchcancel"].forEach(function (ev) { el.addEventListener(ev, function () { el.classList.remove("held"); }); });
+  }
+  function buildDock() {
+    if (document.getElementById("fwdock") || !DATA) return;
+    var el = document.createElement("aside");
+    el.className = "fw-dock"; el.id = "fwdock";
+    el.innerHTML = '<div class="fw-dock-title">1 in 3 fevers in India isn\'t just a fever</div>' +
+      '<div class="fw-dock-sub" id="fwdocksub"></div>' +
+      '<div class="fw-dock-actions"><button class="fw-dock-share" data-act="share">⤴ Share</button>' +
+      '<button class="fw-dock-copy" data-act="dockcopy" aria-label="Copy link">🔗</button></div>';
+    document.body.appendChild(el);
+    updateDock();
+  }
+  function updateDock() {
+    var s = document.getElementById("fwdocksub");
+    if (s && DATA) s.textContent = "Spread awareness. Share " + cityObj(state.cityId).name + "'s score.";
+  }
+
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know More here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function openShare() {
     var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), col = RISK[b.band];
     document.getElementById("pop").innerHTML = '<div class="pophead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div><div class="popbody">' +
       '<div class="sharecard"><div class="sc-head"><img src="' + LOGO + '" alt="PharmEasy"><span class="fw">Fever Watch</span></div>' +
       '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-label">Monsoon Fever Risk Score</div>' +
       '<div class="sc-score">' + b.score + '<span>/100</span></div>' +
-      '<span class="sc-band" style="color:' + col + '">' + b.band + ' RISK</span><div class="sc-title">📍 ' + c.name + ', ' + c.state + '</div>' +
+      '<span class="sc-band" style="color:' + col + '">' + b.band + ' RISK</span><div class="sc-title">📍 ' + c.name + '</div>' +
       '<div class="sc-sub">' + drv.emoji + ' Top concern: ' + drv.label + '. This week, ' + fmtDate(DATA.generated_at) + '</div></div><div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
       '<div class="sharetext">' + shareText(c) + '</div>' +
       '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:var(--pe-green)">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div></div>';
@@ -338,7 +375,7 @@
     var a = el.getAttribute("data-act");
     if (a === "combo") { state.comboOpen = !state.comboOpen; render(); if (state.comboOpen) { var inp = document.getElementById("cityinput"); renderCombo(); inp.addEventListener("input", renderCombo); inp.focus(); } e.stopPropagation(); }
     else if (a === "useLoc") { useMyLocation(); e.stopPropagation(); }
-    else if (a === "pickCity" || a === "pickrow") { state.comboOpen = false; setCity(el.getAttribute("data-id"), true); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else if (a === "pickCity" || a === "pickrow") { if (e.preventDefault) e.preventDefault(); state.comboOpen = false; setCity(el.getAttribute("data-id"), true); window.scrollTo({ top: 0, behavior: "smooth" }); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("s-other").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "method") { state.methodOpen = !state.methodOpen; var bdy = document.getElementById("methbody"); bdy.classList.toggle("open", state.methodOpen); document.getElementById("methtog").textContent = state.methodOpen ? "Hide details ▴" : "Show details ▾"; }
@@ -346,6 +383,7 @@
     else if (a === "shareWA") doShare("wa");
     else if (a === "shareDL") doShare("dl");
     else if (a === "shareCopy") doShare("copy");
+    else if (a === "dockcopy") { if (window.FeverWatchShare) window.FeverWatchShare.copyLink(shareUrl()); el.classList.add("done"); setTimeout(function () { el.classList.remove("done"); }, 1400); }
     else if (a === "closeShare") document.getElementById("scrim").classList.remove("open");
   }
 
@@ -372,7 +410,7 @@
     ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
     ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
     ["How often is it updated?", "Weather is refreshed daily from NASA POWER, search interest weekly, and the lab signal daily. The score for each city is recomputed every day."],
-    ["Which cities are covered?", "Fever Watch currently covers around 120 Indian cities, with more planned. Use the city search to see the read for your city."]
+    ["Which cities are covered?", "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search to see the read for your city."]
   ];
 
   var METHOD =

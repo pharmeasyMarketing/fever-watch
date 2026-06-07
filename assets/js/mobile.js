@@ -40,7 +40,7 @@
     state.expanded = cityObj(state.cityId).blend.driver;
     document.addEventListener("click", onClick);
     document.getElementById("citysearch").addEventListener("input", renderCityList);
-    renderCityList(); render(); maybeGeo();
+    renderCityList(); render(); buildTicker(); buildShareFooter(); maybeGeo();
   }).catch(function (e) { app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 
   function pickDefaultCity() {
@@ -158,6 +158,7 @@
         riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + faqCard() + readsCard() +
       '</div>';
     wireLeaderboard();
+    updateShareFooter();
     document.body.classList.add("fw-hydrated");
   }
 
@@ -233,7 +234,8 @@
     var slice = filtered.slice(page * PER, page * PER + PER);
     if (!slice.length) return '<p class="lbmore">No city matches "' + esc(state.lbQuery) + '".</p>';
     var rowHtml = slice.map(function (r) {
-      return '<div class="lbrow' + (r.id === state.cityId ? ' you' : '') + '"><span class="rk">' + r.rank + '</span><span class="nm">' + r.name + '</span>' +
+      return '<div class="lbrow' + (r.id === state.cityId ? ' you' : '') + '"><span class="rk">' + r.rank + '</span>' +
+        '<a class="nm lbcity" href="' + cityHref(r.id) + '">' + r.name + '</a>' +
         '<span class="lbbar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></span><span class="v" style="color:' + RISK[r.band] + '">' + r.score + '</span></div>';
     }).join("");
     return rowHtml + pager(page, pages, filtered.length);
@@ -305,7 +307,7 @@
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know More here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function renderShare() {
     var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), col = RISK[b.band];
     document.getElementById("sharebody").innerHTML =
@@ -313,12 +315,50 @@
       '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-label">Monsoon Fever Risk Score</div>' +
       '<div class="sc-score">' + b.score + '<span>/100</span></div>' +
       '<span class="sc-band" style="color:' + col + '">' + b.band + ' RISK</span>' +
-      '<div class="sc-title">📍 ' + c.name + ', ' + c.state + '</div>' +
+      '<div class="sc-title">📍 ' + c.name + '</div>' +
       '<div class="sc-sub">' + drv.emoji + ' Top concern: ' + drv.label + '. This week, ' + fmtDate(DATA.generated_at) + '</div></div>' +
       '<div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
       '<div class="sharetext">' + shareText(c) + '</div>' +
       '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:#111">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>' +
       '<p class="sharehint" style="font-size:11.5px;color:var(--pe-muted-2);margin:11px 2px 0;line-height:1.5">On some Android phones WhatsApp attaches only the image and drops the caption. Tap Copy link to send the text and link too.</p>';
+  }
+
+  // Live ticker under the header (clickable cities, same component as desktop).
+  function tickerItems() {
+    return DATA.cities.slice().sort(function (a, b) { return b.blend.score - a.blend.score; }).slice(0, 12).map(function (c) {
+      var b = c.blend, col = RISK[b.band] || "#888", soft = RISK_SOFT[b.band] || "#eee";
+      return '<a class="fw-tick" href="' + cityHref(c.id) + '" data-act="pickrow" data-id="' + c.id + '">' +
+        '<span class="tdot" style="background:' + col + '"></span>' + esc(c.name) + ' <b style="color:' + col + '">' + b.score + '</b>' +
+        '<span class="tpill" style="color:' + col + ';background:' + soft + '">' + b.band + '</span></a>';
+    }).join("");
+  }
+  function buildTicker() {
+    if (document.getElementById("fwticker") || !DATA) return;
+    var header = document.querySelector(".fw-nav"); if (!header) return;
+    var row = tickerItems(), el = document.createElement("div");
+    el.className = "fw-ticker"; el.id = "fwticker";
+    el.innerHTML = '<div class="fw-ticker-in"><span class="fw-ticker-label"><span class="livedot"></span> Live this week</span>' +
+      '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + row + row + '</div></div></div>';
+    header.insertAdjacentElement("afterend", el);
+    // Pause the marquee while the strip is touched/held; resume on release.
+    el.addEventListener("touchstart", function () { el.classList.add("held"); }, { passive: true });
+    ["touchend", "touchcancel"].forEach(function (ev) { el.addEventListener(ev, function () { el.classList.remove("held"); }); });
+  }
+  // Floating awareness + share CTA bar (ticker now lives under the header).
+  function buildShareFooter() {
+    if (document.getElementById("fwfoot") || !DATA) return;
+    var el = document.createElement("div");
+    el.className = "fw-foot"; el.id = "fwfoot";
+    el.innerHTML = '<div class="fw-foot-cta"><div class="fw-foot-text">' +
+      '<div class="fw-foot-title">1 in 3 fevers in India isn\'t just a fever</div>' +
+      '<div class="fw-foot-sub" id="fwfootsub"></div></div>' +
+      '<button class="sharebtn" data-act="openShare">⤴ Share</button></div>';
+    document.body.appendChild(el);
+    updateShareFooter();
+  }
+  function updateShareFooter() {
+    var s = document.getElementById("fwfootsub");
+    if (s && DATA) s.textContent = "Spread awareness. Share " + cityObj(state.cityId).name + "'s score.";
   }
 
   function openSheet(id) { document.getElementById("scrim").classList.add("open"); document.getElementById(id).classList.add("open"); }
@@ -329,7 +369,7 @@
     var a = el.getAttribute("data-act");
     if (a === "openCity") { renderCityList(); openSheet("citysheet"); }
     else if (a === "closeCity" || a === "closeShare") closeSheets();
-    else if (a === "pickCity") { closeSheets(); setCity(el.getAttribute("data-id"), true); window.scrollTo(0, 0); }
+    else if (a === "pickCity" || a === "pickrow") { if (e.preventDefault) e.preventDefault(); closeSheets(); setCity(el.getAttribute("data-id"), true); window.scrollTo(0, 0); }
     else if (a === "useLoc") useMyLocation();
     else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
@@ -365,7 +405,7 @@
     ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
     ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
     ["How often is it updated?", "Weather is refreshed daily from NASA POWER, search interest weekly, and the lab signal daily. The score for each city is recomputed every day."],
-    ["Which cities are covered?", "Fever Watch currently covers around 120 Indian cities, with more planned. Use the city search to see the read for your city."]
+    ["Which cities are covered?", "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search to see the read for your city."]
   ];
 
   var METHOD =

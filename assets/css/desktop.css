@@ -3,8 +3,10 @@
   /* header (teal, white logo + PharmEasy global nav, ported from Mosquito Watch) */
   .fw-nav { position: sticky; top: 0; z-index: 30; background: var(--pe-green); }
   .navin { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 24px; position: relative; }
-  .pe-logo { display: flex; align-items: center; text-decoration: none; }
-  .navin img.navlock { height: 25px; display: block; }
+  .pe-logo { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  .navin img.pe-mark { height: 22px; width: auto; display: block; }
+  .pe-rule { width: 1px; height: 18px; background: rgba(255,255,255,.45); flex-shrink: 0; }
+  .fw-word { color: #fff; font-family: var(--font); font-size: 16.5px; font-weight: 600; letter-spacing: .2px; line-height: 1; white-space: nowrap; }
   /* PharmEasy top navigation (dropdowns + mobile hamburger) */
   .pe-topnav { display: flex; align-items: center; gap: 4px; }
   .pe-nav-item { position: relative; }
@@ -31,8 +33,8 @@
     .pe-nav-drop a:hover { background: rgba(255,255,255,.12); color: #fff; }
   }
 
-  /* search hero (white) */
-  .srch { background: #fff; border-bottom: 1px solid var(--pe-line); }
+  /* search hero (brand-tinted) */
+  .srch { background: #10847e0f; border-bottom: 1px solid var(--pe-line); }
   .srchin { max-width: 760px; margin: 0 auto; padding: 38px 24px 34px; text-align: center; }
   .srch h1 { font-size: 30px; font-weight: 700; margin: 0 0 10px; letter-spacing: -.3px; }
   .srch h1 em { font-style: normal; color: var(--pe-green); }
@@ -84,7 +86,7 @@
   .dpill b { font-weight: 700; }
   .rfoot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
-  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 700; font-size: 13px; padding: 11px 18px; border-radius: var(--pill); white-space: nowrap; cursor: pointer; }
+  .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 800; font-size: 13.5px; padding: 11px 16px; border-radius: 12px; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 6px 18px rgba(16,132,126,.28); }
 
   /* heatmap */
   .heat { width: 100%; border-collapse: separate; border-spacing: 0; }
@@ -213,3 +215,36 @@
   .fw-fallback li { font-size: 14px; color: var(--pe-ink-2); margin: 6px 0; line-height: 1.55; }
   .fw-fallback details { margin: 7px 0; border-top: 1px solid var(--pe-bg-2); padding-top: 7px; }
   .fw-fallback summary { font-weight: 600; font-size: 15px; cursor: pointer; padding: 6px 0; }
+
+  /* leaderboard city link (SEO interlink) */
+  .lbcity { color: inherit; text-decoration: none; }
+  .lbcity:hover { color: var(--pe-green); text-decoration: underline; }
+
+  /* live ticker strip under the header (share-surface handoff) */
+  .fw-ticker { background: #10847e0f; border-bottom: 1px solid var(--pe-line); }
+  .fw-ticker-in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 9px 24px; }
+  .fw-ticker-label { font-size: 12px; font-weight: 800; color: var(--pe-green-dark); text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; }
+  .fw-ticker-label .livedot { width: 8px; height: 8px; border-radius: 50%; background: var(--pe-green-bright); box-shadow: 0 0 0 3px rgba(21,172,165,.18); animation: fwLive 1.6s ease-in-out infinite; }
+  .fw-ticker-vp { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+  .fw-ticker-track { display: inline-flex; animation: fwMarquee 32s linear infinite; will-change: transform; }
+  .fw-ticker:hover .fw-ticker-track, .fw-ticker.held .fw-ticker-track { animation-play-state: paused; }
+  .fw-tick { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--pe-ink-2); white-space: nowrap; padding-right: 30px; text-decoration: none; }
+  .fw-tick:hover { color: var(--pe-green); }
+  .fw-tick .tdot { width: 8px; height: 8px; border-radius: 50%; }
+  .fw-tick b { font-weight: 800; }
+  .fw-tick .tpill { font-size: 10.5px; font-weight: 800; border-radius: 999px; padding: 1px 8px; }
+
+  /* bottom-right floating share dock */
+  .fw-dock { position: fixed; right: 28px; bottom: 28px; width: 268px; background: #fff; border: 1px solid var(--pe-line); border-radius: 16px; box-shadow: 0 14px 38px rgba(28,31,34,.18); padding: 14px; z-index: 45; }
+  .fw-dock-title { font-size: 14.5px; font-weight: 800; color: var(--pe-ink); line-height: 1.25; }
+  .fw-dock-sub { font-size: 12.5px; color: var(--pe-muted); margin: 4px 0 12px; }
+  .fw-dock-actions { display: flex; gap: 8px; }
+  .fw-dock-share { flex: 1; background: var(--pe-green); color: #fff; border: none; border-radius: 11px; padding: 11px 0; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 6px 18px rgba(16,132,126,.28); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .fw-dock-share:hover { background: var(--pe-green-dark); }
+  .fw-dock-copy { position: relative; width: 44px; background: #fff; border: 1.5px solid var(--pe-line); border-radius: 11px; cursor: pointer; font-size: 16px; color: var(--pe-ink-2); }
+  .fw-dock-copy:hover { border-color: var(--pe-green-bright); }
+  .fw-dock-copy.done::after { content: "Copied"; position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--pe-ink); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+
+  @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } .fw-ticker-label .livedot { animation: none; } }
