@@ -1,9 +1,15 @@
 # Fever Watch - Project State & Handoff
 
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
-> verified, what is mock/pending, every locked decision, and how to run everything. The SSG is built and
-> **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/** ; the next big piece
-> is the daily/weekly data cron + wiring real feeds (section 7).
+> verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
+> **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
+>
+> **2026-06-06 (signals live):** Google Trends is now REAL and AUTOMATED. The 5 SerpApi keys are in
+> GitHub Actions secrets (verified `5/5` in CI), and `.github/workflows/daily.yml` runs the full pipeline
+> DAILY (01:30 UTC) - weather (NASA POWER) + real trends (SerpApi) -> grid -> commit data back -> SSG ->
+> deploy. Live `grid.json` shows `trends_provider: cached`. Only **lab positivity** remains mock (needs the
+> PharmEasy Sheet CSV URL). `gh` CLI is installed + authenticated (account `pharmeasyMarketing`) so workflows
+> can be dispatched/watched from the CLI (push-trigger was flaky; dispatch via `gh workflow run` is reliable).
 >
 > **2026-06-06 pass (staging-feedback fixes, all verified):** the SSG now pre-renders the FULL page
 > content (not a stub) with a clean H1>H2>H3 heading hierarchy across the baked HTML and both JS flows;
@@ -48,8 +54,10 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 119 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
 | **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds (build_assets + build_og + build_site) + publishes on push to master; staging, mock data, robots Disallow. CI installs `fonts-noto-color-emoji` for the OG mosquito badge (Linux render NOT yet eyeballed - check first deploy). |
-| **Daily/weekly data cron (GitHub Actions)** | **NOT BUILT** | the next step. See section 7 item 1 |
-| Real trends + lab feeds | **MOCK** | flip via `config/signals.json` when feeds are ready |
+| **Daily data cron (`.github/workflows/daily.yml`)** | **DONE - LIVE** | daily 01:30 UTC + workflow_dispatch: weather + real trends -> grid -> commit data back [skip ci] -> OG + SSG -> deploy. First run verified green (run 27069051641). |
+| **Google Trends (SerpApi, 5 keys)** | **LIVE (real)** | 5 keys in Actions secrets (verified `5/5` in CI); `trends.provider=cached`; `build_trends.py` pulls real state-level interest daily. Fixed a `GEO_MAP_0` bug (GEO_MAP 400s on single query). ~10 searches/refresh; ~1,000+/mo headroom. |
+| Lab positivity feed | **MOCK** | the last real feed; needs the PharmEasy Sheet published-CSV URL -> flip `positivity.provider=googlesheet` |
+| Card text overflow (long city+state) | **DONE** | `build_og.py` shrink-to-fit + 2-line + ellipsis; verified Visakhapatnam / Thiruvananthapuram |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
 
@@ -60,9 +68,10 @@ Everything runs on the **Python standard library** (no third-party deps). `requi
 Serverless by design: scheduled scripts write static JSON, a static device-adaptive site reads it.
 
 ```
-GitHub Actions (cron)                          [NOT BUILT - the next step]
-  daily.yml : build_weather + build_daily -> grid.json ; build_og + build_site -> dist/ ; deploy
-  weekly.yml: build_trends (SerpApi x5) -> trends.json
+GitHub Actions (cron)                          [BUILT - daily.yml, LIVE]
+  daily.yml : build_weather + build_trends(SerpApi x5) + build_daily -> grid.json ; commit data back ;
+              build_og + build_site -> dist/ ; deploy   (daily 01:30 UTC + workflow_dispatch)
+  (trends folded into daily.yml at a daily cadence; no separate weekly.yml)
        |
        v
 data/*.json  (committed; weather.json, grid.json[, trends.json])
@@ -372,7 +381,8 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 ## 13. Pending user/account actions
 
 - [ ] Provide the PharmEasy lab **Google Sheet published-CSV URL** -> `config/signals.json` + provider `googlesheet`.
-- [ ] Add the **5 SerpApi keys** as Actions secrets -> trends provider `cached` (weekly `build_trends.py`).
+- [x] ~~Add the **5 SerpApi keys** as Actions secrets~~ **DONE + LIVE**: keys set, verified `5/5` in CI; `trends.provider=cached`;
+  `daily.yml` pulls real trends daily. (Keys are shared with Mosquito Watch; combined free pool ~1,250 searches/mo.)
 - [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
   GitHub Actions, `github-pages` env opened to allow `master`. Staging: https://pharmeasymarketing.github.io/fever-watch/
   Production `base_url` still TBD (staging auto-canonicalises to the github.io URL).
