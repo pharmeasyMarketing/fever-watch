@@ -11,6 +11,11 @@
 > PharmEasy Sheet CSV URL). `gh` CLI is installed + authenticated (account `pharmeasyMarketing`) so workflows
 > can be dispatched/watched from the CLI (push-trigger was flaky; dispatch via `gh workflow run` is reliable).
 >
+> **2026-06-07:** coverage extended to **228 cities** (live); a per-band **risk beacon** (pulsing alert light)
+> added inline next to the band label on both score cards; card text overflow fixed (long city+state). Google
+> Sheets logging wired (`src/sheetlog.py` + `daily.yml`) - run logs + raw city x disease data + an in-sheet
+> date-level summary - PENDING the user's Apps Script webhook setup (see `docs/sheets_logging.md`).
+>
 > **2026-06-06 pass (staging-feedback fixes, all verified):** the SSG now pre-renders the FULL page
 > content (not a stub) with a clean H1>H2>H3 heading hierarchy across the baked HTML and both JS flows;
 > the OG + WhatsApp share cards were redesigned to the approved "glass card" look (textured teal,
@@ -42,8 +47,8 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 
 | Area | Status | Verified |
 |---|---|---|
-| Data layer (configs, weather, consolidation engine, grid) | **DONE** | engine smoke-tested; grid 595 cells |
-| Top-120 city config (`scripts/gen_cities.py` -> 119 cities) | **DONE** | coord ranges validated; needs gazetteer QA |
+| Data layer (configs, weather, consolidation engine, grid) | **DONE** | engine smoke-tested; grid now **1,140 cells** (228 x 5) |
+| City config (`scripts/gen_cities.py` -> **228 cities**) | **DONE** | grown 119 -> 228 (next ~109 incl. all missing state/UT capitals); coords ~0.05deg, **gazetteer QA pending** |
 | Providers: serpapi (weekly) / googlesheet (daily) / cached, config-driven | **DONE** | googlesheet tested on sample; cached state->city verified; all compile |
 | Geolocation module (`assets/js/geo.js`, BigDataCloud + freeipapi) | **DONE** | nearest-city snapping verified; "Use my location" now wired on BOTH flows (GPS->IP), verified switches city |
 | Share-image export (`assets/js/share.js`) | **DONE (redesigned)** | canvas matches the OG card (textured teal + glass card + OVERALL score); PNG logo (reliable on Android); WhatsApp text starts "This Week:"; live render verified HIGH+MODERATE |
@@ -57,6 +62,8 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | **Daily data cron (`.github/workflows/daily.yml`)** | **DONE - LIVE** | daily 01:30 UTC + workflow_dispatch: weather + real trends -> grid -> commit data back [skip ci] -> OG + SSG -> deploy. First run verified green (run 27069051641). |
 | **Google Trends (SerpApi, 5 keys)** | **LIVE (real)** | 5 keys in Actions secrets (verified `5/5` in CI); `trends.provider=cached`; `build_trends.py` pulls real state-level interest daily. Fixed a `GEO_MAP_0` bug (GEO_MAP 400s on single query). ~10 searches/refresh; ~1,000+/mo headroom. |
 | Lab positivity feed | **MOCK** | the last real feed; needs the PharmEasy Sheet published-CSV URL -> flip `positivity.provider=googlesheet` |
+| Risk beacon (pulsing band light) | **DONE** | inline next to the band label, both flows; colour=band, speed=urgency; CSS in tokens.css; reduced-motion fallback; verified live |
+| Google Sheets logging (`src/sheetlog.py`) | **WIRED (needs webhook)** | run_log + raw_data + in-sheet date-level summary; activates once the user adds the Apps Script `SHEETS_WEBHOOK_URL` secret. See `docs/sheets_logging.md` |
 | Card text overflow (long city+state) | **DONE** | `build_og.py` shrink-to-fit + 2-line + ellipsis; verified Visakhapatnam / Thiruvananthapuram |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
@@ -361,7 +368,8 @@ scripts/  gen_cities.py                  one-off city-config generator
 src/
   build_weather.py  build_daily.py  build_trends.py  consolidate.py  weather_score.py  httputil.py
   build_site.py     SSG -> dist/fever-watch/ (120 pages + robots/sitemap/manifest), stdlib
-  build_og.py       per-city OG score cards -> assets/img/og/ (Pillow)
+  build_og.py       per-city OG + share cards -> assets/img/og/ (Pillow; shrink-to-fit text)
+  sheetlog.py       best-effort Google Sheet logger (run_log + raw_data via Apps Script webhook; stdlib)
   build_assets.py   placeholder favicon/PWA/OG -> assets/img/ (Pillow, stdlib fallback)
   providers/        weather: nasa_power(DEFAULT), open_meteo(alt), base, __init__(registry)
   signals/          base, mock(default), googlesheet, serpapi, cached, __init__(registry, config-driven)
@@ -372,7 +380,7 @@ assets/
   img/  pe_logo-white.svg  pe_logo-white.png (rasterized, used by share.js canvas + build_og.py; COMMITTED)
         fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.png (generated, gitignored)
 dist/   fever-watch/...                  GENERATED SSG output (gitignored)
-docs/   lab_feed_format.md  lab_feed_sample.csv  PROJECT_STATE.md
+docs/   lab_feed_format.md  lab_feed_sample.csv  sheets_logging.md  PROJECT_STATE.md
 index.html                              LEGACY: the early 8-city vanilla-JS port; superseded by the SSG. Safe to delete.
 ```
 
@@ -381,6 +389,8 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 ## 13. Pending user/account actions
 
 - [ ] Provide the PharmEasy lab **Google Sheet published-CSV URL** -> `config/signals.json` + provider `googlesheet`.
+- [ ] **Sheets logging:** deploy the Apps Script Web App (`docs/sheets_logging.md`) on the tracking sheet and add
+  `SHEETS_WEBHOOK_URL` (+ `SHEETS_TOKEN`) as Actions secrets -> `daily.yml` then logs run_log + raw_data automatically.
 - [x] ~~Add the **5 SerpApi keys** as Actions secrets~~ **DONE + LIVE**: keys set, verified `5/5` in CI; `trends.provider=cached`;
   `daily.yml` pulls real trends daily. (Keys are shared with Mosquito Watch; combined free pool ~1,250 searches/mo.)
 - [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
@@ -388,7 +398,7 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
   Production `base_url` still TBD (staging auto-canonicalises to the github.io URL).
 - [ ] PharmEasy infra: `/research/fever-watch-.../` reverse-proxy route + apex robots allowance.
 - [ ] Brand sign-off on the co-branded lockup; provide the exact lockup asset if the rebuilt SVG is not pixel-perfect.
-- [ ] QA the 119 city coordinates.
+- [ ] QA the **228** city coordinates against a gazetteer (the ~109 added 2026-06-07 are approximations).
 
 ---
 
