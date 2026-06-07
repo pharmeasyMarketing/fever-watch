@@ -29,6 +29,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    env:
+      # Optional Google Sheet logging (Apps Script Web App webhook). No-op if unset.
+      SHEETS_WEBHOOK_URL: ${{ secrets.SHEETS_WEBHOOK_URL }}
+      SHEETS_TOKEN: ${{ secrets.SHEETS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -53,9 +57,14 @@ jobs:
           if [ "$n" -eq 0 ]; then echo "::error::No SerpApi secrets found - add SERPAPI_KEY..._5"; exit 1; fi
 
       - name: Build weather (NASA POWER)
+        id: weather
         run: python src/build_weather.py
+      - name: Log weather
+        if: always()
+        run: python src/sheetlog.py log weather ${{ steps.weather.outcome }} "NASA POWER pull"
 
       - name: Build trends (SerpApi, real)
+        id: trends
         continue-on-error: true
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
@@ -64,11 +73,20 @@ jobs:
           SERPAPI_KEY_4: ${{ secrets.SERPAPI_KEY_4 }}
           SERPAPI_KEY_5: ${{ secrets.SERPAPI_KEY_5 }}
         run: python src/build_trends.py || echo "::warning::build_trends failed; build_daily will fall back to mock trends"
+      - name: Log trends
+        if: always()
+        run: python src/sheetlog.py log trends ${{ steps.trends.outcome }} "SerpApi Google Trends"
 
       - name: Build grid (cached real trends; mock fallback if trends missing)
+        id: grid
         env:
           TRENDS_PROVIDER: cached
         run: python src/build_daily.py
+      - name: Log grid + push raw data
+        if: always()
+        run: |
+          python src/sheetlog.py log grid ${{ steps.grid.outcome }} "consolidation engine"
+          python src/sheetlog.py raw data/grid.json
 
       - name: Commit refreshed data back
         run: |
@@ -83,10 +101,14 @@ jobs:
           fi
 
       - name: Build static site
+        id: site
         run: |
           python src/build_assets.py
           python src/build_og.py
           python src/build_site.py
+      - name: Log site build
+        if: always()
+        run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_og + build_site (SSG)"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
