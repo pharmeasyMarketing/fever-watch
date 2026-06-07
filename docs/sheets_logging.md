@@ -6,7 +6,9 @@ the sheet is a **webhook URL** kept in a GitHub Actions secret; `src/sheetlog.py
 to it with the standard library. Logging is best-effort: if the secret is unset or the
 POST fails, the build is unaffected.
 
-Sheet: https://docs.google.com/spreadsheets/d/1kIXTg4rkTBwmthJ7t1k5_iVPBdYPzTbhuyEfhhu8xSE/edit
+Sheet (logs): https://docs.google.com/spreadsheets/d/1Iz9nAf38PB1UnQr8wR7umuMId4lp9RQuaaJ3HBKcjgc/edit
+The Apps Script targets this sheet **by ID** (`openById`), so it writes here whether the script is
+container-bound or standalone - change `SHEET_ID` below to retarget.
 
 ## Tabs (auto-created by the script)
 
@@ -21,8 +23,9 @@ Sheet: https://docs.google.com/spreadsheets/d/1kIXTg4rkTBwmthJ7t1k5_iVPBdYPzTbhu
 
 ## One-time setup (~5 min)
 
-1. Open the sheet -> **Extensions > Apps Script**.
-2. Replace `Code.gs` with the script below; set `TOKEN` to any random string.
+1. Open the logs sheet -> **Extensions > Apps Script** (or a standalone project at script.google.com - the script
+   targets the sheet by `SHEET_ID`, so the host doesn't matter).
+2. Replace `Code.gs` with the script below; set `TOKEN` to any random string and confirm `SHEET_ID` is the logs sheet.
 3. **Deploy > New deployment > type: Web app** -> *Execute as:* **Me** -> *Who has access:* **Anyone**
    -> **Deploy**, and authorise when prompted. (`Anyone` is required so the CI - which has no Google
    login - can POST; the `TOKEN` guards the endpoint and the app runs as you, writing to your sheet.)
@@ -40,8 +43,9 @@ Sheet: https://docs.google.com/spreadsheets/d/1kIXTg4rkTBwmthJ7t1k5_iVPBdYPzTbhu
 ## Code.gs
 
 ```javascript
-// Fever Watch -> Google Sheet logger. Bind to the sheet, set TOKEN, deploy as a Web App.
+// Fever Watch -> Google Sheet logger. Set TOKEN + SHEET_ID, deploy as a Web App.
 const TOKEN = 'CHANGE_ME';  // must equal the SHEETS_TOKEN Actions secret
+const SHEET_ID = '1Iz9nAf38PB1UnQr8wR7umuMId4lp9RQuaaJ3HBKcjgc';  // the logs sheet (target by ID)
 
 const HEADERS = {
   run_log:  ['timestamp','run_id','trigger','step','status','detail'],
@@ -52,7 +56,7 @@ function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
     if (TOKEN && body.token !== TOKEN) return _out({ ok: false, error: 'bad token' });
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(SHEET_ID);
     const sh = _ensure(ss, body.sheet);
     const rows = body.rows || [];
     if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
