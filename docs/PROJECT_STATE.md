@@ -43,6 +43,16 @@
 > `#s-week` are byte-identical to the live post-hydration DOM (799==799, 282==282, 4275==4275). Mobile re-verified:
 > still CLS 0, `.fw-pre-d` correctly hidden, mobile card intact. Both flows now paint the real design as first paint.
 >
+> ### >>> Also fixed (this session): two UI bugs (commit `2b4efa1`) <<<
+> - **Desktop combo-input outline:** the `.combopanel` (`overflow:hidden`) clipped the focused `#cityinput`'s default
+>   focus outline into a partial dark border. Now `.combopanel input:focus` is `outline:none` + an on-brand green
+>   underline (`assets/css/desktop.css`).
+> - **Mobile sheet scroll-flash:** the city/share `.sheet` was hidden only by `transform:translateY(100%)` while still
+>   paintable, so the first scroll (mobile address-bar collapse resizes the viewport, recomputing the transform) flashed
+>   it briefly at the bottom. Now `visibility:hidden` when closed (instant toggle; transition kept on `transform` only)
+>   so the closed sheet cannot paint (`assets/css/mobile.css`). Trade-off: the sheet now closes instantly (no slide-out),
+>   which matches the already-instant scrim; restore the slide-out with a `transitionend` -> `visibility:hidden` hook if wanted.
+>
 > **2026-06-06 (signals live):** Google Trends is now REAL and AUTOMATED. The 5 SerpApi keys are in
 > GitHub Actions secrets (verified `5/5` in CI), and `.github/workflows/daily.yml` runs the full pipeline
 > DAILY (01:30 UTC) - weather (NASA POWER) + real trends (SerpApi) -> grid -> commit data back -> SSG ->
