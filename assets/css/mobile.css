@@ -133,8 +133,12 @@
   /* sheets */
   .scrim { position: fixed; inset: 0; background: rgba(15,28,27,.5); z-index: 60; display: none; }
   .scrim.open { display: block; }
-  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 20px 20px 0 0; z-index: 70; transform: translateY(100%); transition: transform .25s ease; max-height: 90vh; display: flex; flex-direction: column; }
-  .sheet.open { transform: translateY(0); }
+  /* visibility:hidden when closed so the closed sheet cannot paint at all; otherwise the first scroll
+     (address-bar collapse resizes the viewport, recomputing translateY(100%)) flashes it briefly.
+     visibility is toggled instantly (no transition); the open slide still animates via transform, and
+     the scrim already vanishes instantly on close, so an instant sheet-hide on close is consistent. */
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 20px 20px 0 0; z-index: 70; transform: translateY(100%); visibility: hidden; transition: transform .25s ease; max-height: 90vh; display: flex; flex-direction: column; }
+  .sheet.open { transform: translateY(0); visibility: visible; }
   .sheet.full { top: 0; bottom: 0; border-radius: 0; max-height: none; }
   .sheethead { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--pe-bg-2); }
   .sheethead h3 { margin: 0; font-size: 16px; font-weight: 700; }

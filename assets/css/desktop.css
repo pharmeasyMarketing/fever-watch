@@ -48,6 +48,9 @@
   .combopanel { display: none; position: absolute; top: 62px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: var(--shadow); z-index: 20; overflow: hidden; text-align: left; }
   .combopanel.open { display: block; }
   .combopanel input { width: 100%; border: none; border-bottom: 1px solid var(--pe-bg-2); padding: 14px 16px; font-size: 14px; }
+  /* the panel clips with overflow:hidden, so the input's default focus outline shows only partially;
+     replace it with a clean on-brand underline that cannot be clipped */
+  .combopanel input:focus { outline: none; border-bottom-color: var(--pe-green); }
   .comboloc { padding: 12px 16px; color: var(--pe-green); font-weight: 600; font-size: 13.5px; cursor: pointer; border-bottom: 1px solid var(--pe-bg-2); }
   .comboloc:hover { background: var(--pe-bg); }
   .combolist { max-height: 300px; overflow-y: auto; }
