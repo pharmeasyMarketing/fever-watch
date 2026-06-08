@@ -325,14 +325,12 @@
         '<span class="tpill" style="color:' + col + ';background:' + soft + '">' + b.band + '</span></a>';
     }).join("");
   }
+  // The ticker is baked server-side (right after the header) so it never shifts layout; just wire the
+  // touch-hold pause once (hover pause is pure CSS).
   function buildTicker() {
-    if (document.getElementById("fwticker") || !DATA) return;
-    var header = document.querySelector(".fw-nav"); if (!header) return;
-    var row = tickerItems(), el = document.createElement("div");
-    el.className = "fw-ticker"; el.id = "fwticker";
-    el.innerHTML = '<div class="fw-ticker-in"><span class="fw-ticker-label"><span class="livedot"></span> Live this week</span>' +
-      '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + row + row + '</div></div></div>';
-    header.insertAdjacentElement("afterend", el);
+    var el = document.getElementById("fwticker");
+    if (!el || el.dataset.wired) return;
+    el.dataset.wired = "1";
     el.addEventListener("touchstart", function () { el.classList.add("held"); }, { passive: true });
     ["touchend", "touchcancel"].forEach(function (ev) { el.addEventListener(ev, function () { el.classList.remove("held"); }); });
   }
@@ -396,7 +394,7 @@
   }
   function doShare(kind) {
     if (!window.FeverWatchShare) return;
-    var d = shareCardData(), fn = "fever-watch-" + state.cityId + ".png";
+    var d = shareCardData(), fn = "fever-watch-" + state.cityId + ".jpg";
     if (kind === "copy") { window.FeverWatchShare.copyLink(d.url); return; }
     window.FeverWatchShare.renderCard(d.card).then(function (canvas) {
       if (kind === "wa") window.FeverWatchShare.whatsapp(d.text, "");  // URL is already in d.text

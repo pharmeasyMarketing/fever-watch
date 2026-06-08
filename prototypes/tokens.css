@@ -1,7 +1,14 @@
 /* PharmEasy design tokens for Fever Watch, extracted from the PharmEasy Figma
    system (Order Medicine web + Med PDP SEO). Shared by the mobile and desktop
    prototypes so both flows speak the real product's design language. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Self-hosted Inter (latin woff2 subset) - no render-blocking Google Fonts request.
+   Paths are relative to dist/assets/css/ (where this file is copied at build); the SSG
+   preloads the 600 + 700 weights. */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/inter-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 800; font-display: swap; src: url('../fonts/inter-latin-800-normal.woff2') format('woff2'); }
 
 :root {
   /* Brand greens */

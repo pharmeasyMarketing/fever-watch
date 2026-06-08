@@ -417,9 +417,12 @@ def main() -> int:
     for city in cities:
         ctx = ctx_for(city, diseases, cells)
         ctx["date"] = date
-        render_card(ctx, story=False).save(os.path.join(OG_DIR, city["id"] + ".png"), "PNG")
+        # JPEG (not PNG): this is a photographic gradient card, so JPEG q82 is ~55KB vs ~135KB+
+        # (700KB+ on CI) for PNG, with no visible quality loss. og:image accepts JPEG everywhere.
+        render_card(ctx, story=False).save(
+            os.path.join(OG_DIR, city["id"] + ".jpg"), "JPEG", quality=82, optimize=True, progressive=True)
         n += 1
-    print("Wrote %d per-city OG cards (1200x630) -> %s" % (n, OG_DIR))
+    print("Wrote %d per-city OG cards (1200x630 JPEG) -> %s" % (n, OG_DIR))
     return 0
 
 

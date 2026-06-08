@@ -208,17 +208,17 @@ window.FeverWatchShare = (function () {
   }
 
   function toBlob(canvas) {
-    return new Promise(function (res) { canvas.toBlob(function (b) { res(b); }, "image/png"); });
+    return new Promise(function (res) { canvas.toBlob(function (b) { res(b); }, "image/jpeg", 0.85); });
   }
 
   function download(canvas, filename) {
     canvas.toBlob(function (b) {
       var a = document.createElement("a");
       a.href = URL.createObjectURL(b);
-      a.download = filename || "fever-watch.png";
+      a.download = filename || "fever-watch.jpg";
       a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-    }, "image/png");
+    }, "image/jpeg", 0.85);
   }
 
   function whatsapp(text, url) {
@@ -232,7 +232,7 @@ window.FeverWatchShare = (function () {
 
   function nativeShare(canvas, text, url, filename) {
     return toBlob(canvas).then(function (blob) {
-      var file = new File([blob], filename || "fever-watch.png", { type: "image/png" });
+      var file = new File([blob], filename || "fever-watch.jpg", { type: "image/jpeg" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         // Some Android targets (notably WhatsApp) attach only the image and drop the caption when a
         // file is present - the receiving app decides. Best-effort: copy the message so it can be pasted.

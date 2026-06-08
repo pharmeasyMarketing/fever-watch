@@ -33,6 +33,7 @@ DIST = os.path.join(ROOT, "dist", "fever-watch")
 
 # The locked brand risk ramp (matches the JS RISK map and tokens.css --risk-*).
 RISK = {"HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F"}
+RISK_SOFT = {"HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC"}
 
 FAQ_ITEMS = [
     ("What is Fever Watch?",
@@ -135,14 +136,15 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {head}
 {jsonld}
+<link rel="preload" href="{rel}assets/fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{rel}assets/fonts/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}assets/css/tokens.css?v={av}">
 <link rel="stylesheet" href="{rel}assets/css/mobile.css?v={av}" media="(max-width: 819px), (pointer: coarse)">
 <link rel="stylesheet" href="{rel}assets/css/desktop.css?v={av}" media="(min-width: 820px) and (pointer: fine)">
-{bootcss}
 </head>
 <body>
-{bootjs}
 {nav}
+{ticker}
 <div id="fw-app">{fallback}</div>
 {footer}
 <script>window.FW = {fw};</script>
@@ -153,16 +155,10 @@ PAGE = """<!DOCTYPE html>
 </html>
 """
 
-# Anti-flash: a tiny render-blocking script marks <html class="js"> before first paint, so the baked
-# crawler/no-JS fallback (#fw-app .fw-fallback) is hidden for JS users and never flashes before the
-# flow hydrates. A 6s failsafe re-reveals it if hydration never sets body.fw-hydrated (broken JS /
-# data fetch), so no-JS robustness is preserved either way.
-BOOT_CSS = '<style>html.js .fw-fallback{display:none}</style>'
-BOOT_JS = (
-    "<script>(function(){var h=document.documentElement;h.className+=' js';"
-    "setTimeout(function(){if(!(document.body&&document.body.classList.contains('fw-hydrated')))"
-    "h.className=h.className.replace(/\\bjs\\b/,'');},6000);})();</script>"
-)
+# Anti-CLS: the baked fallback (#fw-app .fw-fallback) stays VISIBLE as first paint - it is complete,
+# real content rendered from the same grid, so the footer sits in its final position immediately. The
+# flow then replaces #fw-app in one shot on hydration (footer never jumps). The header ticker is baked
+# server-side too (ticker_html) so injecting it can't shift the layout either.
 
 
 def esc(s) -> str:
@@ -239,6 +235,25 @@ def nav_html(rel: str) -> str:
     )
 
 
+def ticker_html(all_cities: list, rel: str) -> str:
+    """Baked 'live this week' ticker (top cities by blend), emitted server-side right after the header
+    so it is present at first paint - no JS injection, no layout shift. Anchors are crawlable and the
+    flow wires the marquee pause behavior over them on hydration."""
+    ranked = sorted(all_cities, key=lambda c: c["blend"]["score"], reverse=True)[:12]
+    items = ""
+    for c in ranked:
+        b = c["blend"]
+        col = RISK.get(b["band"], "#888")
+        soft = RISK_SOFT.get(b["band"], "#eee")
+        items += ('<a class="fw-tick" href="' + rel + esc(c["id"]) + '/" data-act="pickrow" data-id="' + esc(c["id"]) + '">'
+                  '<span class="tdot" style="background:' + col + '"></span>' + esc(c["name"])
+                  + ' <b style="color:' + col + '">' + str(b["score"]) + '</b>'
+                  + '<span class="tpill" style="color:' + col + ';background:' + soft + '">' + esc(b["band"]) + '</span></a>')
+    return ('<div class="fw-ticker" id="fwticker"><div class="fw-ticker-in">'
+            '<span class="fw-ticker-label"><span class="livedot"></span> Live this week</span>'
+            '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + items + items + '</div></div></div></div>')
+
+
 FOOTER_COLS = [
     ("Company", [("About Us", "https://pharmeasy.in/about-us"), ("Careers", "https://pharmeasy.in/careers"),
                  ("Blog", "https://pharmeasy.in/blog"), ("Partner with PharmEasy", "https://pharmeasy.in/franchisestores")]),
@@ -308,6 +323,7 @@ def head_meta(cfg: dict, env: str, title: str, desc: str, canonical: str, rel: s
         '<meta property="og:description" content="' + esc(desc) + '">',
         '<meta property="og:url" content="' + esc(canonical) + '">',
         '<meta property="og:image" content="' + esc(og_img) + '">',
+        '<meta property="og:image:type" content="' + ("image/jpeg" if ".jpg" in og_img else "image/png") + '">',
         '<meta property="og:image:width" content="' + str(cfg.get("og_image_width", 1200)) + '">',
         '<meta property="og:image:height" content="' + str(cfg.get("og_image_height", 630)) + '">',
         '<meta property="og:image:alt" content="' + esc(og_alt) + '">',
@@ -508,7 +524,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel)
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
               "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
-        og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".png"
+        og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
         title = cfg["title"]
@@ -526,9 +542,9 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         lang=cfg.get("language", "en-IN"),
         head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
         jsonld=jsonld(cfg, generated_at, diseases, city, og_url),
-        rel=rel, nav=nav_html(rel), fallback=fallback, footer=footer_html(),
+        rel=rel, nav=nav_html(rel), ticker=ticker_html(grid["cities"], rel),
+        fallback=fallback, footer=footer_html(),
         fw=json.dumps(fw, ensure_ascii=False), av=av,
-        bootcss=BOOT_CSS, bootjs=BOOT_JS,
     )
 
 
