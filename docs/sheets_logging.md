@@ -89,6 +89,7 @@ function doPost(e) {
       if (body.sheet === 'raw_data') _setRawFormulas(sh, start, rows.length, rows);
     }
     _ensureSummary(ss);
+    _ensureDictionary(ss);
     return _out({ ok: true, sheet: body.sheet, appended: rows.length });
   } catch (err) {
     return _out({ ok: false, error: String(err) });
@@ -102,7 +103,7 @@ function doPost(e) {
 // only, capped at 69. OVERALL rows (disease="OVERALL"): the city headline blend = 0.8*top +
 // 0.2*mean-of-rest over that run's disease rows for the city (matched on run_id B + city C).
 function _setRawFormulas(sh, start, n, rows) {
-  const fT = [], fU = [], fV = [];
+  const fS = [], fT = [], fU = [], fV = [];
   for (let i = 0; i < n; i++) {
     const r = start + i;
     if (rows[i][4] === 'OVERALL') {
@@ -110,9 +111,12 @@ function _setRawFormulas(sh, start, n, rows) {
       const mx = 'MAXIFS(' + sel + ')';
       const sm = 'SUMIFS(' + sel + ')';
       const ct = 'COUNTIFS($B:$B,$B' + r + ',$C:$C,$C' + r + ',$E:$E,"<>OVERALL")';
+      fS.push(['=""']);  // confidence n/a for the city blend
       fT.push(['=IFERROR(ROUND(0.8*' + mx + '+0.2*(' + sm + '-' + mx + ')/(' + ct + '-1)),ROUND(' + mx + '))']);
       fV.push(['="blend"']);
     } else {
+      // confidence: Forecast only if no positivity; High if the 3 signals agree (spread<22) else Moderate.
+      fS.push(['=IF($O' + r + '="","Forecast only",IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,"High","Moderate"))']);
       fT.push(['=IF($O' + r + '="",ROUND(MIN(69,($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + ')),' +
         'ROUND(MIN(100,(($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + '+($R' + r + '/100)*$O' + r + ')*' +
         'IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,1.08,0.96))))']);
@@ -120,6 +124,7 @@ function _setRawFormulas(sh, start, n, rows) {
     }
     fU.push(['=IFS($T' + r + '>=70,"HIGH",$T' + r + '>=45,"MODERATE",$T' + r + '>=25,"LOW-MODERATE",TRUE,"LOW")']);
   }
+  sh.getRange(start, 19, n, 1).setFormulas(fS);  // S confidence
   sh.getRange(start, 20, n, 1).setFormulas(fT);  // T score
   sh.getRange(start, 21, n, 1).setFormulas(fU);  // U band
   sh.getRange(start, 22, n, 1).setFormulas(fV);  // V mode
@@ -127,10 +132,10 @@ function _setRawFormulas(sh, start, n, rows) {
 
 function _ensure(ss, name) {
   let sh = ss.getSheetByName(name);
-  if (!sh) {
-    sh = ss.insertSheet(name);
-    if (HEADERS[name]) { sh.appendRow(HEADERS[name]); sh.setFrozenRows(1); }
-  }
+  if (!sh) sh = ss.insertSheet(name);
+  // Self-heal headers: write them when the sheet is new OR was cleared (no rows), so clearing
+  // the cells (instead of deleting the whole tab) still ends up with a proper header row.
+  if (HEADERS[name] && sh.getLastRow() === 0) { sh.appendRow(HEADERS[name]); sh.setFrozenRows(1); }
   return sh;
 }
 
@@ -149,6 +154,42 @@ function _ensureSummary(ss) {
   sh.getRange('N1').setValue('City headline blend by date x city (OVERALL rows)').setFontWeight('bold');
   sh.getRange('N2').setFormula(
     "=QUERY(raw_data!A2:V, \"select A, C, avg(T) where E = 'OVERALL' group by A, C order by A desc, C label A 'Date', C 'City', avg(T) 'Overall'\", 0)");
+}
+
+// data_dictionary: a one-time legend tab describing every raw_data column + how it is derived.
+const DICT = [
+  ['Column', 'What it is / how it is derived'],
+  ['date', 'UTC date of the run (grid generated_at).'],
+  ['run_id', 'GitHub Actions run id; groups one pipeline run.'],
+  ['city', 'City name.'],
+  ['state', 'State / UT.'],
+  ['disease', 'Disease label, or OVERALL for the city headline row.'],
+  ['family', 'Weather model family: mosquito / waterborne / febrile (selects how weather is shaped).'],
+  ['temp_c', 'Trailing mean air temperature (C), NASA POWER. Input to weather_score.'],
+  ['humidity_pct', 'Trailing mean relative humidity (%), NASA POWER. Input to weather_score.'],
+  ['rain_7d_mm', 'Rainfall over the last 7 days (mm), NASA POWER. Input to weather_score.'],
+  ['rain_14d_mm', 'Rainfall over the last 14 days (mm), NASA POWER; the lagged breeding signal.'],
+  ['weather_score', '0-100 breeding/transmission favourability from the per-family weather model over temp/humidity/rain (the leading signal). Model output (src/weather_score.py); not a sheet formula.'],
+  ['trends_score', '0-100 Google Trends interest for this disease in the city state (coincident signal). External API value for the OR-joined trends_keywords; not derivable from other columns.'],
+  ['trends_keywords', 'The search terms (OR-joined) whose combined interest is trends_score.'],
+  ['news_spike', 'TRUE if national interest spiked recently (news-driven); trends is down-weighted in forecast mode when TRUE.'],
+  ['positivity', '0-100 PharmEasy lab test-positivity trend (lagging, ground truth). Blank when there is too little lab data -> the row is forecast-only.'],
+  ['w_weather', 'Weight (%) on weather_score in the blend (30 confirmed / 60 forecast).'],
+  ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
+  ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],
+  ['confidence', 'FORMULA: Forecast only if no positivity; High if the three signals agree (max-min < 22) else Moderate.'],
+  ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96. forecast = weather+trends only, capped 69. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
+  ['band', 'FORMULA: HIGH >=70, MODERATE >=45, LOW-MODERATE >=25, LOW <25 (from score).'],
+  ['mode', 'FORMULA: confirmed (positivity present) or forecast (capped, no positivity); OVERALL rows = blend.'],
+];
+function _ensureDictionary(ss) {
+  if (ss.getSheetByName('data_dictionary')) return;
+  const sh = ss.insertSheet('data_dictionary');
+  sh.getRange(1, 1, DICT.length, 2).setValues(DICT);
+  sh.setFrozenRows(1);
+  sh.getRange('A1:B1').setFontWeight('bold');
+  sh.setColumnWidth(1, 150);
+  sh.setColumnWidth(2, 760);
 }
 
 function _out(o) {

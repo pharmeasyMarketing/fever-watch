@@ -15,11 +15,11 @@ Columns the Apps Script expects:
   run_log : timestamp, run_id, trigger, step, status, detail
   raw_data: date, run_id, city, state, disease, family, temp_c, humidity_pct, rain_7d_mm,
             rain_14d_mm, weather_score, trends_score, trends_keywords, news_spike, positivity,
-            w_weather, w_trends, w_positivity, confidence
-            (INPUTS only, cols A-S; score/band/mode in cols T-V are in-sheet FORMULAS the
-            Apps Script writes, mirroring config/consolidation.json. Each city also gets one
-            disease="OVERALL" row whose score is the city headline blend by formula
-            (0.8*top + 0.2*mean-of-rest). See docs/sheets_logging.md)
+            w_weather, w_trends, w_positivity (raw INPUTS, cols A-R). confidence (S) and
+            score/band/mode (T-V) are in-sheet FORMULAS the Apps Script writes, mirroring
+            config/consolidation.json. Each city also gets one disease="OVERALL" row whose score
+            is the headline blend by formula (0.8*top + 0.2*mean-of-rest); a data_dictionary tab
+            describes every column. See docs/sheets_logging.md)
 
 CLI (used by .github/workflows/daily.yml so build scripts stay untouched):
   python src/sheetlog.py log <step> <status> [detail]
@@ -111,8 +111,8 @@ def push_raw(grid: dict) -> int:
                 temp, hum, r7, r14,
                 s.get("weather"), s.get("trends"), kw, s.get("news_spike"), s.get("positivity"),
                 w.get("weather"), w.get("trends"), w.get("positivity"),
-                r.get("confidence", ""),
-            ])  # A-S inputs; T-V (score/band/mode) are formulas the Apps Script writes
+                "",  # confidence (S) is an in-sheet formula the Apps Script writes
+            ])  # A-R inputs; confidence + score/band/mode (S-V) are formulas the Apps Script writes
         # One city-overall line item: the headline blend, score derived by formula.
         rows.append([
             date, RUN_ID, c.get("name", cid), c.get("state", ""),
