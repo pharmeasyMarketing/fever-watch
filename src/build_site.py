@@ -500,17 +500,27 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> st
             '<button class="changecity" data-act="openCity">Change</button></div>' + _risk_card(city, diseases, cells_by) + '</div></div>')
 
 
-def _desktop_pre(city: dict, diseases: list, cells_by: dict) -> str:
-    nm = esc(city["name"])
-    return ('<div class="fw-pre fw-pre-d">'
-            '<section class="srch"><div class="srchin">'
-            '<h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
-            '<p class="subtitle">Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
-            '<div class="searchbar"><span class="ico">\U0001F50E</span>'
-            '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
-            '<button class="searchbtn" data-act="combo">Search</button></div>'
-            '<p class="microcopy">Available in select cities, more coming soon.</p></div></section>'
-            '<div class="fw-pre-dcard">' + _risk_card(city, diseases, cells_by) + '</div></div>')
+def _desktop_plain_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
+    """Desktop fallback: the plain full-height content (no footer jump -> low CLS). The desktop app's
+    sidebar+heatmap shell is too divergent to server-render seamlessly, and desktop now hydrates
+    instantly from the seed, so this shows only briefly."""
+    blend = city["blend"]
+    driver = next((d for d in diseases if d["id"] == blend["driver"]), diseases[0])
+    ordered = sorted(diseases, key=lambda d: cells_by[(city["id"], d["id"])]["score"], reverse=True)
+    upd = iso_date(generated_at)
+    cid = city["id"]
+    hero = ('<header class="fw-hero"><h1>Live monsoon-fever risk for ' + esc(city["name"]) + ', in one score.</h1>'
+            '<p class="lede">Dengue, malaria, chikungunya, typhoid and viral fever for ' + esc(city["name"]) + ', ' + esc(city["state"])
+            + ', blended from breeding weather, Google search interest and PharmEasy lab signals.</p>'
+            '<div class="fw-search" aria-hidden="true">Search your city</div>'
+            '<p class="microcopy">Available in select cities, more coming soon.</p></header>')
+    pills = "".join('<li>' + esc(d["emoji"] + " " + d["label"]) + ': <strong>' + str(cells_by[(cid, d["id"])]["score"])
+                    + ' / 100</strong> (' + esc(cells_by[(cid, d["id"])]["band"]) + ')</li>' for d in ordered)
+    score = ('<section><h2>' + esc(city["name"]) + ', this week</h2>'
+             '<p>Overall monsoon-fever risk this week is <strong>' + str(blend["score"]) + ' / 100 (' + esc(blend["band"])
+             + ')</strong>, with ' + esc(driver["emoji"] + " " + driver["label"]) + ' the top concern. Updated ' + esc(upd) + '.</p>'
+             '<ul class="fw-scores">' + pills + '</ul></section>')
+    return '<div class="fw-fallback fw-pre-d-plain">' + hero + score + '</div>'
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
@@ -521,7 +531,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
 
     # Designed above-fold, server-rendered to match each flow's JS output, so the FIRST paint is the
     # product (gauge + pills) - not a plain list - and the flow hydrates over identical DOM (no flash).
-    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_pre(city, diseases, cells_by)
+    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_plain_pre(city, diseases, cells_by, generated_at)
 
     head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
     rows = ""
