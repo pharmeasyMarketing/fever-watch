@@ -34,14 +34,24 @@
   wireNav();  // PharmEasy hamburger menu, independent of the data layer
   window.addEventListener("popstate", onPop);
 
-  loadGrid(4).then(function (j) {
+  // Instant first paint: render the designed view from the inlined per-city seed (no wait for the
+  // ~850KB grid). The full grid then loads in the background to fill the other-cities leaderboard.
+  var booted = false;
+  function boot(j) {
     DATA = j;
-    state.cityId = pickDefaultCity();
+    if (!state.cityId || !DATA.cities.some(function (c) { return c.id === state.cityId; })) state.cityId = pickDefaultCity();
     state.expanded = cityObj(state.cityId).blend.driver;
-    document.addEventListener("click", onClick);
-    document.getElementById("citysearch").addEventListener("input", renderCityList);
-    renderCityList(); render(); buildTicker(); buildShareFooter(); maybeGeo();
-  }).catch(function (e) { app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
+    if (!booted) {
+      booted = true;
+      document.addEventListener("click", onClick);
+      var cs = document.getElementById("citysearch"); if (cs) cs.addEventListener("input", renderCityList);
+    }
+    renderCityList(); render(); buildTicker(); buildShareFooter();
+  }
+  if (FW.seed) { try { boot(FW.seed); } catch (e) {} }
+  loadGrid(4).then(function (j) {
+    boot(j); maybeGeo();
+  }).catch(function (e) { if (!DATA) app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 
   function pickDefaultCity() {
     if (FW.city && DATA.cities.some(function (c) { return c.id === FW.city; })) return FW.city;

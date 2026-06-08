@@ -522,8 +522,14 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
         fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel)
+        # Inline per-city seed so the JS paints the designed view instantly (no wait for the ~850KB
+        # grid). The full grid still loads in the background for the other-cities leaderboard.
+        city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
+        seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
+                "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
+                "cities": [city], "grid": city_cells}
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
-              "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
+              "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
@@ -544,7 +550,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         jsonld=jsonld(cfg, generated_at, diseases, city, og_url),
         rel=rel, nav=nav_html(rel), ticker=ticker_html(grid["cities"], rel),
         fallback=fallback, footer=footer_html(),
-        fw=json.dumps(fw, ensure_ascii=False), av=av,
+        fw=json.dumps(fw, ensure_ascii=False).replace("</", "<\\/"), av=av,
     )
 
 

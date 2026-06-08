@@ -31,12 +31,19 @@
   wireNav();  // PharmEasy header dropdowns + hamburger, independent of the data layer
   window.addEventListener("popstate", onPop);
 
-  loadGrid(4).then(function (j) {
+  // Instant first paint from the inlined per-city seed; the full grid loads in the background for the
+  // other-cities leaderboard.
+  var booted = false;
+  function boot(j) {
     DATA = j;
-    state.cityId = pickDefaultCity();
-    document.addEventListener("click", onClick);
-    render(); buildTicker(); buildDock(); maybeGeo();
-  }).catch(function (e) { app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
+    if (!state.cityId || !DATA.cities.some(function (c) { return c.id === state.cityId; })) state.cityId = pickDefaultCity();
+    if (!booted) { booted = true; document.addEventListener("click", onClick); }
+    render(); buildTicker(); buildDock();
+  }
+  if (FW.seed) { try { boot(FW.seed); } catch (e) {} }
+  loadGrid(4).then(function (j) {
+    boot(j); maybeGeo();
+  }).catch(function (e) { if (!DATA) app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 
   function pickDefaultCity() {
     if (FW.city && DATA.cities.some(function (c) { return c.id === FW.city; })) return FW.city;
