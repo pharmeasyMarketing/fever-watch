@@ -33,16 +33,15 @@
 >   rain, signal sub-scores, trends keywords, weights; S-V confidence/score/band/mode by in-sheet FORMULA) + a per-city
 >   `OVERALL` blend row + a new `data_dictionary` tab. See `docs/sheets_logging.md`.
 >
-> ### >>> OPEN ENHANCEMENT (start here next session): desktop seamless first paint <<<
-> Mobile is fully solved (seamless, CLS 0). **Desktop still shows CLS ~0.79 + a brief plain frame.** This is a
-> PRE-EXISTING mismatch, NOT a regression: the desktop fallback is a centered column, but the desktop app is a
-> full-width **sidebar + heatmap `.shell`**, so hydration reorganizes the page (the shift is container-level). A
-> designed-card SSR was tried for desktop and **reverted** (`83f8cd5`) - same 0.79 - so desktop currently renders the
-> plain `.fw-pre-d-plain` fallback. To fix: **server-render the desktop shell** in `build_site.py` to byte-match
-> `desktop.js` - `searchHero` (`.srch`) + `.shell{.toc + .main{ weekSection(.grid2{ <gauge card> + <heatmap table> }) }}`
-> using `render()`/`weekSection()`/`heatmapCard()` as the spec - then media-gate it as `.fw-pre-d` (replacing the current
-> plain block). Desktop perf (76) is dominated by that CLS, so fixing it lifts the perf score too. The mobile pattern
-> (`_risk_card` + `_mobile_pre`, byte-identical -> seamless) is the template.
+> ### >>> RESOLVED (this session): desktop seamless first paint <<<
+> **Done + verified.** `build_site.py` now server-renders the desktop shell: `_desktop_pre` emits `searchHero` (`.srch`)
+> + `.shell{.toc + .main{ _week_section(.grid2{ gauge card + _heatmap_card }) }}` byte-identical to what `desktop.js`
+> `render()` paints from the inlined seed (new helpers `_search_hero_d` / `_week_section` / `_heatmap_card` / `_beacon`,
+> reusing `_gauge_svg` at size 112; new `SIGCOL` / `SIGNAME` constants). It is media-gated `.fw-pre-d` (shown on desktop;
+> `mobile.css` now hides `.fw-pre-d`; the old centered `.fw-pre-d-plain` fallback is gone). Hydration is now a no-op
+> repaint, so the **desktop CLS 0.79 -> 0** (0 shifts), verified headlessly at 1300px; the SSR `.srch` / `.toc` /
+> `#s-week` are byte-identical to the live post-hydration DOM (799==799, 282==282, 4275==4275). Mobile re-verified:
+> still CLS 0, `.fw-pre-d` correctly hidden, mobile card intact. Both flows now paint the real design as first paint.
 >
 > **2026-06-06 (signals live):** Google Trends is now REAL and AUTOMATED. The 5 SerpApi keys are in
 > GitHub Actions secrets (verified `5/5` in CI), and `.github/workflows/daily.yml` runs the full pipeline
@@ -109,7 +108,7 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE (frozen)** | the locked design source; now extracted into the SSG runtime (`assets/`), so prototypes are reference-only |
 | Co-branded nav lockup (`assets/img/fever-watch-lockup-white.svg`) | **DONE** | rendered both navs |
 | **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE (full pre-render)** | `build_site.py` -> 228 pages; bakes the ENTIRE page (hero, score, why-this-score table, full methodology, what-to-do, 228-city table, FAQ, reads) + clean H1>H2>H3 hierarchy. Section 9 (AS BUILT). |
-| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE (mobile seamless; desktop has CLS, see open enhancement)** | first paint = the designed card (mobile, seamless via `.fw-pre-m`, verified CLS 0) or the plain fallback (desktop, CLS ~0.79); the flow renders instantly from `window.FW.seed` then loads the full grid in the background; no boot-hide; per-city H1 + H2/H3 + live FAQ verified both flows |
+| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE (both flows seamless, CLS 0)** | first paint = the designed view on BOTH flows (mobile `.fw-pre-m` card; desktop `.fw-pre-d` shell = searchHero + sidebar TOC + gauge/heatmap), server-rendered byte-identical to the JS so hydration is a no-op repaint; verified headlessly CLS 0 on both (desktop was 0.79); renders instantly from `window.FW.seed` then loads the full grid in the background; no boot-hide; per-city H1 + H2/H3 + live FAQ verified both flows |
 | Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 228 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
 | **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds (build_assets + build_og + build_site) + publishes on push to master; staging (real trends + mock positivity), robots Disallow. CI installs `fonts-noto-color-emoji`; OG mosquito badge confirmed rendering on the deployed cards. |
@@ -250,10 +249,10 @@ The SSG + daily cron + real trends + Sheets logging are all **LIVE**. `.github/w
 republishes on every push to `master`; `daily.yml` (01:30 UTC + `gh workflow run daily.yml`) refreshes data + deploys.
 Remaining:
 
-1. **Desktop seamless first paint (THE open enhancement - see the 2026-06-08 banner up top).** Server-render the desktop
-   `.shell` (sidebar TOC + `.grid2{gauge card + heatmap}`) in `build_site.py`, byte-matching `desktop.js`, so desktop
-   hydration is a no-op repaint - kills the desktop **CLS ~0.79** and lifts its perf (76, CLS-dominated). Mobile already
-   works this way (`.fw-pre-m`, byte-identical -> seamless); use `_risk_card` / `_mobile_pre` as the template.
+1. ~~**Desktop seamless first paint**~~ **DONE this session** (see the RESOLVED banner up top): `build_site.py` now
+   server-renders the `.fw-pre-d` desktop shell (searchHero + sidebar TOC + `.grid2{gauge card + heatmap}`) byte-identical
+   to `desktop.js`, so desktop hydration is a no-op repaint. Desktop **CLS 0.79 -> 0**, verified headlessly; mobile
+   re-verified still CLS 0. This also lifts the CLS-dominated desktop perf score.
 2. **Wire the real feeds** (lab Sheet CSV URL + 5 SerpApi keys as Actions secrets) and flip `config/signals.json`
    mock -> real (googlesheet / cached). Then the cron publishes real scores; drop the robots Disallow when ready to index.
 3. **Production hosting:** set `config/site.json base_url` to the final pharmeasy.in route; ask PharmEasy infra for the

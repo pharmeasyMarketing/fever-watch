@@ -227,5 +227,5 @@
   @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } }
 
-  /* server-rendered above-fold: show the mobile designed card, hide the desktop plain fallback */
-  .fw-pre-d-plain { display: none; }
+  /* server-rendered above-fold: show the mobile designed card, hide the desktop shell pre */
+  .fw-pre-d { display: none; }

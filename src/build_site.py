@@ -500,27 +500,95 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> st
             '<button class="changecity" data-act="openCity">Change</button></div>' + _risk_card(city, diseases, cells_by) + '</div></div>')
 
 
-def _desktop_plain_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
-    """Desktop fallback: the plain full-height content (no footer jump -> low CLS). The desktop app's
-    sidebar+heatmap shell is too divergent to server-render seamlessly, and desktop now hydrates
-    instantly from the seed, so this shows only briefly."""
-    blend = city["blend"]
-    driver = next((d for d in diseases if d["id"] == blend["driver"]), diseases[0])
-    ordered = sorted(diseases, key=lambda d: cells_by[(city["id"], d["id"])]["score"], reverse=True)
-    upd = iso_date(generated_at)
+SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
+SIGNAME = {"weather": "Breeding weather", "trends": "Google Search Interest", "positivity": "PharmEasy labs"}
+
+
+def _beacon(band: str) -> str:
+    """The pulsing risk beacon, byte-identical to the flows' beacon()."""
+    return ('<span class="beacon" style="--c:' + RISK.get(band, "#888")
+            + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>')
+
+
+def _search_hero_d(city: dict) -> str:
+    """Byte-identical to desktop.js searchHero(c) at first render (state.comboOpen = false)."""
+    nm = city["name"]
+    return ('<section class="srch"><div class="srchin">'
+            '<h1>Live monsoon-fever risk for ' + esc(nm) + ', in <em>one score</em>.</h1>'
+            '<p class="subtitle">Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
+            '<div class="searchbar"><span class="ico">\U0001F50E</span>'
+            '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
+            '<button class="searchbtn" data-act="combo">Search</button>'
+            '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
+            '</div><p class="microcopy">Available in select cities, more coming soon.</p></div></section>')
+
+
+def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
+    """Byte-identical to desktop.js heatmapCard(c) (diseases ordered by score, high to low)."""
     cid = city["id"]
-    hero = ('<header class="fw-hero"><h1>Live monsoon-fever risk for ' + esc(city["name"]) + ', in one score.</h1>'
-            '<p class="lede">Dengue, malaria, chikungunya, typhoid and viral fever for ' + esc(city["name"]) + ', ' + esc(city["state"])
-            + ', blended from breeding weather, Google search interest and PharmEasy lab signals.</p>'
-            '<div class="fw-search" aria-hidden="true">Search your city</div>'
-            '<p class="microcopy">Available in select cities, more coming soon.</p></header>')
-    pills = "".join('<li>' + esc(d["emoji"] + " " + d["label"]) + ': <strong>' + str(cells_by[(cid, d["id"])]["score"])
-                    + ' / 100</strong> (' + esc(cells_by[(cid, d["id"])]["band"]) + ')</li>' for d in ordered)
-    score = ('<section><h2>' + esc(city["name"]) + ', this week</h2>'
-             '<p>Overall monsoon-fever risk this week is <strong>' + str(blend["score"]) + ' / 100 (' + esc(blend["band"])
-             + ')</strong>, with ' + esc(driver["emoji"] + " " + driver["label"]) + ' the top concern. Updated ' + esc(upd) + '.</p>'
-             '<ul class="fw-scores">' + pills + '</ul></section>')
-    return '<div class="fw-fallback fw-pre-d-plain">' + hero + score + '</div>'
+    sigs = ("weather", "trends", "positivity")
+    head = ('<tr><th class="dis">Disease</th>' + "".join('<th>' + SIGNAME[s] + '</th>' for s in sigs)
+            + '<th>Score</th></tr>')
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    rows = ""
+    for d in ordered:
+        cell = cells_by[(cid, d["id"])]
+        sg = cell.get("signals", {})
+        tds = ""
+        for s in sigs:
+            v = sg.get(s)
+            if v is None:
+                tds += '<td><div class="heatcell empty">no data</div></td>'
+            else:
+                rgb = SIGCOL[s]
+                a = "%.2f" % (0.12 + 0.72 * v / 100)
+                tds += ('<td><div class="heatcell" style="background:rgba(' + str(rgb[0]) + ',' + str(rgb[1])
+                        + ',' + str(rgb[2]) + ',' + a + ')">' + str(v) + '</div></td>')
+        rows += ('<tr><td class="dis">' + d["emoji"] + ' ' + d["label"] + '</td>' + tds
+                 + '<td><div class="heatscore" style="background:' + RISK_SOFT.get(cell["band"], "#eee")
+                 + ';color:' + RISK.get(cell["band"], "#888") + '">' + str(cell["score"]) + '</div></td></tr>')
+    return ('<div class="card"><table class="heat"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>'
+            '<div class="heatlegend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
+            '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Google Search (coincident)</span>'
+            '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (lagging, ground truth)</span><span>Darker = stronger signal</span></div></div>')
+
+
+def _week_section(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
+    """Byte-identical to desktop.js weekSection(c, b): the gauge card + heatmap inside .grid2."""
+    cid = city["id"]; b = city["blend"]; band = b["band"]; col = RISK.get(band, "#888")
+    drv_cell = cells_by[(cid, b["driver"])]
+    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    pills = "".join(
+        '<span class="dpill"><span class="dot" style="background:' + RISK.get(cells_by[(cid, d["id"])]["band"], "#888")
+        + '"></span>' + d["emoji"] + ' ' + d["label"] + ' <b>' + str(cells_by[(cid, d["id"])]["score"]) + '</b></span>'
+        for d in ordered)
+    card = ('<div class="card risk"><div class="rtop">' + _gauge_svg(b["score"], col, 112)
+            + '<div class="rhead"><div class="ov">Overall monsoon-fever risk, this week</div>'
+            '<div class="bandlbl" style="color:' + col + '">' + _beacon(band) + band + '</div></div></div>'
+            '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT.get(drv_cell["band"], "#eee")
+            + ';color:' + RISK.get(drv_cell["band"], "#888") + '">Top concern: ' + drv["emoji"] + ' ' + drv["label"]
+            + ' ' + drv_cell["band"] + ' (' + str(b["driver_score"]) + ')</span></div>'
+            '<div class="pills">' + pills + '</div>'
+            '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>'
+            '<button class="sharebtn" data-act="share">⤴ Share</button></div></div>')
+    return ('<section id="s-week"><h2 class="sechead">' + city["name"] + ', this week</h2>'
+            '<p class="secsub">Updated ' + _fmt_date_js(generated_at) + '. One headline score plus the signal mix behind it.</p>'
+            '<div class="grid2">' + card + _heatmap_card(city, diseases, cells_by) + '</div></section>')
+
+
+def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
+    """Desktop seamless first paint. Server-render .srch + .shell{.toc + .main{weekSection}} so it is
+    byte-identical to what desktop.js render() paints from the inlined seed; hydration is then a no-op
+    repaint over identical above-fold DOM (kills the desktop CLS). The .fw-below SEO block underneath
+    stays for crawlers / no-JS. Mirrors the mobile _mobile_pre / _risk_card pattern. Gated .fw-pre-d."""
+    toc = ('<aside class="toc">'
+           '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a>'
+           '<a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a>'
+           '<a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a></aside>')
+    return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city)
+            + '<div class="shell">' + toc + '<div class="main">'
+            + _week_section(city, diseases, cells_by, generated_at) + '</div></div></div>')
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
@@ -531,7 +599,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
 
     # Designed above-fold, server-rendered to match each flow's JS output, so the FIRST paint is the
     # product (gauge + pills) - not a plain list - and the flow hydrates over identical DOM (no flash).
-    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_plain_pre(city, diseases, cells_by, generated_at)
+    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_pre(city, diseases, cells_by, generated_at)
 
     head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
     rows = ""
