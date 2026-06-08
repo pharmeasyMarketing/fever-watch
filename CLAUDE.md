@@ -92,7 +92,7 @@ Three weather-shaping families select how trailing daily weather maps to the env
 ## How to run
 
 ```
-python scripts/gen_cities.py     # regenerate config/cities.json (119 cities)
+python scripts/gen_cities.py     # regenerate config/cities.json (228 cities)
 python src/build_weather.py      # NASA POWER -> data/weather.json (daily)
 python src/build_daily.py        # compose the grid (reads config/signals.json) -> data/grid.json
 python src/build_trends.py       # WEEKLY: SerpApi -> data/trends.json (needs SERPAPI_KEY)
@@ -103,7 +103,7 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 
 ## Data cadence (LOCKED)
 
-- **Weather (NASA POWER):** pulled **daily** to `data/weather.json`. ~100 free calls/day for 100 cities, no key.
+- **Weather (NASA POWER):** pulled **daily** to `data/weather.json`. ~228 calls/day for 228 cities, no key (keyless / US public domain, no hard daily limit).
 - **Google Trends (SerpApi, 5 API keys with failover):** pulled **weekly** to `data/trends.json`. Port the SerpApi
   provider + multi-key loader from Mosquito Watch into `src/signals/serpapi.py` behind the existing interface.
 - **PharmEasy lab positivity (Google Sheet):** read **daily** (backend analytics updates the sheet daily).
@@ -117,19 +117,19 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 - Separate **mobile** and **desktop** flows (not responsive), PharmEasy-styled (Inter, Porcelain Green, gold accent,
   diagnostics blue for the lab signal). Working clickable prototypes in `prototypes/` (`mobile.html`, `desktop.html`,
   `tokens.css`). Co-branded nav lockup at `assets/img/fever-watch-lockup-white.svg`.
-- **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **Top 100 cities.**
+- **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **Top ~230 cities (228 live).**
 - Headline = **max-dominant blend** (`0.8 x top disease + 0.2 x mean of rest`) with the driver disease named.
 
 ## Open decisions / TODO
 
 - [x] v1 diseases: dengue, malaria, chikungunya, typhoid, viral fever.
-- [x] UX: dual mobile/desktop flows, city-first, top 100, `/fever-watch/{city}` URLs (prototypes approved-in-progress).
+- [x] UX: dual mobile/desktop flows, city-first, top ~230 (228 live), `/fever-watch/{city}` URLs (prototypes approved-in-progress).
 - [x] Data cadence: weather daily, trends weekly (SerpApi x5), lab Google Sheet daily (see above).
-- [x] Top ~120 city config built (`scripts/gen_cities.py` -> `config/cities.json`, 119 cities); coords need a QA pass before launch.
+- [x] Top ~230 city config built (`scripts/gen_cities.py` -> `config/cities.json`, 228 cities); coords need a QA pass before launch.
 - [x] Signal providers built + wired via `config/signals.json`: SerpApi weekly (`build_trends.py` -> `trends.json`, read by `cached`); Google Sheet daily (`googlesheet`, tested). Flip `mock` -> real in `signals.json`.
 - [x] IP-geolocation source: BigDataCloud `reverse-geocode-client` (keyless, client-side, commercial-OK; client-side-only constraint) + freeipapi.com fallback. Front-end impl pending.
 - [ ] Provide the PharmEasy lab Google Sheet published-CSV URL -> set positivity.googlesheet.csv_url + provider `googlesheet`.
-- [ ] Add the 5 SerpApi keys as Actions secrets -> set trends provider `cached` (weekly `build_trends.py`).
+- [x] Add the 5 SerpApi keys as Actions secrets -> DONE (5/5 verified in CI; `trends.provider=cached`; pulled by `daily.yml`).
 - [ ] Repo name + Pages + production reverse-proxy route (mirror Mosquito Watch).
-- [ ] Self-host Inter for production; final brand sign-off on the co-branded lockup.
+- [x] Self-host Inter -> DONE (latin woff2 + `@font-face`, replacing the Google Fonts CDN). [ ] Final brand sign-off on the co-branded lockup still pending.
 - [ ] Backtest the 3-signal lag on a past monsoon before any public early-warning claim.

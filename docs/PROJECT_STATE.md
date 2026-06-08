@@ -4,6 +4,46 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **2026-06-08 (performance + share-chrome + seamless-first-paint pass; ALL LIVE + PSI-audited):** big perf/UX
+> pass, deployed. Live PSI headline: **mobile 67-89 -> 97-99, CLS 0.95 -> 0, FCP 2.7s -> ~1.1s, best-practices 100**;
+> **OG cards 700KB PNG -> ~55KB JPEG**. Commits: `a77bc73` (share chrome + Inter + logging), `dd7c691` (cache-bust),
+> `564f2fc` (logging dictionary/confidence), `e224d98` (OG JPEG + fonts), `5e6748f` (inline seed - had the bug below),
+> `135afe6` (seed-boot fix + mobile SSR card + JS preload), `83f8cd5` (desktop revert). What changed:
+> - **CRITICAL bug fixed (`135afe6`):** the inline-seed boot was **silently throwing** - it ran near the top of each
+>   flow's IIFE, BEFORE the `FAQ`/`METHOD` globals are assigned at the bottom, so `render()` did `FAQ.map` on undefined;
+>   the `catch` swallowed it and the async grid-boot masked it. Net: **the seed never rendered on either flow** ->
+>   both waited for the 850KB grid -> the plain fallback lingered (this was the real cause). Fix: invoke `boot()` at the
+>   END of each IIFE (after FAQ/METHOD); boot failures now `console.error` instead of being swallowed.
+> - **Mobile first paint IS the design (seamless, no flash):** `build_site.py` server-renders the real designed card
+>   (hero + gauge SVG + pills) **byte-identical** to the JS `riskCard` via shared classes, media-gated `.fw-pre-m`
+>   (helpers `_gauge_svg`/`_risk_card`/`_mobile_pre`). Hydration is a no-op repaint over identical DOM (verified
+>   `1692==1692`). The old boot-time fallback-hide + 6s failsafe were removed; the header ticker is baked server-side
+>   (`ticker_html`).
+> - **Inline per-city seed** (`window.FW.seed` = the city's blend + its 5 cells + diseases + bands, ~3.5KB) so the flow
+>   renders without waiting for the 850KB grid; the full grid loads in the background only for the leaderboard.
+> - **Self-hosted Inter** (5 latin woff2 in `assets/fonts/` + `@font-face` in `prototypes/tokens.css`, replacing the
+>   render-blocking Google Fonts `@import`; SSG preloads 600/700) -> FCP 2.7s -> ~1.1s. Plus `Inter-Variable.ttf` drives
+>   the Pillow OG card weights. **The "self-host Inter" pending item is now DONE.**
+> - **OG + share/download cards -> JPEG q82** (`build_og.py` + `share.js` canvas), `og:image:type` set. ~92% smaller.
+> - **Cache-busting:** every CSS/JS URL carries a content-hash `?v=` (`asset_version()` + `window.FW.ver`; `fw-loader`
+>   appends it) so returning users get new releases. Grid is `cache:no-store`. The HTML itself is still bound by GitHub
+>   Pages' ~10-min `max-age` (no header control on Pages) - the production reverse-proxy should set HTML `no-cache`.
+> - **Granular Sheets logging is now LIVE + verified:** Apps Script redeployed, tabs cleared, `daily.yml` re-run ->
+>   **1,368 rows** pushed (228 x [5 diseases + 1 OVERALL]). `raw_data` = 22 cols (A-R raw inputs incl. temp/humidity/
+>   rain, signal sub-scores, trends keywords, weights; S-V confidence/score/band/mode by in-sheet FORMULA) + a per-city
+>   `OVERALL` blend row + a new `data_dictionary` tab. See `docs/sheets_logging.md`.
+>
+> ### >>> OPEN ENHANCEMENT (start here next session): desktop seamless first paint <<<
+> Mobile is fully solved (seamless, CLS 0). **Desktop still shows CLS ~0.79 + a brief plain frame.** This is a
+> PRE-EXISTING mismatch, NOT a regression: the desktop fallback is a centered column, but the desktop app is a
+> full-width **sidebar + heatmap `.shell`**, so hydration reorganizes the page (the shift is container-level). A
+> designed-card SSR was tried for desktop and **reverted** (`83f8cd5`) - same 0.79 - so desktop currently renders the
+> plain `.fw-pre-d-plain` fallback. To fix: **server-render the desktop shell** in `build_site.py` to byte-match
+> `desktop.js` - `searchHero` (`.srch`) + `.shell{.toc + .main{ weekSection(.grid2{ <gauge card> + <heatmap table> }) }}`
+> using `render()`/`weekSection()`/`heatmapCard()` as the spec - then media-gate it as `.fw-pre-d` (replacing the current
+> plain block). Desktop perf (76) is dominated by that CLS, so fixing it lifts the perf score too. The mobile pattern
+> (`_risk_card` + `_mobile_pre`, byte-identical -> seamless) is the template.
+>
 > **2026-06-06 (signals live):** Google Trends is now REAL and AUTOMATED. The 5 SerpApi keys are in
 > GitHub Actions secrets (verified `5/5` in CI), and `.github/workflows/daily.yml` runs the full pipeline
 > DAILY (01:30 UTC) - weather (NASA POWER) + real trends (SerpApi) -> grid -> commit data back -> SSG ->
@@ -69,7 +109,7 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Front-end design: 2 clickable prototypes (mobile + desktop) | **DONE (frozen)** | the locked design source; now extracted into the SSG runtime (`assets/`), so prototypes are reference-only |
 | Co-branded nav lockup (`assets/img/fever-watch-lockup-white.svg`) | **DONE** | rendered both navs |
 | **SSG `/fever-watch/{city}` pages (device-adaptive)** | **DONE (full pre-render)** | `build_site.py` -> 228 pages; bakes the ENTIRE page (hero, score, why-this-score table, full methodology, what-to-do, 228-city table, FAQ, reads) + clean H1>H2>H3 hierarchy. Section 9 (AS BUILT). |
-| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE** | both flows hydrate `#fw-app` (no flash; boot-script hides baked block pre-paint, failsafe re-reveals); per-city H1 + H2/H3 headings + live "Common questions" FAQ verified both flows |
+| Device-adaptive runtime (`assets/css,js` + `fw-loader.js`) | **DONE (mobile seamless; desktop has CLS, see open enhancement)** | first paint = the designed card (mobile, seamless via `.fw-pre-m`, verified CLS 0) or the plain fallback (desktop, CLS ~0.79); the flow renders instantly from `window.FW.seed` then loads the full grid in the background; no boot-hide; per-city H1 + H2/H3 + live FAQ verified both flows |
 | Per-city OG score cards (`src/build_og.py`) | **DONE (redesigned)** | 228 cards 1200x630; glass-card design, OVERALL score, top disease named; `og:image` has a `?v={generated_at}` cache-bust so previews refresh when scores do |
 | Brand assets (`src/build_assets.py`) | **DONE (placeholder)** | favicon/PWA/OG via Pillow; swap for final art before launch |
 | **Pages deploy (`.github/workflows/deploy.yml`)** | **DONE - LIVE** | builds (build_assets + build_og + build_site) + publishes on push to master; staging (real trends + mock positivity), robots Disallow. CI installs `fonts-noto-color-emoji`; OG mosquito badge confirmed rendering on the deployed cards. |
@@ -198,21 +238,22 @@ manifest), `src/build_og.py` (per-city OG cards), `src/build_assets.py` (brand p
   - Trends: add the **5 SerpApi keys** as Actions secrets (`SERPAPI_KEY`, `SERPAPI_KEY_2..5`); run `build_trends.py`
     weekly; set `trends.provider = "cached"`.
 - **City coordinates** are ~0.05deg approximations - QA against an authoritative gazetteer before launch.
-- **Fonts:** prototypes load Inter from Google Fonts CDN; self-host for production.
+- **Fonts: DONE** - Inter is self-hosted (5 latin woff2 in `assets/fonts/` + `@font-face` in `prototypes/tokens.css`,
+  SSG preloads 600/700). Frozen prototypes point at the now-self-hosted path; the Google Fonts `@import` is gone.
 - Brand sign-off on the co-branded lockup; convert its "Fever Watch" text to outlines for pixel-perfect rendering.
 
 ---
 
 ## 7. Next up (prioritized)
 
-The SSG is built AND **LIVE on GitHub Pages staging** (https://pharmeasymarketing.github.io/fever-watch/). Committed +
-pushed to `pharmeasyMarketing/fever-watch`; `.github/workflows/deploy.yml` rebuilds + republishes on every push to
-`master`. Remaining path to launch:
+The SSG + daily cron + real trends + Sheets logging are all **LIVE**. `.github/workflows/deploy.yml` rebuilds +
+republishes on every push to `master`; `daily.yml` (01:30 UTC + `gh workflow run daily.yml`) refreshes data + deploys.
+Remaining:
 
-1. **Daily/weekly data cron (the next big piece):** add `daily.yml` (build_weather + build_daily -> grid.json, commit,
-   then build_og + build_site, deploy) and `weekly.yml` (SerpApi trends -> trends.json). Today's deploy builds from the
-   COMMITTED grid.json (mock); the cron makes the site self-refresh. Reuse the existing deploy job (build_og BEFORE
-   build_site). Mirror Mosquito Watch. Fail loud if a source fails.
+1. **Desktop seamless first paint (THE open enhancement - see the 2026-06-08 banner up top).** Server-render the desktop
+   `.shell` (sidebar TOC + `.grid2{gauge card + heatmap}`) in `build_site.py`, byte-matching `desktop.js`, so desktop
+   hydration is a no-op repaint - kills the desktop **CLS ~0.79** and lifts its perf (76, CLS-dominated). Mobile already
+   works this way (`.fw-pre-m`, byte-identical -> seamless); use `_risk_card` / `_mobile_pre` as the template.
 2. **Wire the real feeds** (lab Sheet CSV URL + 5 SerpApi keys as Actions secrets) and flip `config/signals.json`
    mock -> real (googlesheet / cached). Then the cron publishes real scores; drop the robots Disallow when ready to index.
 3. **Production hosting:** set `config/site.json base_url` to the final pharmeasy.in route; ask PharmEasy infra for the
@@ -382,7 +423,7 @@ scripts/  gen_cities.py                  one-off city-config generator
 src/
   build_weather.py  build_daily.py  build_trends.py  consolidate.py  weather_score.py  httputil.py
   build_site.py     SSG -> dist/fever-watch/ (228 pages + robots/sitemap/manifest), stdlib
-  build_og.py       per-city OG + share cards -> assets/img/og/ (Pillow; shrink-to-fit text)
+  build_og.py       per-city OG cards -> assets/img/og/{city}.jpg (Pillow, JPEG q82 ~55KB, Inter via bundled TTF)
   sheetlog.py       best-effort Google Sheet logger (run_log + raw_data via Apps Script webhook; stdlib)
   build_assets.py   placeholder favicon/PWA/OG -> assets/img/ (Pillow, stdlib fallback)
   providers/        weather: nasa_power(DEFAULT), open_meteo(alt), base, __init__(registry)
@@ -390,9 +431,10 @@ src/
 prototypes/         mobile.html  desktop.html  tokens.css   <- FROZEN design reference (extracted into assets/)
 assets/
   css/  mobile.css  desktop.css          <- extracted from prototypes (tokens.css copied from prototypes/ at build time)
-  js/   geo.js  share.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime
+  js/   geo.js  share.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime (boot() at the END of each IIFE)
+  fonts/ Inter-Variable.ttf (Pillow OG card, weight axis) + inter-latin-{400,500,600,700,800}-normal.woff2 (self-hosted web; COMMITTED)
   img/  pe_logo-white.svg  pe_logo-white.png (rasterized, used by share.js canvas + build_og.py; COMMITTED)
-        fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.png (generated, gitignored)
+        fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.jpg (generated JPEG, gitignored)
 dist/   fever-watch/...                  GENERATED SSG output (gitignored)
 docs/   lab_feed_format.md  lab_feed_sample.csv  sheets_logging.md  PROJECT_STATE.md
 index.html                              LEGACY: the early 8-city vanilla-JS port; superseded by the SSG. Safe to delete.
@@ -403,9 +445,11 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
 ## 13. Pending user/account actions
 
 - [ ] Provide the PharmEasy lab **Google Sheet published-CSV URL** -> `config/signals.json` + provider `googlesheet`.
-- [x] ~~**Sheets logging:** deploy the Apps Script + add secrets~~ **DONE + LIVE** (logs sheet `1Iz9nAf38...`; verified
-  1,140 raw rows pushed). If you change `Code.gs` (e.g. the score formulas), re-deploy a **new version**; to apply the
-  formula columns to the existing tabs, delete `raw_data` + `daily_summary` first (see `docs/sheets_logging.md`).
+- [x] ~~**Sheets logging:** deploy the Apps Script + add secrets~~ **DONE + LIVE, now GRANULAR** (logs sheet `1Iz9nAf38...`).
+  2026-06-08: Apps Script redeployed + tabs cleared + `daily.yml` re-run -> `raw_data` is the 22-col format (A-R raw
+  inputs incl. temp/humidity/rain + signal sub-scores + trends keywords + weights; S-V confidence/score/band/mode by
+  formula) + per-city `OVERALL` rows + a `data_dictionary` tab; **1,368 rows** verified. If you change `Code.gs`,
+  re-deploy a **new version** and delete `raw_data` + `daily_summary` first to recreate them (see `docs/sheets_logging.md`).
 - [x] ~~Add the **5 SerpApi keys** as Actions secrets~~ **DONE + LIVE**: keys set, verified `5/5` in CI; `trends.provider=cached`;
   `daily.yml` pulls real trends daily. (Keys are shared with Mosquito Watch; combined free pool ~1,250 searches/mo.)
 - [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
