@@ -40,10 +40,7 @@
     if (!booted) { booted = true; document.addEventListener("click", onClick); }
     render(); buildTicker(); buildDock();
   }
-  if (FW.seed) { try { boot(FW.seed); } catch (e) {} }
-  loadGrid(4).then(function (j) {
-    boot(j); maybeGeo();
-  }).catch(function (e) { if (!DATA) app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
+  // boot() is invoked at the very END of the IIFE - render() uses FAQ/METHOD, which are defined below.
 
   function pickDefaultCity() {
     if (FW.city && DATA.cities.some(function (c) { return c.id === FW.city; })) return FW.city;
@@ -438,4 +435,11 @@
     '<p class="cite">Naish et al. Climate change and dengue: a systematic review. <i>BMC Infectious Diseases</i>, 2014.</p>' +
     '<p class="cite">IDSP Weekly Outbreak Reports, MoHFW.</p>' +
     '<p style="margin-top:12px;color:var(--pe-muted-2);font-size:11.5px">A risk indicator, not a diagnosis or a case count.</p></div></div>';
+
+  // All render() dependencies (FAQ, METHOD, ...) are now defined. Boot: seed first (instant first
+  // paint from the inlined city data), then the full grid in the background for the leaderboard.
+  if (FW.seed) { try { boot(FW.seed); } catch (e) { console.error("seed boot failed:", e); } }
+  loadGrid(4).then(function (j) {
+    boot(j); maybeGeo();
+  }).catch(function (e) { console.error("grid load/boot failed:", e); if (!DATA) app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 })();

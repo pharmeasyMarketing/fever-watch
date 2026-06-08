@@ -226,3 +226,6 @@
   @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } }
+
+  /* server-rendered above-fold: show the mobile version, hide the desktop one (no layout from .fw-pre) */
+  .fw-pre-d { display: none; }

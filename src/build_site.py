@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import shutil
 import sys
@@ -138,6 +139,8 @@ PAGE = """<!DOCTYPE html>
 {jsonld}
 <link rel="preload" href="{rel}assets/fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{rel}assets/js/mobile.js?v={av}" as="script" media="(max-width: 819px), (pointer: coarse)">
+<link rel="preload" href="{rel}assets/js/desktop.js?v={av}" as="script" media="(min-width: 820px) and (pointer: fine)">
 <link rel="stylesheet" href="{rel}assets/css/tokens.css?v={av}">
 <link rel="stylesheet" href="{rel}assets/css/mobile.css?v={av}" media="(max-width: 819px), (pointer: coarse)">
 <link rel="stylesheet" href="{rel}assets/css/desktop.css?v={av}" media="(min-width: 820px) and (pointer: fine)">
@@ -148,9 +151,9 @@ PAGE = """<!DOCTYPE html>
 <div id="fw-app">{fallback}</div>
 {footer}
 <script>window.FW = {fw};</script>
+<script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 <script src="{rel}assets/js/geo.js?v={av}" defer></script>
 <script src="{rel}assets/js/share.js?v={av}" defer></script>
-<script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 </body>
 </html>
 """
@@ -430,33 +433,95 @@ def _cities_table(all_cities: list, rel: str) -> str:
             '<tbody>' + rows + '</tbody></table>')
 
 
+BEACON_DUR = {"HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s"}
+_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def _num(x: float) -> str:
+    """Match JS Number -> String (drops a trailing .0)."""
+    return str(int(x)) if float(x).is_integer() else ("%g" % x)
+
+
+def _fmt_date_js(generated_at: str) -> str:
+    """Match the flow's fmtDate(): '<UTC day> <Mon> <year>' (e.g. 7 Jun 2026)."""
+    iso = generated_at or ""
+    try:
+        return "%d %s %d" % (int(iso[8:10]), _MONTHS[int(iso[5:7]) - 1], int(iso[0:4]))
+    except Exception:
+        return ""
+
+
+def _gauge_svg(score: int, color: str, size: int = 116) -> str:
+    """Byte-for-byte the same SVG the flows' gauge() builds, so hydration is a no-op repaint."""
+    sw = 11
+    cx = size / 2.0
+    r = (size - sw) / 2.0 - 1
+    c = 2 * math.pi * r
+    arc = 0.75
+    track, gap = "%.1f" % (arc * c), "%.1f" % (c - arc * c)
+    prog, c2 = "%.1f" % (max(0, min(100, score)) / 100.0 * arc * c), "%.1f" % (c * 2)
+    cs, rs = _num(cx), _num(r)
+    return ('<div class="gaugewrap" style="width:' + str(size) + 'px;height:' + str(size) + 'px">'
+            '<svg width="' + str(size) + '" height="' + str(size) + '" viewBox="0 0 ' + str(size) + ' ' + str(size) + '">'
+            '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>'
+            '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + color + '" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + prog + ' ' + c2 + '" transform="rotate(135 ' + cs + ' ' + cs + ')" style="transition:stroke-dasharray 1s ease"/>'
+            '</svg><div class="num"><b style="color:' + color + '">' + str(score) + '</b><span>/ 100</span></div></div>')
+
+
+def _risk_card(city: dict, diseases: list, cells_by: dict) -> str:
+    """The .card risk card, identical to the flows' riskCard (shared classes, styled by both)."""
+    cid = city["id"]; b = city["blend"]; band = b["band"]; col = RISK.get(band, "#888")
+    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
+    dc = cells_by[(cid, b["driver"])]; db = dc["band"]
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    pills = "".join(
+        '<span class="dpill"><span class="dot" style="background:' + RISK.get(cells_by[(cid, d["id"])]["band"], "#888")
+        + '"></span>' + d["emoji"] + ' ' + esc(d["label"]) + ' <b>' + str(cells_by[(cid, d["id"])]["score"]) + '</b></span>'
+        for d in ordered)
+    beacon = '<span class="beacon" style="--c:' + col + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>'
+    return ('<div class="card"><div class="rtop">' + _gauge_svg(b["score"], col, 116)
+            + '<div class="rhead"><div class="ov">Overall monsoon-fever risk</div>'
+            '<div class="bandlbl" style="color:' + col + '">' + beacon + band + '</div></div></div>'
+            '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT.get(db, "#eee") + ';color:' + RISK.get(db, "#888")
+            + '">Top concern: ' + drv["emoji"] + ' ' + esc(drv["label"]) + ' ' + db + ' (' + str(b["driver_score"]) + ')</span></div>'
+            '<div class="pills">' + pills + '</div>'
+            '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>'
+            '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>')
+
+
+def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> str:
+    nm = esc(city["name"])
+    return ('<div class="fw-pre fw-pre-m">'
+            '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
+            '<p>Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
+            '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">\U0001F50E</span> Search your city</div>'
+            '<p class="searchnote">Available in select cities, more coming soon.</p></div>'
+            '<div class="wrap"><div class="citymeta"><div><h2>' + nm + '</h2><div class="date">This week, updated ' + date_str + '</div></div>'
+            '<button class="changecity" data-act="openCity">Change</button></div>' + _risk_card(city, diseases, cells_by) + '</div></div>')
+
+
+def _desktop_pre(city: dict, diseases: list, cells_by: dict) -> str:
+    nm = esc(city["name"])
+    return ('<div class="fw-pre fw-pre-d">'
+            '<section class="srch"><div class="srchin">'
+            '<h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
+            '<p class="subtitle">Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
+            '<div class="searchbar"><span class="ico">\U0001F50E</span>'
+            '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
+            '<button class="searchbtn" data-act="combo">Search</button></div>'
+            '<p class="microcopy">Available in select cities, more coming soon.</p></div></section>'
+            '<div class="fw-pre-dcard">' + _risk_card(city, diseases, cells_by) + '</div></div>')
+
+
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                    generated_at: str, disclaimer: str, rel: str) -> str:
-    blend = city["blend"]
-    driver = next((d for d in diseases if d["id"] == blend["driver"]), diseases[0])
-    ordered = sorted(diseases, key=lambda d: cells_by[(city["id"], d["id"])]["score"], reverse=True)
-    upd = iso_date(generated_at)
     cid = city["id"]
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    date_str = _fmt_date_js(generated_at)
 
-    hero = (
-        '<header class="fw-hero">'
-        '<h1>Live monsoon-fever risk for ' + esc(city["name"]) + ', in one score.</h1>'
-        '<p class="lede">Dengue, malaria, chikungunya, typhoid and viral fever for ' + esc(city["name"]) + ', '
-        + esc(city["state"]) + ', blended from breeding weather, Google search interest and PharmEasy lab signals.</p>'
-        '<div class="fw-search" aria-hidden="true">Search your city</div>'
-        '<p class="microcopy">Available in select cities, more coming soon.</p></header>'
-    )
-
-    pills = "".join(
-        '<li>' + esc(d["emoji"] + " " + d["label"]) + ': <strong>' + str(cells_by[(cid, d["id"])]["score"])
-        + ' / 100</strong> (' + esc(cells_by[(cid, d["id"])]["band"]) + ')</li>' for d in ordered)
-    score_sec = (
-        '<section><h2>' + esc(city["name"]) + ', this week</h2>'
-        '<p>Overall monsoon-fever risk this week is <strong>' + str(blend["score"]) + ' / 100 ('
-        + esc(blend["band"]) + ')</strong>, with ' + esc(driver["emoji"] + " " + driver["label"])
-        + ' the top concern. Updated ' + esc(upd) + '.</p>'
-        '<ul class="fw-scores">' + pills + '</ul></section>'
-    )
+    # Designed above-fold, server-rendered to match each flow's JS output, so the FIRST paint is the
+    # product (gauge + pills) - not a plain list - and the flow hydrates over identical DOM (no flash).
+    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_pre(city, diseases, cells_by)
 
     head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
     rows = ""
@@ -486,7 +551,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html() + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
-    return ('<div class="fw-fallback">' + hero + score_sec + why_sec + method_sec + do_sec
+    return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec
             + other_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
 
 

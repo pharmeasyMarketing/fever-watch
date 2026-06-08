@@ -248,3 +248,7 @@
   @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } .fw-ticker-label .livedot { animation: none; } }
+
+  /* server-rendered above-fold: show the desktop version, hide the mobile one */
+  .fw-pre-m { display: none; }
+  .fw-pre-dcard { max-width: 380px; margin: 22px auto 0; padding: 0 24px; }
