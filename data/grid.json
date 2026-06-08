@@ -1,9 +1,9 @@
 {
   "engine_version": "FW-ENSEMBLE-0.1.0",
-  "generated_at": "2026-06-08T06:24:35+00:00",
+  "generated_at": "2026-06-08T07:20:17+00:00",
   "disclaimer": "Fever Watch is a risk indicator that blends breeding weather, search interest and lab positivity into one decomposable score per city and disease. It is not a diagnosis, a count of actual cases or mosquitoes, or medical advice. Forecast-only locations are capped and cannot show HIGH.",
   "weather": {
-    "generated_at": "2026-06-08T06:23:38+00:00",
+    "generated_at": "2026-06-08T07:20:08+00:00",
     "provider": "nasa-power",
     "attribution": "Weather data by NASA POWER (MERRA-2 / GMAO), public domain",
     "model_version": "FW-WEATHER-0.1.0"
