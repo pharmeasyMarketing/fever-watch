@@ -4,7 +4,6 @@
     {"id": "dengue",      "label": "Dengue",       "emoji": "🦟", "family": "mosquito",   "vector": "Aedes aegypti",       "flagship": true,  "seasonal_push": 0.85},
     {"id": "malaria",     "label": "Malaria",      "emoji": "🦟", "family": "mosquito",   "vector": "Anopheles",           "flagship": false, "seasonal_push": 0.70},
     {"id": "chikungunya", "label": "Chikungunya",  "emoji": "🦟", "family": "mosquito",   "vector": "Aedes albopictus",    "flagship": false, "seasonal_push": 0.60},
-    {"id": "typhoid",     "label": "Typhoid",      "emoji": "🤒", "family": "waterborne", "vector": "Contaminated water",  "flagship": false, "seasonal_push": 0.65},
-    {"id": "viral_fever", "label": "Viral Fever",  "emoji": "🤒", "family": "febrile",    "vector": "Person to person",    "flagship": false, "seasonal_push": 0.75}
+    {"id": "typhoid",     "label": "Typhoid",      "emoji": "🤒", "family": "waterborne", "vector": "Contaminated water",  "flagship": false, "seasonal_push": 0.65}
   ]
 }

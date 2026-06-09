@@ -101,6 +101,76 @@ img, svg { max-width: 100%; }
 .faq-list .faqitem[open] .faq-chev::after { border-color: var(--pe-green); transform: rotate(-135deg); margin-top: 3px; }
 .faq-list .faq-a { padding: 0 18px 16px; font-size: 13.5px; line-height: 1.62; color: var(--pe-ink-2); }
 
+/* "This monsoon vs last year" season-trend module (brand-recreated from the design brief
+   docs/season-trend-module-brief.md). Shared by the static SSR (build_site.py _trend_html) and the
+   interactive widget (assets/js/trend.js), on both flows. Words-first, one chart at a time, last
+   year = soft gray band, this year = one bold line, no numeric axis. Lives inside a .card. */
+/* Mobile keeps the eyebrow + title INSIDE the card (.fwtrend-head); desktop + the SSR put the title /
+   subtitle OUTSIDE the card (.fwtrend-sectop), matching the other page sections. */
+.fwtrend-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.fwtrend-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--pe-green); }
+.fwtrend-title { font-size: 18px; font-weight: 800; color: var(--pe-ink); margin: 2px 0 0; line-height: 1.25; }
+.fwtrend-sectop { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.fwtrend-sectop .secsub { margin-bottom: 14px; }
+.fwtrend-toggle { border: 1px solid var(--pe-line); background: #fff; color: var(--pe-ink-2); font-size: 12.5px; font-weight: 600; border-radius: var(--pill); padding: 6px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+.fwtrend-toggle .chev { width: 7px; height: 7px; border-right: 2.2px solid var(--pe-muted); border-bottom: 2.2px solid var(--pe-muted); transform: rotate(45deg); transition: transform .15s ease; margin-top: -2px; }
+.fwtrend-toggle[aria-expanded="true"] .chev { transform: rotate(-135deg); margin-top: 2px; }
+
+.fwtrend-verdict { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 12px 0 6px; }
+.fwtrend-vicon { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; flex-shrink: 0; }
+.fwtrend-vicon.below { background: var(--risk-low); }
+.fwtrend-vicon.above { background: var(--risk-high); }
+.fwtrend-vicon.inline { background: var(--pe-muted); }
+.fwtrend-vtext { font-size: 16px; font-weight: 700; color: var(--pe-ink); line-height: 1.3; }
+.fwtrend-chip { font-size: 12.5px; font-weight: 800; padding: 3px 10px; border-radius: var(--pill); }
+.fwtrend-chip.below { color: var(--risk-low); background: #E4F4EC; }
+.fwtrend-chip.above { color: var(--risk-high); background: #FCEBE4; }
+.fwtrend-chip.inline { color: var(--pe-muted); background: var(--pe-bg-2); }
+.fwtrend-context { font-size: 13px; color: var(--pe-muted); margin: 0; }
+
+.fwtrend:not(.open) .fwtrend-body { display: none; }
+.fwtrend-body { margin-top: 14px; }
+.fwtrend-tabs { display: inline-flex; gap: 4px; background: var(--pe-bg-2); padding: 4px; border-radius: var(--pill); margin: 0 0 10px; flex-wrap: wrap; }
+.fwtrend-tab { border: 0; background: transparent; color: var(--pe-ink-2); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: var(--pill); cursor: pointer; line-height: 1; }
+.fwtrend-tab.on { background: #fff; color: var(--pe-green); box-shadow: var(--shadow-sm); }
+.fwtrend-tab.soon { color: var(--pe-muted-2); cursor: default; }
+.fwtrend-tab i { font-style: normal; font-size: 9.5px; opacity: .7; vertical-align: middle; }
+
+.fwtrend-chartwrap { position: relative; margin: 2px 0 0; }
+.fwtrend-svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+/* Month axis labels: HTML (not SVG text) so they're equidistant + a fixed size at any chart width. The
+   3.5% inset matches the SVG plot padding (PADL/PADR = 12/340) so Jun aligns left, Oct right. */
+.fwtrend-months { display: flex; justify-content: space-between; padding: 2px 3.5% 0; font-size: 11px; font-weight: 500; color: var(--pe-muted-2); }
+.fwtrend-tip { position: absolute; transform: translate(-50%, -100%); background: #1f2937; color: #fff; font-size: 11.5px; line-height: 1.5; padding: 7px 10px; border-radius: 9px; box-shadow: 0 6px 18px rgba(0,0,0,.18); pointer-events: none; white-space: nowrap; z-index: 5; }
+.fwtrend-tip[hidden] { display: none; }
+.fwtrend-tip b { display: block; font-size: 10.5px; opacity: .8; font-weight: 700; margin-bottom: 4px; }
+.fwtrend-tip span { display: flex; align-items: center; gap: 6px; }
+.fwtrend-tip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.fwtrend-tip::after { content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1f2937; }
+
+.fwtrend-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--pe-muted); margin: 6px 2px 0; }
+.fwtrend-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.fwtrend-legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; background: #aab6c6; }
+.fwtrend-legend .here i.dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.fwtrend-caption { font-size: 13.5px; font-weight: 600; color: var(--pe-ink-2); margin: 10px 2px 0; }
+.fwtrend-sources { font-size: 11px; color: var(--pe-muted-2); margin: 8px 2px 0; }
+
+.fwtrend-soon { text-align: center; padding: 30px 16px; color: var(--pe-muted); }
+.fwtrend-soon .i { font-size: 26px; display: block; margin-bottom: 8px; }
+.fwtrend-soon b { display: block; color: var(--pe-ink); font-size: 15px; margin-bottom: 4px; }
+.fwtrend-soon p { font-size: 12.5px; max-width: 320px; margin: 0 auto; line-height: 1.55; }
+
+/* Desktop small-multiples: the three signal sparklines, click to make one the hero (mode='desktop'). */
+.fwtrend-smalls { margin-top: 16px; border-top: 1px solid var(--pe-bg-2); padding-top: 12px; }
+.fwtrend-smalls-h { font-size: 11px; font-weight: 700; color: var(--pe-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.fwtrend-smalls-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.fwtrend-smini { border: 1px solid var(--pe-line); background: #fff; border-radius: 12px; padding: 8px 10px 5px; cursor: pointer; text-align: left; transition: border-color .12s ease, box-shadow .12s ease; }
+.fwtrend-smini:hover { border-color: #CFE3E0; }
+.fwtrend-smini.on { border-color: var(--pe-green); box-shadow: 0 2px 10px rgba(16,132,126,.1); }
+.fwtrend-smini .t { font-size: 12px; font-weight: 700; color: var(--pe-ink-2); display: block; margin-bottom: 3px; }
+.fwtrend-smini .fwtrend-svg.mini { height: auto; }
+.fwtrend-smini-soon { min-height: 56px; display: flex; align-items: center; justify-content: center; color: var(--pe-muted-2); font-size: 11px; }
+
 /* Risk beacon: a pulsing alert light next to the band label. Colour = band (--c),
    pulse speed = urgency (--bdur, faster when higher). Honours reduced-motion. */
 .beacon { position: relative; display: inline-block; width: 13px; height: 13px; vertical-align: middle; margin-right: 9px; }

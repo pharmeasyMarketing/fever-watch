@@ -57,9 +57,9 @@
 
     return [
       ["How worried should I be about monsoon fevers in " + nm + " right now?",
-       "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the five fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."],
+       "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the four fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."],
       ["Is dengue something to watch in " + nm + " this week?",
-       "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + (ORD[drank] || "biggest") + " concern of the five fevers here. " + cap(den_mode) + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."],
+       "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + (ORD[drank] || "biggest") + " concern of the four fevers here. " + cap(den_mode) + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."],
       ["Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
        "This week it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."],
       ["How is " + nm + "'s weather affecting the mosquito-fever risk?",

@@ -12,7 +12,7 @@ same as the live daily feed (see `docs/lab_feed_format.md`) plus one optional ex
 | `week_start` | date `YYYY-MM-DD` | yes | start of the 7-day bucket, last season (e.g. `2025-06-01`) |
 | `season_week` | integer 1-22 | optional | week index within the season; derived from `week_start` if omitted |
 | `city` | string | yes | the city **id** from `config/cities.json` (lowercase, e.g. `bengaluru`) - not the display name |
-| `disease` | string | yes | one of: `dengue`, `malaria`, `chikungunya`, `typhoid`, `viral_fever` |
+| `disease` | string | yes | one of: `dengue`, `malaria`, `chikungunya`, `typhoid` |
 | `tests_booked` | integer | yes | aggregate count of relevant tests in that city / disease / week |
 | `positives` | integer | yes | aggregate positives. `positivity_pct = positives / tests_booked x 100` |
 

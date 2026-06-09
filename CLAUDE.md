@@ -8,8 +8,8 @@
 ## What we are building
 
 A consumer-facing, PharmEasy-branded tool that gives one **daily risk score per city per disease**
-for India's **top monsoon fevers**: dengue (flagship), malaria, chikungunya, typhoid, and viral
-fever. It is share-driven and a funnel into PharmEasy test bookings. It answers one personal
+for India's **top monsoon fevers**: dengue (flagship), malaria, chikungunya, and typhoid. It is
+share-driven and a funnel into PharmEasy test bookings. It answers one personal
 question: *should I worry, and what do I do about it?*
 
 **Critical framing (non-negotiable):** a **risk indicator**, NOT a diagnosis, NOT a count of actual
@@ -51,11 +51,13 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
 
 ## Disease model (`config/diseases.json` + `config/scoring.json`)
 
-Three weather-shaping families select how trailing daily weather maps to the environmental sub-score:
+Two weather-shaping families select how trailing daily weather maps to the environmental sub-score (a
+third, **febrile** / viral fever, was retired 2026-06-09 - PharmEasy runs no lab-positivity test for
+viral fever, so it can never get the ground-truth signal; the febrile shaping stays in weather_score.py
+but is now unused):
 - **mosquito** (dengue / malaria / chikungunya): unimodal temperature near 29C, times lagged rainfall
   (standing water), times humidity.
 - **waterborne** (typhoid): recent plus lagged rainfall as a contamination proxy; temperature minor.
-- **febrile** (viral fever): humidity plus day-to-day temperature variability.
 
 ## Build order
 
@@ -122,7 +124,7 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 
 ## Open decisions / TODO
 
-- [x] v1 diseases: dengue, malaria, chikungunya, typhoid, viral fever.
+- [x] v1 diseases: dengue, malaria, chikungunya, typhoid. (Viral fever removed 2026-06-09: no lab-positivity test exists for it, so it could never get the ground-truth signal; see PROJECT_STATE.)
 - [x] UX: dual mobile/desktop flows, city-first, top ~230 (228 live), `/fever-watch/{city}` URLs (prototypes approved-in-progress).
 - [x] Data cadence: weather daily, trends weekly (SerpApi x5), lab Google Sheet daily (see above).
 - [x] Top ~230 city config built (`scripts/gen_cities.py` -> `config/cities.json`, 228 cities); coords need a QA pass before launch.

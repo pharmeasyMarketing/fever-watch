@@ -140,7 +140,7 @@
   // Scroll-spy: highlight the TOC link for the section currently in view as the page scrolls.
   function spyScroll() {
     if (spyScroll.lock && Date.now() < spyScroll.lock) return;
-    var ids = ["s-week", "s-method", "s-do", "s-other", "s-faq", "s-reads"], cur = ids[0];
+    var ids = ["s-week", "s-method", "s-do", "s-other", "s-trend", "s-faq", "s-reads"], cur = ids[0];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el && el.getBoundingClientRect().top <= 110) cur = ids[i];
@@ -163,18 +163,26 @@
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML = searchHero(c) +
       '<div class="shell"><aside class="toc">' +
-        '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a><a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a><a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a>' +
-      '</aside><div class="main">' + weekSection(c, b) + methodSection() + doSection(c) + otherSection(c) + faqSection() + readsSection() + '</div></div>';
+        '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a><a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a><a data-jump="s-trend">This year vs last year</a><a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a>' +
+      '</aside><div class="main">' + weekSection(c, b) + methodSection() + doSection(c) + otherSection(c) +
+        '<section id="s-trend" class="fwtrend-host"></section>' + faqSection() + readsSection() + '</div></div>';
     wireLeaderboard();
+    mountTrend(c);
     wireScrollSpy();
     updateDock();
     document.body.classList.add("fw-hydrated");
   }
 
+  // The "this monsoon vs last year" widget owns its own subtree (tabs / tooltip / collapse / desktop
+  // small-multiples); recompute it from the grid on every render so it tracks the selected city.
+  function mountTrend(c) {
+    if (window.FeverWatchTrend) window.FeverWatchTrend.mount(document.getElementById("s-trend"), c, DATA, { mode: "desktop" });
+  }
+
   function searchHero(c) {
     return '<section class="srch"><div class="srchin">' +
       '<h1>Live monsoon-fever risk for ' + esc(c.name) + ', in <em>one score</em>.</h1>' +
-      '<p class="subtitle">Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>' +
+      '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>' +
       '<div class="searchbar"><span class="ico">🔎</span>' +
         '<button class="field" data-act="combo">📍 ' + c.name + '  <span class="ph">| change your city</span></button>' +
         '<button class="searchbtn" data-act="combo">Search</button>' +
@@ -198,7 +206,7 @@
   // Ranked composite bars (brand-recreated from the design handoff). Each fever is one composite bar,
   // segmented by its three signals (segment width = signal / sum * score, integer %), ordered high to
   // low with the top concern flagged and the score in its band colour. Replaces the old heatmap.
-  var CAT = { mosquito: "Mosquito-borne", waterborne: "Water / food-borne", febrile: "Viral, airborne" };
+  var CAT = { mosquito: "Mosquito-borne", waterborne: "Water / food-borne" };
   function heatmapCard(c) {
     var rows = orderedDiseases(c).map(function (d, i) {
       var cell = cellFor(c.id, d.id), col = RISK[cell.band], sg = cell.signals;
@@ -212,7 +220,7 @@
         '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>' +
         '<div class="sbar-score" style="color:' + col + '">' + sc + top + '</div></div>';
     }).join("");
-    return '<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - five fevers we track in ' + c.name + '</div></div><div class="sbar-list">' + rows + '</div>' +
+    return '<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - four fevers we track in ' + c.name + '</div></div><div class="sbar-list">' + rows + '</div>' +
       '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>' +
       '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>' +
       '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>';
@@ -412,7 +420,7 @@
   }
 
   var FAQ = [
-    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya, typhoid and viral fever), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
+    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya and typhoid), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
     ["Is this a diagnosis or medical advice?", "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."],
     ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
     ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
@@ -424,8 +432,7 @@
     '<div class="methgrid"><div>' +
     '<h3>1. Per-disease environmental score (0 to 100)</h3><p>From trailing daily weather, shaped by disease family:</p><ul>' +
     '<li><b>Mosquito-borne</b> (dengue, malaria, chikungunya): a unimodal temperature response peaking near <code>29&deg;C</code> (Aedes and Anopheles breed fastest at 25 to 30&deg;C; activity falls below ~18&deg;C and above ~35&deg;C), times lagged rainfall over the past ~14 days (standing-water sites emerge 1 to 2 weeks after rain), times relative humidity (above ~60% extends mosquito lifespan). Weights ~0.45 / 0.35 / 0.20.</li>' +
-    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li>' +
-    '<li><b>Febrile</b> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>' +
+    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li></ul>' +
     '<h3>2. Three independent signals</h3><ul>' +
     '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
     '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone.</li>' +

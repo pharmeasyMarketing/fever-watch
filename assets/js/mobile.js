@@ -156,17 +156,25 @@
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML =
       '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ', in <em>one score</em>.</h1>' +
-      '<p>Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
+      '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
       '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">🔎</span> Search your city</div>' +
       '<p class="searchnote">Available in select cities, more coming soon.</p></div>' +
       '<div class="wrap">' +
         '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
         '<button class="changecity" data-act="openCity">Change</button></div>' +
-        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) + faqCard() + readsCard() +
+        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) +
+        '<section id="s-trend" class="fwtrend-host"></section>' + faqCard() + readsCard() +
       '</div>';
     wireLeaderboard();
+    mountTrend(c);
     updateShareFooter();
     document.body.classList.add("fw-hydrated");
+  }
+
+  // The "this monsoon vs last year" widget owns its own subtree (tabs/tooltip/collapse); recompute it
+  // from the grid on every render so it tracks the selected city, like the FAQ (faq.js).
+  function mountTrend(c) {
+    if (window.FeverWatchTrend) window.FeverWatchTrend.mount(document.getElementById("s-trend"), c, DATA, { mode: "mobile" });
   }
 
   function riskCard(c, b) {
@@ -357,7 +365,7 @@
     el.innerHTML = '<div class="fw-foot-cta"><div class="fw-foot-text">' +
       '<div class="fw-foot-title">1 in 3 fevers in India isn\'t just a fever</div>' +
       '<div class="fw-foot-sub" id="fwfootsub"></div></div>' +
-      '<button class="sharebtn" data-act="openShare">⤴ Share</button></div>';
+      '<button class="fw-foot-share" data-act="openShare">⤴ Share</button></div>';
     document.body.appendChild(el);
     updateShareFooter();
   }
@@ -405,7 +413,7 @@
   document.getElementById("scrim").addEventListener("click", closeSheets);
 
   var FAQ = [
-    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya, typhoid and viral fever), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
+    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya and typhoid), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
     ["Is this a diagnosis or medical advice?", "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."],
     ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
     ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
@@ -418,8 +426,7 @@
     '<h3>1. Per-disease environmental score (0 to 100)</h3>' +
     '<p>From trailing daily weather, shaped by disease family:</p><ul>' +
     '<li><b>Mosquito-borne</b> (dengue, malaria, chikungunya): a unimodal temperature response peaking near <code>29&deg;C</code> (Aedes and Anopheles breed fastest at 25 to 30&deg;C, activity falls below ~18&deg;C and above ~35&deg;C), times lagged rainfall over the past ~14 days (standing-water sites emerge 1 to 2 weeks after rain), times relative humidity (above ~60% extends mosquito lifespan). Weights ~0.45 / 0.35 / 0.20.</li>' +
-    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li>' +
-    '<li><b>Febrile</b> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>' +
+    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li></ul>' +
     '<h3>2. Three independent signals</h3><ul>' +
     '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
     '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone (news-driven).</li>' +

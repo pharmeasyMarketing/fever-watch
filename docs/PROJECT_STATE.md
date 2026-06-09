@@ -4,7 +4,92 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **2026-06-09 (FAQ + Ranked Composite Bars + footer ALL SHIPPED + deployed; trend module is the only thing left):**
+> **2026-06-09 (LATEST: trend-module polish + dropped Viral fever, so v1 is now 4 diseases):** three
+> review changes on top of the shipped trend module, all verified on both flows:
+> - **Desktop trend heading moved OUTSIDE the card** to match the other page sections: the section now leads with an
+>   h2 "This monsoon vs last in {City}" + a "Season trend" subtitle (`.fwtrend-sectop`, reusing `.sechead`/`.secsub`),
+>   the Hide/Show toggle top-right, and the card itself now leads with the verdict. Mobile keeps its in-card eyebrow +
+>   title. `trend.js renderCard` is mode-aware; `build_site.py _trend_html` mirrors the heading-outside SSR; the chevron
+>   now keys off `aria-expanded` so it rotates correctly with the toggle outside the card.
+> - **Month axis labels fixed (both flows):** moved from SVG `<text>` (which scaled with the chart - huge on desktop,
+>   unevenly spaced) to a fixed-size HTML row (`.fwtrend-months`, flex space-between) -> equidistant at any width
+>   (verified desktop gaps ~204px, mobile ~70px), 13px on desktop / 11px on mobile, pulled tight under the chart (gap 0).
+> - **Chart layout reworked to "fill the height" (user picked Option 2 from a 4-way mock):** the desktop chart was too
+>   tall (~390px) with a big empty top on low-value tabs (e.g. Labs peaks at 70 on a 0-100 axis). Fix = (a) a
+>   mode-dependent viewBox aspect so the chart is COMPACT on the wide desktop (viewBox 340x92 -> ~244px) while mobile
+>   stays taller (340x150 -> ~142px); and (b) the y-axis ZOOMS to the data (top = peak + 15%, capped 100) so the curve
+>   fills the space - Overall + high signals (peak ~90) stay at full 0-100 so the risk zones keep meaning, low tabs like
+>   Labs zoom in. `trend.js` got a `chartGeom`/`geomXY` refactor (the tooltip reads the live geometry via `st.geo`);
+>   `build_site.py _trend_chart_static` mirrors it (compact + zoom). Verified both flows: tooltip still positions
+>   correctly, Overall zones intact, desktop CLS still 0.
+> - **Signal tabs made visually consistent with Overall:** Overall has the faint risk-zone colour bands as a backdrop;
+>   the signal tabs were plain white ("vanilla"). Each signal tab now gets a soft backdrop GLOW in its own colour
+>   (Weather teal / Searches purple / Labs blue, a low-opacity vertical gradient in `chartSVG`), so every tab reads as
+>   equally designed while Overall keeps its meaningful zones. (The compact+zoom geometry was already identical across
+>   tabs - verified - so the only gap was this backdrop.)
+> - **Mobile floating share bar recoloured to stand out (was invisible white-on-white):** `.fw-foot` is now Porcelain
+>   Green with white text; its Share button is a NEW standalone class `.fw-foot-share` (white-on-green, keeping the
+>   current 12px radius + design) deliberately SEPARATE from the global `.sharebtn` so the two never affect each other
+>   (the risk-card / sheet Share buttons stay green, verified). Mobile only; the desktop dock is unchanged.
+> - **Viral fever REMOVED (v1 is now dengue, malaria, chikungunya, typhoid):** PharmEasy runs no lab-positivity /
+>   parameter test for "viral fever" (a catch-all, not a specific testable condition), so it could NEVER get the third
+>   "ground-truth" signal (permanently forecast-only) and is not a bookable fever-panel test (so it never served the
+>   funnel). Removed from `config/diseases.json` (+ the `viral_fever` trends keywords in `config/signals.json`);
+>   `data/grid.json` regenerated -> **912 cells (228 x 4)**. Copy swept everywhere "...and viral fever" / "the five
+>   fevers" / the Febrile methodology bullet appeared: `build_site.py` (meta, JSON-LD, hero subtitles, FAQ + methodology,
+>   the "four fevers" heatmap subtitle, `_CAT`), `faq.js`, `mobile.js`, `desktop.js` (SSR<->JS byte-identical pairs kept
+>   in sync), `config/site.json` (description + keywords), CLAUDE.md + the lab-feed format docs. Verified: **0
+>   "viral"/"five fevers" left in `dist/`**; both flows render 4 pills / 4 ranked bars / 4 leaderboard tabs; trend
+>   JS<->Python parity still byte-identical; **desktop CLS still 0** (the 5->4 bar change is consistent SSR<->JS). The
+>   `febrile` family shaping stays in `weather_score.py` but is now unused.
+> These three + the last-year stabilization are UNCOMMITTED (review-before-commit); the earlier "don't commit yet" stands.
+>
+> **2026-06-09 (LATER: the "This monsoon vs last year" trend module SHIPPED + verified on both flows - it was the
+> LAST remaining handoff component, so the build is now FEATURE-COMPLETE on staging):**
+> Built the season-over-season trend module per `docs/season-trend-module-brief.md`. (The design bundle URL had
+> expired - 404 - so it was brand-recreated from the written brief, which carries the full anatomy / colours / copy /
+> data shape.) Placed ABOVE the FAQ on both flows; recomputes per city on every switch, mirroring the faq.js pattern.
+> - **New shared widget `assets/js/trend.js`** (`window.FeverWatchTrend`): words-first verdict (above / below / in line
+>   x rising / falling) + delta chip, a context line ("Last year peaked at X (BAND) in late August"), segmented tabs
+>   (Overall / Weather / Searches / Labs - ONE chart at a time), a hand-rolled inline-SVG chart (faint LOW/MOD/HIGH
+>   risk zones on Overall only + soft gray last-year band + bold this-year line + "you are here" dot + Jun-Oct month
+>   ticks, no numeric axis), tap/hover tooltip ("Week of D Mon - This year a - Last year b", future weeks honestly
+>   blank), collapse/expand, a per-metric caption, provenance microcopy, a "Labs coming soon" empty state, and a
+>   DESKTOP small-multiples row (3 signal sparklines, click to promote to the hero). It owns its subtree (tabs /
+>   tooltip / collapse handled internally), so the flows just `mount()` it after each render.
+> - **Deterministic MOCK from the city's REAL scores** (not fake static data): a 22-week (1 Jun - 30 Oct) seasonal
+>   SHAPE. THIS-YEAR is scaled so it ends at the city's current blend / signal sub-scores; LAST-YEAR is a **STABLE
+>   per-city peak seeded ONLY from the city id** (band 64-95) so "last year peaked at X" NEVER drifts as the daily
+>   score or the week changes (verified: Bengaluru reads peak 89 whether its score is 56/60/64 or the week advances).
+>   The chip / verdict / captions still move with the live score. `asOfWeekIndex` from `grid.generated_at` (currently
+>   week 2 -> the brief's early-season state: a short 2-point this-year line over the full gray last-year band).
+>   2026-06-09 UPDATE (user-requested "stabilize the mock"): replaced the original score-derived last-year (`lyFactor`,
+>   which made the peak wander day-to-day and across the season - incoherent for immutable history) with the fixed
+>   `lyPeak` seed. Trade-off: a stable peak makes last year's EARLY-season value low, so early-season deltas are widest
+>   (a few cities ~+/-40-48%) and narrow toward the Aug peak; band 64-95 was tuned to keep most reads calmly
+>   "below/around last year" with a modest "above" tail (228-city split ~138 below / 62 above / 28 in line; one
+>   constant pair, easy to retune). The math (SHAPE / city-hash / `lyPeak` / round-half-up) is mirrored EXACTLY in
+>   Python (`build_site.py _trend_series`) and JS (`trend.js`); a Node parity harness confirms BYTE-IDENTICAL series +
+>   peaks. Swap for a real `data/history.json` later (format `docs/lab_feed_historic_format.md`) by replacing
+>   `_t_metric_series` / `metricSeries`.
+> - **Crawlable SSR**: `build_site.py _trend_html` bakes a static Overall chart + verdict + context + caption + sources
+>   into every page's `.fw-below` block, between "other cities" and the FAQ (baked order verified). The flow JS
+>   replaces it on hydration.
+> - **Wiring**: inserted above the FAQ in `mobile.js` + `desktop.js` render(); the desktop TOC gained a "This year vs
+>   last year" -> `s-trend` link, added BYTE-IDENTICALLY to BOTH `desktop.js` render() and `build_site.py _desktop_pre`
+>   so desktop hydration stays a no-op repaint (CLS 0), and `s-trend` joined `spyScroll`'s id list. Shared `.fwtrend*`
+>   CSS in `prototypes/tokens.css`. `trend.js` added to the page `<script>`s and the `asset_version()` cache-bust hash
+>   (faq.js too - it had been missing from the hash).
+> - **Verified headlessly (preview, BOTH flows):** renders above the FAQ; verdict/chip/context correct; tabs switch the
+>   chart + caption + line colour and drop the risk zones for signal tabs; tooltip shows values and blanks future weeks;
+>   **city switch recomputes the module** (Pune ~0%/peak 83, Delhi -7%/peak 69, Guwahati -12%/peak 100, all matching
+>   Python); desktop small-multiples render (mobile has none); collapse works; **desktop CLS still 0** (0 shifts); no
+>   trend-related console errors (only the known local grid-fetch flake, which the inline seed covers). Tone spread over
+>   the 228 cities: 91 below / 75 above / 62 in line.
+> NOTE: the trend series + copy now live in TWO places - keep `build_site.py _trend_series`/`_trend_caption` and
+> `assets/js/trend.js` in sync (same two-place rule as the FAQ).
+>
+> **2026-06-09 (FAQ + Ranked Composite Bars + footer ALL SHIPPED + deployed; trend module shipped later same day, see the entry above):**
 > A big UI session. Done + on staging today:
 > - **FAQ redesign + per-city content (commit `1cdb6f7`):** replaced the 6 generic FAQs with **10 humanized,
 >   per-city FAQs** (interpolated from blend / driver / weather / mode / national rank / signals) in a new
@@ -30,20 +115,13 @@
 >   `docs/lab_feed_2025_historic_template.csv`), `docs/lab_feed_historic_format.md`, and the trend design brief
 >   (`docs/season-trend-module-brief.md`).
 >
-> ### >>> STILL TO BUILD: the "This monsoon vs last year" trend module (the only remaining handoff component) <<<
-> Re-fetch the design bundle via `https://api.anthropic.com/v1/design/h/cKHBvKk3koWKhcK0PGtJdg` (a gzipped tar of
-> `fever-watch/`: README + component HTML/JSX + tokens + screenshots; the trend design already inherits the live brand
-> - Inter, `#10847E`, the risk ramp, signal colours `#15ACA5/#7C6CD6/#3661B0`). Build **"This monsoon vs last year in
-> {city}"** placed ABOVE the FAQ on both flows. Hand-rolled inline-SVG chart (source `project/trend-parts.jsx` +
-> `trend-mocks.jsx`): soft gray last-year band + bold this-year line + faint LOW/MOD/HIGH risk zones (Overall only) +
-> you-are-here dot + month ticks; verdict line + delta chip; segmented tabs (Overall/Weather/Searches/Labs); tap
-> tooltip; collapsed + expanded states; desktop = hero chart + 3 signal small-multiples. Use a **per-city MOCK series
-> for now** (generate deterministically from the city's real scores in `build_site.py` -> `seed.trend`; later swap for
-> a real `data/history.json`, format in `docs/lab_feed_historic_format.md`; full design spec in
-> `docs/season-trend-module-brief.md`). Add a desktop TOC entry **"This year vs last year"** (data-jump `s-trend`) +
-> include `s-trend` in `spyScroll`'s id list. **Reuse pattern:** `assets/js/faq.js` is the template for a shared
-> client module that recomputes per-city content from the grid (so the trend updates on city switch too); and
-> `_heatmap_card`/`heatmapCard` show the byte-identical SSR<->JS pattern if any of the trend lands in the above-fold.
+> ### >>> DONE: the "This monsoon vs last year" trend module SHIPPED (details in the 2026-06-09 LATER entry above). <<<
+> It was the only remaining handoff component, so Fever Watch is now feature-complete on staging. The module runs on a
+> deterministic per-city MOCK derived from the city's real scores; to make the "last year" line REAL, drop in a
+> `data/history.json` (format `docs/lab_feed_historic_format.md`) and replace the series generators
+> (`build_site.py _trend_series` + `assets/js/trend.js metricSeries`). Full design intent: `docs/season-trend-module-brief.md`.
+> The remaining work is now only the pre-launch items (wire the real lab feed, coords QA, production base_url,
+> compliance/counsel pass, 3-signal backtest) - see section 7.
 >
 > **2026-06-08 (performance + share-chrome + seamless-first-paint pass; ALL LIVE + PSI-audited):** big perf/UX
 > pass, deployed. Live PSI headline: **mobile 67-89 -> 97-99, CLS 0.95 -> 0, FCP 2.7s -> ~1.1s, best-practices 100**;
@@ -140,7 +218,7 @@ A consumer-facing, PharmEasy-branded web tool that gives **one daily risk score 
 top monsoon fevers, with the per-disease breakdown underneath. City-first: one page per city at
 `/fever-watch/{city}`. **Top ~230 cities** (expandable).
 
-- **Diseases (v1):** dengue (flagship), malaria, chikungunya, typhoid, viral fever.
+- **Diseases (v1):** dengue (flagship), malaria, chikungunya, typhoid. (Viral fever dropped 2026-06-09 - no lab-positivity test exists for it.)
 - **The score:** a confirmation-weighted ensemble of 3 signals -> a city headline blend + 5 disease scores.
 - **Framing (non-negotiable):** a **risk indicator**, NOT a diagnosis or a case/mosquito count. Forecast-only
   cells are capped and can never show HIGH. No medical JSON-LD.
@@ -151,7 +229,7 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 
 | Area | Status | Verified |
 |---|---|---|
-| Data layer (configs, weather, consolidation engine, grid) | **DONE** | engine smoke-tested; grid now **1,140 cells** (228 x 5) |
+| Data layer (configs, weather, consolidation engine, grid) | **DONE** | engine smoke-tested; grid now **912 cells** (228 x 4; viral fever dropped 2026-06-09) |
 | City config (`scripts/gen_cities.py` -> **228 cities**) | **DONE** | grown 119 -> 228 (next ~109 incl. all missing state/UT capitals); coords ~0.05deg, **gazetteer QA pending** |
 | Providers: serpapi (weekly) / googlesheet (daily) / cached, config-driven | **DONE** | googlesheet tested on sample; cached state->city verified; all compile |
 | Geolocation module (`assets/js/geo.js`, BigDataCloud + freeipapi) | **DONE** | nearest-city snapping verified; "Use my location" now wired on BOTH flows (GPS->IP), verified switches city |
@@ -169,6 +247,7 @@ top monsoon fevers, with the per-disease breakdown underneath. City-first: one p
 | Risk beacon (pulsing band light) | **DONE** | inline next to the band label, both flows; colour=band, speed=urgency; CSS in tokens.css; reduced-motion fallback; verified live |
 | Google Sheets logging (`src/sheetlog.py`) | **LIVE (verified)** | webhook secrets set; a run pushed 1,140 raw rows OK. Logs sheet = `1Iz9nAf38...`. `raw_data` = raw inputs (A-I) + `score`/`band`/`mode` as **in-sheet formulas** (mirror consolidation.json); `daily_summary` = date x disease avg + daily avg/peak + **city overall blend** (0.75*peak+0.25*avg), all by formula. See `docs/sheets_logging.md` |
 | Card text overflow (long city+state) | **DONE** | `build_og.py` shrink-to-fit + 2-line + ellipsis; verified Visakhapatnam / Thiruvananthapuram |
+| **"This monsoon vs last year" trend module** | **DONE (mock series)** | `assets/js/trend.js` widget + `build_site.py _trend_*` SSR, above the FAQ on both flows; verdict + chip + tabs + inline-SVG chart + tooltip + collapse + desktop small-multiples; deterministic per-city mock from real scores. **Last-year is a STABLE per-city baseline** (`lyPeak` seed, band 64-95) so "last year peaked at X" never drifts; this-year's real score floats against it, so the chip/verdict stay dynamic. Python<->JS series **byte-identical** (Node parity); recomputes on city switch; **desktop CLS still 0**. Swap in `data/history.json` for the real last-year line. |
 
 Everything runs on the **Python standard library** (no third-party deps). `requirements.txt` is essentially empty.
 
@@ -481,7 +560,8 @@ src/
 prototypes/         mobile.html  desktop.html  tokens.css   <- FROZEN design reference (extracted into assets/)
 assets/
   css/  mobile.css  desktop.css          <- extracted from prototypes (tokens.css copied from prototypes/ at build time)
-  js/   geo.js  share.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime (boot() at the END of each IIFE)
+  js/   geo.js  share.js  faq.js  trend.js  fw-loader.js  mobile.js  desktop.js   <- the device-adaptive runtime (boot() at the END of each IIFE)
+        faq.js = client FAQ recompute (mirrors build_site faq_items); trend.js = "this monsoon vs last year" widget (mirrors build_site _trend_series)
   fonts/ Inter-Variable.ttf (Pillow OG card, weight axis) + inter-latin-{400,500,600,700,800}-normal.woff2 (self-hosted web; COMMITTED)
   img/  pe_logo-white.svg  pe_logo-white.png (rasterized, used by share.js canvas + build_og.py; COMMITTED)
         fever-watch-lockup-white.svg  favicon.* icon-*.png og-fever-watch.png  og/{city}.jpg (generated JPEG, gitignored)

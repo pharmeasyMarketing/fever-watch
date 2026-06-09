@@ -11,7 +11,7 @@ the default, so nothing breaks.
 |---|---|---|---|
 | `week_start` | date `YYYY-MM-DD` | yes | start of the rolling window this row covers |
 | `city` | string | yes | must match a city `id` in `config/cities.json` (e.g. `bengaluru`, `mumbai`) |
-| `disease` | string | yes | one of: `dengue`, `malaria`, `chikungunya`, `typhoid`, `viral_fever` |
+| `disease` | string | yes | one of: `dengue`, `malaria`, `chikungunya`, `typhoid` |
 | `tests_booked` | integer | yes | aggregate count of relevant tests in that city / disease / window |
 | `positives` | integer | yes* | aggregate count of positive results. `positivity_pct = positives / tests_booked x 100` |
 | `positivity_pct` | float 0-100 | optional | send this *instead of* `positives` if you cannot share raw positive counts |

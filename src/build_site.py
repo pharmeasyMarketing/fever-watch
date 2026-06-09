@@ -21,6 +21,7 @@ Usage (from the project root):
 """
 from __future__ import annotations
 
+import datetime
 import hashlib
 import json
 import math
@@ -39,7 +40,7 @@ RISK_SOFT = {"HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1"
 FAQ_ITEMS = [
     ("What is Fever Watch?",
      "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, "
-     "chikungunya, typhoid and viral fever), shown as one decomposable score per city and disease. "
+     "chikungunya and typhoid), shown as one decomposable score per city and disease. "
      "It blends breeding weather, public search interest and PharmEasy lab positivity."),
     ("Is this a diagnosis or medical advice?",
      "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases "
@@ -63,8 +64,8 @@ FAQ_ITEMS = [
 METHOD_SUMMARY = (
     "Each score is a transparent weighted formula, not a black box. A per-disease environmental score "
     "is built from trailing daily weather (temperature near 29C with lagged rainfall and humidity for "
-    "mosquito-borne diseases, rainfall for waterborne typhoid, humidity and temperature swings for "
-    "viral fever). That weather signal is then blended with population search interest and PharmEasy "
+    "mosquito-borne diseases, and rainfall for waterborne typhoid). That weather signal is then blended "
+    "with population search interest and PharmEasy "
     "lab positivity in a confirmation-weighted ensemble, with the driver disease named. Forecast-only "
     "locations are capped below the HIGH band."
 )
@@ -78,8 +79,7 @@ METHOD_HTML = (
     "above about 35C), times lagged rainfall over the past 14 days (standing-water sites emerge 1 to 2 weeks "
     "after rain), times relative humidity (above about 60% extends mosquito lifespan).</li>"
     "<li><strong>Waterborne</strong> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a "
-    "contamination and runoff proxy; temperature secondary.</li>"
-    "<li><strong>Febrile</strong> (viral fever): humidity, day-to-day temperature variability, and rainfall.</li></ul>"
+    "contamination and runoff proxy; temperature secondary.</li></ul>"
     "<h3>2. Three independent signals</h3><ul>"
     "<li><strong>Breeding weather</strong> (leading, weeks ahead): the environmental score above.</li>"
     "<li><strong>Google Search Interest</strong> (coincident): symptom-search attention, smoothed and "
@@ -152,6 +152,7 @@ PAGE = """<!DOCTYPE html>
 {footer}
 <script>window.FW = {fw};</script>
 <script src="{rel}assets/js/faq.js?v={av}" defer></script>
+<script src="{rel}assets/js/trend.js?v={av}" defer></script>
 <script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 <script src="{rel}assets/js/geo.js?v={av}" defer></script>
 <script src="{rel}assets/js/share.js?v={av}" defer></script>
@@ -192,8 +193,8 @@ def asset_version() -> str:
     so a data-only daily rebuild keeps the same version and does not force a needless refetch."""
     h = hashlib.md5()
     for rel in ("prototypes/tokens.css", "assets/css/mobile.css", "assets/css/desktop.css",
-                "assets/js/geo.js", "assets/js/share.js", "assets/js/fw-loader.js",
-                "assets/js/mobile.js", "assets/js/desktop.js"):
+                "assets/js/geo.js", "assets/js/share.js", "assets/js/faq.js", "assets/js/trend.js",
+                "assets/js/fw-loader.js", "assets/js/mobile.js", "assets/js/desktop.js"):
         try:
             with open(os.path.join(ROOT, rel), "rb") as fh:
                 h.update(fh.read())
@@ -380,7 +381,7 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
         graph.append({
             "@type": "WebPage", "@id": url, "url": url,
             "name": city["name"] + " monsoon fever risk | Fever Watch",
-            "description": "Daily dengue, malaria, chikungunya, typhoid and viral fever risk for "
+            "description": "Daily dengue, malaria, chikungunya and typhoid risk for "
                            + city["name"] + ", India.",
             "inLanguage": lang, "isPartOf": {"@id": base + "#website"},
             "about": [d["label"] for d in diseases] + ["monsoon fever risk in India"],
@@ -478,9 +479,9 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
 
     return [
         ("How worried should I be about monsoon fevers in " + nm + " right now?",
-         "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the five fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
+         "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the four fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
         ("Is dengue something to watch in " + nm + " this week?",
-         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the five fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
+         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
         ("Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
          "This week it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."),
         ("How is " + nm + "'s weather affecting the mosquito-fever risk?",
@@ -595,7 +596,7 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> st
     nm = esc(city["name"])
     return ('<div class="fw-pre fw-pre-m">'
             '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
-            '<p>Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
+            '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
             '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">\U0001F50E</span> Search your city</div>'
             '<p class="searchnote">Available in select cities, more coming soon.</p></div>'
             '<div class="wrap"><div class="citymeta"><div><h2>' + nm + '</h2><div class="date">This week, updated ' + date_str + '</div></div>'
@@ -617,7 +618,7 @@ def _search_hero_d(city: dict) -> str:
     nm = city["name"]
     return ('<section class="srch"><div class="srchin">'
             '<h1>Live monsoon-fever risk for ' + esc(nm) + ', in <em>one score</em>.</h1>'
-            '<p class="subtitle">Dengue, malaria, chikungunya, typhoid and viral fever, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
+            '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
             '<div class="searchbar"><span class="ico">\U0001F50E</span>'
             '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
             '<button class="searchbtn" data-act="combo">Search</button>'
@@ -625,7 +626,7 @@ def _search_hero_d(city: dict) -> str:
             '</div><p class="microcopy">Available in select cities, more coming soon.</p></div></section>')
 
 
-_CAT = {"mosquito": "Mosquito-borne", "waterborne": "Water / food-borne", "febrile": "Viral, airborne"}
+_CAT = {"mosquito": "Mosquito-borne", "waterborne": "Water / food-borne"}
 
 
 def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
@@ -650,7 +651,7 @@ def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
                  + '<div class="sbar-mid"><div class="sbar-track"><span style="width:' + str(ww) + '%;background:#15ACA5"></span><span style="width:' + str(ws) + '%;background:#7C6CD6"></span><span style="width:' + str(wl) + '%;background:#3661B0"></span></div>'
                  + '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>'
                  + '<div class="sbar-score" style="color:' + col + '">' + str(sc) + top + '</div></div>')
-    return ('<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - five fevers we track in ' + city["name"] + '</div></div><div class="sbar-list">' + rows + '</div>'
+    return ('<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - four fevers we track in ' + city["name"] + '</div></div><div class="sbar-list">' + rows + '</div>'
             '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
             '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>'
             '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>')
@@ -685,13 +686,216 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) 
     byte-identical to what desktop.js render() paints from the inlined seed; hydration is then a no-op
     repaint over identical above-fold DOM (kills the desktop CLS). The .fw-below SEO block underneath
     stays for crawlers / no-JS. Mirrors the mobile _mobile_pre / _risk_card pattern. Gated .fw-pre-d."""
+    # NOTE: this TOC must stay byte-identical to desktop.js render()'s .toc so desktop hydration is a
+    # no-op repaint (CLS 0). Edit BOTH together (incl. the new "This year vs last year" -> s-trend link).
     toc = ('<aside class="toc">'
            '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a>'
            '<a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a>'
+           '<a data-jump="s-trend">This year vs last year</a>'
            '<a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city)
             + '<div class="shell">' + toc + '<div class="main">'
             + _week_section(city, diseases, cells_by, generated_at) + '</div></div></div>')
+
+
+# --- "This monsoon vs last year" trend module (static SSR; mirrors assets/js/trend.js) -----------
+# The series math below is intentionally identical to assets/js/trend.js metricSeries()/build(). Edit
+# BOTH and keep them in sync. Here we bake only the static "Overall" chart + verdict for crawlers and
+# no-JS; the JS widget owns the interactive flows (tabs, tooltip, collapse, desktop small-multiples).
+TREND_SHAPE = [0.60, 0.63, 0.66, 0.69, 0.73, 0.77, 0.81, 0.85, 0.89, 0.92, 0.95, 0.97, 0.99, 1.00,
+               0.96, 0.91, 0.86, 0.81, 0.78, 0.75, 0.73, 0.71]
+TREND_NW = len(TREND_SHAPE)
+TREND_PEAK = 13
+TREND_MONTHS = ["Jun", "Jul", "Aug", "Sep", "Oct"]  # equidistant HTML axis labels (mirrors trend.js MONTHS_ROW)
+TREND_ZONES = [(70, 100, "#E4572E"), (45, 69, "#E8923A"), (25, 44, "#C7A93C"), (0, 24, "#2FA66F")]
+_TW, _TH, _TPADL, _TPADR, _TPADT, _TPADB = 340, 110, 12, 12, 6, 4  # compact; HTML month labels; y zooms (see _trend_chart_static)
+
+
+def _t_r(x) -> int:
+    return int(math.floor((x or 0) + 0.5))
+
+
+def _t_clamp(v, lo, hi):
+    return lo if v < lo else (hi if v > hi else v)
+
+
+def _t_hash(s: str) -> int:
+    h = 5381
+    for ch in s:
+        h = (h * 33 + ord(ch)) & 0xFFFFFFFF
+    return h
+
+
+# Last-year is a STABLE per-city, per-metric mock peak seeded ONLY from the city id (never from this
+# year's score or the current week), so "last year peaked at X" never drifts; this year's real score
+# floats against it. Band 64-95 = a plausible HIGH last-monsoon peak, tuned so most cities read calmly
+# "below/around last year" with a modest "above" tail (all 3 verdicts kept). Mirrors trend.js lyPeak.
+TREND_LY_MIN, TREND_LY_MAX = 64, 95
+
+
+def _t_lypeak(cid: str, metric: str) -> int:
+    return TREND_LY_MIN + _t_hash(cid + ":" + metric + ":lypeak") % (TREND_LY_MAX - TREND_LY_MIN + 1)
+
+
+def _t_band(score: int) -> str:
+    return "HIGH" if score >= 70 else "MODERATE" if score >= 45 else "LOW-MODERATE" if score >= 25 else "LOW"
+
+
+def _t_mean(cells: list, key: str):
+    vals = [c.get("signals", {}).get(key) for c in cells]
+    vals = [v for v in vals if v is not None]
+    return _t_r(sum(vals) / len(vals)) if vals else None
+
+
+def _t_metric_series(cid: str, metric: str, V: int, asOf: int) -> dict:
+    denom = TREND_SHAPE[asOf]
+    ty = [_t_clamp(_t_r(V * TREND_SHAPE[w] / denom), 0, 100) for w in range(asOf + 1)]
+    p_ly = _t_lypeak(cid, metric)  # fixed last-year peak (independent of V and asOf)
+    ly = [_t_clamp(_t_r(p_ly * TREND_SHAPE[w]), 0, 100) for w in range(TREND_NW)]
+    a, b = ty[asOf], ly[asOf]
+    delta = _t_r((a - b) / b * 100) if b > 0 else 0
+    slope = ty[asOf] - ty[asOf - 1] if asOf >= 1 else 0
+    return {"now": V, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": ly[TREND_PEAK], "avail": True}
+
+
+def _trend_series(city: dict, cells: list, generated_at: str) -> dict:
+    cid = city["id"]
+    blend = city["blend"]
+    ga = generated_at or ""
+    gy = int(ga[0:4]) if ga[0:4].isdigit() else 2026
+    gm = int(ga[5:7]) if ga[5:7].isdigit() else 6
+    gd = int(ga[8:10]) if ga[8:10].isdigit() else 1
+    as_of = _t_clamp((datetime.date(gy, gm, gd) - datetime.date(gy, 6, 1)).days // 7, 0, TREND_NW - 1)
+    weather_now, search_now, labs_now = _t_mean(cells, "weather"), _t_mean(cells, "trends"), _t_mean(cells, "positivity")
+    metrics = {
+        "overall": _t_metric_series(cid, "overall", blend["score"], as_of),
+        "weather": {"avail": False} if weather_now is None else _t_metric_series(cid, "weather", weather_now, as_of),
+        "search": {"avail": False} if search_now is None else _t_metric_series(cid, "search", search_now, as_of),
+        "labs": {"avail": False} if labs_now is None else _t_metric_series(cid, "labs", labs_now, as_of),
+    }
+    ov = metrics["overall"]
+    level = "below" if ov["delta"] <= -6 else ("above" if ov["delta"] >= 6 else "inline")
+    direction = "rising" if ov["slope"] >= 2 else ("falling" if ov["slope"] <= -2 else "steady")
+    vtext = {"below": "Tracking below last year so far", "above": "Running higher than last year",
+             "inline": "About the same as last year so far"}[level]
+    if level == "above":
+        tail = ", and still rising" if direction == "rising" else (", but easing" if direction == "falling" else "")
+    elif level == "below":
+        tail = ", but creeping up" if direction == "rising" else (", and still easing" if direction == "falling" else "")
+    else:
+        tail = ", edging up" if direction == "rising" else (", edging down" if direction == "falling" else "")
+    if level == "inline" and abs(ov["delta"]) < 3:
+        chip = "~0%"
+    else:
+        chip = ("+" if ov["delta"] > 0 else ("-" if ov["delta"] < 0 else "")) + str(abs(ov["delta"])) + "%"
+    context = "Last year peaked at " + str(ov["peak"]) + " (" + _t_band(ov["peak"]) + ") in late August."
+    return {"city": city["name"], "cityId": cid, "asOf": as_of, "metrics": metrics, "level": level,
+            "dir": direction, "verdict": vtext + tail, "chip": chip, "tone": level, "context": context}
+
+
+def _trend_caption(model: dict, metric: str) -> str:
+    m = model["metrics"][metric]
+    if not m.get("avail"):
+        return "Lab positivity history is not available for " + model["city"] + " yet."
+    lvl = "below" if m["delta"] <= -6 else ("above" if m["delta"] >= 6 else "inline")
+    if metric == "overall":
+        return {"rising": "Risk is climbing as the monsoon builds.", "falling": "Risk is easing as rainfall tapers.",
+                "steady": "Risk is holding close to last year."}[model["dir"]]
+    if metric == "weather":
+        return {"below": "Breeding conditions are running below last year.",
+                "above": "Breeding conditions are running hotter than last year.",
+                "inline": "Breeding conditions are tracking last year."}[lvl]
+    if metric == "search":
+        return {"below": "Public concern is below last year's level.",
+                "above": "Public concern is above last year's level.",
+                "inline": "Public concern is tracking last year."}[lvl]
+    return {"below": "Positivity is tracking below last year.", "above": "Positivity is running above last year.",
+            "inline": "Positivity is tracking last year closely."}[lvl]
+
+
+def _tX(i):
+    return _TPADL + i / (TREND_NW - 1) * (_TW - _TPADL - _TPADR)
+
+
+def _tY(v, ymax=100):
+    return _TPADT + (1 - _t_clamp(v, 0, ymax) / float(ymax)) * (_TH - _TPADT - _TPADB)
+
+
+def _tf(n):
+    return round(n * 10) / 10
+
+
+def _t_linepath(arr, ymax=100) -> str:
+    return "".join(("L" if i else "M") + str(_tf(_tX(i))) + " " + str(_tf(_tY(arr[i], ymax))) for i in range(len(arr)))
+
+
+def _trend_chart_static(model: dict) -> str:
+    """Static 'Overall' SVG, visually mirroring assets/js/trend.js chartSVG (need not be pixel-exact:
+    the JS replaces it on hydration; this is the crawlable / no-JS render). The y-axis zooms to the data
+    (top = peak + 15%, capped 100); Overall peaks ~90 so it stays ~0-100 and keeps the risk zones."""
+    m = model["metrics"]["overall"]
+    col = RISK[_t_band(m["now"])]
+    dmax = max(m["peak"], max(m["series"]) if m["series"] else 0)
+    ymax = min(100, max(45, int(math.floor(dmax * 1.15 + 0.5))))
+    base_y = _tY(0, ymax)
+    zones = "".join('<rect x="%d" y="%s" width="%d" height="%s" fill="%s" opacity="0.06"/>'
+                    % (_TPADL, _tf(_tY(min(z[1], ymax), ymax)), _TW - _TPADL - _TPADR,
+                       _tf(_tY(z[0], ymax) - _tY(min(z[1], ymax), ymax)), z[2])
+                    for z in TREND_ZONES if z[0] < ymax)
+    ly_line = _t_linepath(m["last"], ymax)
+    area = ("M" + str(_tf(_tX(0))) + " " + str(_tf(base_y)) + "L" + ly_line[1:]
+            + "L" + str(_tf(_tX(TREND_NW - 1))) + " " + str(_tf(base_y)) + "Z")
+    ly_area = '<path d="' + area + '" fill="#9fb0c4" opacity="0.16"/>'
+    ly_stroke = '<path d="' + ly_line + '" fill="none" stroke="#aab6c6" stroke-width="1.6" stroke-linejoin="round"/>'
+    ty = m["series"]
+    ty_line = ('<path d="' + _t_linepath(ty, ymax) + '" fill="none" stroke="' + col
+               + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>') if len(ty) > 1 else ""
+    dot = ('<circle cx="' + str(_tf(_tX(model["asOf"]))) + '" cy="' + str(_tf(_tY(ty[-1], ymax)))
+           + '" r="4.2" fill="' + col + '" stroke="#fff" stroke-width="2.2"/>')
+    # Month labels are HTML (.fwtrend-months); the SVG only carries the baseline axis rule.
+    axis = ('<line x1="' + str(_TPADL) + '" y1="' + str(_tf(base_y)) + '" x2="' + str(_TW - _TPADR) + '" y2="'
+            + str(_tf(base_y)) + '" stroke="#edf0f5" stroke-width="1"/>')
+    return ('<svg viewBox="0 0 ' + str(_TW) + ' ' + str(_TH) + '" class="fwtrend-svg"'
+            ' role="img" aria-label="Overall risk this year versus last year">'
+            + zones + ly_area + ly_stroke + ty_line + dot + axis + '</svg>')
+
+
+def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
+    cid = city["id"]
+    cells = [cells_by[(cid, d["id"])] for d in diseases if (cid, d["id"]) in cells_by]
+    model = _trend_series(city, cells, generated_at)
+    col = RISK[_t_band(model["metrics"]["overall"]["now"])]
+    tone = model["tone"]
+    tone_icon = {"below": "▼", "above": "▲", "inline": "≈"}[tone]
+    tabs = ""
+    for k, lbl in (("overall", "Overall"), ("weather", "Weather"), ("search", "Searches"), ("labs", "Labs")):
+        on = k == "overall"
+        avail = model["metrics"][k].get("avail")
+        tabs += ('<button class="fwtrend-tab' + (" on" if on else "") + ("" if avail else " soon")
+                 + '" data-tact="metric" data-metric="' + k + '"' + (' aria-current="true"' if on else "")
+                 + '>' + lbl + ("" if avail else ' <i>soon</i>') + '</button>')
+    months = '<div class="fwtrend-months">' + "".join('<span>' + m + '</span>' for m in TREND_MONTHS) + '</div>'
+    # Title + subtitle OUTSIDE the card (matches the other page sections); the flow JS re-renders this.
+    return ('<section id="s-trend" class="fwtrend-host">'
+            '<div class="fwtrend-sectop"><div class="fwtrend-sechead">'
+            '<h2 class="sechead">This monsoon vs last in ' + esc(city["name"]) + '</h2>'
+            '<p class="secsub">Season trend</p></div>'
+            '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
+            '<span class="chev" aria-hidden="true"></span></button></div>'
+            '<div class="card fwtrend open" data-metric="overall">'
+            '<div class="fwtrend-verdict"><span class="fwtrend-vicon ' + tone + '">' + tone_icon + '</span>'
+            '<span class="fwtrend-vtext">' + esc(model["verdict"]) + '</span>'
+            '<span class="fwtrend-chip ' + tone + '">' + esc(model["chip"]) + '</span></div>'
+            '<p class="fwtrend-context">' + esc(model["context"]) + '</p>'
+            '<div class="fwtrend-body"><div class="fwtrend-tabs" role="tablist">' + tabs + '</div>'
+            '<div class="fwtrend-chartwrap">' + _trend_chart_static(model) + '<div class="fwtrend-tip" hidden></div></div>'
+            + months +
+            '<div class="fwtrend-legend"><span><i class="ly"></i>Last year</span>'
+            '<span><i class="ty" style="background:' + col + '"></i>This year</span>'
+            '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'
+            '<p class="fwtrend-caption">' + esc(_trend_caption(model, "overall")) + '</p>'
+            '<p class="fwtrend-sources">Sources: NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>'
+            '</div></div></section>')
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
@@ -729,11 +933,12 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                  '<p>Overall monsoon-fever risk this week across ' + str(len(all_cities))
                  + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
 
+    trend_sec = _trend_html(city, diseases, cells_by, generated_at)
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
     return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec
-            + other_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
+            + other_sec + trend_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
 
 
 def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str, faq: list) -> str:
@@ -763,7 +968,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     disclaimer = grid.get("disclaimer", "")
     if city:
         title = city["name"] + " monsoon fever risk this week | Dengue, malaria, typhoid | Fever Watch"
-        desc = ("This week's dengue, malaria, chikungunya, typhoid and viral fever risk for " + city["name"]
+        desc = ("This week's dengue, malaria, chikungunya and typhoid risk for " + city["name"]
                 + ", " + city["state"] + ": one decomposable score from breeding weather, search interest "
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"

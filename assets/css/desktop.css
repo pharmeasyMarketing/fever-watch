@@ -68,6 +68,7 @@
   section[id^="s-"] { scroll-margin-top: 78px; margin-bottom: 32px; }
   .sechead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }
   .secsub { font-size: 13.5px; color: var(--pe-muted); margin: 0 0 16px; }
+  .fwtrend-months { font-size: 13px; padding-top: 3px; }   /* desktop: larger, slightly roomier month labels */
   .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; }
 
   .grid2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: stretch; }

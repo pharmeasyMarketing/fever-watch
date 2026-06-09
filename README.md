@@ -1,7 +1,7 @@
 # Fever Watch
 
 A daily, PharmEasy-branded **risk indicator** for India's top monsoon fevers (dengue, malaria,
-chikungunya, typhoid, viral fever), by city. One decomposable score per city per disease, blended
+chikungunya, typhoid), by city. One decomposable score per city per disease, blended
 from three signals: breeding weather (leading), search interest (coincident), and lab positivity
 (lagging ground truth).
 
