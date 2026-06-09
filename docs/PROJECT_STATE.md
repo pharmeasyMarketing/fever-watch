@@ -3,6 +3,9 @@
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
+> The trend module + the 4-disease set + all the 2026-06-09 trend refinements below are **COMMITTED + PUSHED +
+> DEPLOYED** (commit `df15dcc`, push to `master` -> deploy run green) and **verified live** (the staging Bengaluru
+> page returns the trend module, the "four fevers" copy, the 4 diseases, and zero "viral").
 >
 > **2026-06-09 (LATEST: trend-module polish + dropped Viral fever, so v1 is now 4 diseases):** three
 > review changes on top of the shipped trend module, all verified on both flows:
@@ -42,7 +45,8 @@
 >   "viral"/"five fevers" left in `dist/`**; both flows render 4 pills / 4 ranked bars / 4 leaderboard tabs; trend
 >   JS<->Python parity still byte-identical; **desktop CLS still 0** (the 5->4 bar change is consistent SSR<->JS). The
 >   `febrile` family shaping stays in `weather_score.py` but is now unused.
-> These three + the last-year stabilization are UNCOMMITTED (review-before-commit); the earlier "don't commit yet" stands.
+> All of the above (trend module, last-year stabilization, heading/labels/Option-2 chart, signal-tab backdrops, the
+> viral-fever removal, and the green share bar) is COMMITTED + PUSHED + DEPLOYED in commit `df15dcc` and verified live.
 >
 > **2026-06-09 (LATER: the "This monsoon vs last year" trend module SHIPPED + verified on both flows - it was the
 > LAST remaining handoff component, so the build is now FEATURE-COMPLETE on staging):**
