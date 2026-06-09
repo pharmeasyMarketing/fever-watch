@@ -610,34 +610,35 @@ def _search_hero_d(city: dict) -> str:
             '</div><p class="microcopy">Available in select cities, more coming soon.</p></div></section>')
 
 
+_CAT = {"mosquito": "Mosquito-borne", "waterborne": "Water / food-borne", "febrile": "Viral, airborne"}
+
+
 def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
-    """Byte-identical to desktop.js heatmapCard(c) (diseases ordered by score, high to low)."""
+    """Ranked composite bars, byte-identical to desktop.js heatmapCard(c): each fever as one composite bar
+    (segment width = signal / sum * score, integer %; Math.round mirrored via floor(x+0.5)), ordered by
+    score high to low, top concern flagged, score in its band colour."""
     cid = city["id"]
-    sigs = ("weather", "trends", "positivity")
-    head = ('<tr><th class="dis">Disease</th>' + "".join('<th>' + SIGNAME[s] + '</th>' for s in sigs)
-            + '<th>Score</th></tr>')
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
     rows = ""
-    for d in ordered:
-        cell = cells_by[(cid, d["id"])]
-        sg = cell.get("signals", {})
-        tds = ""
-        for s in sigs:
-            v = sg.get(s)
-            if v is None:
-                tds += '<td><div class="heatcell empty">no data</div></td>'
-            else:
-                rgb = SIGCOL[s]
-                a = "%.2f" % (0.12 + 0.72 * v / 100)
-                tds += ('<td><div class="heatcell" style="background:rgba(' + str(rgb[0]) + ',' + str(rgb[1])
-                        + ',' + str(rgb[2]) + ',' + a + ')">' + str(v) + '</div></td>')
-        rows += ('<tr><td class="dis">' + d["emoji"] + ' ' + d["label"] + '</td>' + tds
-                 + '<td><div class="heatscore" style="background:' + RISK_SOFT.get(cell["band"], "#eee")
-                 + ';color:' + RISK.get(cell["band"], "#888") + '">' + str(cell["score"]) + '</div></td></tr>')
-    return ('<div class="card"><table class="heat"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>'
-            '<div class="heatlegend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
-            '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Google Search (coincident)</span>'
-            '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (lagging, ground truth)</span><span>Darker = stronger signal</span></div></div>')
+    for i, d in enumerate(ordered):
+        cell = cells_by[(cid, d["id"])]; col = RISK.get(cell["band"], "#888"); sg = cell.get("signals", {})
+        weather = sg.get("weather"); search = sg.get("trends"); labs = sg.get("positivity")
+        wn = weather or 0; sn = search or 0; ln = labs or 0; denom = wn + sn + ln; sc = cell["score"]
+        ww = int(math.floor(wn / denom * sc + 0.5)) if denom else 0
+        ws = int(math.floor(sn / denom * sc + 0.5)) if denom else 0
+        wl = int(math.floor(ln / denom * sc + 0.5)) if denom else 0
+        wv = "n/a" if weather is None else str(weather)
+        sv = "n/a" if search is None else str(search)
+        lv = "n/a" if labs is None else str(labs)
+        top = '<span class="sbar-top">Top concern</span>' if i == 0 else ''
+        rows += ('<div class="sbar-row"><div class="sbar-id"><span class="sbar-rank">' + str(i + 1) + '</span><span class="sbar-emoji">' + d["emoji"] + '</span><span class="sbar-name"><b>' + d["label"] + '</b><i>' + _CAT.get(cell["family"], "") + '</i></span></div>'
+                 + '<div class="sbar-mid"><div class="sbar-track"><span style="width:' + str(ww) + '%;background:#15ACA5"></span><span style="width:' + str(ws) + '%;background:#7C6CD6"></span><span style="width:' + str(wl) + '%;background:#3661B0"></span></div>'
+                 + '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>'
+                 + '<div class="sbar-score" style="color:' + col + '">' + str(sc) + top + '</div></div>')
+    return ('<div class="card sbars"><div class="sbar-list">' + rows + '</div>'
+            '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
+            '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>'
+            '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>')
 
 
 def _week_section(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:

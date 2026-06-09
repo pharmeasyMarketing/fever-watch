@@ -71,6 +71,27 @@
   .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; }
 
   .grid2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: stretch; }
+  /* Ranked composite bars (replaces the heatmap; same data, ranked + score-forward) */
+  .sbars { display: flex; flex-direction: column; }
+  .sbars .sbar-list { display: flex; flex-direction: column; gap: 17px; }
+  .sbars .sbar-row { display: grid; grid-template-columns: minmax(138px, 180px) 1fr auto; align-items: center; gap: 16px; }
+  .sbars .sbar-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .sbars .sbar-rank { font-size: 12px; font-weight: 800; color: var(--pe-muted-2); width: 13px; text-align: center; flex-shrink: 0; }
+  .sbars .sbar-emoji { width: 32px; height: 32px; border-radius: 9px; background: var(--pe-bg); display: inline-flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .sbars .sbar-name { min-width: 0; line-height: 1.18; }
+  .sbars .sbar-name b { display: block; font-size: 14px; font-weight: 800; color: var(--pe-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sbars .sbar-name i { display: block; font-size: 11px; color: var(--pe-muted-2); font-style: normal; font-weight: 600; }
+  .sbars .sbar-mid { min-width: 0; }
+  .sbars .sbar-track { height: 22px; border-radius: 7px; background: var(--pe-bg-2); overflow: hidden; display: flex; }
+  .sbars .sbar-track span { display: block; flex-shrink: 0; opacity: .92; }
+  .sbars .sbar-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 7px; }
+  .sbars .sbar-strip span { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--pe-ink-2); }
+  .sbars .sbar-strip i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .sbars .sbar-score { text-align: right; font-size: 25px; font-weight: 800; line-height: 1; white-space: nowrap; }
+  .sbars .sbar-top { display: block; font-size: 9.5px; font-weight: 800; color: var(--pe-muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; }
+  .sbars .sbar-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: auto; padding-top: 16px; }
+  .sbars .sbar-legend .k { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--pe-muted); }
+  .sbars .sbar-legend .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
   /* risk card */
   .risk { display: flex; flex-direction: column; }

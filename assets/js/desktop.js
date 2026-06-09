@@ -195,23 +195,27 @@
       '<div class="grid2">' + card + heatmapCard(c) + '</div></section>';
   }
 
+  // Ranked composite bars (brand-recreated from the design handoff). Each fever is one composite bar,
+  // segmented by its three signals (segment width = signal / sum * score, integer %), ordered high to
+  // low with the top concern flagged and the score in its band colour. Replaces the old heatmap.
+  var CAT = { mosquito: "Mosquito-borne", waterborne: "Water / food-borne", febrile: "Viral, airborne" };
   function heatmapCard(c) {
-    var sigs = ["weather", "trends", "positivity"];
-    var head = '<tr><th class="dis">Disease</th>' + sigs.map(function (s) { return '<th>' + SIGNAME[s] + '</th>'; }).join("") + '<th>Score</th></tr>';
-    var rows = orderedDiseases(c).map(function (d) {
-      var cell = cellFor(c.id, d.id);
-      var tds = sigs.map(function (s) {
-        var v = cell.signals[s];
-        if (v == null) return '<td><div class="heatcell empty">no data</div></td>';
-        var rgb = SIGCOL[s], a = (0.12 + 0.72 * v / 100).toFixed(2);
-        return '<td><div class="heatcell" style="background:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + a + ')">' + v + '</div></td>';
-      }).join("");
-      return '<tr><td class="dis">' + d.emoji + ' ' + d.label + '</td>' + tds + '<td><div class="heatscore" style="background:' + RISK_SOFT[cell.band] + ';color:' + RISK[cell.band] + '">' + cell.score + '</div></td></tr>';
+    var rows = orderedDiseases(c).map(function (d, i) {
+      var cell = cellFor(c.id, d.id), col = RISK[cell.band], sg = cell.signals;
+      var weather = sg.weather, search = sg.trends, labs = sg.positivity;
+      var wn = weather || 0, sn = search || 0, ln = labs || 0, denom = wn + sn + ln, sc = cell.score;
+      var ww = denom ? Math.round(wn / denom * sc) : 0, ws = denom ? Math.round(sn / denom * sc) : 0, wl = denom ? Math.round(ln / denom * sc) : 0;
+      var wv = weather == null ? "n/a" : weather, sv = search == null ? "n/a" : search, lv = labs == null ? "n/a" : labs;
+      var top = i === 0 ? '<span class="sbar-top">Top concern</span>' : '';
+      return '<div class="sbar-row"><div class="sbar-id"><span class="sbar-rank">' + (i + 1) + '</span><span class="sbar-emoji">' + d.emoji + '</span><span class="sbar-name"><b>' + d.label + '</b><i>' + (CAT[cell.family] || "") + '</i></span></div>' +
+        '<div class="sbar-mid"><div class="sbar-track"><span style="width:' + ww + '%;background:#15ACA5"></span><span style="width:' + ws + '%;background:#7C6CD6"></span><span style="width:' + wl + '%;background:#3661B0"></span></div>' +
+        '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>' +
+        '<div class="sbar-score" style="color:' + col + '">' + sc + top + '</div></div>';
     }).join("");
-    return '<div class="card"><table class="heat"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-      '<div class="heatlegend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>' +
-      '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Google Search (coincident)</span>' +
-      '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (lagging, ground truth)</span><span>Darker = stronger signal</span></div></div>';
+    return '<div class="card sbars"><div class="sbar-list">' + rows + '</div>' +
+      '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>' +
+      '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>' +
+      '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>';
   }
 
   function doSection(c) {
