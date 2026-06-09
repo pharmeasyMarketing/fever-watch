@@ -635,7 +635,7 @@ def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
                  + '<div class="sbar-mid"><div class="sbar-track"><span style="width:' + str(ww) + '%;background:#15ACA5"></span><span style="width:' + str(ws) + '%;background:#7C6CD6"></span><span style="width:' + str(wl) + '%;background:#3661B0"></span></div>'
                  + '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>'
                  + '<div class="sbar-score" style="color:' + col + '">' + str(sc) + top + '</div></div>')
-    return ('<div class="card sbars"><div class="sbar-list">' + rows + '</div>'
+    return ('<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - five fevers we track in ' + city["name"] + '</div></div><div class="sbar-list">' + rows + '</div>'
             '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
             '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>'
             '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>')

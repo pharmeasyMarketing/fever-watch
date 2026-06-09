@@ -73,6 +73,9 @@
   .grid2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: stretch; }
   /* Ranked composite bars (replaces the heatmap; same data, ranked + score-forward) */
   .sbars { display: flex; flex-direction: column; }
+  .sbars .sbar-head { margin-bottom: 18px; }
+  .sbars .sbar-title { font-size: 17px; font-weight: 800; color: var(--pe-ink); letter-spacing: -.01em; line-height: 1.25; }
+  .sbars .sbar-sub { font-size: 12.5px; color: var(--pe-muted); margin-top: 4px; line-height: 1.4; }
   .sbars .sbar-list { display: flex; flex-direction: column; gap: 17px; }
   .sbars .sbar-row { display: grid; grid-template-columns: minmax(138px, 180px) 1fr auto; align-items: center; gap: 16px; }
   .sbars .sbar-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
