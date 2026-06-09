@@ -4,7 +4,7 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **2026-06-09 (FAQ redesign SHIPPED; trend module + ranked bars NEXT):** Replaced the 6 generic FAQs with
+> **2026-06-09 (FAQ redesign + desktop Ranked Composite Bars SHIPPED; trend module NEXT):** Replaced the 6 generic FAQs with
 > **10 humanized, per-city FAQs** (data-interpolated from blend / driver / weather / mode / national rank /
 > signals) in a new **accordion** design (rounded cards, chevron tile, first two open). Single source =
 > `build_site.py faq_items(city,...)`, feeding the baked SSR (`_faq_html`), the FAQPage JSON-LD, and the inline
@@ -14,8 +14,10 @@
 > `docs/lab_feed_2025_historic_template.csv`), `docs/lab_feed_historic_format.md`, and the trend design brief
 > (`docs/season-trend-module-brief.md`). FAQ accordion still needs a quick VISUAL spot-check (data is verified).
 >
-> ### >>> STILL TO BUILD (design handoff fully studied) <<<
-> Two components remain from the Claude Design handoff (working bundle id `cKHBvKk3koWKhcK0PGtJdg`; re-fetch via
+> ### >>> STILL TO BUILD: only the trend module (B / ranked bars is DONE, commit `730b6dd`, CLS 0 byte-matched) <<<
+> Component (B) below (desktop Ranked Composite Bars) is **SHIPPED** - `desktop.js heatmapCard` + `build_site.py
+> _heatmap_card` rewritten byte-identical (`#s-week` SSR == live, CLS 0 verified). Only **(A) the trend module**
+> remains. It's from the Claude Design handoff (working bundle id `cKHBvKk3koWKhcK0PGtJdg`; re-fetch via
 > `https://api.anthropic.com/v1/design/h/cKHBvKk3koWKhcK0PGtJdg` - it's a gzipped tar of `fever-watch/` with README +
 > all component HTML/JSX + tokens + screenshots). The trend + FAQ designs already inherit the live brand (Inter,
 > `#10847E`, the risk ramp, signal colours `#15ACA5/#7C6CD6/#3661B0`); only the ranked bars uses the generic DS
