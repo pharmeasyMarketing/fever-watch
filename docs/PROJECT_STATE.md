@@ -4,6 +4,37 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **2026-06-09 (FAQ redesign SHIPPED; trend module + ranked bars NEXT):** Replaced the 6 generic FAQs with
+> **10 humanized, per-city FAQs** (data-interpolated from blend / driver / weather / mode / national rank /
+> signals) in a new **accordion** design (rounded cards, chevron tile, first two open). Single source =
+> `build_site.py faq_items(city,...)`, feeding the baked SSR (`_faq_html`), the FAQPage JSON-LD, and the inline
+> `window.FW.seed.faq`; both JS flows render from `seed.faq`; shared `.faq-list` CSS in `prototypes/tokens.css`
+> (old per-device FAQ CSS removed). Verified: 10 unique per-city Qs (Bengaluru != Mumbai), valid JSON-LD, 2 open,
+> no em/en dashes. Commit `1cdb6f7`. Also saved the lab-feed templates (`docs/lab_feed_2026_live_template.csv`,
+> `docs/lab_feed_2025_historic_template.csv`), `docs/lab_feed_historic_format.md`, and the trend design brief
+> (`docs/season-trend-module-brief.md`). FAQ accordion still needs a quick VISUAL spot-check (data is verified).
+>
+> ### >>> STILL TO BUILD (design handoff fully studied) <<<
+> Two components remain from the Claude Design handoff (working bundle id `cKHBvKk3koWKhcK0PGtJdg`; re-fetch via
+> `https://api.anthropic.com/v1/design/h/cKHBvKk3koWKhcK0PGtJdg` - it's a gzipped tar of `fever-watch/` with README +
+> all component HTML/JSX + tokens + screenshots). The trend + FAQ designs already inherit the live brand (Inter,
+> `#10847E`, the risk ramp, signal colours `#15ACA5/#7C6CD6/#3661B0`); only the ranked bars uses the generic DS
+> (Mulish/`#008880`/coral) and must be re-skinned to the live tokens.
+> - **(A) "This monsoon vs last year in {city}" trend module**, placed ABOVE the FAQ on both flows. Hand-rolled
+>   inline-SVG chart (source: `project/trend-parts.jsx` + `trend-mocks.jsx`): soft gray last-year band + bold
+>   this-year line + faint LOW/MOD/HIGH risk zones (Overall only) + you-are-here dot + month ticks; verdict line +
+>   delta chip; segmented tabs (Overall/Weather/Searches/Labs); tap tooltip; collapsed + expanded states; desktop =
+>   hero chart + 3 signal small-multiples. Use **per-city MOCK series for now** (generate deterministically from the
+>   city's real scores in `build_site.py` -> `seed.trend`; later swap for a real `data/history.json`). Add a desktop
+>   TOC entry **"This year vs last year"** (data-jump `s-trend`) and include `s-trend` in `spyScroll`'s id list.
+> - **(B) Desktop Ranked Composite Bars** replacing the heatmap inside `weekSection`'s `.grid2` (source:
+>   `project/ranked-bars-handoff.jsx` + `score-grid-parts.jsx`). Each disease row: rank + emoji tile + name/category
+>   over a **composite bar** (segment width = `signal / (weather+search+labs) * score` %, coloured by signal) + a
+>   signal strip, with the big score in the **band colour** and a "Top concern" flag on rank 1. Desktop only (mobile
+>   keeps its current breakdown). **CRITICAL: update `build_site.py _heatmap_card` -> the new bars BYTE-IDENTICAL to
+>   `desktop.js`** (it is in the server-rendered above-fold `_desktop_pre`/`_week_section`), or the desktop CLS 0
+>   regresses. Verify byte-match the same way as the seamless-first-paint pass (DOMParser SSR vs live `#s-week`).
+>
 > **2026-06-08 (performance + share-chrome + seamless-first-paint pass; ALL LIVE + PSI-audited):** big perf/UX
 > pass, deployed. Live PSI headline: **mobile 67-89 -> 97-99, CLS 0.95 -> 0, FCP 2.7s -> ~1.1s, best-practices 100**;
 > **OG cards 700KB PNG -> ~55KB JPEG**. Commits: `a77bc73` (share chrome + Inter + logging), `dd7c691` (cache-bust),
