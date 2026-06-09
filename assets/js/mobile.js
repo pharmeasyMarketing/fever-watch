@@ -288,7 +288,7 @@
   }
 
   function faqCard() {
-    var faq = (FW.seed && FW.seed.faq) || FAQ;
+    var faq = (window.FeverWatchFaq && DATA) ? FeverWatchFaq.forCity(cityObj(state.cityId), DATA, FW.seed) : FAQ;
     var items = faq.map(function (f, i) {
       return '<details class="faqitem"' + (i < 2 ? ' open' : '') + '><summary><span class="faq-q">' + f[0] + '</span><span class="faq-chev" aria-hidden="true"></span></summary><div class="faq-a">' + f[1] + '</div></details>';
     }).join("");

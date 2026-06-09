@@ -151,6 +151,7 @@ PAGE = """<!DOCTYPE html>
 <div id="fw-app">{fallback}</div>
 {footer}
 <script>window.FW = {fw};</script>
+<script src="{rel}assets/js/faq.js?v={av}" defer></script>
 <script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 <script src="{rel}assets/js/geo.js?v={av}" defer></script>
 <script src="{rel}assets/js/share.js?v={av}" defer></script>
@@ -451,8 +452,8 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
     drank = next((i + 1 for i, d in enumerate(ordered) if d["id"] == "dengue"), 1)
     any_conf = any(cells_by[(cid, d["id"])].get("mode") == "confirmed" for d in diseases)
     w = city.get("weather", {})
-    temp = str(int(round(w.get("temp_mean_c", 0)))); hum = str(int(round(w.get("humidity_pct", 0))))
-    rain14 = str(int(round(w.get("rain_14d_mm", 0))))
+    temp = str(int(math.floor(w.get("temp_mean_c", 0) + 0.5))); hum = str(int(math.floor(w.get("humidity_pct", 0) + 0.5)))
+    rain14 = str(int(math.floor(w.get("rain_14d_mm", 0) + 0.5)))
     clim = CLIMATE_PHRASE.get(city.get("climate", ""), "monsoon")
     ranked = sorted(all_cities, key=lambda c: c["blend"]["score"], reverse=True)
     rank = next((i + 1 for i, c in enumerate(ranked) if c["id"] == cid), len(all_cities)); ncit = len(all_cities)
@@ -771,9 +772,15 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         # Inline per-city seed so the JS paints the designed view instantly (no wait for the ~850KB
         # grid). The full grid still loads in the background for the other-cities leaderboard.
         city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
+        _ranked = sorted(grid["cities"], key=lambda c: c["blend"]["score"], reverse=True)
+        rank = next((i + 1 for i, c in enumerate(_ranked) if c["id"] == city["id"]), len(grid["cities"]))
+        # seed.faq is no longer inlined: the FAQ is recomputed client-side from the grid by faq.js
+        # (Option A) so it refreshes on every city switch and the page stays lean. The CRAWLABLE FAQ
+        # is the Python-baked SSR accordion (_faq_html) + the per-city FAQPage JSON-LD, both unchanged.
+        # We keep the national rank so the "vs other cities" answer first-paints right before the grid.
         seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
-                "cities": [city], "grid": city_cells, "faq": faq}
+                "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"])}
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
               "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
