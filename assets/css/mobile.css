@@ -173,20 +173,16 @@
   .faqsec .sectiontitle { margin-bottom: 4px; }
 
   /* PharmEasy footer (baked server-side, shared across flows) */
-  .footer { background: #fff; border-top: 1px solid var(--pe-line); margin-top: 8px; }
-  .foottrust { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--pe-bg-2); }
-  .trustpill { font-size: 11.5px; font-weight: 600; color: var(--pe-green-dark); background: var(--pe-green-100); border-radius: var(--pill); padding: 5px 11px; }
-  .footin { padding: 20px 16px 4px; display: grid; grid-template-columns: 1fr; gap: 18px; }
-  .footin h2 { font-size: 13px; font-weight: 700; margin: 0 0 9px; }
-  .footin a { display: block; font-size: 12.5px; color: var(--pe-muted); margin: 8px 0; text-decoration: none; }
-  .footmission { padding: 4px 16px 12px; font-size: 11.5px; color: var(--pe-muted); }
-  .footmeta { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--pe-bg-2); }
-  .footsocial, .footpay { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--pe-muted); }
-  .footsocial > span, .footpay > span { font-weight: 700; color: var(--pe-ink-2); }
-  .footsocial a { color: var(--pe-green); font-weight: 600; text-decoration: none; }
-  .paychip { border: 1px solid var(--pe-line); border-radius: 5px; padding: 3px 7px; font-size: 10.5px; font-weight: 600; color: var(--pe-ink-2); background: var(--pe-bg); }
-  .footbar { border-top: 1px solid var(--pe-bg-2); }
-  .footbarin { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: var(--pe-muted-2); }
+  .footer { background: #EBEFF6; border-top: 1px solid var(--pe-line); margin-top: 8px; }
+  .footin { padding: 26px 16px 8px; display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .footcol { min-width: 0; }
+  .footsec + .footsec { margin-top: 18px; }
+  .footin h2 { font-size: 14.5px; font-weight: 800; color: var(--pe-ink); margin: 0 0 10px; }
+  .footin a { display: block; font-size: 13px; color: var(--pe-ink-2); margin: 8px 0; text-decoration: none; }
+  .footfollow .footsocial { display: flex; align-items: center; gap: 18px; margin-top: 2px; }
+  .footfollow .footsocial a { color: var(--pe-ink); display: inline-flex; }
+  .footbar { border-top: 1px solid var(--pe-line); }
+  .footbarin { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: var(--pe-muted-2); }
 
   /* baked SEO fallback (crawler / no-JS; replaced on hydration) */
   .fw-fallback { padding: 18px 16px 28px; }

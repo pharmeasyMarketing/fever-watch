@@ -257,50 +257,64 @@ def ticker_html(all_cities: list, rel: str) -> str:
             '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + items + items + '</div></div></div></div>')
 
 
-FOOTER_COLS = [
-    ("Company", [("About Us", "https://pharmeasy.in/about-us"), ("Careers", "https://pharmeasy.in/careers"),
-                 ("Blog", "https://pharmeasy.in/blog"), ("Partner with PharmEasy", "https://pharmeasy.in/franchisestores")]),
-    ("Our Services", [("Healthcare Products", "https://pharmeasy.in/health-care"), ("Lab Tests", "https://pharmeasy.in/diagnostics")]),
-    ("Featured Categories", [
-        ("Must Haves", "https://pharmeasy.in/health-care/top-products-9297"),
-        ("Vitamin Store", "https://pharmeasy.in/health-care/fitness-supplements-623"),
-        ("Sexual Wellness", "https://pharmeasy.in/health-care/sexual-wellness-575"),
-        ("Personal Care", "https://pharmeasy.in/health-care/personal-care-877"),
-        ("Homeopathy Care", "https://pharmeasy.in/health-care/homeopathy-care-12811"),
-        ("Summer Store", "https://pharmeasy.in/health-care/summer-store-16709"),
-        ("Health Food and Drinks", "https://pharmeasy.in/health-care/health-food-and-drinks-648"),
-        ("Diabetes Essentials", "https://pharmeasy.in/health-care/diabetic-care-145"),
-    ]),
-    ("Need Help", [("Browse All Molecules", "https://pharmeasy.in/molecules"),
-                   ("Browse All Cities & Areas", "https://pharmeasy.in/online-medicine-order/browse/areas"),
-                   ("FAQs", "https://pharmeasy.in/help")]),
-    ("Policy Info", [("Editorial Policy", "https://pharmeasy.in/legal/editorial-policy"),
-                     ("Privacy Policy", "https://pharmeasy.in/legal/privacy-policy"),
-                     ("Vulnerability Disclosure Policy", "https://pharmeasy.in/vulnerability-disclosure-policy"),
-                     ("Terms and condition", "https://pharmeasy.in/terms-and-conditions"),
-                     ("Declaration on Dark Pattern", "https://assets.pharmeasy.in/web-assets/legal/circulars/Axelia_Self-Declaration_Dark_Patterns.pdf"),
-                     ("Customer Support Policy", "https://pharmeasy.in/customer-support-policy"),
-                     ("Return Policy", "https://pharmeasy.in/return-policy"),
-                     ("Smartbuy Policy", "https://pharmeasy.in/smartbuy-policy")]),
+# Footer regrouped to the PharmEasy reference: 3 link columns (Company+Services / Featured Categories /
+# Need Help+Policy) + a Follow Us column with social icons. No payment row (removed per request).
+FOOT_COMPANY = [("About Us", "https://pharmeasy.in/about-us"), ("Careers", "https://pharmeasy.in/careers"),
+                ("Blog", "https://pharmeasy.in/blog"), ("Partner with PharmEasy", "https://pharmeasy.in/franchisestores")]
+FOOT_SERVICES = [("Order Medicine", "https://pharmeasy.in/"), ("Healthcare Products", "https://pharmeasy.in/health-care"),
+                 ("Lab Tests", "https://pharmeasy.in/diagnostics")]
+FOOT_CATEGORIES = [
+    ("Must Haves", "https://pharmeasy.in/health-care/top-products-9297"),
+    ("Vitamin Store", "https://pharmeasy.in/health-care/fitness-supplements-623"),
+    ("Sexual Wellness", "https://pharmeasy.in/health-care/sexual-wellness-575"),
+    ("Personal Care", "https://pharmeasy.in/health-care/personal-care-877"),
+    ("Homeopathy Care", "https://pharmeasy.in/health-care/homeopathy-care-12811"),
+    ("Summer Store", "https://pharmeasy.in/health-care/summer-store-16709"),
+    ("Health Food and Drinks", "https://pharmeasy.in/health-care/health-food-and-drinks-648"),
+    ("Diabetes Essentials", "https://pharmeasy.in/health-care/diabetic-care-145"),
+    ("Ayurvedic Care", "https://pharmeasy.in/health-care/ayurvedic-care-712"),
+    ("Mother and Baby Care", "https://pharmeasy.in/health-care/mother-and-baby-care-911"),
+    ("Mobility & Elderly Care", "https://pharmeasy.in/health-care/elderly-care-12810"),
+    ("Sports Nutrition", "https://pharmeasy.in/health-care/sports-nutrition-624"),
+    ("Healthcare Devices", "https://pharmeasy.in/health-care/healthcare-devices-882"),
+    ("Skin Care", "https://pharmeasy.in/health-care/skin-care-576"),
+    ("Health Concerns", "https://pharmeasy.in/health-care/health-conditions-13624"),
+    ("Explore More", "https://pharmeasy.in/health-care"),
 ]
-FOOTER_SOCIAL = [("Instagram", "https://www.instagram.com/pharmeasyapp/"), ("Facebook", "https://www.facebook.com/pharmeasy/"),
-                 ("YouTube", "https://www.youtube.com/channel/UCDats_DLX-bGZH3-KGu8JhA"), ("Twitter", "https://www.twitter.com/pharmeasyapp/")]
-FOOTER_PAYS = ["Visa", "Mastercard", "RuPay", "Maestro", "Diners", "Google Pay", "Paytm", "Amazon Pay", "PhonePe", "Mobikwik", "Airtel Money", "Ola Money"]
-FOOTER_TRUST = ["100% NABL & ISO Certified Labs", "700+ Collection Centers", "7,000 Quality & Trained Phlebotomists"]
+FOOT_HELP = [("Browse All Medicines", "https://pharmeasy.in/online-medicine-order/browse"),
+             ("Browse All Molecules", "https://pharmeasy.in/molecules"),
+             ("Browse All Cities & Areas", "https://pharmeasy.in/online-medicine-order/browse/areas"),
+             ("FAQs", "https://pharmeasy.in/help")]
+FOOT_POLICY = [("Editorial Policy", "https://pharmeasy.in/legal/editorial-policy"),
+               ("Privacy Policy", "https://pharmeasy.in/legal/privacy-policy"),
+               ("Vulnerability Disclosure Policy", "https://pharmeasy.in/vulnerability-disclosure-policy"),
+               ("Terms and condition", "https://pharmeasy.in/terms-and-conditions"),
+               ("Declaration on Dark Pattern", "https://assets.pharmeasy.in/web-assets/legal/circulars/Axelia_Self-Declaration_Dark_Patterns.pdf"),
+               ("Customer Support Policy", "https://pharmeasy.in/customer-support-policy"),
+               ("Return Policy", "https://pharmeasy.in/return-policy"),
+               ("Smartbuy Policy", "https://pharmeasy.in/smartbuy-policy")]
+_IG = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg>'
+_FB = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.8 3.7-3.8 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>'
+_YT = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M23 7.5a2.9 2.9 0 0 0-2-2C19.1 5 12 5 12 5s-7.1 0-9 .5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 .5 12 30 30 0 0 0 1 16.5a2.9 2.9 0 0 0 2 2c1.9.5 9 .5 9 .5s7.1 0 9-.5a2.9 2.9 0 0 0 2-2 30 30 0 0 0 .5-4.5A30 30 0 0 0 23 7.5zM9.8 15.3V8.7l5.7 3.3z"/></svg>'
+_TW = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M22 5.9c-.7.3-1.5.5-2.3.6a4 4 0 0 0 1.8-2.2c-.8.5-1.7.8-2.6 1A4 4 0 0 0 12 9.2c0 .3 0 .6.1.9A11.4 11.4 0 0 1 3.1 4.6a4 4 0 0 0 1.2 5.4c-.6 0-1.2-.2-1.7-.4a4 4 0 0 0 3.2 4c-.5.1-1.1.2-1.7.1a4 4 0 0 0 3.7 2.8A8.1 8.1 0 0 1 2 18a11.4 11.4 0 0 0 6.1 1.8c7.4 0 11.5-6.1 11.5-11.5v-.5c.8-.6 1.5-1.3 2-2z"/></svg>'
+FOOTER_SOCIAL = [("Instagram", "https://www.instagram.com/pharmeasyapp/", _IG),
+                 ("Facebook", "https://www.facebook.com/pharmeasy/", _FB),
+                 ("YouTube", "https://www.youtube.com/channel/UCDats_DLX-bGZH3-KGu8JhA", _YT),
+                 ("Twitter", "https://www.twitter.com/pharmeasyapp/", _TW)]
 
 
 def footer_html() -> str:
-    cols = "".join(
-        '<div><h2>' + esc(h) + '</h2>' + "".join(
-            '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + '</a>' for t, u in links
-        ) + '</div>' for h, links in FOOTER_COLS)
-    social = "".join('<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + '</a>' for t, u in FOOTER_SOCIAL)
-    pays = "".join('<span class="paychip">' + esc(p) + '</span>' for p in FOOTER_PAYS)
+    def sec(h, links):
+        return ('<div class="footsec"><h2>' + esc(h) + '</h2>'
+                + "".join('<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + '</a>' for t, u in links)
+                + '</div>')
+    col1 = '<div class="footcol">' + sec("Company", FOOT_COMPANY) + sec("Our Services", FOOT_SERVICES) + '</div>'
+    col2 = '<div class="footcol">' + sec("Featured Categories", FOOT_CATEGORIES) + '</div>'
+    col3 = '<div class="footcol">' + sec("Need Help", FOOT_HELP) + sec("Policy Info", FOOT_POLICY) + '</div>'
+    social = "".join('<a href="' + esc(u) + '" target="_blank" rel="noopener" aria-label="' + esc(t) + '">' + svg + '</a>' for t, u, svg in FOOTER_SOCIAL)
+    col4 = '<div class="footcol footfollow"><h2>Follow Us</h2><div class="footsocial">' + social + '</div></div>'
     return (
-        '<footer class="footer">'
-        '<div class="footin">' + cols + '</div>'
-        '<div class="footmeta"><div class="footsocial"><span>Follow us</span>' + social + '</div>'
-        '<div class="footpay"><span>We accept</span>' + pays + '</div></div>'
+        '<footer class="footer"><div class="footin">' + col1 + col2 + col3 + col4 + '</div>'
         '<div class="footbar"><div class="footbarin">'
         '<span class="footdisc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search and lab signals are simulated in this preview.</span>'
         '<span>&#169; 2026 PharmEasy. All Rights Reserved</span></div></div></footer>'
