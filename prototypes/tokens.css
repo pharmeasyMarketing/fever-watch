@@ -86,6 +86,21 @@ img, svg { max-width: 100%; }
 .fw-fallback details { border-top: 1px solid var(--pe-bg-2); padding: 8px 0; }
 .fw-fallback summary { font-weight: 600; cursor: pointer; }
 
+/* FAQ accordion (brand-recreated from the design handoff). Shared by the baked SSR FAQ and both JS
+   flows. Native <details> so it works with no JS and for crawlers; first two open; chevron tile flips. */
+.faq-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0 4px; }
+.faq-list .faqitem { background: #fff; border: 1px solid var(--pe-line); border-radius: 14px; overflow: hidden; padding: 0; }
+.faq-list .faqitem[open] { border-color: #CFE3E0; box-shadow: 0 4px 16px rgba(16,132,126,0.07); }
+.faq-list .faqitem > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 15px 18px; }
+.faq-list .faqitem > summary::-webkit-details-marker { display: none; }
+.faq-list .faqitem > summary::after { content: none; }
+.faq-list .faq-q { flex: 1; font-size: 15.5px; font-weight: 700; color: var(--pe-ink); line-height: 1.35; }
+.faq-list .faq-chev { width: 28px; height: 28px; border-radius: 8px; background: #F1F5F4; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.faq-list .faq-chev::after { content: ""; width: 7px; height: 7px; border-right: 2.4px solid var(--pe-muted); border-bottom: 2.4px solid var(--pe-muted); transform: rotate(45deg); margin-top: -3px; transition: transform .15s ease; }
+.faq-list .faqitem[open] .faq-chev { background: #E9F4F2; }
+.faq-list .faqitem[open] .faq-chev::after { border-color: var(--pe-green); transform: rotate(-135deg); margin-top: 3px; }
+.faq-list .faq-a { padding: 0 18px 16px; font-size: 13.5px; line-height: 1.62; color: var(--pe-ink-2); }
+
 /* Risk beacon: a pulsing alert light next to the band label. Colour = band (--c),
    pulse speed = urgency (--bdur, faster when higher). Honours reduced-motion. */
 .beacon { position: relative; display: inline-block; width: 13px; height: 13px; vertical-align: middle; margin-right: 9px; }

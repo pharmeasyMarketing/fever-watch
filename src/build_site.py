@@ -347,7 +347,7 @@ def head_meta(cfg: dict, env: str, title: str, desc: str, canonical: str, rel: s
     return "\n".join(parts)
 
 
-def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_url: str) -> str:
+def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_url: str, faq: list) -> str:
     base = cfg["base_url"]
     pub = cfg["publisher"]
     lang = cfg.get("language", "en-IN")
@@ -358,7 +358,7 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
     website = {"@type": "WebSite", "@id": base + "#website", "name": cfg["site_name"],
                "url": base, "inLanguage": lang, "publisher": {"@id": base + "#organization"}}
     faqpage = {"@type": "FAQPage", "mainEntity": [
-        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ_ITEMS]}
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
     graph = [org, website]
     if city:
         url = base + city["id"] + "/"
@@ -406,8 +406,95 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
 SIG_COLS = [("weather", "Breeding weather"), ("trends", "Search interest"), ("positivity", "Lab positivity")]
 
 
-def _faq_html() -> str:
-    return "".join('<details><summary>' + esc(q) + '</summary><p>' + esc(a) + '</p></details>' for q, a in FAQ_ITEMS)
+CLIMATE_PHRASE = {
+    "tropical_wet": "warm, high-rainfall tropical",
+    "tropical_savanna": "seasonal tropical (wet and dry)",
+    "semi_arid": "hot, semi-arid",
+    "humid_subtropical": "humid subtropical",
+    "temperate": "cooler, temperate",
+}
+_ORD = {1: "biggest", 2: "second-biggest", 3: "third-biggest", 4: "fourth-biggest", 5: "smallest"}
+
+
+def faq_items_landing() -> list:
+    return list(FAQ_ITEMS)
+
+
+def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, generated_at: str) -> list:
+    """10 humanized, per-city FAQ (question, answer) pairs that weave in the live data, so every city
+    page gets a unique, SEO-rich FAQ. Conversational voice; risk-indicator framing only; ASCII hyphens;
+    no diagnosis or medical claims; positivity only as an aggregate trend; weather is not body fever."""
+    cid = city["id"]; nm = city["name"]; st = city["state"]
+    b = city["blend"]; bs = str(b["score"]); bb = b["band"]
+    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
+    dl = drv["label"]; dsc = str(b["driver_score"]); dbd = cells_by[(cid, b["driver"])]["band"]
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    rank_list = ", ".join(d["label"] + " (" + str(cells_by[(cid, d["id"])]["score"]) + ")" for d in ordered)
+    den = cells_by[(cid, "dengue")]; den_s = str(den["score"]); den_b = den["band"]
+    dw = int(den.get("signals", {}).get("weather") or 0); den_w = str(dw)
+    den_t = den.get("signals", {}).get("trends"); den_t_s = "no data" if den_t is None else str(den_t)
+    news = bool(den.get("signals", {}).get("news_spike"))
+    drank = next((i + 1 for i, d in enumerate(ordered) if d["id"] == "dengue"), 1)
+    any_conf = any(cells_by[(cid, d["id"])].get("mode") == "confirmed" for d in diseases)
+    w = city.get("weather", {})
+    temp = str(int(round(w.get("temp_mean_c", 0)))); hum = str(int(round(w.get("humidity_pct", 0))))
+    rain14 = str(int(round(w.get("rain_14d_mm", 0))))
+    clim = CLIMATE_PHRASE.get(city.get("climate", ""), "monsoon")
+    ranked = sorted(all_cities, key=lambda c: c["blend"]["score"], reverse=True)
+    rank = next((i + 1 for i, c in enumerate(ranked) if c["id"] == cid), len(all_cities)); ncit = len(all_cities)
+    tert = "the higher-risk third" if rank <= ncit / 3.0 else ("the middle band" if rank <= 2 * ncit / 3.0 else "the lower half")
+    date_str = _fmt_date_js(generated_at)
+
+    den_mode = ("we don't have confirmed lab numbers for " + nm + " yet, so this is a conditions-based estimate that we deliberately cap below the HIGH band to keep it honest"
+                if den.get("mode") != "confirmed"
+                else "PharmEasy lab results feed into this one, so it reflects what's actually turning up in tests, not just the weather")
+    weights_clause = ("When lab data is in, it leads - the mix is roughly 30/22/48 across weather, search and labs, with a small confidence bump when all three agree"
+                      if any_conf
+                      else "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40), capped at 69 so it can't hit HIGH until the labs back it up")
+    season_clause = ("that's firmly in breeding-friendly territory" if dw >= 60 else ("that's middling - not nothing, not alarming" if dw >= 25 else "that's on the quiet side for now"))
+    band_open = {
+        "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly this week - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
+        "MODERATE": "A MODERATE reading (" + bs + "/100) means things in " + nm + " are a touch elevated but mixed - not a red alert, just a nudge to take the usual precautions.",
+        "LOW-MODERATE": "A LOW-MODERATE reading (" + bs + "/100) means " + nm + " is fairly calm this week - low pressure overall, though the monsoon can turn that around fast.",
+        "LOW": "A LOW reading (" + bs + "/100) means it's quiet in " + nm + " right now - conditions and signals are all on the gentle side.",
+    }.get(bb, "A " + bb + " reading (" + bs + "/100) is the headline for " + nm + " this week.")
+    cap_clause = (" And since " + nm + " is on a conditions-only forecast for now, it's capped at 69 - it won't show HIGH until lab data confirms it." if not any_conf else "")
+    news_clause = (", and there's a national news spike around dengue at the moment" if news else "")
+
+    return [
+        ("How worried should I be about monsoon fevers in " + nm + " right now?",
+         "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the five fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
+        ("Is dengue something to watch in " + nm + " this week?",
+         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the five fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
+        ("Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
+         "This week it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."),
+        ("How is " + nm + "'s weather affecting the mosquito-fever risk?",
+         nm + " has a " + clim + " climate, and this week it's averaging about " + temp + "C with " + hum + "% humidity and roughly " + rain14 + " mm of rain over the last fortnight. Mosquitoes like Aedes and Anopheles breed fastest near 29C and love the standing water that shows up a week or two after rain, so warm, wet spells push our breeding-weather signal up and drier or cooler ones pull it back down. (Worth flagging: that's outdoor weather, not body-temperature fever.)"),
+        ("Where does the " + nm + " score actually come from?",
+         "Three signals, blended: breeding weather (from NASA's open POWER data), how much people are searching for these illnesses, and PharmEasy's lab positivity. " + weights_clause + ". We always show the breakdown - it's never a mystery number. For reference, the bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."),
+        ("Is it dengue season in " + nm + " yet?",
+         "Monsoon fevers follow the rain more than the calendar. This week " + nm + "'s breeding-weather signal for the mosquito-borne ones is " + den_w + "/100, with about " + rain14 + " mm of rain over the past fortnight feeding standing water - " + season_clause + ". So rather than guessing by the month, just check back here; it updates daily, and you'll see conditions climb or ease in real time."),
+        ("Is " + nm + " better or worse off than other Indian cities right now?",
+         "Out of the " + str(ncit) + " cities we cover, " + nm + " ranks #" + str(rank) + " this week on the overall score (" + bs + "/100, " + bb + "), which puts it in " + tert + " nationally. That ordering shifts through the season, though, because every city is rescored each day from its own weather, searches and lab signals."),
+        ("What does a " + bb + " reading actually mean for " + nm + "?",
+         band_open + " The bands run LOW, LOW-MODERATE, MODERATE, then HIGH." + cap_clause),
+        ("Are dengue cases actually rising in " + nm + "?",
+         "We can't give you case counts - Fever Watch doesn't report those. What we can show is how much " + st + " is searching for dengue, which is " + den_t_s + "/100 this week" + news_clause + ". Search spikes often track public worry and can run ahead of, or alongside, an outbreak - but they aren't confirmed cases. For the confirmed side we lean on PharmEasy's aggregated, de-identified lab positivity wherever it's available."),
+        ("What should someone in " + nm + " actually do this week?",
+         "With " + nm + " at " + bb + " (" + bs + "/100) and " + dl + " leading, the sensible basics: tip out any standing water and use repellent for the mosquito-borne ones, stick to safe drinking water to keep typhoid at bay, and don't brush off a fever that lasts more than a couple of days. If you're feeling off, a fever panel test or a quick online doctor consult on PharmEasy is an easy next step. And the usual reminder - this is a risk indicator, not medical advice, so do see a doctor if you're unwell."),
+    ]
+
+
+def _faq_html(faq) -> str:
+    """The accordion (brand-recreated from the design handoff): rounded cards, a chevron tile that
+    flips, the first two open. Native <details> so it works with no JS and for crawlers."""
+    out = ""
+    for i, (q, a) in enumerate(faq):
+        op = " open" if i < 2 else ""
+        out += ('<details class="faqitem"' + op + '><summary><span class="faq-q">' + esc(q)
+                + '</span><span class="faq-chev" aria-hidden="true"></span></summary>'
+                '<div class="faq-a">' + esc(a) + '</div></details>')
+    return '<div class="faq-list">' + out + '</div>'
 
 
 def _reads_html() -> str:
@@ -592,7 +679,7 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) 
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
-                   generated_at: str, disclaimer: str, rel: str) -> str:
+                   generated_at: str, disclaimer: str, rel: str, faq: list) -> str:
     cid = city["id"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
     date_str = _fmt_date_js(generated_at)
@@ -626,14 +713,14 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                  '<p>Overall monsoon-fever risk this week across ' + str(len(all_cities))
                  + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
 
-    faq_sec = '<section><h2>Common questions</h2>' + _faq_html() + '</section>'
+    faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
     return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec
             + other_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
 
 
-def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str) -> str:
+def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str, faq: list) -> str:
     hero = (
         '<header class="fw-hero">'
         '<h1>Fever Watch: live monsoon-fever risk for your city, in one score.</h1>'
@@ -645,7 +732,7 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
                  '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'
                  + _cities_table(all_cities, "") + '</section>')
     method_sec = '<section><h2>How we calculate this</h2>' + METHOD_HTML + '</section>'
-    faq_sec = '<section><h2>Common questions</h2>' + _faq_html() + '</section>'
+    faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
     return ('<div class="fw-fallback">' + hero + other_sec + method_sec + faq_sec + reads_sec
             + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
@@ -664,13 +751,14 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 + ", " + city["state"] + ": one decomposable score from breeding weather, search interest "
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
-        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel)
+        faq = faq_items(city, diseases, cells_by, grid["cities"], generated_at)
+        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel, faq)
         # Inline per-city seed so the JS paints the designed view instantly (no wait for the ~850KB
         # grid). The full grid still loads in the background for the other-cities leaderboard.
         city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
         seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
-                "cities": [city], "grid": city_cells}
+                "cities": [city], "grid": city_cells, "faq": faq}
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
               "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
@@ -679,7 +767,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         title = cfg["title"]
         desc = cfg["description"]
         canonical = cfg["base_url"]
-        fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer)
+        faq = faq_items_landing()
+        fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer, faq)
         fw = {"gridUrl": "data/grid.json", "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
         og_url = cfg["base_url"] + cfg.get("og_image", "")
         og_alt = cfg.get("og_image_alt", "")
@@ -690,7 +779,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     return PAGE.format(
         lang=cfg.get("language", "en-IN"),
         head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
-        jsonld=jsonld(cfg, generated_at, diseases, city, og_url),
+        jsonld=jsonld(cfg, generated_at, diseases, city, og_url, faq),
         rel=rel, nav=nav_html(rel), ticker=ticker_html(grid["cities"], rel),
         fallback=fallback, footer=footer_html(),
         fw=json.dumps(fw, ensure_ascii=False).replace("</", "<\\/"), av=av,

@@ -288,10 +288,11 @@
   }
 
   function faqCard() {
-    var items = FAQ.map(function (f) {
-      return '<details class="faqitem"><summary>' + f[0] + '</summary><p>' + f[1] + '</p></details>';
+    var faq = (FW.seed && FW.seed.faq) || FAQ;
+    var items = faq.map(function (f, i) {
+      return '<details class="faqitem"' + (i < 2 ? ' open' : '') + '><summary><span class="faq-q">' + f[0] + '</span><span class="faq-chev" aria-hidden="true"></span></summary><div class="faq-a">' + f[1] + '</div></details>';
     }).join("");
-    return '<div class="card" id="faq"><h2 class="sectiontitle">Common questions</h2>' + items + '</div>';
+    return '<section id="faq" class="faqsec"><h2 class="sectiontitle">Common questions</h2><div class="faq-list">' + items + '</div></section>';
   }
 
   function gauge(score, color, size) {

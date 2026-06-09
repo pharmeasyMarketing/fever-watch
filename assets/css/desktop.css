@@ -119,15 +119,8 @@
   .methbody { display: none; margin-top: 16px; }
   .methbody.open { display: block; }
 
-  /* Common questions (live FAQ; mirrors the baked SEO fallback) */
-  #s-faq .faqwrap { padding: 4px 24px; }
-  #s-faq .faqitem { border-top: 1px solid var(--pe-bg-2); }
-  #s-faq .faqitem:first-of-type { border-top: none; }
-  #s-faq summary { font-weight: 600; font-size: 15px; cursor: pointer; padding: 16px 30px 16px 0; list-style: none; position: relative; }
-  #s-faq summary::-webkit-details-marker { display: none; }
-  #s-faq summary::after { content: "▾"; position: absolute; right: 4px; top: 16px; color: var(--pe-muted); font-size: 13px; }
-  #s-faq .faqitem[open] summary::after { content: "▴"; }
-  #s-faq .faqitem p { font-size: 14px; color: var(--pe-ink-2); line-height: 1.65; margin: 0 0 16px; }
+  /* FAQ accordion styles are shared in tokens.css (.faq-list) */
+  #s-faq .faq-list { max-width: 820px; }
   .methgrid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; font-size: 13px; color: var(--pe-ink-2); line-height: 1.65; }
   .methgrid h3 { font-size: 13.5px; margin: 16px 0 5px; color: var(--pe-ink); font-weight: 700; }
   .methgrid h3:first-child { margin-top: 0; }
