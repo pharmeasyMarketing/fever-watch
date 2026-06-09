@@ -26,6 +26,7 @@ if SRC_DIR not in sys.path:
 
 import signals  # noqa: E402
 from consolidate import band, consolidate  # noqa: E402
+from iohelpers import write_json_atomic  # noqa: E402
 
 ROOT = os.path.dirname(SRC_DIR)
 DISCLAIMER = (
@@ -35,6 +36,28 @@ DISCLAIMER = (
     "Forecast-only locations are capped and cannot show HIGH."
 )
 _BAND_CODE = {"HIGH": "H", "MODERATE": "M", "LOW-MODERATE": "l", "LOW": "o"}
+# A stale signal downgrades the cell's confidence one step (Forecast-only is left as is).
+_CONF_DOWNGRADE = {"High": "Moderate", "Moderate": "Low", "Forecast only": "Forecast only"}
+
+
+def _age_days(iso, now_dt):
+    """Whole days between an ISO timestamp and now (UTC); None if missing/unparseable."""
+    if not iso:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+        return max(0, (now_dt - dt).days)
+    except Exception:
+        return None
+
+
+def _fresh_tag(age, stale_days):
+    """fresh (today) | carried Nd (1..stale_days) | stale Nd (> budget) | unknown."""
+    if age is None:
+        return "unknown"
+    if age <= 0:
+        return "fresh"
+    return ("carried %dd" % age) if age <= stale_days else ("stale %dd" % age)
 
 
 def load_json(path: str) -> dict:
@@ -79,6 +102,13 @@ def main() -> int:
         return 1
     weather = load_json(args.weather)
     weather_by_city = {c["id"]: c for c in weather.get("cities", [])}
+
+    # Freshness budget: a signal older than stale_days flags the cell + downgrades its confidence.
+    # Weather has one timestamp for the whole pull; trends freshness is per-disease (build_trends as_of).
+    now_dt = datetime.now(timezone.utc)
+    stale_days = int((consol.get("freshness") or {}).get("stale_days", 3))
+    weather_age = _age_days(weather.get("generated_at"), now_dt)
+    weather_fresh = _fresh_tag(weather_age, stale_days)
 
     sig_cfg = load_json(args.signals_config) if os.path.exists(args.signals_config) else {}
     trends_cfg = sig_cfg.get("trends", {})
@@ -132,6 +162,17 @@ def main() -> int:
             }
             res = consolidate(sig, consol)
             bnd = band(res["score"], consol)
+            # Freshness / carry-forward provenance. The cached/committed files already supply last-good
+            # values (Phase 1); here we tag how old each signal is and downgrade confidence when stale.
+            tr_age = _age_days(tr.get("as_of"), now_dt)
+            pos_fresh = "mock" if positivity_p.name == "mock" else "fresh"  # real lab-feed date hook (future)
+            freshness = {"weather": weather_fresh, "trends": _fresh_tag(tr_age, stale_days), "positivity": pos_fresh}
+            cell_stale = (weather_age is not None and weather_age > stale_days) or (tr_age is not None and tr_age > stale_days)
+            confidence, note = res["confidence"], res["note"]
+            if cell_stale:
+                confidence = _CONF_DOWNGRADE.get(confidence, confidence)
+                oldest = max([a for a in (weather_age, tr_age) if a is not None] or [0])
+                note += " Using the most recent available reading (%dd old)." % oldest
             rows.append({
                 "city": city["id"],
                 "disease": disease["id"],
@@ -141,13 +182,17 @@ def main() -> int:
                 "color": bnd["color"],
                 "soft": bnd["soft"],
                 "emoji": bnd["emoji"],
-                "confidence": res["confidence"],
+                "confidence": confidence,
                 "mode": res["mode"],
-                "note": res["note"],
+                "note": note,
                 "weights": res["weights"],
+                "freshness": freshness,
+                "stale": cell_stale,
                 "signals": {
                     "weather": weather_val,
                     "trends": tr["value"],
+                    "trends_raw": tr.get("raw"),
+                    "trends_as_of": tr.get("as_of"),
                     "positivity": pos,
                     "news_spike": tr["news_spike"],
                 },
@@ -223,13 +268,13 @@ def main() -> int:
         "bands": consol.get("bands", []),
         "cell_count": len(rows),
         "failed_count": len(failures),
+        "stale_days": stale_days,
+        "stale_count": sum(1 for r in rows if r.get("stale")),
         "failures": failures,
         "grid": rows,
     }
 
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    with open(args.out, "w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2, ensure_ascii=False)
+    write_json_atomic(args.out, payload)  # atomic: a crash never corrupts the last-good grid.json
 
     if failures:
         print(f"Note: {len(failures)} cell(s) failed but stayed under the abort threshold.")

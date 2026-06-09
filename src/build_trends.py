@@ -22,6 +22,7 @@ SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
+from iohelpers import load_json_or, write_json_atomic  # noqa: E402
 from signals.serpapi import SerpApiTrendsProvider  # noqa: E402
 
 ROOT = os.path.dirname(SRC_DIR)
@@ -48,6 +49,7 @@ def main() -> int:
     print(f"SerpApi keys: {len(provider.keys)}  |  geo: {provider.geo}  |  diseases: {len(diseases)}")
     print("-" * 72)
 
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     result: dict = {}
     failures = []
     for d in diseases:
@@ -60,7 +62,7 @@ def main() -> int:
                 failures.append(f"{did}: no regional data")
                 print(f"  {did:14} SKIP (no regional data for '{query}')")
                 continue
-            result[did] = {"query": query, "news_spike": spike, "by_state": by_state}
+            result[did] = {"query": query, "news_spike": spike, "by_state": by_state, "as_of": now}
             print(f"  {did:14} OK  states={len(by_state)}  news_spike={spike}")
         except Exception as err:
             failures.append(f"{did}: {err}")
@@ -69,24 +71,38 @@ def main() -> int:
 
     print("-" * 72)
     if not result:
-        print("ABORT: no disease returned trends data. Writing nothing.", file=sys.stderr)
+        # Nothing fresh this run -> do NOT write, so the last-good trends.json survives untouched and the
+        # daily grid keeps reading yesterday's real values (the cached provider). Cold start (no prior
+        # file) is the only case where the grid then falls back to mock trends.
+        print("No disease returned fresh trends data; leaving the existing trends.json in place.", file=sys.stderr)
         for f in failures:
             print("   -", f, file=sys.stderr)
         return 1
+
+    # Carry-forward merge: start from the previous (committed-good) trends.json and overlay ONLY the
+    # diseases that refreshed this run. A disease whose SerpApi pull failed keeps its last-good by_state
+    # (and its older as_of) instead of being dropped to the SIGNAL_FLOOR. Each disease carries an as_of so
+    # the daily build can tell fresh from stale (Phase 2 freshness).
+    prev = load_json_or(out_path, {}) or {}
+    merged = dict(prev.get("diseases") or {})
+    merged.update(result)  # successful diseases (each with as_of=now) overwrite their prev entry
+    carried = [did for did in merged if did not in result]
 
     payload = {
         "signal": "trends",
         "source": "serpapi-google-trends",
         "geo": provider.geo,
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": now,
         "disclaimer": "Relative Google search interest (0-100), not case counts. State-level granularity; a city inherits its state.",
         "failed": failures,
-        "diseases": result,
+        "carried_forward": carried,  # diseases kept from the previous run (their pull failed this run)
+        "diseases": merged,
     }
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2, ensure_ascii=False)
-    print(f"\nWrote {out_path}  ({len(result)}/{len(diseases)} diseases)")
+    write_json_atomic(out_path, payload)  # atomic: a partial run never corrupts the last-good file
+    msg = f"\nWrote {out_path}  ({len(result)}/{len(diseases)} refreshed"
+    if carried:
+        msg += f"; {len(carried)} carried forward: {', '.join(carried)}"
+    print(msg + ")")
     return 0
 
 

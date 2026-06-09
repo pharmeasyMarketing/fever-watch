@@ -7,6 +7,36 @@
 > DEPLOYED** (commit `df15dcc`, push to `master` -> deploy run green) and **verified live** (the staging Bengaluru
 > page returns the trend module, the "four fevers" copy, the 4 diseases, and zero "viral").
 >
+> **2026-06-09 (EVEN LATER: data-pipeline robustness - carry-forward over mock, atomic writes, the CI
+> cancellation fix - plus a Google-Sheet logger overhaul. Backend/CI only; the deployed site is unchanged
+> and the committed grid.json gets the new fields on the next daily run):**
+> - **CI cancellation diagnosed + fixed:** the 2026-06-09 cron run was CANCELLED (run_log: weather
+>   "cancelled", rest "skipped"). Cause: GitHub delayed the 01:30 UTC cron to ~05:47 UTC, which collided
+>   with a morning push, and `daily.yml` + `deploy.yml` shared `concurrency: group: pages` (deploy has
+>   cancel-in-progress:true), so the push-deploy cancelled the in-flight refresh. Fix: `daily.yml` now
+>   uses its OWN group `fever-daily-refresh`; the Pages publish stays serialized by the environment.
+> - **run_log `reason` column:** `sheetlog.log()` + the workflow pass a reason for any non-success step,
+>   so cancelled/skipped rows explain themselves instead of being blank.
+> - **Phase 1 (never clobber good data):** new `src/iohelpers.py write_json_atomic` (temp + os.replace)
+>   in build_weather/build_trends/build_daily, so a crash/kill can't corrupt the last-good file.
+>   build_trends MERGES a partial SerpApi run over the previous trends.json (failed diseases keep their
+>   last-good by_state, NOT a drop to floor-4), each disease stamped with `as_of`.
+> - **Phase 2 (carry-forward + freshness):** build_daily tags each cell's per-signal freshness
+>   (fresh / carried Nd / stale Nd) from the file `as_of` timestamps, flags `stale` past a `stale_days`
+>   budget (config/consolidation.json, default 3) + downgrades that cell's confidence one step, and will
+>   drop stale positivity to forecast-only once the lab feed is real. So a failed API falls back on the
+>   last-good REAL value, not mock (mock = cold-start only). New grid fields: per-cell `freshness`,
+>   `stale`, `signals.trends_raw`/`trends_as_of`; payload `stale_days`/`stale_count`.
+> - **Logger build-up formulas (your ask - "how is weather_score / trends_score computed?"):** in the
+>   Sheet `raw_data` tab, `weather_score` (K) + `trends_score` (L) are now in-sheet FORMULAS (not posted
+>   values) - K inlines the full family-weighted build-up from temp/humidity/rain (VERIFIED to reproduce
+>   the grid value exactly: 71=71, 91=91, ...), L = MAX(4, MIN(100, trends_state_interest)). New columns
+>   `trends_state_interest`, `weather_fresh`, `trends_fresh`, `stale`; confidence downgrades when stale;
+>   data_dictionary updated. Apps Script source is in `docs/sheets_logging.md`.
+> ACTION FOR YOU (the Apps Script lives in the Sheet, not the repo): paste the updated `Code.gs` from
+> `docs/sheets_logging.md`, re-deploy a NEW version, DELETE the `raw_data` + `daily_summary` tabs (they
+> recreate with the new columns next run) and add a `reason` header in `run_log!G1`.
+>
 > **2026-06-09 (LATEST: trend-module polish + dropped Viral fever, so v1 is now 4 diseases):** three
 > review changes on top of the shipped trend module, all verified on both flows:
 > - **Desktop trend heading moved OUTSIDE the card** to match the other page sections: the section now leads with an

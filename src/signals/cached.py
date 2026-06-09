@@ -27,8 +27,11 @@ class CachedTrendsProvider(TrendsProvider):
     def fetch(self, city: dict, disease: dict) -> dict:
         d = self.diseases.get(disease["id"], {})
         by_state = {_norm(k): v for k, v in (d.get("by_state") or {}).items()}
-        val = by_state.get(_norm(city.get("state")))
-        if val is None:
-            vals = list((d.get("by_state") or {}).values())
-            val = round(sum(vals) / len(vals)) if vals else SIGNAL_FLOOR
-        return {"value": max(SIGNAL_FLOOR, min(100, int(val))), "news_spike": bool(d.get("news_spike"))}
+        raw = by_state.get(_norm(city.get("state")))           # this state's Google Trends interest
+        if raw is None:
+            vals = list((d.get("by_state") or {}).values())     # no state row -> the disease's national mean
+            raw = round(sum(vals) / len(vals)) if vals else None
+        value = SIGNAL_FLOOR if raw is None else max(SIGNAL_FLOOR, min(100, int(raw)))
+        # raw = pre-floor interest (so the sheet can show trends_score = MAX(floor, MIN(100, raw)));
+        # as_of = when this disease last refreshed (build_trends carry-forward), for freshness tagging.
+        return {"value": value, "raw": raw, "news_spike": bool(d.get("news_spike")), "as_of": d.get("as_of")}

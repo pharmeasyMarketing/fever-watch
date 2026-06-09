@@ -13,34 +13,34 @@ container-bound or standalone - change `SHEET_ID` below to retarget.
 ## Tabs (auto-created by the script)
 
 - **`run_log`** - one row per pipeline step, every run:
-  `timestamp, run_id, trigger, step, status, detail`
-  steps: `weather, trends, grid, site` (status `success`/`failure`/`skipped`).
+  `timestamp, run_id, trigger, step, status, detail, reason`
+  steps: `weather, trends, grid, site` (status `success`/`failure`/`skipped`/`cancelled`). **`reason`** is
+  filled whenever a step does not succeed - e.g. a concurrency cancel (a concurrent deploy), a SerpApi
+  failure, or a carry-forward - so a cancelled/skipped row explains itself instead of being blank.
 - **`raw_data`** - one row per city x disease, plus one **`disease="OVERALL"`** row per city (the
-  headline blend). The project POSTs the full set of **raw inputs** (cols **A-S**):
-  `date, run_id, city, state, disease, family, temp_c, humidity_pct, rain_7d_mm, rain_14d_mm,
-  weather_score, trends_score, trends_keywords, news_spike, positivity, w_weather, w_trends,
-  w_positivity, confidence`. The script then writes **`score`, `band`, `mode` (cols T-V) as in-sheet
-  FORMULAS** over those inputs, so each cell shows *how* the score is derived (not a hard-coded
-  number) and recomputes if you tweak an input. The disease-row formulas mirror
-  `config/consolidation.json`, using the per-row weights (`w_weather` K, etc.) over the signal
-  sub-scores (`weather_score` K, `trends_score` L, `positivity` O):
-  - confirmed (positivity present): `score = ROUND(MIN(100, ((w_weather/100)*weather_score + (w_trends/100)*trends_score + (w_positivity/100)*positivity) * (1.08 if max-min < 22 else 0.96)))`
-  - forecast (positivity blank): `score = ROUND(MIN(69, (w_weather/100)*weather_score + (w_trends/100)*trends_score))`
-  - **OVERALL** row: `score = ROUND(0.8*top + 0.2*mean-of-rest)` over that run's disease rows for the city.
-  Note: `temp_c / humidity_pct / rain_*` are the raw weather **inputs** to the per-family weather model
-  (`src/weather_score.py` / `config/scoring.json`); `weather_score` is that model's output (logged as a
-  value, not re-derived in-sheet). `trends_score` is the single Google Trends interest value for the
-  OR-joined `trends_keywords`. When the real lab feed is wired, `tests_booked / positives` can be added
-  ahead of `positivity` (they are not in `grid.json` today).
+  headline blend). The project POSTs the **raw inputs** (G-J weather, M-O trends/positivity, P-R weights,
+  W-Z `trends_state_interest` + freshness); **`weather_score` (K), `trends_score` (L), `confidence` (S)
+  and `score`/`band`/`mode` (T-V) are in-sheet FORMULAS** the script writes - the full BUILD-UP, so every
+  derived cell shows *how* it is computed (and recomputes if you tweak an input):
+  - `weather_score` (K): per-family environmental score from temp/humidity/rain, e.g. mosquito =
+    `(0.45*tempfit + 0.35*rain14_unit + 0.20*humidity_unit)*100` (mirrors `config/scoring.json`).
+  - `trends_score` (L) = `MAX(4, MIN(100, trends_state_interest))` - the state Google Trends index, floored.
+  - `score` (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O), mirroring
+    `config/consolidation.json`; OVERALL = `ROUND(0.8*top + 0.2*mean-of-rest)` over that city's disease rows.
+  - `confidence` (S) downgrades one step (High->Moderate, Moderate->Low) when the cell is `stale` (Z) -
+    i.e. it used a carried-forward reading. When the real lab feed is wired, `tests_booked / positives`
+    can be added ahead of `positivity`.
 - **`daily_summary`** - date- and city-level scores, all **by formula** (auto-update as `raw_data` grows):
   avg disease score by `date x disease` (excludes OVERALL rows); a daily `avg / peak / cells`; and the
   **city headline blend** per `date x city`, read straight from the `OVERALL` rows (now exact, not the
   old `0.75*peak + 0.25*avg` approximation). Pure in-sheet formulas - edit/extend freely.
 
-> **Applying the formulas to an existing sheet:** if `raw_data`/`daily_summary` already exist (with
-> hard-coded scores from the earlier version), **delete those two tabs**, paste the updated `Code.gs`,
-> re-deploy a **new version**, then re-run (`gh workflow run daily.yml`). The script recreates both tabs
-> with the formula columns. Older rows that were hard-coded stay as-is unless you delete the tab.
+> **Applying the new columns/formulas to your existing sheet:** the column sets changed - `raw_data`
+> gained the weather_score/trends_score build-up formulas plus `trends_state_interest`, `weather_fresh`,
+> `trends_fresh`, `stale`; `run_log` gained `reason`. So: paste the updated `Code.gs`, re-deploy a **new
+> version**, then **delete the `raw_data` + `daily_summary` tabs** (the script recreates them with the new
+> columns + formulas on the next run) and **add a `reason` header in `run_log!G1`** (or clear `run_log`
+> to let it self-heal the header - clearing loses history). Then re-run `gh workflow run daily.yml`.
 
 ## One-time setup (~5 min)
 
@@ -69,11 +69,13 @@ const TOKEN = 'CHANGE_ME';  // must equal the SHEETS_TOKEN Actions secret
 const SHEET_ID = '1Iz9nAf38PB1UnQr8wR7umuMId4lp9RQuaaJ3HBKcjgc';  // the logs sheet (target by ID)
 
 const HEADERS = {
-  run_log:  ['timestamp','run_id','trigger','step','status','detail'],
-  // raw_data: cols A-S (the raw inputs) are POSTed; T score / U band / V mode are FORMULAS the
-  // script writes per row, mirroring config/consolidation.json (FW-ENSEMBLE-0.1.0). Each city also
-  // gets one disease="OVERALL" row whose score formula is the headline blend over its disease rows.
-  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode'],
+  run_log:  ['timestamp','run_id','trigger','step','status','detail','reason'],
+  // raw_data: the POSTed cells are the raw inputs (G-J weather, M-O trends/positivity, P-R weights,
+  // W-Z trends_state_interest + freshness). weather_score (K), trends_score (L), confidence (S) and
+  // score/band/mode (T-V) are FORMULAS the script writes per row - the full BUILD-UP, so each derived
+  // cell shows HOW it is computed (mirrors config/scoring.json + config/consolidation.json). Each city
+  // also gets one disease="OVERALL" row whose score formula is the headline blend over its disease rows.
+  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale'],
 };
 
 function doPost(e) {
@@ -96,14 +98,19 @@ function doPost(e) {
   }
 }
 
-// score / band / mode as FORMULAS (cols T/U/V), mirroring config/consolidation.json.
-// Disease rows: ensemble over the per-row weights (P w_weather, Q w_trends, R w_positivity) and the
-// signal sub-scores (K weather_score, L trends_score, O positivity): with positivity -> weighted
-// blend x1.08 if the three agree within 22 else x0.96; without positivity (O blank) -> weather+trends
-// only, capped at 69. OVERALL rows (disease="OVERALL"): the city headline blend = 0.8*top +
-// 0.2*mean-of-rest over that run's disease rows for the city (matched on run_id B + city C).
+// weather_score (K), trends_score (L), confidence (S), score (T), band (U), mode (V) are all FORMULAS -
+// the full build-up - mirroring config/scoring.json + config/consolidation.json:
+//  - weather_score (K): per-family environmental score from temp_c (G), humidity (H), rain_7d (I),
+//    rain_14d (J). mosquito = (0.45*tempfit + 0.35*rain14_unit + 0.20*humidity_unit)*100; waterborne =
+//    (0.6*rain7_unit + 0.4*rain14_unit)*100. tempfit = unimodal response peaking at 29C, 0 outside
+//    14-38C; *_unit = saturating ramps (rain/saturation, humidity over its 40-90 band).
+//  - trends_score (L) = MAX(4, MIN(100, trends_state_interest W)) - the state Google Trends index, floored.
+//  - confidence (S): Forecast-only if no positivity; else High if the 3 signals agree (spread<22) else
+//    Moderate; downgraded one step (High->Moderate, Moderate->Low) when the cell is STALE (Z=TRUE).
+//  - score (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O). OVERALL rows: 0.8*top +
+//    0.2*mean-of-rest over that run's disease rows for the city (matched on run_id B + city C).
 function _setRawFormulas(sh, start, n, rows) {
-  const fS = [], fT = [], fU = [], fV = [];
+  const fK = [], fL = [], fS = [], fT = [], fU = [], fV = [];
   for (let i = 0; i < n; i++) {
     const r = start + i;
     if (rows[i][4] === 'OVERALL') {
@@ -111,12 +118,17 @@ function _setRawFormulas(sh, start, n, rows) {
       const mx = 'MAXIFS(' + sel + ')';
       const sm = 'SUMIFS(' + sel + ')';
       const ct = 'COUNTIFS($B:$B,$B' + r + ',$C:$C,$C' + r + ',$E:$E,"<>OVERALL")';
-      fS.push(['=""']);  // confidence n/a for the city blend
+      fK.push(['=""']); fL.push(['=""']); fS.push(['=""']);  // no per-signal sub-scores on the blend row
       fT.push(['=IFERROR(ROUND(0.8*' + mx + '+0.2*(' + sm + '-' + mx + ')/(' + ct + '-1)),ROUND(' + mx + '))']);
       fV.push(['="blend"']);
     } else {
-      // confidence: Forecast only if no positivity; High if the 3 signals agree (spread<22) else Moderate.
-      fS.push(['=IF($O' + r + '="","Forecast only",IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,"High","Moderate"))']);
+      // weather_score (K): family-weighted build-up over G temp_c / H humidity / I rain_7d / J rain_14d.
+      fK.push(['=IF($F' + r + '="mosquito",ROUND((0.45*IF(OR($G' + r + '<=14,$G' + r + '>=38),0,MAX(0,MIN(1,1-(($G' + r + '-29)/13)^2)))+0.35*MAX(0,MIN(1,$J' + r + '/60))+0.20*MAX(0,MIN(1,($H' + r + '-40)/50)))*100),IF($F' + r + '="waterborne",ROUND((0.6*MAX(0,MIN(1,$I' + r + '/80))+0.4*MAX(0,MIN(1,$J' + r + '/80)))*100),""))']);
+      // trends_score (L): the state Google Trends interest W, floored at 4 and capped at 100.
+      fL.push(['=IF($W' + r + '="","",MAX(4,MIN(100,$W' + r + ')))']);
+      // confidence (S): base label, then a one-step downgrade if the cell is STALE (Z=TRUE).
+      const base = 'IF($O' + r + '="","Forecast only",IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,"High","Moderate"))';
+      fS.push(['=IF($Z' + r + '=TRUE,IFS(' + base + '="High","Moderate",' + base + '="Moderate","Low",TRUE,' + base + '),' + base + ')']);
       fT.push(['=IF($O' + r + '="",ROUND(MIN(69,($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + ')),' +
         'ROUND(MIN(100,(($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + '+($R' + r + '/100)*$O' + r + ')*' +
         'IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,1.08,0.96))))']);
@@ -124,6 +136,8 @@ function _setRawFormulas(sh, start, n, rows) {
     }
     fU.push(['=IFS($T' + r + '>=70,"HIGH",$T' + r + '>=45,"MODERATE",$T' + r + '>=25,"LOW-MODERATE",TRUE,"LOW")']);
   }
+  sh.getRange(start, 11, n, 1).setFormulas(fK);  // K weather_score (build-up)
+  sh.getRange(start, 12, n, 1).setFormulas(fL);  // L trends_score
   sh.getRange(start, 19, n, 1).setFormulas(fS);  // S confidence
   sh.getRange(start, 20, n, 1).setFormulas(fT);  // T score
   sh.getRange(start, 21, n, 1).setFormulas(fU);  // U band
@@ -169,18 +183,22 @@ const DICT = [
   ['humidity_pct', 'Trailing mean relative humidity (%), NASA POWER. Input to weather_score.'],
   ['rain_7d_mm', 'Rainfall over the last 7 days (mm), NASA POWER. Input to weather_score.'],
   ['rain_14d_mm', 'Rainfall over the last 14 days (mm), NASA POWER; the lagged breeding signal.'],
-  ['weather_score', '0-100 breeding/transmission favourability from the per-family weather model over temp/humidity/rain (the leading signal). Model output (src/weather_score.py); not a sheet formula.'],
-  ['trends_score', '0-100 Google Trends interest for this disease in the city state (coincident signal). External API value for the OR-joined trends_keywords; not derivable from other columns.'],
+  ['weather_score', 'FORMULA (build-up): 0-100 breeding/transmission favourability, derived in-cell from temp_c/humidity_pct/rain_7d_mm/rain_14d_mm. mosquito = (0.45*tempfit + 0.35*rain14_unit + 0.20*humidity_unit)*100; waterborne = (0.6*rain7_unit + 0.4*rain14_unit)*100. tempfit = unimodal peak at 29C (0 outside 14-38C); *_unit = saturating ramps (config/scoring.json).'],
+  ['trends_score', 'FORMULA: MAX(4, MIN(100, trends_state_interest)) - the state Google Trends index for trends_keywords, floored at 4 and capped at 100.'],
   ['trends_keywords', 'The search terms (OR-joined) whose combined interest is trends_score.'],
   ['news_spike', 'TRUE if national interest spiked recently (news-driven); trends is down-weighted in forecast mode when TRUE.'],
   ['positivity', '0-100 PharmEasy lab test-positivity trend (lagging, ground truth). Blank when there is too little lab data -> the row is forecast-only.'],
   ['w_weather', 'Weight (%) on weather_score in the blend (30 confirmed / 60 forecast).'],
   ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
   ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],
-  ['confidence', 'FORMULA: Forecast only if no positivity; High if the three signals agree (max-min < 22) else Moderate.'],
+  ['confidence', 'FORMULA: Forecast only if no positivity; else High if the three signals agree (max-min < 22) else Moderate; downgraded one step (High->Moderate, Moderate->Low) when stale=TRUE.'],
   ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96. forecast = weather+trends only, capped 69. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
   ['band', 'FORMULA: HIGH >=70, MODERATE >=45, LOW-MODERATE >=25, LOW <25 (from score).'],
   ['mode', 'FORMULA: confirmed (positivity present) or forecast (capped, no positivity); OVERALL rows = blend.'],
+  ['trends_state_interest', 'Raw Google Trends interest (0-100) for the city state (or the disease national mean if the state has no row), BEFORE the floor. trends_score = MAX(4, MIN(100, this)).'],
+  ['weather_fresh', 'How fresh the weather data is: fresh (today) / carried Nd (1..stale_days old) / stale Nd (older). From weather.json generated_at.'],
+  ['trends_fresh', 'How fresh this disease trends data is (build_trends carries forward the last-good per disease on a SerpApi failure): fresh / carried Nd / stale Nd / unknown.'],
+  ['stale', 'TRUE if any signal is older than stale_days (config/consolidation.json) - the cell used a carried-forward reading and its confidence is downgraded one step.'],
 ];
 function _ensureDictionary(ss) {
   if (ss.getSheetByName('data_dictionary')) return;
@@ -201,6 +219,7 @@ function _out(o) {
 
 `.github/workflows/daily.yml` passes `SHEETS_WEBHOOK_URL` + `SHEETS_TOKEN` as env and, after each
 step, runs `python src/sheetlog.py log <step> <outcome> <detail>`; after the grid build it runs
-`python src/sheetlog.py raw data/grid.json` to push the day's ~1,368 rows (228 cities x [5 diseases +
-1 OVERALL], chunked) - the **raw inputs only** (cols A-S); the Apps Script fills `score`/`band`/`mode`
-(T-V) by formula. `src/sheetlog.py` is stdlib-only and a silent no-op when `SHEETS_WEBHOOK_URL` is unset.
+`python src/sheetlog.py raw data/grid.json` to push the day's ~1,140 rows (228 cities x [4 diseases +
+1 OVERALL], chunked) - the **raw inputs**; the Apps Script fills `weather_score`/`trends_score`/
+`confidence` (K/L/S) + `score`/`band`/`mode` (T-V) by formula. `src/sheetlog.py` is stdlib-only and a
+silent no-op when `SHEETS_WEBHOOK_URL` is unset.

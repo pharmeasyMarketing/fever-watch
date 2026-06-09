@@ -22,8 +22,13 @@ permissions:
   pages: write
   id-token: write
 
+# Own concurrency group (NOT the shared 'pages' group deploy.yml uses). deploy.yml runs with
+# cancel-in-progress:true on group 'pages', so when it shared that group a push-triggered deploy
+# would CANCEL an in-flight daily refresh (exactly what happened 2026-06-09: the delayed cron run
+# collided with a morning push). Separating the groups lets the daily data pull finish; the actual
+# Pages publish is still serialized by the github-pages environment.
 concurrency:
-  group: pages
+  group: fever-daily-refresh
   cancel-in-progress: false
 
 jobs:
@@ -61,7 +66,7 @@ jobs:
         run: python src/build_weather.py
       - name: Log weather
         if: always()
-        run: python src/sheetlog.py log weather ${{ steps.weather.outcome }} "NASA POWER pull"
+        run: python src/sheetlog.py log weather ${{ steps.weather.outcome }} "NASA POWER pull" "${{ steps.weather.outcome != 'success' && 'pull did not finish - run cancelled (e.g. a concurrent deploy) or a NASA POWER error' || '' }}"
 
       - name: Build trends (SerpApi, real)
         id: trends
@@ -75,7 +80,7 @@ jobs:
         run: python src/build_trends.py || echo "::warning::build_trends failed; build_daily will fall back to mock trends"
       - name: Log trends
         if: always()
-        run: python src/sheetlog.py log trends ${{ steps.trends.outcome }} "SerpApi Google Trends"
+        run: python src/sheetlog.py log trends ${{ steps.trends.outcome }} "SerpApi Google Trends" "${{ steps.trends.outcome != 'success' && 'SerpApi pull failed - the grid keeps last-good cached trends (mock only on cold start)' || '' }}"
 
       - name: Build grid (cached real trends; mock fallback if trends missing)
         id: grid
@@ -85,7 +90,7 @@ jobs:
       - name: Log grid + push raw data
         if: always()
         run: |
-          python src/sheetlog.py log grid ${{ steps.grid.outcome }} "consolidation engine"
+          python src/sheetlog.py log grid ${{ steps.grid.outcome }} "consolidation engine" "${{ steps.grid.outcome != 'success' && 'grid build did not finish - run cancelled or a weather/trends input problem' || '' }}"
           python src/sheetlog.py raw data/grid.json
 
       - name: Commit refreshed data back
@@ -108,7 +113,7 @@ jobs:
           python src/build_site.py
       - name: Log site build
         if: always()
-        run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_og + build_site (SSG)"
+        run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_og + build_site (SSG)" "${{ steps.site.outcome != 'success' && 'SSG build did not finish - run cancelled or a build error' || '' }}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

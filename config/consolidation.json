@@ -12,6 +12,10 @@
     "score_cap": 69
   },
   "signal_floor": 4,
+  "freshness": {
+    "_comment": "Carry-forward guardrails. A signal's data older than stale_days flags the cell 'stale' and downgrades its confidence one step (High->Moderate->Low; Forecast only unchanged). Positivity past the budget is dropped to None (forecast-only). Last-good real values are always preferred over mock; mock is the cold-start fallback only (no prior committed file).",
+    "stale_days": 3
+  },
   "city_blend": {
     "_comment": "Headline city score: max-dominant blend = top_weight x highest disease + rest_weight x mean of the rest. Kept max-dominant so a single HIGH disease keeps the city near HIGH; the driver disease is always named alongside.",
     "top_weight": 0.8,

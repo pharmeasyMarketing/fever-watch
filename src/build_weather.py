@@ -29,6 +29,7 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 import providers  # noqa: E402
+from iohelpers import write_json_atomic  # noqa: E402
 from weather_score import aggregate, score_family  # noqa: E402
 
 ROOT = os.path.dirname(SRC_DIR)
@@ -143,9 +144,7 @@ def main() -> int:
         "cities": scored,
     }
 
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    with open(args.out, "w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2, ensure_ascii=False)
+    write_json_atomic(args.out, payload)  # atomic: a crash never corrupts the last-good weather.json
 
     for w in warnings:
         print(f"WARN: {w}")

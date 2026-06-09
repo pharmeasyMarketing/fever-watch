@@ -12,17 +12,19 @@ Payload (text/plain JSON, so the webhook is a CORS-simple request):
   {"token": <secret>, "sheet": "run_log"|"raw_data", "rows": [[...], ...]}
 
 Columns the Apps Script expects:
-  run_log : timestamp, run_id, trigger, step, status, detail
+  run_log : timestamp, run_id, trigger, step, status, detail, reason
   raw_data: date, run_id, city, state, disease, family, temp_c, humidity_pct, rain_7d_mm,
-            rain_14d_mm, weather_score, trends_score, trends_keywords, news_spike, positivity,
-            w_weather, w_trends, w_positivity (raw INPUTS, cols A-R). confidence (S) and
-            score/band/mode (T-V) are in-sheet FORMULAS the Apps Script writes, mirroring
-            config/consolidation.json. Each city also gets one disease="OVERALL" row whose score
-            is the headline blend by formula (0.8*top + 0.2*mean-of-rest); a data_dictionary tab
-            describes every column. See docs/sheets_logging.md)
+            rain_14d_mm (G-J raw weather inputs); trends_keywords, news_spike, positivity (M-O);
+            w_weather, w_trends, w_positivity (P-R weights); trends_state_interest, weather_fresh,
+            trends_fresh, stale (W-Z). weather_score (K), trends_score (L), confidence (S) and
+            score/band/mode (T-V) are in-sheet FORMULAS the Apps Script writes - the full BUILD-UP, so
+            every derived cell shows HOW it is computed (weather_score from temp/humidity/rain x the
+            family weights; trends_score = MAX(floor, MIN(100, trends_state_interest))). Each city also
+            gets one disease="OVERALL" row whose score is the headline blend by formula; a
+            data_dictionary tab describes every column. See docs/sheets_logging.md)
 
 CLI (used by .github/workflows/daily.yml so build scripts stay untouched):
-  python src/sheetlog.py log <step> <status> [detail]
+  python src/sheetlog.py log <step> <status> [detail] [reason]
   python src/sheetlog.py raw <path/to/grid.json>
 """
 from __future__ import annotations
@@ -64,9 +66,11 @@ def _post(sheet: str, rows: list) -> bool:
         return False
 
 
-def log(step: str, status: str, detail: str = "") -> None:
+def log(step: str, status: str, detail: str = "", reason: str = "") -> None:
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    _post("run_log", [[ts, RUN_ID, TRIGGER, step, status, str(detail)]])
+    # reason: human context when status is not success (cancelled / skipped / failure) - e.g. a
+    # concurrency cancel, a SerpApi failure, or a carry-forward. Blank on a clean success.
+    _post("run_log", [[ts, RUN_ID, TRIGGER, step, status, str(detail), str(reason)]])
 
 
 def _load_terms() -> dict:
@@ -104,20 +108,25 @@ def push_raw(grid: dict) -> int:
         for r in cells:
             s = r.get("signals", {})
             w = r.get("weights", {})
+            fr = r.get("freshness", {})
             kw = ", ".join(terms.get(r["disease"], [])) if terms else ""
             rows.append([
                 date, RUN_ID, c.get("name", cid), c.get("state", ""),
                 labels.get(r["disease"], r["disease"]), r.get("family", ""),
-                temp, hum, r7, r14,
-                s.get("weather"), s.get("trends"), kw, s.get("news_spike"), s.get("positivity"),
-                w.get("weather"), w.get("trends"), w.get("positivity"),
-                "",  # confidence (S) is an in-sheet formula the Apps Script writes
-            ])  # A-R inputs; confidence + score/band/mode (S-V) are formulas the Apps Script writes
-        # One city-overall line item: the headline blend, score derived by formula.
+                temp, hum, r7, r14,                                # G-J raw weather inputs
+                "", "",                                            # K weather_score, L trends_score -> FORMULAS
+                kw, s.get("news_spike"), s.get("positivity"),      # M-O
+                w.get("weather"), w.get("trends"), w.get("positivity"),  # P-R weights
+                "", "", "", "",                                    # S confidence, T score, U band, V mode -> FORMULAS
+                s.get("trends_raw"), fr.get("weather", ""), fr.get("trends", ""), r.get("stale", ""),  # W-Z posted
+            ])
+        # One city-overall line item: the headline blend, score derived by formula (T).
         rows.append([
             date, RUN_ID, c.get("name", cid), c.get("state", ""),
             "OVERALL", "city-blend", temp, hum, r7, r14,
-            "", "", "", "", "", "", "", "", "",
+            "", "", "", "", "", "", "", "",                        # K-R blank for the blend row
+            "", "", "", "",                                        # S-V formulas (T = blend)
+            "", "", "", "",                                        # W-Z blank
         ])
 
     sent = 0
@@ -135,7 +144,7 @@ def main(argv: list) -> int:
         print("sheetlog: SHEETS_WEBHOOK_URL unset; skipping.")
         return 0
     if argv[0] == "log" and len(argv) >= 3:
-        log(argv[1], argv[2], argv[3] if len(argv) > 3 else "")
+        log(argv[1], argv[2], argv[3] if len(argv) > 3 else "", argv[4] if len(argv) > 4 else "")
     elif argv[0] == "raw" and len(argv) >= 2:
         with open(argv[1], "r", encoding="utf-8") as fh:
             n = push_raw(json.load(fh))
