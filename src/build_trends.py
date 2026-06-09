@@ -83,9 +83,12 @@ def main() -> int:
     # diseases that refreshed this run. A disease whose SerpApi pull failed keeps its last-good by_state
     # (and its older as_of) instead of being dropped to the SIGNAL_FLOOR. Each disease carries an as_of so
     # the daily build can tell fresh from stale (Phase 2 freshness).
+    # Start from the previous diseases but keep ONLY diseases still in config (so a removed disease, e.g.
+    # viral_fever, does not linger forever as a false "carried forward"); then overlay this run's successes.
+    current_ids = {d["id"] for d in diseases}
     prev = load_json_or(out_path, {}) or {}
-    merged = dict(prev.get("diseases") or {})
-    merged.update(result)  # successful diseases (each with as_of=now) overwrite their prev entry
+    merged = {did: d for did, d in (prev.get("diseases") or {}).items() if did in current_ids}
+    merged.update(result)  # refreshed diseases (each with as_of=now) overwrite their prev entry
     carried = [did for did in merged if did not in result]
 
     payload = {
