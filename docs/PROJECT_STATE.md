@@ -31,14 +31,17 @@
 >   helper in BOTH `mobile.js` + `desktop.js` `leaderboardInner`; `pinned = me && !onPage && !q` (suppressed while
 >   searching, auto-suppressed once paging reaches the city's real rank). Verified: Thane (#139) pins on pages 1-2
 >   and shows in place on page 14. `.lb-pinned` CSS (green top border + faint green bg) in both flow CSS files.
-> - **(#5) WhatsApp/OG share-image redesign - STARTED, decisions LOCKED:** rebuild `share.js` (canvas, the real
->   shared image) + `build_og.py` (Pillow) to the new mock: a 180deg NEEDLE gauge (green/yellow/red + needle, NOT
->   the app's 270deg ring), regional-script city/state name, an "up from N last week" chip, and a "most at risk"
->   row. Locked: per-state native scripts (Wikidata auto-pull -> PharmEasy QA), REAL prior-week score (rolling
->   `data/history.json` in `build_daily`), single static "Children and the elderly" most-at-risk line, BOTH portrait
->   + 1200x630 landscape redesigned, band pill in the brand ramp colour. Phase 1 = data foundation (prev_score +
->   name_local plumbing), Phase 2 = needle-gauge card redesign (both renderers, mirrored), Phase 3 = names + Noto
->   Indic fonts. Full plan + decisions saved to memory (share-image-redesign-plan).
+> - **(#5) WhatsApp/OG share-image redesign - SHELVED 2026-06-11 (user paused; card design rejected):** Phase 1
+>   data foundation is COMMITTED + KEPT (commit `cc06e28`): real prior-week `prev_score` via a rolling
+>   `data/history.json` + `name_local`/`state_local` merge from `config/city_names_local.json` in `build_daily.py`
+>   (+ `daily.yml` commits `history.json`). Harmless dormant plumbing - the current `build_og.py` does not read it.
+>   The Phase 2 card re-port (rebuilt `build_og.py` to a Claude-Design HANDOFF: radial surface, a 3-segment arc
+>   gauge with the score below in gold, Lucide icons, `Chikungunya` with NO bracket score, `Kids & elderly`) was
+>   built + rendered but the user rejected the look ("banner designs not good at all"). It is preserved in
+>   `git stash@{0}`; `build_og.py` in the tree is back to the committed original glass-card design; `share.js`
+>   (canvas) was never touched. AUTHORITATIVE design for when this reopens = the Claude-Design handoff bundle
+>   (renderer `share-card.js`); URL + extracted location + the full corrected spec are in memory
+>   (share-image-redesign-plan). Do NOT resume the card redesign unless the user reopens it.
 > - Verified headlessly on both flows; an adversarial parity/copy review passed (one defect fixed: the axis-caption
 >   "0 to 100" claim vs the zoomed axis). The local :8137 grid.json fetch still flakes under instrumented load
 >   (a local-only issue, fine on Pages).
