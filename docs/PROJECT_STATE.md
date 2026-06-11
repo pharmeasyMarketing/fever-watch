@@ -7,6 +7,31 @@
 > DEPLOYED** (commit `df15dcc`, push to `master` -> deploy run green) and **verified live** (the staging Bengaluru
 > page returns the trend module, the "four fevers" copy, the 4 diseases, and zero "viral").
 >
+> **2026-06-11 (LATER: page fixes + legal disclaimers; committed + pushed + deployed, commit `6ff6c48`):**
+> four review fixes on top of the UI batch, all verified headlessly and live on staging:
+> - **Mobile leaderboard "your city" pinned row no longer cuts off:** the highlight band is now FULL-BLEED to the
+>   card edges (`margin: 4px -18px 0; padding: 10px 18px` = the card's 18px padding) so it has breathing room
+>   around the rank + score instead of cutting flush against them; columns stay aligned (verified the pinned rank
+>   sits at the same x as the other rows). `.lbrow.lb-pinned` in `assets/css/mobile.css`. Desktop was already fine.
+> - **Legal disclaimers (from counsel) baked in.** MEDICAL disclaimer ("Fever Watch is a risk indicator and not a
+>   diagnosis or representation of actual case counts. It is for informational purposes only and should not
+>   constitute medical advice; please consult a doctor for any symptoms or health concerns.") now leads the FOOTER
+>   (every page) + the content-bottom `fw-disc`. DASHBOARD/DATA note ("This is a daily updated dashboard where we
+>   compute a monsoon-risk score (0-100) based on multiple data inputs, including weather data, Google search
+>   trends, and aggregate data from PharmEasy Labs and its Partner Affiliates.") sits at the END of the collapsible
+>   "How we calculate this" body (`.dashnote`, last child of `#methbody`, hidden until "Show"). Constants
+>   `MEDICAL_DISCLAIMER` + `DASHBOARD_NOTE` in `build_site.py`; mirrored as `DASHNOTE` in `mobile.js`/`desktop.js`;
+>   `.dashnote` CSS in `tokens.css`. The footer lab attribution updated to "PharmEasy Labs and its Partner
+>   Affiliates"; the legal "0-100" en-dash normalized to an ASCII hyphen per house style.
+> - **CTA landing pages wired:** "Book a fever panel test" -> `pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch`;
+>   "Book a consult" / "Not sure? Talk to a doctor" -> `pharmeasy.in/doctor-consultation/landing?src=feverwatch`.
+>   The big `.ctabig` buttons are now `<a>` links (CSS set to render as block / inline-block). SSR `CTA_HREF` +
+>   new `CONSULT_HREF` in `build_site.py`; both flows' `ACTIONS` carry `href`; `do_sec`/`actionsCard`/`doSection`.
+> - **Copy:** dropped ", more coming soon." everywhere -> just "Available in select cities." (SSR + both flows + prototypes).
+> - **OPEN (minor, user to decide):** (a) align the OTHER lab-attribution mentions (FAQ, methodology data-sources
+>   list, trend sources line, score-card note) to "PharmEasy Labs and its Partner Affiliates"; (b) whether to
+>   repoint the footer's pre-existing "Doctor consult" link (`/online-doctor-consultation/`) to the consult LP.
+>
 > **2026-06-11 (UI batch: desktop share-dock recolor, live-ready footer, trend y-axis, leaderboard "your city"
 > pin; share-image redesign #5 kicked off):** five user-requested enhancements. #1-#4 are BUILT + verified on both
 > flows + adversarially reviewed (committed + pushed to master this session); #5 is planned with locked decisions
