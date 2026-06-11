@@ -164,6 +164,8 @@
   .lbtable td { padding: 12px 16px; border-bottom: 1px solid var(--pe-bg-2); font-size: 13.5px; }
   .lbtable tbody tr:hover td { background: var(--pe-bg); cursor: pointer; }
   .lbtable tr.you td { font-weight: 700; }
+  /* Your-city row pinned at the bottom when it is off the current page (see leaderboardInner). */
+  .lbtable tr.lb-pinned td { border-top: 2px solid var(--pe-green); background: #eef7f6; }
   .lbtable .rk { color: var(--pe-muted-2); font-weight: 700; width: 36px; }
   .lbtable .bar { width: 170px; }
   .lbtable .bar i { display: inline-block; height: 8px; border-radius: 5px; vertical-align: middle; }
@@ -252,15 +254,16 @@
   .fw-tick b { font-weight: 800; }
   .fw-tick .tpill { font-size: 10.5px; font-weight: 800; border-radius: 999px; padding: 1px 8px; }
 
-  /* bottom-right floating share dock */
-  .fw-dock { position: fixed; right: 28px; bottom: 28px; width: 268px; background: #fff; border: 1px solid var(--pe-line); border-radius: 16px; box-shadow: 0 14px 38px rgba(28,31,34,.18); padding: 14px; z-index: 45; }
-  .fw-dock-title { font-size: 14.5px; font-weight: 800; color: var(--pe-ink); line-height: 1.25; }
-  .fw-dock-sub { font-size: 12.5px; color: var(--pe-muted); margin: 4px 0 12px; }
+  /* bottom-right floating share dock. Recolored to match the mobile floating share bar (.fw-foot):
+     Porcelain Green dock, white text, white Share button with green text, ghost-on-green copy button. */
+  .fw-dock { position: fixed; right: 28px; bottom: 28px; width: 268px; background: var(--pe-green); border: none; border-radius: 16px; box-shadow: 0 14px 38px rgba(10,83,79,.34); padding: 14px; z-index: 45; }
+  .fw-dock-title { font-size: 14.5px; font-weight: 800; color: #fff; line-height: 1.25; }
+  .fw-dock-sub { font-size: 12.5px; color: rgba(255,255,255,.82); margin: 4px 0 12px; }
   .fw-dock-actions { display: flex; gap: 8px; }
-  .fw-dock-share { flex: 1; background: var(--pe-green); color: #fff; border: none; border-radius: 11px; padding: 11px 0; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 6px 18px rgba(16,132,126,.28); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-  .fw-dock-share:hover { background: var(--pe-green-dark); }
-  .fw-dock-copy { position: relative; width: 44px; background: #fff; border: 1.5px solid var(--pe-line); border-radius: 11px; cursor: pointer; font-size: 16px; color: var(--pe-ink-2); }
-  .fw-dock-copy:hover { border-color: var(--pe-green-bright); }
+  .fw-dock-share { flex: 1; background: #fff; color: var(--pe-green); border: none; border-radius: 11px; padding: 11px 0; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.16); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .fw-dock-share:hover { background: #f1faf9; }
+  .fw-dock-copy { position: relative; width: 44px; background: rgba(255,255,255,.14); border: 1.5px solid rgba(255,255,255,.55); border-radius: 11px; cursor: pointer; font-size: 16px; color: #fff; }
+  .fw-dock-copy:hover { border-color: #fff; background: rgba(255,255,255,.24); }
   .fw-dock-copy.done::after { content: "Copied"; position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--pe-ink); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
 
   @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }

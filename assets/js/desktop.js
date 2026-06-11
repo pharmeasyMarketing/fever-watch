@@ -255,18 +255,24 @@
     var PER = 10;
     var ranked = DATA.cities.map(function (ci) { var lr = leaderRow(ci); return { id: ci.id, name: ci.name, state: ci.state, score: lr.score, band: lr.band }; }).sort(function (a, b) { return b.score - a.score; });
     ranked.forEach(function (r, i) { r.rank = i + 1; });
+    var me = null, mk; for (mk = 0; mk < ranked.length; mk++) { if (ranked[mk].id === state.cityId) { me = ranked[mk]; break; } }
     var q = (state.lbQuery || "").toLowerCase();
     var filtered = q ? ranked.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0 || (r.state || "").toLowerCase().indexOf(q) >= 0; }) : ranked;
     var pages = Math.max(1, Math.ceil(filtered.length / PER));
     var page = Math.min(state.lbPage || 0, pages - 1);
     var slice = filtered.slice(page * PER, page * PER + PER);
-    var body = slice.map(function (r) {
-      return '<tr class="' + (r.id === state.cityId ? "you" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + r.rank + '</td><td><a class="lbcity" href="' + cityHref(r.id) + '">' + r.name + '</a>' + (r.id === state.cityId ? " (you)" : "") + '</td>' +
+    function rowFor(r, pin) {
+      return '<tr class="' + (r.id === state.cityId ? "you" : "") + (pin ? " lb-pinned" : "") + '" data-act="pickrow" data-id="' + r.id + '"><td class="rk">' + r.rank + '</td><td><a class="lbcity" href="' + cityHref(r.id) + '">' + r.name + '</a>' + (r.id === state.cityId ? " (you)" : "") + '</td>' +
         '<td style="color:var(--pe-muted)">' + r.state + '</td><td class="bar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></td>' +
         '<td><span class="bd" style="background:' + RISK_SOFT[r.band] + ';color:' + RISK[r.band] + '">' + r.band + '</span></td><td style="font-weight:700;color:' + RISK[r.band] + '">' + r.score + '</td></tr>';
-    }).join("");
+    }
+    var body = slice.map(function (r) { return rowFor(r, false); }).join("");
+    // Pin the user's own city as a last row whenever it is off this page (and not while searching), so
+    // they always see their rank vs others without paging deep. Auto-suppressed once paging reaches it.
+    var onPage = slice.some(function (r) { return r.id === state.cityId; });
+    var pinned = (me && !onPage && !q) ? rowFor(me, true) : "";
     var table = '<table class="lbtable"><thead><tr><th>#</th><th>City</th><th>State</th><th>Risk</th><th>Band</th><th>Score</th></tr></thead><tbody>' +
-      (body || '<tr><td colspan="6" style="text-align:center;color:var(--pe-muted);padding:18px">No city matches "' + esc(state.lbQuery) + '".</td></tr>') + '</tbody></table>';
+      (body || '<tr><td colspan="6" style="text-align:center;color:var(--pe-muted);padding:18px">No city matches "' + esc(state.lbQuery) + '".</td></tr>') + pinned + '</tbody></table>';
     return table + pager(page, pages, filtered.length);
   }
 

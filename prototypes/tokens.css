@@ -104,7 +104,8 @@ img, svg { max-width: 100%; }
 /* "This monsoon vs last year" season-trend module (brand-recreated from the design brief
    docs/season-trend-module-brief.md). Shared by the static SSR (build_site.py _trend_html) and the
    interactive widget (assets/js/trend.js), on both flows. Words-first, one chart at a time, last
-   year = soft gray band, this year = one bold line, no numeric axis. Lives inside a .card. */
+   year = soft gray band, this year = one bold line, a light y-axis (0 / mid / top ticks) + spaced data
+   labels. Lives inside a .card. */
 /* Mobile keeps the eyebrow + title INSIDE the card (.fwtrend-head); desktop + the SSR put the title /
    subtitle OUTSIDE the card (.fwtrend-sectop), matching the other page sections. */
 .fwtrend-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -138,9 +139,11 @@ img, svg { max-width: 100%; }
 
 .fwtrend-chartwrap { position: relative; margin: 2px 0 0; }
 .fwtrend-svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.fwtrend-svg text { font-family: inherit; }
 /* Month axis labels: HTML (not SVG text) so they're equidistant + a fixed size at any chart width. The
-   3.5% inset matches the SVG plot padding (PADL/PADR = 12/340) so Jun aligns left, Oct right. */
-.fwtrend-months { display: flex; justify-content: space-between; padding: 2px 3.5% 0; font-size: 11px; font-weight: 500; color: var(--pe-muted-2); }
+   left inset (7.65% = PADL 26/340) and right inset (3.5% = PADR 12/340) match the SVG plot padding, so
+   Jun aligns to the plot's left edge (past the y-axis gutter) and Oct to the right. */
+.fwtrend-months { display: flex; justify-content: space-between; padding: 2px 3.5% 0 7.65%; font-size: 11px; font-weight: 500; color: var(--pe-muted-2); }
 .fwtrend-tip { position: absolute; transform: translate(-50%, -100%); background: #1f2937; color: #fff; font-size: 11.5px; line-height: 1.5; padding: 7px 10px; border-radius: 9px; box-shadow: 0 6px 18px rgba(0,0,0,.18); pointer-events: none; white-space: nowrap; z-index: 5; }
 .fwtrend-tip[hidden] { display: none; }
 .fwtrend-tip b { display: block; font-size: 10.5px; opacity: .8; font-weight: 700; margin-bottom: 4px; }
@@ -153,6 +156,7 @@ img, svg { max-width: 100%; }
 .fwtrend-legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; background: #aab6c6; }
 .fwtrend-legend .here i.dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .fwtrend-caption { font-size: 13.5px; font-weight: 600; color: var(--pe-ink-2); margin: 10px 2px 0; }
+.fwtrend-axiscap { font-size: 11.5px; color: var(--pe-muted-2); margin: 7px 2px 0; }
 .fwtrend-sources { font-size: 11px; color: var(--pe-muted-2); margin: 8px 2px 0; }
 
 .fwtrend-soon { text-align: center; padding: 30px 16px; color: var(--pe-muted); }

@@ -137,7 +137,7 @@
   function chartGeom(mini, mode, m) {
     var dataMax = Math.max(m.peak, m.series.length ? Math.max.apply(null, m.series) : 0);
     return {
-      W: 340, PADL: 12, PADR: 12, PADT: 6, PADB: 4,
+      W: 340, PADL: mini ? 12 : 26, PADR: 12, PADT: 6, PADB: 4,
       H: mini ? 120 : (mode === "desktop" ? 92 : 150),
       yMax: Math.min(100, Math.max(45, Math.round(dataMax * 1.15)))
     };
@@ -181,11 +181,32 @@
     // this-year bold line + you-are-here dot
     var ty = m.series, tyLine = ty.length > 1 ? '<path d="' + lp(ty) + '" fill="none" stroke="' + col + '" stroke-width="' + (mini ? 2 : 2.6) + '" stroke-linecap="round" stroke-linejoin="round"/>' : "";
     var dot = '<circle cx="' + f1(X(model.asOf)) + '" cy="' + f1(Y(ty[ty.length - 1])) + '" r="' + (mini ? 3 : 4.2) + '" fill="' + col + '" stroke="#fff" stroke-width="' + (mini ? 1.5 : 2.2) + '"/>';
+    // Y-axis: 0 / mid / top ticks (the top zooms with the data) in the left gutter + faint gridlines, so
+    // the vertical scale is readable. SVG font scales with width, so size it per mode. Skipped on the mini
+    // sparklines. Mirrored byte-for-feel in build_site.py _trend_chart_static.
+    var fs = mode === "desktop" ? 6.5 : 9.5, yaxis = "", labels = "";
+    if (!mini) {
+      var ticks = [0, Math.round(g.yMax / 2), g.yMax], ti;
+      for (ti = 0; ti < ticks.length; ti++) {
+        var tv = ticks[ti], yv = Y(tv);
+        if (tv > 0) yaxis += '<line x1="' + g.PADL + '" y1="' + f1(yv) + '" x2="' + (g.W - g.PADR) + '" y2="' + f1(yv) + '" stroke="#eef1f5" stroke-width="1"/>';
+        yaxis += '<text x="' + (g.PADL - 5) + '" y="' + f1(yv + fs * 0.35) + '" text-anchor="end" font-size="' + fs + '" font-weight="600" fill="#9aa6b1">' + tv + '</text>';
+      }
+      // Spaced data labels: the you-are-here value (this year, in colour) + a few last-year reference points.
+      var nv = ty[ty.length - 1];
+      labels += '<text x="' + f1(X(model.asOf)) + '" y="' + f1(Math.max(fs + 2, Y(nv) - 7)) + '" text-anchor="middle" font-size="' + (fs + 0.5) + '" font-weight="800" fill="' + col + '">' + nv + '</text>';
+      var lbi = [6, 13, 19], li2;
+      for (li2 = 0; li2 < lbi.length; li2++) {
+        var lx = lbi[li2]; if (Math.abs(lx - model.asOf) < 2) continue;
+        var lv = m.last[lx];
+        labels += '<text x="' + f1(X(lx)) + '" y="' + f1(Math.max(fs, Y(lv) - 5)) + '" text-anchor="middle" font-size="' + (fs - 1) + '" font-weight="600" fill="#8995a3">' + lv + '</text>';
+      }
+    }
     // Month labels are HTML (.fwtrend-months); the SVG carries only the baseline axis rule.
     var axis = mini ? "" : '<line x1="' + g.PADL + '" y1="' + f1(baseY) + '" x2="' + (g.W - g.PADR) + '" y2="' + f1(baseY) + '" stroke="#edf0f5" stroke-width="1"/>';
     var hit = mini ? "" : '<rect class="fwtrend-hit" x="' + g.PADL + '" y="' + g.PADT + '" width="' + (g.W - g.PADL - g.PADR) + '" height="' + (g.H - g.PADT - g.PADB) + '" fill="transparent"/>';
     return '<svg viewBox="0 0 ' + g.W + ' ' + g.H + '" class="fwtrend-svg' + (mini ? " mini" : "") + '" role="img" aria-label="' + esc(metric) + ' this year versus last year">'
-      + zones + bg + lyArea + lyStroke + tyLine + dot + axis + hit + '</svg>';
+      + zones + bg + yaxis + lyArea + lyStroke + tyLine + dot + labels + axis + hit + '</svg>';
   }
 
   // --- HTML render ------------------------------------------------------------------------------
@@ -234,6 +255,7 @@
       + (avail ? chartSVG(model, metric, false, st.mode) : soonHtml(model))
       + '<div class="fwtrend-tip" hidden></div></div>'
       + monthsRow
+      + '<p class="fwtrend-axiscap">Vertical scale starts at 0; higher means greater risk.</p>'
       + '<div class="fwtrend-legend"><span><i class="ly"></i>Last year</span>'
       + '<span><i class="ty" style="background:' + col + '"></i>This year</span>'
       + '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'

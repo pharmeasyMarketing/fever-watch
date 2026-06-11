@@ -7,6 +7,42 @@
 > DEPLOYED** (commit `df15dcc`, push to `master` -> deploy run green) and **verified live** (the staging Bengaluru
 > page returns the trend module, the "four fevers" copy, the 4 diseases, and zero "viral").
 >
+> **2026-06-11 (UI batch: desktop share-dock recolor, live-ready footer, trend y-axis, leaderboard "your city"
+> pin; share-image redesign #5 kicked off):** five user-requested enhancements. #1-#4 are BUILT + verified on both
+> flows + adversarially reviewed (committed + pushed to master this session); #5 is planned with locked decisions
+> and now in progress.
+> - **(#1) Desktop share dock recolored to match the mobile floater:** `.fw-dock` is now Porcelain Green with white
+>   text, a white Share button with green text, and a ghost-on-green copy button (was the inverse: white dock, green
+>   button). CSS-only in `assets/css/desktop.css`; the mobile `.fw-foot` bar is the reference scheme.
+> - **(#2) Footer copy made live-ready:** dropped "simulated in this preview"; the disclaimer now reads "Live
+>   weather via NASA POWER (public domain); Google search interest via Google Trends; lab signal from PharmEasy
+>   diagnostics (aggregate, de-identified)." in `build_site.py:321` (shipped SSR) + the two frozen prototype mirrors.
+>   NOTE: this names the lab signal as live PharmEasy diagnostics, so it should go PUBLIC only alongside flipping
+>   `positivity.provider` to `googlesheet` (lab feed is still mock). Legacy `index.html` still carries the old
+>   "preview/simulated" copy + retired viral_fever (flagged for delete; superseded by the SSG).
+> - **(#3) Season-trend chart got a y-axis scale + caption + data labels (JS<->Python mirrored):** a left gutter
+>   (PADL 12->26; mini sparklines keep 12), 0/mid/top y-ticks in the gutter + 2 faint gridlines, spaced data labels
+>   (you-are-here value in the metric colour + last-year reference points at weeks 6/13/19), and a one-line axis
+>   caption "Vertical scale starts at 0; higher means greater risk." (NOT "0 to 100" - the y-axis ZOOMS to the data,
+>   so a fixed top would contradict the rendered top tick; caught in review). Mirrored in `trend.js`
+>   chartGeom/chartSVG + `build_site.py` `_trend_chart_static`/`_trend_html`; CSS in `prototypes/tokens.css`
+>   (`.fwtrend-axiscap`, `.fwtrend-svg text`, asymmetric `.fwtrend-months` padding 7.65%/3.5% for the gutter).
+> - **(#4) Leaderboard pins the user's own city as a last row when it is off the current page:** new `rowFor()`
+>   helper in BOTH `mobile.js` + `desktop.js` `leaderboardInner`; `pinned = me && !onPage && !q` (suppressed while
+>   searching, auto-suppressed once paging reaches the city's real rank). Verified: Thane (#139) pins on pages 1-2
+>   and shows in place on page 14. `.lb-pinned` CSS (green top border + faint green bg) in both flow CSS files.
+> - **(#5) WhatsApp/OG share-image redesign - STARTED, decisions LOCKED:** rebuild `share.js` (canvas, the real
+>   shared image) + `build_og.py` (Pillow) to the new mock: a 180deg NEEDLE gauge (green/yellow/red + needle, NOT
+>   the app's 270deg ring), regional-script city/state name, an "up from N last week" chip, and a "most at risk"
+>   row. Locked: per-state native scripts (Wikidata auto-pull -> PharmEasy QA), REAL prior-week score (rolling
+>   `data/history.json` in `build_daily`), single static "Children and the elderly" most-at-risk line, BOTH portrait
+>   + 1200x630 landscape redesigned, band pill in the brand ramp colour. Phase 1 = data foundation (prev_score +
+>   name_local plumbing), Phase 2 = needle-gauge card redesign (both renderers, mirrored), Phase 3 = names + Noto
+>   Indic fonts. Full plan + decisions saved to memory (share-image-redesign-plan).
+> - Verified headlessly on both flows; an adversarial parity/copy review passed (one defect fixed: the axis-caption
+>   "0 to 100" claim vs the zoomed axis). The local :8137 grid.json fetch still flakes under instrumented load
+>   (a local-only issue, fine on Pages).
+>
 > **2026-06-09 (EVEN LATER: data-pipeline robustness - carry-forward over mock, atomic writes, the CI
 > cancellation fix - plus a Google-Sheet logger overhaul. Backend/CI only; the deployed site is unchanged
 > and the committed grid.json gets the new fields on the next daily run):**

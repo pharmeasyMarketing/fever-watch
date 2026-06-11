@@ -242,18 +242,24 @@
     var PER = 10;
     var ranked = DATA.cities.map(function (ci) { var lr = leaderRow(ci); return { id: ci.id, name: ci.name, score: lr.score, band: lr.band }; }).sort(function (a, b) { return b.score - a.score; });
     ranked.forEach(function (r, i) { r.rank = i + 1; });
+    var me = null, mk; for (mk = 0; mk < ranked.length; mk++) { if (ranked[mk].id === state.cityId) { me = ranked[mk]; break; } }
     var q = (state.lbQuery || "").toLowerCase();
     var filtered = q ? ranked.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0; }) : ranked;
     var pages = Math.max(1, Math.ceil(filtered.length / PER));
     var page = Math.min(state.lbPage || 0, pages - 1);
     var slice = filtered.slice(page * PER, page * PER + PER);
     if (!slice.length) return '<p class="lbmore">No city matches "' + esc(state.lbQuery) + '".</p>';
-    var rowHtml = slice.map(function (r) {
-      return '<div class="lbrow' + (r.id === state.cityId ? ' you' : '') + '"><span class="rk">' + r.rank + '</span>' +
+    function rowFor(r, pin) {
+      return '<div class="lbrow' + (r.id === state.cityId ? ' you' : '') + (pin ? ' lb-pinned' : '') + '"><span class="rk">' + r.rank + '</span>' +
         '<a class="nm lbcity" href="' + cityHref(r.id) + '">' + r.name + '</a>' +
         '<span class="lbbar"><i style="width:' + r.score + '%;background:' + RISK[r.band] + '"></i></span><span class="v" style="color:' + RISK[r.band] + '">' + r.score + '</span></div>';
-    }).join("");
-    return rowHtml + pager(page, pages, filtered.length);
+    }
+    var rowHtml = slice.map(function (r) { return rowFor(r, false); }).join("");
+    // Pin the user's own city as a last row whenever it is off this page (and not while searching), so
+    // they always see their rank vs others without paging deep. Auto-suppressed once paging reaches it.
+    var onPage = slice.some(function (r) { return r.id === state.cityId; });
+    var pinned = (me && !onPage && !q) ? rowFor(me, true) : "";
+    return rowHtml + pinned + pager(page, pages, filtered.length);
   }
 
   function pager(page, pages, total) {

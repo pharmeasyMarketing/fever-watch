@@ -318,7 +318,7 @@ def footer_html() -> str:
     return (
         '<footer class="footer"><div class="footin">' + col1 + col2 + col3 + col4 + '</div>'
         '<div class="footbar"><div class="footbarin">'
-        '<span class="footdisc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search and lab signals are simulated in this preview.</span>'
+        '<span class="footdisc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search interest via Google Trends; lab signal from PharmEasy diagnostics (aggregate, de-identified).</span>'
         '<span>&#169; 2026 PharmEasy. All Rights Reserved</span></div></div></footer>'
     )
 
@@ -708,7 +708,7 @@ TREND_NW = len(TREND_SHAPE)
 TREND_PEAK = 13
 TREND_MONTHS = ["Jun", "Jul", "Aug", "Sep", "Oct"]  # equidistant HTML axis labels (mirrors trend.js MONTHS_ROW)
 TREND_ZONES = [(70, 100, "#E4572E"), (45, 69, "#E8923A"), (25, 44, "#C7A93C"), (0, 24, "#2FA66F")]
-_TW, _TH, _TPADL, _TPADR, _TPADT, _TPADB = 340, 110, 12, 12, 6, 4  # compact; HTML month labels; y zooms (see _trend_chart_static)
+_TW, _TH, _TPADL, _TPADR, _TPADT, _TPADB = 340, 110, 26, 12, 6, 4  # compact; left gutter for y-axis; HTML month labels; y zooms (see _trend_chart_static)
 
 
 def _t_r(x) -> int:
@@ -852,12 +852,32 @@ def _trend_chart_static(model: dict) -> str:
                + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>') if len(ty) > 1 else ""
     dot = ('<circle cx="' + str(_tf(_tX(model["asOf"]))) + '" cy="' + str(_tf(_tY(ty[-1], ymax)))
            + '" r="4.2" fill="' + col + '" stroke="#fff" stroke-width="2.2"/>')
+    # Y-axis ticks (0 / mid / top) in the left gutter + faint gridlines; mirrors trend.js chartSVG.
+    fs = 8.5
+    yaxis = ""
+    for tv in (0, _t_r(ymax / 2.0), ymax):
+        yv = _tY(tv, ymax)
+        if tv > 0:
+            yaxis += ('<line x1="' + str(_TPADL) + '" y1="' + str(_tf(yv)) + '" x2="' + str(_TW - _TPADR)
+                      + '" y2="' + str(_tf(yv)) + '" stroke="#eef1f5" stroke-width="1"/>')
+        yaxis += ('<text x="' + str(_TPADL - 5) + '" y="' + str(_tf(yv + fs * 0.35))
+                  + '" text-anchor="end" font-size="' + str(fs) + '" font-weight="600" fill="#9aa6b1">' + str(tv) + '</text>')
+    # Spaced data labels: you-are-here (this year, in colour) + a few last-year reference points.
+    nv = ty[-1]
+    labels = ('<text x="' + str(_tf(_tX(model["asOf"]))) + '" y="' + str(_tf(max(fs + 2, _tY(nv, ymax) - 7)))
+              + '" text-anchor="middle" font-size="' + str(fs + 0.5) + '" font-weight="800" fill="' + col + '">' + str(nv) + '</text>')
+    for lx in (6, 13, 19):
+        if abs(lx - model["asOf"]) < 2:
+            continue
+        lv = m["last"][lx]
+        labels += ('<text x="' + str(_tf(_tX(lx))) + '" y="' + str(_tf(max(fs, _tY(lv, ymax) - 5)))
+                   + '" text-anchor="middle" font-size="' + str(fs - 1) + '" font-weight="600" fill="#8995a3">' + str(lv) + '</text>')
     # Month labels are HTML (.fwtrend-months); the SVG only carries the baseline axis rule.
     axis = ('<line x1="' + str(_TPADL) + '" y1="' + str(_tf(base_y)) + '" x2="' + str(_TW - _TPADR) + '" y2="'
             + str(_tf(base_y)) + '" stroke="#edf0f5" stroke-width="1"/>')
     return ('<svg viewBox="0 0 ' + str(_TW) + ' ' + str(_TH) + '" class="fwtrend-svg"'
             ' role="img" aria-label="Overall risk this year versus last year">'
-            + zones + ly_area + ly_stroke + ty_line + dot + axis + '</svg>')
+            + zones + yaxis + ly_area + ly_stroke + ty_line + dot + labels + axis + '</svg>')
 
 
 def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
@@ -890,6 +910,7 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
             '<div class="fwtrend-body"><div class="fwtrend-tabs" role="tablist">' + tabs + '</div>'
             '<div class="fwtrend-chartwrap">' + _trend_chart_static(model) + '<div class="fwtrend-tip" hidden></div></div>'
             + months +
+            '<p class="fwtrend-axiscap">Vertical scale starts at 0; higher means greater risk.</p>'
             '<div class="fwtrend-legend"><span><i class="ly"></i>Last year</span>'
             '<span><i class="ty" style="background:' + col + '"></i>This year</span>'
             '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'

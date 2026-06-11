@@ -113,6 +113,8 @@
   .lbbar { width: 62px; height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
   .lbbar i { display: block; height: 100%; border-radius: 5px; }
   .lbrow .v { width: 26px; text-align: right; font-weight: 700; }
+  /* Your-city row pinned at the bottom when it is off the current page (see leaderboardInner). */
+  .lbrow.lb-pinned { border-top: 2px solid var(--pe-green); margin-top: 4px; background: #eef7f6; }
   .lbmore { font-size: 11.5px; color: var(--pe-muted); text-align: center; margin-top: 12px; }
   .lbpager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
   .pgbtn { border: 1px solid var(--pe-line); background: #fff; border-radius: var(--pill); padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: var(--pe-green); }
