@@ -157,6 +157,8 @@ img, svg { max-width: 100%; }
 .fwtrend-legend .here i.dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .fwtrend-caption { font-size: 13.5px; font-weight: 600; color: var(--pe-ink-2); margin: 10px 2px 0; }
 .fwtrend-axiscap { font-size: 11.5px; color: var(--pe-muted-2); margin: 7px 2px 0; }
+/* Legal "daily updated dashboard / data inputs" note, at the END of the methodology body. */
+.dashnote { font-size: 12.5px; color: var(--pe-muted); line-height: 1.55; margin: 16px 0 2px; }
 .fwtrend-sources { font-size: 11px; color: var(--pe-muted-2); margin: 8px 2px 0; }
 
 .fwtrend-soon { text-align: center; padding: 30px 16px; color: var(--pe-muted); }

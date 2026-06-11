@@ -15,8 +15,9 @@
     { ic: "🛡", t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "#" },
     { ic: "💉", t: "Vaccination: does it work?", s: "What helps, what does not", href: "#" },
     { ic: "🌡", t: "Fever? Follow our framework", s: "When to test, when to wait", href: "#" },
-    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "#" }
+    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
   ];
+  var DASHNOTE = "This is a daily updated dashboard where we compute a monsoon-risk score (0-100) based on multiple data inputs, including weather data, Google search trends, and aggregate data from PharmEasy Labs and its Partner Affiliates.";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DATA = null, state = { cityId: null, expanded: null, leader: "overall", lbQuery: "", lbPage: 0 }, app = document.getElementById("fw-app");
 
@@ -84,7 +85,7 @@
       '<div class="sheet full" id="citysheet"><div class="sheethead"><h3>Choose your city</h3><button class="x" data-act="closeCity">✕</button></div>' +
       '<div class="sheetbody"><input class="citysearch" id="citysearch" placeholder="Type a city name" />' +
       '<div class="locrow" data-act="useLoc">◎ Use my location</div><div id="citylist"></div>' +
-      '<p class="searchnote" style="margin-top:14px">Available in select cities, more coming soon.</p></div></div>' +
+      '<p class="searchnote" style="margin-top:14px">Available in select cities.</p></div></div>' +
       '<div class="sheet" id="sharesheet"><div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>' +
       '<div class="sheetbody" id="sharebody"></div></div>';
     var wrap = document.createElement("div");
@@ -158,7 +159,7 @@
       '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ', in <em>one score</em>.</h1>' +
       '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
       '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">🔎</span> Search your city</div>' +
-      '<p class="searchnote">Available in select cities, more coming soon.</p></div>' +
+      '<p class="searchnote">Available in select cities.</p></div>' +
       '<div class="wrap">' +
         '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
         '<button class="changecity" data-act="openCity">Change</button></div>' +
@@ -218,13 +219,13 @@
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<div class="card"><h2 class="sectiontitle">So, what should I do?</h2><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
-      '<button class="ctabig" style="background:var(--pe-green)">Book a fever panel test</button></div>';
+      '<a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div>';
   }
 
   function methodologyCard() {
     return '<div class="card"><h2 class="sectiontitle" style="margin-bottom:6px">How we calculate this</h2>' +
       '<button class="methhead" data-act="method"><span class="methsub">A transparent, decomposable formula, not a black box.</span><span class="methtog" id="methtog">Show ▾</span></button>' +
-      '<div class="methbody" id="methbody">' + METHOD + '</div></div>';
+      '<div class="methbody" id="methbody">' + METHOD + '<p class="dashnote">' + DASHNOTE + '</p></div></div>';
   }
 
   function leaderboardCard(c) {

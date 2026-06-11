@@ -102,13 +102,21 @@ METHOD_HTML = (
     "<li>IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</li></ul>"
 )
 
+CONSULT_HREF = "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch"
 ACTIONS = [
-    ("Monsoon precautions", "Cut breeding sites and bites"),
-    ("Vaccination: does it work?", "What helps, what does not"),
-    ("Fever? Follow our framework", "When to test, when to wait"),
-    ("Not sure? Talk to a doctor", "Online consult on PharmEasy"),
+    ("Monsoon precautions", "Cut breeding sites and bites", ""),
+    ("Vaccination: does it work?", "What helps, what does not", ""),
+    ("Fever? Follow our framework", "When to test, when to wait", ""),
+    ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
 ]
-CTA_LABEL, CTA_HREF = "Book a fever panel test", "https://pharmeasy.in/diagnostics"
+CTA_LABEL, CTA_HREF = "Book a fever panel test", "https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch"
+# Legal-provided disclaimers (verbatim except en-dash normalized to ASCII hyphen per the house style).
+MEDICAL_DISCLAIMER = ("Fever Watch is a risk indicator and not a diagnosis or representation of actual case "
+                      "counts. It is for informational purposes only and should not constitute medical advice; "
+                      "please consult a doctor for any symptoms or health concerns.")
+DASHBOARD_NOTE = ("This is a daily updated dashboard where we compute a monsoon-risk score (0-100) based on "
+                  "multiple data inputs, including weather data, Google search trends, and aggregate data from "
+                  "PharmEasy Labs and its Partner Affiliates.")
 
 READS = [
     ("Dengue", [
@@ -318,7 +326,7 @@ def footer_html() -> str:
     return (
         '<footer class="footer"><div class="footin">' + col1 + col2 + col3 + col4 + '</div>'
         '<div class="footbar"><div class="footbarin">'
-        '<span class="footdisc">Fever Watch is a risk indicator, not a diagnosis or a count of actual cases. Live weather via NASA POWER (public domain); Google search interest via Google Trends; lab signal from PharmEasy diagnostics (aggregate, de-identified).</span>'
+        '<span class="footdisc">' + MEDICAL_DISCLAIMER + ' Live weather via NASA POWER (public domain); Google search trends via Google Trends; aggregate lab data from PharmEasy Labs and its Partner Affiliates.</span>'
         '<span>&#169; 2026 PharmEasy. All Rights Reserved</span></div></div></footer>'
     )
 
@@ -598,7 +606,7 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> st
             '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
             '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
             '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">\U0001F50E</span> Search your city</div>'
-            '<p class="searchnote">Available in select cities, more coming soon.</p></div>'
+            '<p class="searchnote">Available in select cities.</p></div>'
             '<div class="wrap"><div class="citymeta"><div><h2>' + nm + '</h2><div class="date">This week, updated ' + date_str + '</div></div>'
             '<button class="changecity" data-act="openCity">Change</button></div>' + _risk_card(city, diseases, cells_by) + '</div></div>')
 
@@ -623,7 +631,7 @@ def _search_hero_d(city: dict) -> str:
             '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
             '<button class="searchbtn" data-act="combo">Search</button>'
             '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
-            '</div><p class="microcopy">Available in select cities, more coming soon.</p></div></section>')
+            '</div><p class="microcopy">Available in select cities.</p></div></section>')
 
 
 _CAT = {"mosquito": "Mosquito-borne", "waterborne": "Water / food-borne"}
@@ -944,9 +952,13 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         + '<th scope="col">Score</th></tr></thead><tbody>' + rows + '</tbody></table></section>'
     )
 
-    method_sec = '<section><h2>How we calculate this</h2>' + METHOD_HTML + '</section>'
+    method_sec = ('<section><h2>How we calculate this</h2>' + METHOD_HTML
+                  + '<p class="dashnote">' + esc(DASHBOARD_NOTE) + '</p></section>')
 
-    acts = "".join('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>' for t, s in ACTIONS)
+    acts = "".join(
+        ('<li><a href="' + esc(h) + '"><strong>' + esc(t) + '</strong> - ' + esc(s) + '</a></li>')
+        if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
+        for t, s, h in ACTIONS)
     do_sec = ('<section><h2>So, what should I do?</h2><ul class="fw-actions">' + acts + '</ul>'
               '<p><a class="fw-cta" href="' + esc(CTA_HREF) + '">' + esc(CTA_LABEL) + '</a></p></section>')
 
@@ -959,7 +971,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
     return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec
-            + other_sec + trend_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(disclaimer) + '</p></div>')
+            + other_sec + trend_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(MEDICAL_DISCLAIMER) + '</p></div>')
 
 
 def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str, faq: list) -> str:
@@ -968,12 +980,13 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
         '<h1>Fever Watch: live monsoon-fever risk for your city, in one score.</h1>'
         '<p class="lede">' + esc(cfg["description"]) + '</p>'
         '<div class="fw-search" aria-hidden="true">Search your city</div>'
-        '<p class="microcopy">Available in select cities, more coming soon.</p></header>'
+        '<p class="microcopy">Available in select cities.</p></header>'
     )
     other_sec = ('<section><h2>Monsoon fever risk by city, this week</h2>'
                  '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'
                  + _cities_table(all_cities, "") + '</section>')
-    method_sec = '<section><h2>How we calculate this</h2>' + METHOD_HTML + '</section>'
+    method_sec = ('<section><h2>How we calculate this</h2>' + METHOD_HTML
+                  + '<p class="dashnote">' + esc(DASHBOARD_NOTE) + '</p></section>')
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
     return ('<div class="fw-fallback">' + hero + other_sec + method_sec + faq_sec + reads_sec

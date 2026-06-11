@@ -9,11 +9,12 @@
   var SIGCOL = { weather: [21, 172, 165], trends: [124, 108, 214], positivity: [54, 97, 176] };
   var SIGNAME = { weather: "Breeding weather", trends: "Google Search Interest", positivity: "PharmEasy labs" };
   var ACTIONS = [
-    { ic: "🛡", t: "Monsoon precautions", s: "Cut breeding sites and bites", lnk: "Read the guide" },
-    { ic: "💉", t: "Vaccination: does it work?", s: "What helps, what does not", lnk: "Learn more" },
-    { ic: "🌡", t: "Fever? Our framework", s: "When to test, when to wait", lnk: "See the steps" },
-    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", lnk: "Book a consult" }
+    { ic: "🛡", t: "Monsoon precautions", s: "Cut breeding sites and bites", lnk: "Read the guide", href: "#" },
+    { ic: "💉", t: "Vaccination: does it work?", s: "What helps, what does not", lnk: "Learn more", href: "#" },
+    { ic: "🌡", t: "Fever? Our framework", s: "When to test, when to wait", lnk: "See the steps", href: "#" },
+    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", lnk: "Book a consult", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
   ];
+  var DASHNOTE = "This is a daily updated dashboard where we compute a monsoon-risk score (0-100) based on multiple data inputs, including weather data, Google search trends, and aggregate data from PharmEasy Labs and its Partner Affiliates.";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DATA = null, state = { cityId: null, leader: "overall", comboOpen: false, methodOpen: false, lbQuery: "", lbPage: 0 }, app = document.getElementById("fw-app");
 
@@ -187,7 +188,7 @@
         '<button class="field" data-act="combo">📍 ' + c.name + '  <span class="ph">| change your city</span></button>' +
         '<button class="searchbtn" data-act="combo">Search</button>' +
         '<div class="combopanel' + (state.comboOpen ? ' open' : '') + '"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>' +
-      '</div><p class="microcopy">Available in select cities, more coming soon.</p></div></section>';
+      '</div><p class="microcopy">Available in select cities.</p></div></section>';
   }
 
   function weekSection(c, b) {
@@ -227,9 +228,9 @@
   }
 
   function doSection(c) {
-    var cards = ACTIONS.map(function (a) { return '<div class="actcard"><div class="ic">' + a.ic + '</div><b>' + a.t + '</b><span>' + a.s + '</span><a class="lnk" href="#">' + a.lnk + ' ›</a></div>'; }).join("");
+    var cards = ACTIONS.map(function (a) { return '<div class="actcard"><div class="ic">' + a.ic + '</div><b>' + a.t + '</b><span>' + a.s + '</span><a class="lnk" href="' + (a.href || "#") + '">' + a.lnk + ' ›</a></div>'; }).join("");
     return '<section id="s-do"><h2 class="sechead">So, what should I do?</h2><p class="secsub">Practical follow-through for ' + c.name + ' this week.</p>' +
-      '<div class="actrow">' + cards + '</div><button class="ctabig" style="background:var(--pe-green)">Book a fever panel test</button></section>';
+      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></section>';
   }
 
   function methodSection() {
@@ -237,7 +238,7 @@
       '<h2 class="sechead" style="margin:0 0 2px">How we calculate this</h2>' +
       '<button class="methhead" data-act="method"><span class="secsub" style="margin:0">Transparent and decomposable, not a black box.</span>' +
       '<span class="methtog" id="methtog">Show details ▾</span></button>' +
-      '<div class="methbody' + (state.methodOpen ? ' open' : '') + '" id="methbody">' + METHOD + '</div></div></section>';
+      '<div class="methbody' + (state.methodOpen ? ' open' : '') + '" id="methbody">' + METHOD + '<p class="dashnote">' + DASHNOTE + '</p></div></div></section>';
   }
 
   function otherSection(c) {
