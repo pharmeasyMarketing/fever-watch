@@ -18,7 +18,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 if SRC_DIR not in sys.path:
@@ -65,6 +65,33 @@ def load_json(path: str) -> dict:
         return json.load(fh)
 
 
+# --- rolling score history (real "up from N last week" source for the share card) ----------------
+# The daily commits ARE the history; we keep a small rolling data/history.json so the share card can
+# show a REAL week-over-week delta. prev_score is None until a >=4d-old day exists, so the card simply
+# omits "up from last week" until there is real history (never a fabricated number).
+HISTORY_PATH = os.path.join(ROOT, "data", "history.json")
+HISTORY_KEEP_DAYS = 35
+_PREV_LO, _PREV_HI, _PREV_TARGET = 4, 10, 7  # "last week" = the nearest committed day 4..10 days back
+
+
+def _prev_week_scores(history: dict, today: date) -> dict:
+    """Per-city blend score from ~7 days ago (nearest committed day in [4,10] days back), or {}."""
+    best: dict = {}  # city_id -> (abs_diff_from_target, score)
+    for entry in (history.get("days") or []):
+        try:
+            age = (today - date.fromisoformat(entry.get("date") or "")).days
+        except Exception:
+            continue
+        if age < _PREV_LO or age > _PREV_HI:
+            continue
+        diff = abs(age - _PREV_TARGET)
+        for cid, sc in (entry.get("scores") or {}).items():
+            cur = best.get(cid)
+            if cur is None or diff < cur[0]:
+                best[cid] = (diff, sc)
+    return {cid: v[1] for cid, v in best.items()}
+
+
 def normalize_signal(value, city, disease):
     """Per-city z-score normalization hook (kills big-city bias).
 
@@ -96,6 +123,10 @@ def main() -> int:
     cities = load_json(os.path.join(args.config_dir, "cities.json"))["cities"]
     diseases = load_json(os.path.join(args.config_dir, "diseases.json"))["diseases"]
     consol = load_json(os.path.join(args.config_dir, "consolidation.json"))
+    # Native-script city/state names for the share image (Wikidata pull -> PharmEasy QA fills this;
+    # merged into grid.json only when present, English fallback otherwise).
+    names_local_path = os.path.join(args.config_dir, "city_names_local.json")
+    local_names = load_json(names_local_path) if os.path.exists(names_local_path) else {}
 
     if not os.path.exists(args.weather):
         print(f"ABORT: {args.weather} not found. Run build_weather.py first.", file=sys.stderr)
@@ -106,6 +137,9 @@ def main() -> int:
     # Freshness budget: a signal older than stale_days flags the cell + downgrades its confidence.
     # Weather has one timestamp for the whole pull; trends freshness is per-disease (build_trends as_of).
     now_dt = datetime.now(timezone.utc)
+    today = now_dt.date()
+    history = load_json(HISTORY_PATH) if os.path.exists(HISTORY_PATH) else {"days": []}
+    prev_by_city = _prev_week_scores(history, today)
     stale_days = int((consol.get("freshness") or {}).get("stale_days", 3))
     weather_age = _age_days(weather.get("generated_at"), now_dt)
     weather_fresh = _fresh_tag(weather_age, stale_days)
@@ -244,12 +278,22 @@ def main() -> int:
     enriched_cities = []
     for c in cities:
         wsum = (weather_by_city.get(c["id"], {}) or {}).get("weather", {})
-        enriched_cities.append({**c, "weather": {
+        b = city_blend(c["id"])
+        if b is not None and c["id"] in prev_by_city:
+            b["prev_score"] = prev_by_city[c["id"]]  # real blend score ~7 days ago (share-card "up from N last week")
+        ec = {**c, "weather": {
             "temp_mean_c": wsum.get("temp_mean_c"),
             "humidity_pct": wsum.get("humidity_pct"),
             "rain_7d_mm": wsum.get("rain_7d_mm"),
             "rain_14d_mm": wsum.get("rain_14d_mm"),
-        }, "blend": city_blend(c["id"])})
+        }, "blend": b}
+        nl = (local_names.get("cities") or {}).get(c["id"])
+        sl = (local_names.get("states") or {}).get(c.get("state", ""))
+        if nl:
+            ec["name_local"] = nl
+        if sl:
+            ec["state_local"] = sl
+        enriched_cities.append(ec)
 
     payload = {
         "engine_version": consol.get("model_version", "unknown"),
@@ -275,6 +319,13 @@ def main() -> int:
     }
 
     write_json_atomic(args.out, payload)  # atomic: a crash never corrupts the last-good grid.json
+
+    # Roll today's per-city blend scores into the rolling history (the real "last week" source).
+    today_scores = {c["id"]: c["blend"]["score"] for c in enriched_cities if c.get("blend")}
+    hist_days = [d for d in (history.get("days") or []) if d.get("date") != today.isoformat()]
+    hist_days.append({"date": today.isoformat(), "scores": today_scores})
+    hist_days.sort(key=lambda d: d.get("date", ""))
+    write_json_atomic(HISTORY_PATH, {"updated": payload["generated_at"], "days": hist_days[-HISTORY_KEEP_DAYS:]})
 
     if failures:
         print(f"Note: {len(failures)} cell(s) failed but stayed under the abort threshold.")

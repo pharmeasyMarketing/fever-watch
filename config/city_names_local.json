@@ -1,0 +1,9 @@
+{
+  "_comment": "Native-script city/state names for the share image. 'cities' maps a city id to the city name in its state's primary script; 'states' maps the English state name to that script. Populated by the Wikidata auto-pull (Phase 3) and then QA'd by PharmEasy before launch; build_daily.py merges these into grid.json (emitted only when present, English fallback otherwise). Seeded with the verified Thane / Maharashtra example from the approved share-card mock.",
+  "states": {
+    "Maharashtra": "महाराष्ट्र"
+  },
+  "cities": {
+    "thane": "ठाणे"
+  }
+}
