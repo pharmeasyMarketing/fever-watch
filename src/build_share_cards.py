@@ -549,7 +549,10 @@ def rasterize(svg, out_jpg, target_size, resvg, tmp_png):
     img = img.resize(target_size, Image.LANCZOS)
     flat = Image.new("RGBA", img.size, (8, 42, 40, 255))
     flat.alpha_composite(img)
-    flat.convert("RGB").save(out_jpg, "JPEG", quality=85, optimize=True, progressive=True)
+    # q75 + 4:2:0 chroma subsampling: ~40% lighter than the original q85/4:4:4 with no
+    # visible difference on this card (large type on a dark surface) - verified at q70 too,
+    # q75 keeps a safety margin against gradient banding.
+    flat.convert("RGB").save(out_jpg, "JPEG", quality=75, optimize=True, progressive=True, subsampling=2)
 
 
 def fmt_date(iso):
@@ -631,8 +634,10 @@ def main():
     for city in cities:
         try:
             ctx = city_ctx(city, diseases, updated_label)
+            # og stays 1200x630 (the og:image meta contract); the share portrait downsamples
+            # to 900x1200 - WhatsApp recompresses past that anyway, and the modal loads faster
             rasterize(render_landscape(ctx), os.path.join(og_dir, city["id"] + ".jpg"), (1200, 630), resvg, tmp_png)
-            rasterize(render_portrait(ctx), os.path.join(share_dir, city["id"] + ".jpg"), (1080, 1440), resvg, tmp_png)
+            rasterize(render_portrait(ctx), os.path.join(share_dir, city["id"] + ".jpg"), (900, 1200), resvg, tmp_png)
             done += 1
         except Exception as exc:  # collect everything, fail loud at the end
             errors.append("%s: %s" % (city["id"], exc))

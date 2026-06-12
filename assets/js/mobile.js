@@ -111,6 +111,20 @@
     state.expanded = cityObj(id).blend.driver;
     if (push) { try { history.pushState(null, "", cityHref(id)); } catch (e) {} }
     render();
+    idleWarm();
+  }
+  // pre-fetch the current city's baked share image while the browser is idle, so the
+  // share modal preview opens instantly instead of fetching on first tap
+  var _warmedShare = "";
+  function warmShare() {
+    if (!window.FeverWatchShare || !DATA || _warmedShare === state.cityId) return;
+    _warmedShare = state.cityId;
+    var i = new Image();
+    i.src = window.FeverWatchShare.imageUrl(state.cityId, DATA.generated_at);
+  }
+  function idleWarm() {
+    if (window.requestIdleCallback) requestIdleCallback(warmShare, { timeout: 4000 });
+    else setTimeout(warmShare, 2500);
   }
   function onPop() {
     if (!DATA) return;
@@ -449,8 +463,8 @@
 
   // All render() dependencies (FAQ, METHOD, ...) are now defined. Boot: seed first (instant first
   // paint from the inlined city data), then the full grid in the background for the leaderboard.
-  if (FW.seed) { try { boot(FW.seed); } catch (e) { console.error("seed boot failed:", e); } }
+  if (FW.seed) { try { boot(FW.seed); idleWarm(); } catch (e) { console.error("seed boot failed:", e); } }
   loadGrid(4).then(function (j) {
-    boot(j); maybeGeo();
+    boot(j); maybeGeo(); idleWarm();
   }).catch(function (e) { console.error("grid load/boot failed:", e); if (!DATA) app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 })();

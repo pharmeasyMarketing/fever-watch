@@ -40,6 +40,11 @@
 >   (pinned), `chmod +x` the vendored linux resvg, and run `build_share_cards.py` instead of `build_og.py`;
 >   the apt fonts step (dejavu + noto-color-emoji, only needed by the old Pillow card) is REMOVED.
 >   grid.json was regenerated locally so the committed grid carries name_local/state_local for all 223 cities.
+> - **Share-image weight cut (user feedback, same day):** portrait now 900x1200 (was 1080x1440; WhatsApp
+>   recompresses past that anyway) + JPEG q75 with 4:2:0 chroma subsampling on BOTH outputs (q70 visually
+>   verified clean, q75 keeps margin) -> avg share card 110KB -> 67KB (-40%), og ~58KB; AND both flows now
+>   PRE-WARM the current city's share image via requestIdleCallback (re-warmed on city switch, guarded
+>   per-city), so the modal preview is a 0-byte cache hit (~14ms) instead of a cold fetch on first tap.
 > - **Follow-up same day (user feedback):** share-modal CTA buttons moved ABOVE the share text on both flows
 >   (first-fold visibility) + the mobile preview image capped at 44vh so image+CTAs fit one fold (verified
 >   headlessly at 390x844 + 1366x768; NOTE: measure sheet geometry AFTER the 250ms slide-in - same-tick rects
