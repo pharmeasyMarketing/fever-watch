@@ -1,4 +1,4 @@
-name: Deploy Fever Watch to GitHub Pages (staging)
+﻿name: Deploy Fever Watch to GitHub Pages (staging)
 
 # Builds the device-adaptive SSG and publishes dist/fever-watch/ to GitHub Pages.
 # Builds from the committed data/grid.json (currently MOCK trends + positivity), so this is
@@ -29,8 +29,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install build deps (Pillow + share-card text shaping, pinned)
@@ -41,10 +41,10 @@ jobs:
           python src/build_assets.py        # brand favicons / PWA icons / default OG
           python src/build_share_cards.py   # per-city share cards: og/ (1200x630) + share/ (1080x1440)
           python src/build_site.py          # dist/fever-watch/ : pages + robots/sitemap/manifest
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         with:
           enablement: true
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/fever-watch
 
@@ -56,4 +56,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

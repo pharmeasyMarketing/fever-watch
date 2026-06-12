@@ -337,8 +337,8 @@
     var src = window.FeverWatchShare ? window.FeverWatchShare.imageUrl(state.cityId, DATA.generated_at) : "";
     document.getElementById("sharebody").innerHTML =
       '<img class="sharecard-img" src="' + src + '" alt="' + esc(c.name) + ' monsoon fever risk score card">' +
-      '<div class="sharetext">' + shareText(c) + '</div>' +
       '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:#111">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>' +
+      '<div class="sharetext">' + shareText(c) + '</div>' +
       '<p class="sharehint" style="font-size:11.5px;color:var(--pe-muted-2);margin:11px 2px 0;line-height:1.5">On some Android phones WhatsApp attaches only the image and drops the caption. Tap Copy link to send the text and link too.</p>';
   }
 

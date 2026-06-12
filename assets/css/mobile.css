@@ -155,9 +155,9 @@
   .cityopt .sb { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pill); }
 
   /* share sheet (preview = the CI-baked share image) */
-  .sharecard-img { display: block; width: 100%; height: auto; border-radius: 18px; background: #0C3B37; }
+  .sharecard-img { display: block; max-width: 100%; width: auto; height: auto; max-height: 44vh; margin: 0 auto; border-radius: 18px; background: #0C3B37; }
   .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 16px 0; }
-  .sharebtns { display: flex; gap: 8px; }
+  .sharebtns { display: flex; gap: 8px; margin-top: 14px; }
   .sharebtns button { flex: 1; border: none; color: #fff; padding: 13px; border-radius: 11px; font-weight: 700; font-size: 13px; }
 
   /* FAQ accordion styles are shared in tokens.css (.faq-list) */

@@ -382,8 +382,8 @@
     var src = window.FeverWatchShare ? window.FeverWatchShare.imageUrl(state.cityId, DATA.generated_at) : "";
     document.getElementById("pop").innerHTML = '<div class="pophead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div><div class="popbody">' +
       '<img class="sharecard-img" src="' + src + '" alt="' + esc(c.name) + ' monsoon fever risk score card">' +
-      '<div class="sharetext">' + shareText(c) + '</div>' +
-      '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:var(--pe-green)">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div></div>';
+      '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:var(--pe-green)">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div>' +
+      '<div class="sharetext">' + shareText(c) + '</div></div>';
     document.getElementById("scrim").classList.add("open");
   }
 

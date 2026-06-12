@@ -1,4 +1,4 @@
-name: Daily refresh + deploy (Fever Watch)
+﻿name: Daily refresh + deploy (Fever Watch)
 
 # Pulls fresh weather (NASA POWER, no key) + real Google Trends (SerpApi, 5 keys via
 # Actions secrets) DAILY, recomputes the grid, commits the refreshed data back (durable
@@ -39,8 +39,8 @@ jobs:
       SHEETS_WEBHOOK_URL: ${{ secrets.SHEETS_WEBHOOK_URL }}
       SHEETS_TOKEN: ${{ secrets.SHEETS_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install build deps (Pillow + share-card text shaping, pinned)
@@ -113,8 +113,8 @@ jobs:
       - name: Log site build
         if: always()
         run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_share_cards + build_site (SSG)" "${{ steps.site.outcome != 'success' && 'SSG build did not finish - run cancelled or a build error' || '' }}"
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/fever-watch
 
@@ -126,4 +126,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

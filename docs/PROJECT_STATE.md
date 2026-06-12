@@ -40,6 +40,13 @@
 >   (pinned), `chmod +x` the vendored linux resvg, and run `build_share_cards.py` instead of `build_og.py`;
 >   the apt fonts step (dejavu + noto-color-emoji, only needed by the old Pillow card) is REMOVED.
 >   grid.json was regenerated locally so the committed grid carries name_local/state_local for all 223 cities.
+> - **Follow-up same day (user feedback):** share-modal CTA buttons moved ABOVE the share text on both flows
+>   (first-fold visibility) + the mobile preview image capped at 44vh so image+CTAs fit one fold (verified
+>   headlessly at 390x844 + 1366x768; NOTE: measure sheet geometry AFTER the 250ms slide-in - same-tick rects
+>   read mid-animation). The "Up from N last week" pill is portrait-only BY DESIGN and data-dependent: it
+>   self-activates ~16 Jun once history.json has a day 4-10d back (demo render verified). GitHub Actions bumped
+>   to Node-24 majors (checkout v6, setup-python v6, configure-pages v6, upload-pages-artifact v5,
+>   deploy-pages v5) ahead of the 2026-06-16 forced default.
 >
 > **2026-06-11 (LATER: page fixes + legal disclaimers; committed + pushed + deployed, commit `6ff6c48`):**
 > four review fixes on top of the UI batch, all verified headlessly and live on staging:

@@ -211,7 +211,7 @@
   .popbody { padding: 18px; }
   .sharecard-img { display: block; width: 100%; height: auto; border-radius: 16px; background: #0C3B37; }
   .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 14px 0; }
-  .sharebtns { display: flex; gap: 8px; }
+  .sharebtns { display: flex; gap: 8px; margin-top: 14px; }
   .sharebtns button { flex: 1; border: none; color: #fff; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
 
   /* baked SEO fallback (crawler / no-JS; replaced on hydration) */
