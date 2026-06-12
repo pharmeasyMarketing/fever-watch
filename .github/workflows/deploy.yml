@@ -33,15 +33,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install Pillow (for brand + per-city OG images)
-        run: python -m pip install --upgrade pip Pillow
-      - name: Fonts for OG card text + emoji (mosquito badge)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core fonts-noto-color-emoji
+      - name: Install build deps (Pillow + share-card text shaping, pinned)
+        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0
       - name: Build the static site
         run: |
-          python src/build_assets.py   # brand favicons / PWA icons / default OG
-          python src/build_og.py       # per-city OG score cards from grid.json
-          python src/build_site.py     # dist/fever-watch/ : 120 pages + robots/sitemap/manifest
+          chmod +x tools/resvg/resvg-linux-x86_64   # vendored resvg v0.47.0 (git may drop the x bit)
+          python src/build_assets.py        # brand favicons / PWA icons / default OG
+          python src/build_share_cards.py   # per-city share cards: og/ (1200x630) + share/ (1080x1440)
+          python src/build_site.py          # dist/fever-watch/ : pages + robots/sitemap/manifest
       - uses: actions/configure-pages@v5
         with:
           enablement: true

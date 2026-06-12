@@ -204,24 +204,12 @@
   /* share popover */
   .scrim { position: fixed; inset: 0; background: rgba(15,28,27,.5); z-index: 60; display: none; place-items: center; }
   .scrim.open { display: grid; }
-  .pop { width: 360px; background: #fff; border-radius: var(--radius); overflow: hidden; }
+  .pop { width: 360px; background: #fff; border-radius: var(--radius); overflow: hidden; max-height: calc(100vh - 48px); overflow-y: auto; }
   .pophead { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--pe-bg-2); }
   .pophead h3 { margin: 0; font-size: 16px; }
   .pophead .x { border: none; background: var(--pe-bg-2); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
   .popbody { padding: 18px; }
-  .sharecard { border-radius: 16px; overflow: hidden; background: linear-gradient(155deg, var(--pe-green) 0%, var(--pe-green-dark) 100%); color: #fff; }
-  .sc-head { display: flex; align-items: center; gap: 11px; padding: 16px 18px 4px; }
-  .sc-head img { height: 19px; }
-  .sc-head .fw { font-size: 13px; font-weight: 700; padding-left: 11px; border-left: 1px solid rgba(255,255,255,.35); }
-  .sc-body { text-align: center; padding: 8px 18px 16px; }
-  .sc-emoji { font-size: 40px; }
-  .sc-label { font-size: 12.5px; font-weight: 600; opacity: .82; margin-top: 4px; }
-  .sc-score { font-size: 54px; font-weight: 700; line-height: 1; margin: 4px 0 8px; letter-spacing: -1px; }
-  .sc-score span { font-size: 20px; opacity: .8; font-weight: 600; }
-  .sc-band { display: inline-block; background: #fff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 5px 14px; border-radius: var(--pill); }
-  .sc-title { font-size: 15px; font-weight: 600; margin-top: 12px; }
-  .sc-sub { font-size: 12px; opacity: .85; margin-top: 3px; }
-  .sc-foot { background: rgba(0,0,0,.16); padding: 11px 18px; font-size: 11px; text-align: center; }
+  .sharecard-img { display: block; width: 100%; height: auto; border-radius: 16px; background: #0C3B37; }
   .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 14px 0; }
   .sharebtns { display: flex; gap: 8px; }
   .sharebtns button { flex: 1; border: none; color: #fff; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }

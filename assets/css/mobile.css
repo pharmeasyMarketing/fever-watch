@@ -154,20 +154,8 @@
   .cityopt small { color: var(--pe-muted); font-size: 12px; }
   .cityopt .sb { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pill); }
 
-  /* branded share card */
-  .sharecard { border-radius: 18px; overflow: hidden; background: linear-gradient(155deg, var(--pe-green) 0%, var(--pe-green-dark) 100%); color: #fff; }
-  .sc-head { display: flex; align-items: center; gap: 11px; padding: 16px 18px 4px; }
-  .sc-head img { height: 19px; }
-  .sc-head .fw { font-size: 13px; font-weight: 700; padding-left: 11px; border-left: 1px solid rgba(255,255,255,.35); }
-  .sc-body { text-align: center; padding: 10px 18px 16px; }
-  .sc-emoji { font-size: 40px; }
-  .sc-label { font-size: 12.5px; font-weight: 600; opacity: .82; margin-top: 4px; }
-  .sc-score { font-size: 56px; font-weight: 700; line-height: 1; margin: 4px 0 8px; letter-spacing: -1px; }
-  .sc-score span { font-size: 20px; opacity: .8; font-weight: 600; }
-  .sc-band { display: inline-block; background: #fff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 5px 14px; border-radius: var(--pill); }
-  .sc-title { font-size: 15px; font-weight: 600; margin-top: 12px; }
-  .sc-sub { font-size: 12px; opacity: .85; margin-top: 3px; }
-  .sc-foot { background: rgba(0,0,0,.16); padding: 11px 18px; font-size: 11px; text-align: center; opacity: .95; }
+  /* share sheet (preview = the CI-baked share image) */
+  .sharecard-img { display: block; width: 100%; height: auto; border-radius: 18px; background: #0C3B37; }
   .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 16px 0; }
   .sharebtns { display: flex; gap: 8px; }
   .sharebtns button { flex: 1; border: none; color: #fff; padding: 13px; border-radius: 11px; font-weight: 700; font-size: 13px; }

@@ -43,10 +43,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install Pillow (for OG / brand images)
-        run: python -m pip install --upgrade pip Pillow
-      - name: Fonts for OG card text + emoji
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core fonts-noto-color-emoji
+      - name: Install build deps (Pillow + share-card text shaping, pinned)
+        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0
 
       - name: Check SerpApi secrets are present (values never printed)
         env:
@@ -108,12 +106,13 @@ jobs:
       - name: Build static site
         id: site
         run: |
+          chmod +x tools/resvg/resvg-linux-x86_64   # vendored resvg v0.47.0 (git may drop the x bit)
           python src/build_assets.py
-          python src/build_og.py
+          python src/build_share_cards.py
           python src/build_site.py
       - name: Log site build
         if: always()
-        run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_og + build_site (SSG)" "${{ steps.site.outcome != 'success' && 'SSG build did not finish - run cancelled or a build error' || '' }}"
+        run: python src/sheetlog.py log site ${{ steps.site.outcome }} "build_share_cards + build_site (SSG)" "${{ steps.site.outcome != 'success' && 'SSG build did not finish - run cancelled or a build error' || '' }}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

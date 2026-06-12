@@ -1,7 +1,6 @@
 (function () {
   "use strict";
   var FW = window.FW || {};
-  var LOGO = FW.logo || "assets/img/pe_logo-white.svg";
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
   var BEACON_DUR = { "HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s" };
@@ -377,13 +376,12 @@
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
   function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function openShare() {
-    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver), col = RISK[b.band];
+    // preview = the CI-baked share card itself (assets/img/share/{city}.jpg), so what the
+    // user sees is byte-identical to what gets shared - no re-drawn mock to drift.
+    var c = cityObj(state.cityId);
+    var src = window.FeverWatchShare ? window.FeverWatchShare.imageUrl(state.cityId, DATA.generated_at) : "";
     document.getElementById("pop").innerHTML = '<div class="pophead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div><div class="popbody">' +
-      '<div class="sharecard"><div class="sc-head"><img src="' + LOGO + '" alt="PharmEasy"><span class="fw">Fever Watch</span></div>' +
-      '<div class="sc-body"><div class="sc-emoji">' + drv.emoji + '</div><div class="sc-label">Monsoon Fever Risk Score</div>' +
-      '<div class="sc-score">' + b.score + '<span>/100</span></div>' +
-      '<span class="sc-band" style="color:' + col + '">' + b.band + ' RISK</span><div class="sc-title">📍 ' + c.name + '</div>' +
-      '<div class="sc-sub">' + drv.emoji + ' Top concern: ' + drv.label + '. This week, ' + fmtDate(DATA.generated_at) + '</div></div><div class="sc-foot">Check your city at pharmeasy.in/fever-watch</div></div>' +
+      '<img class="sharecard-img" src="' + src + '" alt="' + esc(c.name) + ' monsoon fever risk score card">' +
       '<div class="sharetext">' + shareText(c) + '</div>' +
       '<div class="sharebtns"><button data-act="shareWA" style="background:#25D366">WhatsApp</button><button data-act="shareDL" style="background:var(--pe-green)">Save image</button><button data-act="shareCopy" style="background:var(--pe-blue)">Copy link</button></div></div>';
     document.getElementById("scrim").classList.add("open");
@@ -410,19 +408,19 @@
   }
 
   function shareCardData() {
-    var c = cityObj(state.cityId), b = c.blend, drv = diseaseObj(b.driver);
-    return {
-      card: { score: b.score, band: b.band, bandColor: RISK[b.band], city: c.name, state: c.state, driverLabel: drv.label, driverEmoji: drv.emoji, date: "This week, " + fmtDate(DATA.generated_at) },
-      text: shareText(c), url: shareUrl()
-    };
+    var c = cityObj(state.cityId);
+    return { text: shareText(c), url: shareUrl() };
   }
   function doShare(kind) {
     if (!window.FeverWatchShare) return;
     var d = shareCardData(), fn = "fever-watch-" + state.cityId + ".jpg";
     if (kind === "copy") { window.FeverWatchShare.copyLink(d.url); return; }
-    window.FeverWatchShare.renderCard(d.card).then(function (canvas) {
-      if (kind === "wa") window.FeverWatchShare.whatsapp(d.text, "");  // URL is already in d.text
-      else window.FeverWatchShare.download(canvas, fn);
+    if (kind === "wa") { window.FeverWatchShare.whatsapp(d.text, ""); return; }  // URL is already in d.text
+    window.FeverWatchShare.loadCard(state.cityId, DATA.generated_at).then(function (blob) {
+      window.FeverWatchShare.download(blob, fn);
+    }).catch(function () {
+      // image unavailable (e.g. brand-new city before the next bake): open it directly
+      window.open(window.FeverWatchShare.imageUrl(state.cityId, DATA.generated_at), "_blank");
     });
   }
 

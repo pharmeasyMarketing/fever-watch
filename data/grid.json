@@ -1,6 +1,6 @@
 {
   "engine_version": "FW-ENSEMBLE-0.1.0",
-  "generated_at": "2026-06-12T06:18:40+00:00",
+  "generated_at": "2026-06-12T07:13:21+00:00",
   "disclaimer": "Fever Watch is a risk indicator that blends breeding weather, search interest and lab positivity into one decomposable score per city and disease. It is not a diagnosis, a count of actual cases or mosquitoes, or medical advice. Forecast-only locations are capped and cannot show HIGH.",
   "weather": {
     "generated_at": "2026-06-12T06:18:07+00:00",
@@ -36,6 +36,7 @@
         "driver": "chikungunya",
         "driver_score": 62
       },
+      "name_local": "मुंबई",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -59,7 +60,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 52
-      }
+      },
+      "name_local": "दिल्ली",
+      "state_local": "दिल्ली"
     },
     {
       "id": "bengaluru",
@@ -85,7 +88,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 64
-      }
+      },
+      "name_local": "ಬೆಂಗಳೂರು",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "hyderabad",
@@ -108,7 +113,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 56
-      }
+      },
+      "name_local": "హైదరాబాద్",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "ahmedabad",
@@ -131,7 +138,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 48
-      }
+      },
+      "name_local": "અમદાવાદ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "chennai",
@@ -157,7 +166,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 59
-      }
+      },
+      "name_local": "சென்னை",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "kolkata",
@@ -183,7 +194,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 55
-      }
+      },
+      "name_local": "কলকাতা",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "surat",
@@ -206,7 +219,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 51
-      }
+      },
+      "name_local": "સુરત",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "pune",
@@ -230,6 +245,7 @@
         "driver": "dengue",
         "driver_score": 58
       },
+      "name_local": "पुणे",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -253,7 +269,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 35
-      }
+      },
+      "name_local": "जयपुर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "lucknow",
@@ -276,7 +294,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 41
-      }
+      },
+      "name_local": "लखनऊ",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "kanpur",
@@ -299,7 +319,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 30
-      }
+      },
+      "name_local": "कानपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "nagpur",
@@ -323,6 +345,7 @@
         "driver": "chikungunya",
         "driver_score": 32
       },
+      "name_local": "नागपूर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -346,7 +369,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 36
-      }
+      },
+      "name_local": "इंदौर",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "thane",
@@ -394,7 +419,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 38
-      }
+      },
+      "name_local": "भोपाल",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "visakhapatnam",
@@ -417,7 +444,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 47
-      }
+      },
+      "name_local": "విశాఖపట్నం",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "patna",
@@ -440,7 +469,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 42
-      }
+      },
+      "name_local": "पटना",
+      "state_local": "बिहार"
     },
     {
       "id": "vadodara",
@@ -466,7 +497,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 45
-      }
+      },
+      "name_local": "વડોદરા",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "ghaziabad",
@@ -489,7 +522,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 43
-      }
+      },
+      "name_local": "गाज़ियाबाद",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "ludhiana",
@@ -512,7 +547,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 40
-      }
+      },
+      "name_local": "ਲੁਧਿਆਣਾ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "agra",
@@ -535,7 +572,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 43
-      }
+      },
+      "name_local": "आगरा",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "nashik",
@@ -559,6 +598,7 @@
         "driver": "dengue",
         "driver_score": 48
       },
+      "name_local": "नाशिक",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -582,7 +622,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 60
-      }
+      },
+      "name_local": "फरीदाबाद",
+      "state_local": "हरियाणा"
     },
     {
       "id": "meerut",
@@ -605,7 +647,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 41
-      }
+      },
+      "name_local": "मेरठ",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "rajkot",
@@ -628,7 +672,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 41
-      }
+      },
+      "name_local": "રાજકોટ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "varanasi",
@@ -651,7 +697,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 35
-      }
+      },
+      "name_local": "वाराणसी",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "srinagar",
@@ -674,7 +722,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 34
-      }
+      },
+      "name_local": "श्रीनगर",
+      "state_local": "जम्मू और कश्मीर"
     },
     {
       "id": "aurangabad",
@@ -698,6 +748,7 @@
         "driver": "dengue",
         "driver_score": 39
       },
+      "name_local": "औरंगाबाद",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -721,7 +772,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 53
-      }
+      },
+      "name_local": "धनबाद",
+      "state_local": "झारखंड"
     },
     {
       "id": "amritsar",
@@ -744,7 +797,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 36
-      }
+      },
+      "name_local": "ਅੰਮ੍ਰਿਤਸਰ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "prayagraj",
@@ -770,7 +825,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 38
-      }
+      },
+      "name_local": "प्रयागराज",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "ranchi",
@@ -793,7 +850,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 50
-      }
+      },
+      "name_local": "रांची",
+      "state_local": "झारखंड"
     },
     {
       "id": "howrah",
@@ -816,7 +875,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 52
-      }
+      },
+      "name_local": "হাওড়া",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "coimbatore",
@@ -839,7 +900,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "கோயம்புத்தூர்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "jabalpur",
@@ -862,7 +925,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 35
-      }
+      },
+      "name_local": "जबलपुर",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "gwalior",
@@ -885,7 +950,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 27
-      }
+      },
+      "name_local": "ग्वालियर",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "vijayawada",
@@ -908,7 +975,9 @@
         "emoji": "🟠",
         "driver": "typhoid",
         "driver_score": 49
-      }
+      },
+      "name_local": "విజయవాడ",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "jodhpur",
@@ -931,7 +1000,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 38
-      }
+      },
+      "name_local": "जोधपुर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "madurai",
@@ -954,7 +1025,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 62
-      }
+      },
+      "name_local": "மதுரை",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "raipur",
@@ -977,7 +1050,9 @@
         "emoji": "🟡",
         "driver": "typhoid",
         "driver_score": 34
-      }
+      },
+      "name_local": "रायपुर",
+      "state_local": "छत्तीसगढ़"
     },
     {
       "id": "kota",
@@ -1000,7 +1075,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 37
-      }
+      },
+      "name_local": "कोटा",
+      "state_local": "राजस्थान"
     },
     {
       "id": "guwahati",
@@ -1023,7 +1100,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 60
-      }
+      },
+      "name_local": "गुवाहाटी",
+      "state_local": "असम"
     },
     {
       "id": "chandigarh",
@@ -1046,7 +1125,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "चंडीगढ़",
+      "state_local": "चंडीगढ़"
     },
     {
       "id": "solapur",
@@ -1070,6 +1151,7 @@
         "driver": "chikungunya",
         "driver_score": 69
       },
+      "name_local": "सोलापूर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1097,7 +1179,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 65
-      }
+      },
+      "name_local": "ಹುಬ್ಬಳ್ಳಿ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "mysuru",
@@ -1123,7 +1207,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 64
-      }
+      },
+      "name_local": "ಮೈಸೂರು",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "tiruchirappalli",
@@ -1146,7 +1232,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 61
-      }
+      },
+      "name_local": "திருச்சிராப்பள்ளி",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "bareilly",
@@ -1169,7 +1257,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 35
-      }
+      },
+      "name_local": "बरेली",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "aligarh",
@@ -1192,7 +1282,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "अलीगढ़",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "tiruppur",
@@ -1215,7 +1307,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 54
-      }
+      },
+      "name_local": "திருப்பூர்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "gurugram",
@@ -1241,7 +1335,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 54
-      }
+      },
+      "name_local": "गुरुग्राम",
+      "state_local": "हरियाणा"
     },
     {
       "id": "moradabad",
@@ -1264,7 +1360,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 46
-      }
+      },
+      "name_local": "मुरादाबाद",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "jalandhar",
@@ -1287,7 +1385,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 40
-      }
+      },
+      "name_local": "ਜਲੰਧਰ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "bhubaneswar",
@@ -1310,7 +1410,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 50
-      }
+      },
+      "name_local": "ଭୁବନେଶ୍ୱର",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "salem",
@@ -1333,7 +1435,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 61
-      }
+      },
+      "name_local": "சேலம்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "warangal",
@@ -1356,7 +1460,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 55
-      }
+      },
+      "name_local": "వరంగల్",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "guntur",
@@ -1379,7 +1485,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 45
-      }
+      },
+      "name_local": "గుంటూరు",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "bhiwandi",
@@ -1403,6 +1511,7 @@
         "driver": "chikungunya",
         "driver_score": 50
       },
+      "name_local": "भिवंडी",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1426,7 +1535,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 43
-      }
+      },
+      "name_local": "सहारनपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "gorakhpur",
@@ -1449,7 +1560,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 43
-      }
+      },
+      "name_local": "गोरखपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "bikaner",
@@ -1472,7 +1585,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 44
-      }
+      },
+      "name_local": "बीकानेर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "amravati",
@@ -1496,6 +1611,7 @@
         "driver": "dengue",
         "driver_score": 38
       },
+      "name_local": "अमरावती",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1519,7 +1635,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "नोएडा",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "jamshedpur",
@@ -1542,7 +1660,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 64
-      }
+      },
+      "name_local": "जमशेदपुर",
+      "state_local": "झारखंड"
     },
     {
       "id": "bhilai",
@@ -1565,7 +1685,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 43
-      }
+      },
+      "name_local": "भिलाई",
+      "state_local": "छत्तीसगढ़"
     },
     {
       "id": "cuttack",
@@ -1588,7 +1710,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 45
-      }
+      },
+      "name_local": "କଟକ",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "firozabad",
@@ -1611,7 +1735,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "फ़िरोज़ाबाद",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "kochi",
@@ -1634,7 +1760,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 66
-      }
+      },
+      "name_local": "കൊച്ചി",
+      "state_local": "കേരളം"
     },
     {
       "id": "nellore",
@@ -1657,7 +1785,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 55
-      }
+      },
+      "name_local": "నెల్లూరు",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "bhavnagar",
@@ -1680,7 +1810,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "ભાવનગર",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "dehradun",
@@ -1703,7 +1835,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 38
-      }
+      },
+      "name_local": "देहरादून",
+      "state_local": "उत्तराखंड"
     },
     {
       "id": "durgapur",
@@ -1726,7 +1860,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 52
-      }
+      },
+      "name_local": "দুর্গাপুর",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "asansol",
@@ -1749,7 +1885,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 46
-      }
+      },
+      "name_local": "আসানসোল",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "rourkela",
@@ -1772,7 +1910,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 36
-      }
+      },
+      "name_local": "ରାଉରକେଲା",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "nanded",
@@ -1796,6 +1936,7 @@
         "driver": "chikungunya",
         "driver_score": 58
       },
+      "name_local": "नांदेड",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1820,6 +1961,7 @@
         "driver": "dengue",
         "driver_score": 58
       },
+      "name_local": "कोल्हापूर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1843,7 +1985,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 40
-      }
+      },
+      "name_local": "अजमेर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "akola",
@@ -1867,6 +2011,7 @@
         "driver": "malaria",
         "driver_score": 36
       },
+      "name_local": "अकोला",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -1893,7 +2038,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 69
-      }
+      },
+      "name_local": "ಕಲಬುರಗಿ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "jamnagar",
@@ -1916,7 +2063,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 50
-      }
+      },
+      "name_local": "જામનગર",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "ujjain",
@@ -1939,7 +2088,9 @@
         "emoji": "🟡",
         "driver": "typhoid",
         "driver_score": 38
-      }
+      },
+      "name_local": "उज्जैन",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "siliguri",
@@ -1962,7 +2113,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 53
-      }
+      },
+      "name_local": "শিলিগুড়ি",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "jhansi",
@@ -1985,7 +2138,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 33
-      }
+      },
+      "name_local": "झांसी",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "jammu",
@@ -2008,7 +2163,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 48
-      }
+      },
+      "name_local": "जम्मू",
+      "state_local": "जम्मू और कश्मीर"
     },
     {
       "id": "mangaluru",
@@ -2034,7 +2191,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 64
-      }
+      },
+      "name_local": "ಮಂಗಳೂರು",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "erode",
@@ -2057,7 +2216,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 58
-      }
+      },
+      "name_local": "ஈரோடு",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "belagavi",
@@ -2083,7 +2244,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 58
-      }
+      },
+      "name_local": "ಬೆಳಗಾವಿ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "tirunelveli",
@@ -2106,7 +2269,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 57
-      }
+      },
+      "name_local": "திருநெல்வேலி",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "gaya",
@@ -2129,7 +2294,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 44
-      }
+      },
+      "name_local": "गया",
+      "state_local": "बिहार"
     },
     {
       "id": "udaipur",
@@ -2152,7 +2319,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 40
-      }
+      },
+      "name_local": "उदयपुर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "tirupati",
@@ -2175,7 +2344,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 54
-      }
+      },
+      "name_local": "తిరుపతి",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "davanagere",
@@ -2198,7 +2369,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 65
-      }
+      },
+      "name_local": "ದಾವಣಗೆರೆ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "kozhikode",
@@ -2221,7 +2394,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 62
-      }
+      },
+      "name_local": "കോഴിക്കോട്",
+      "state_local": "കേരളം"
     },
     {
       "id": "kurnool",
@@ -2244,7 +2419,9 @@
         "emoji": "🟠",
         "driver": "typhoid",
         "driver_score": 53
-      }
+      },
+      "name_local": "కర్నూలు",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "bokaro",
@@ -2267,7 +2444,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 39
-      }
+      },
+      "name_local": "बोकारो",
+      "state_local": "झारखंड"
     },
     {
       "id": "bellary",
@@ -2290,7 +2469,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 69
-      }
+      },
+      "name_local": "ಬಳ್ಳಾರಿ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "patiala",
@@ -2313,7 +2494,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 43
-      }
+      },
+      "name_local": "ਪਟਿਆਲਾ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "agartala",
@@ -2336,7 +2519,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 51
-      }
+      },
+      "name_local": "আগরতলা",
+      "state_local": "ত্রিপুরা"
     },
     {
       "id": "bhagalpur",
@@ -2359,7 +2544,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 49
-      }
+      },
+      "name_local": "भागलपुर",
+      "state_local": "बिहार"
     },
     {
       "id": "muzaffarnagar",
@@ -2382,7 +2569,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 46
-      }
+      },
+      "name_local": "मुज़फ़्फ़रनगर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "latur",
@@ -2406,6 +2595,7 @@
         "driver": "chikungunya",
         "driver_score": 54
       },
+      "name_local": "लातूर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -2430,6 +2620,7 @@
         "driver": "chikungunya",
         "driver_score": 48
       },
+      "name_local": "धुळे",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -2453,7 +2644,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "रोहतक",
+      "state_local": "हरियाणा"
     },
     {
       "id": "korba",
@@ -2476,7 +2669,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 33
-      }
+      },
+      "name_local": "कोरबा",
+      "state_local": "छत्तीसगढ़"
     },
     {
       "id": "bhilwara",
@@ -2499,7 +2694,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 36
-      }
+      },
+      "name_local": "भीलवाड़ा",
+      "state_local": "राजस्थान"
     },
     {
       "id": "brahmapur",
@@ -2525,7 +2722,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 46
-      }
+      },
+      "name_local": "ବ୍ରହ୍ମପୁର",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "muzaffarpur",
@@ -2548,7 +2747,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "मुज़फ़्फ़रपुर",
+      "state_local": "बिहार"
     },
     {
       "id": "mathura",
@@ -2571,7 +2772,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "मथुरा",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "kollam",
@@ -2594,7 +2797,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "കൊല്ലം",
+      "state_local": "കേരളം"
     },
     {
       "id": "bilaspur",
@@ -2617,7 +2822,9 @@
         "emoji": "🟢",
         "driver": "chikungunya",
         "driver_score": 23
-      }
+      },
+      "name_local": "बिलासपुर",
+      "state_local": "छत्तीसगढ़"
     },
     {
       "id": "shahjahanpur",
@@ -2640,7 +2847,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 45
-      }
+      },
+      "name_local": "शाहजहांपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "thrissur",
@@ -2663,7 +2872,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 65
-      }
+      },
+      "name_local": "തൃശ്ശൂർ",
+      "state_local": "കേരളം"
     },
     {
       "id": "alwar",
@@ -2686,7 +2897,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 39
-      }
+      },
+      "name_local": "अलवर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "kakinada",
@@ -2709,7 +2922,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 47
-      }
+      },
+      "name_local": "కాకినాడ",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "nizamabad",
@@ -2732,7 +2947,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 53
-      }
+      },
+      "name_local": "నిజామాబాద్",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "panipat",
@@ -2755,7 +2972,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "पानीपत",
+      "state_local": "हरियाणा"
     },
     {
       "id": "darbhanga",
@@ -2778,7 +2997,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 42
-      }
+      },
+      "name_local": "दरभंगा",
+      "state_local": "बिहार"
     },
     {
       "id": "aizawl",
@@ -2827,7 +3048,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 65
-      }
+      },
+      "name_local": "തിരുവനന്തപുരം",
+      "state_local": "കേരളം"
     },
     {
       "id": "gandhinagar",
@@ -2850,7 +3073,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 37
-      }
+      },
+      "name_local": "ગાંધીનગર",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "panaji",
@@ -2873,7 +3098,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 65
-      }
+      },
+      "name_local": "पणजी",
+      "state_local": "गोवा"
     },
     {
       "id": "shimla",
@@ -2896,7 +3123,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 46
-      }
+      },
+      "name_local": "शिमला",
+      "state_local": "हिमाचल प्रदेश"
     },
     {
       "id": "imphal",
@@ -3011,7 +3240,9 @@
         "emoji": "🟠",
         "driver": "typhoid",
         "driver_score": 56
-      }
+      },
+      "name_local": "गंगटोक",
+      "state_local": "सिक्किम"
     },
     {
       "id": "puducherry",
@@ -3037,7 +3268,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 47
-      }
+      },
+      "name_local": "புதுச்சேரி",
+      "state_local": "புதுச்சேரி"
     },
     {
       "id": "port-blair",
@@ -3060,7 +3293,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 63
-      }
+      },
+      "name_local": "पोर्ट ब्लेयर",
+      "state_local": "अंडमान और निकोबार द्वीप समूह"
     },
     {
       "id": "leh",
@@ -3083,7 +3318,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 33
-      }
+      },
+      "name_local": "लेह",
+      "state_local": "लद्दाख"
     },
     {
       "id": "daman",
@@ -3106,7 +3343,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 53
-      }
+      },
+      "name_local": "દમણ",
+      "state_local": "દાદરા અને નગર હવેલી અને દમણ અને દીવ"
     },
     {
       "id": "silvassa",
@@ -3129,7 +3368,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 37
-      }
+      },
+      "name_local": "સેલવાસ",
+      "state_local": "દાદરા અને નગર હવેલી અને દમણ અને દીવ"
     },
     {
       "id": "vasai-virar",
@@ -3157,6 +3398,7 @@
         "driver": "dengue",
         "driver_score": 51
       },
+      "name_local": "वसई-विरार",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3185,6 +3427,7 @@
         "driver": "malaria",
         "driver_score": 50
       },
+      "name_local": "कल्याण-डोंबिवली",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3212,6 +3455,7 @@
         "driver": "malaria",
         "driver_score": 48
       },
+      "name_local": "मीरा-भाईंदर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3236,6 +3480,7 @@
         "driver": "malaria",
         "driver_score": 57
       },
+      "name_local": "सांगली",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3260,6 +3505,7 @@
         "driver": "chikungunya",
         "driver_score": 48
       },
+      "name_local": "जळगाव",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3284,6 +3530,7 @@
         "driver": "chikungunya",
         "driver_score": 62
       },
+      "name_local": "मालेगाव",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3308,6 +3555,7 @@
         "driver": "chikungunya",
         "driver_score": 42
       },
+      "name_local": "उल्हासनगर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3332,6 +3580,7 @@
         "driver": "chikungunya",
         "driver_score": 66
       },
+      "name_local": "अहमदनगर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3356,6 +3605,7 @@
         "driver": "dengue",
         "driver_score": 35
       },
+      "name_local": "चंद्रपूर",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3380,6 +3630,7 @@
         "driver": "dengue",
         "driver_score": 43
       },
+      "name_local": "परभणी",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3404,6 +3655,7 @@
         "driver": "chikungunya",
         "driver_score": 63
       },
+      "name_local": "सातारा",
       "state_local": "महाराष्ट्र"
     },
     {
@@ -3427,7 +3679,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 41
-      }
+      },
+      "name_local": "रामपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "hapur",
@@ -3450,7 +3704,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 42
-      }
+      },
+      "name_local": "हापुड़",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "mirzapur",
@@ -3473,7 +3729,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 35
-      }
+      },
+      "name_local": "मिर्ज़ापुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "etawah",
@@ -3496,7 +3754,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 39
-      }
+      },
+      "name_local": "इटावा",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "bulandshahr",
@@ -3519,7 +3779,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "बुलंदशहर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "sambhal",
@@ -3542,7 +3804,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 45
-      }
+      },
+      "name_local": "संभल",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "amroha",
@@ -3565,7 +3829,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 44
-      }
+      },
+      "name_local": "अमरोहा",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "hardoi",
@@ -3588,7 +3854,9 @@
         "emoji": "🟡",
         "driver": "typhoid",
         "driver_score": 36
-      }
+      },
+      "name_local": "हरदोई",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "fatehpur",
@@ -3611,7 +3879,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 37
-      }
+      },
+      "name_local": "फतेहपुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "raebareli",
@@ -3634,7 +3904,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 32
-      }
+      },
+      "name_local": "रायबरेली",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "sitapur",
@@ -3657,7 +3929,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 44
-      }
+      },
+      "name_local": "सीतापुर",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "unnao",
@@ -3680,7 +3954,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 33
-      }
+      },
+      "name_local": "उन्नाव",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "budaun",
@@ -3703,7 +3979,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 42
-      }
+      },
+      "name_local": "बदायूं",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "loni",
@@ -3726,7 +4004,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 49
-      }
+      },
+      "name_local": "लोनी",
+      "state_local": "उत्तर प्रदेश"
     },
     {
       "id": "bihar-sharif",
@@ -3749,7 +4029,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 46
-      }
+      },
+      "name_local": "बिहारशरीफ",
+      "state_local": "बिहार"
     },
     {
       "id": "arrah",
@@ -3772,7 +4054,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 45
-      }
+      },
+      "name_local": "आरा",
+      "state_local": "बिहार"
     },
     {
       "id": "begusarai",
@@ -3795,7 +4079,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 42
-      }
+      },
+      "name_local": "बेगूसराय",
+      "state_local": "बिहार"
     },
     {
       "id": "purnia",
@@ -3818,7 +4104,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 40
-      }
+      },
+      "name_local": "पूर्णिया",
+      "state_local": "बिहार"
     },
     {
       "id": "katihar",
@@ -3841,7 +4129,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 61
-      }
+      },
+      "name_local": "कटिहार",
+      "state_local": "बिहार"
     },
     {
       "id": "chhapra",
@@ -3864,7 +4154,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 47
-      }
+      },
+      "name_local": "छपरा",
+      "state_local": "बिहार"
     },
     {
       "id": "bardhaman",
@@ -3890,7 +4182,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 48
-      }
+      },
+      "name_local": "বর্ধমান",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "malda",
@@ -3913,7 +4207,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 57
-      }
+      },
+      "name_local": "মালদা",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "baharampur",
@@ -3939,7 +4235,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 48
-      }
+      },
+      "name_local": "বহরমপুর",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "kharagpur",
@@ -3962,7 +4260,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 53
-      }
+      },
+      "name_local": "খড়্গপুর",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "haldia",
@@ -3985,7 +4285,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 51
-      }
+      },
+      "name_local": "হলদিয়া",
+      "state_local": "পশ্চিমবঙ্গ"
     },
     {
       "id": "sikar",
@@ -4008,7 +4310,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 36
-      }
+      },
+      "name_local": "सीकर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "sri-ganganagar",
@@ -4031,7 +4335,9 @@
         "emoji": "🟡",
         "driver": "typhoid",
         "driver_score": 28
-      }
+      },
+      "name_local": "श्रीगंगानगर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "pali",
@@ -4054,7 +4360,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 38
-      }
+      },
+      "name_local": "पाली",
+      "state_local": "राजस्थान"
     },
     {
       "id": "bharatpur",
@@ -4077,7 +4385,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 36
-      }
+      },
+      "name_local": "भरतपुर",
+      "state_local": "राजस्थान"
     },
     {
       "id": "hanumangarh",
@@ -4100,7 +4410,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 39
-      }
+      },
+      "name_local": "हनुमानगढ़",
+      "state_local": "राजस्थान"
     },
     {
       "id": "sagar",
@@ -4123,7 +4435,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 39
-      }
+      },
+      "name_local": "सागर",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "ratlam",
@@ -4146,7 +4460,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 41
-      }
+      },
+      "name_local": "रतलाम",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "satna",
@@ -4169,7 +4485,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 36
-      }
+      },
+      "name_local": "सतना",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "rewa",
@@ -4192,7 +4510,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 33
-      }
+      },
+      "name_local": "रीवा",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "dewas",
@@ -4215,7 +4535,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 46
-      }
+      },
+      "name_local": "देवास",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "katni",
@@ -4238,7 +4560,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 39
-      }
+      },
+      "name_local": "कटनी",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "singrauli",
@@ -4261,7 +4585,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 43
-      }
+      },
+      "name_local": "सिंगरौली",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "khandwa",
@@ -4284,7 +4610,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 42
-      }
+      },
+      "name_local": "खंडवा",
+      "state_local": "मध्य प्रदेश"
     },
     {
       "id": "junagadh",
@@ -4307,7 +4635,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 44
-      }
+      },
+      "name_local": "જૂનાગઢ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "gandhidham",
@@ -4330,7 +4660,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 61
-      }
+      },
+      "name_local": "ગાંધીધામ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "anand",
@@ -4353,7 +4685,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 45
-      }
+      },
+      "name_local": "આણંદ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "nadiad",
@@ -4376,7 +4710,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 47
-      }
+      },
+      "name_local": "નડિયાદ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "morbi",
@@ -4399,7 +4735,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 39
-      }
+      },
+      "name_local": "મોરબી",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "bharuch",
@@ -4422,7 +4760,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 39
-      }
+      },
+      "name_local": "ભરૂચ",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "navsari",
@@ -4445,7 +4785,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 51
-      }
+      },
+      "name_local": "નવસારી",
+      "state_local": "ગુજરાત"
     },
     {
       "id": "shivamogga",
@@ -4471,7 +4813,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 63
-      }
+      },
+      "name_local": "ಶಿವಮೊಗ್ಗ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "tumakuru",
@@ -4497,7 +4841,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 64
-      }
+      },
+      "name_local": "ತುಮಕೂರು",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "vijayapura",
@@ -4523,7 +4869,9 @@
         "emoji": "🟠",
         "driver": "typhoid",
         "driver_score": 66
-      }
+      },
+      "name_local": "ವಿಜಯಪುರ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "raichur",
@@ -4546,7 +4894,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 62
-      }
+      },
+      "name_local": "ರಾಯಚೂರು",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "udupi",
@@ -4569,7 +4919,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 63
-      }
+      },
+      "name_local": "ಉಡುಪಿ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "hassan",
@@ -4592,7 +4944,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 58
-      }
+      },
+      "name_local": "ಹಾಸನ",
+      "state_local": "ಕರ್ನಾಟಕ"
     },
     {
       "id": "vellore",
@@ -4615,7 +4969,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 51
-      }
+      },
+      "name_local": "வேலூர்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "thoothukudi",
@@ -4641,7 +4997,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 60
-      }
+      },
+      "name_local": "தூத்துக்குடி",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "dindigul",
@@ -4664,7 +5022,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 53
-      }
+      },
+      "name_local": "திண்டுக்கல்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "thanjavur",
@@ -4687,7 +5047,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 52
-      }
+      },
+      "name_local": "தஞ்சாவூர்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "nagercoil",
@@ -4710,7 +5072,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 58
-      }
+      },
+      "name_local": "நாகர்கோவில்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "kanchipuram",
@@ -4733,7 +5097,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 51
-      }
+      },
+      "name_local": "காஞ்சிபுரம்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "hosur",
@@ -4756,7 +5122,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 61
-      }
+      },
+      "name_local": "ஓசூர்",
+      "state_local": "தமிழ்நாடு"
     },
     {
       "id": "rajahmundry",
@@ -4779,7 +5147,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 45
-      }
+      },
+      "name_local": "రాజమండ్రి",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "kadapa",
@@ -4802,7 +5172,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 59
-      }
+      },
+      "name_local": "కడప",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "anantapur",
@@ -4825,7 +5197,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 62
-      }
+      },
+      "name_local": "అనంతపురం",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "eluru",
@@ -4848,7 +5222,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 50
-      }
+      },
+      "name_local": "ఏలూరు",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "ongole",
@@ -4871,7 +5247,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 52
-      }
+      },
+      "name_local": "ఒంగోలు",
+      "state_local": "ఆంధ్రప్రదేశ్"
     },
     {
       "id": "khammam",
@@ -4894,7 +5272,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "ఖమ్మం",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "karimnagar",
@@ -4917,7 +5297,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 47
-      }
+      },
+      "name_local": "కరీంనగర్",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "ramagundam",
@@ -4940,7 +5322,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 44
-      }
+      },
+      "name_local": "రామగుండం",
+      "state_local": "తెలంగాణ"
     },
     {
       "id": "kannur",
@@ -4963,7 +5347,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 62
-      }
+      },
+      "name_local": "കണ്ണൂർ",
+      "state_local": "കേരളം"
     },
     {
       "id": "kottayam",
@@ -4986,7 +5372,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 60
-      }
+      },
+      "name_local": "കോട്ടയം",
+      "state_local": "കേരളം"
     },
     {
       "id": "palakkad",
@@ -5009,7 +5397,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 56
-      }
+      },
+      "name_local": "പാലക്കാട്",
+      "state_local": "കേരളം"
     },
     {
       "id": "alappuzha",
@@ -5032,7 +5422,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 62
-      }
+      },
+      "name_local": "ആലപ്പുഴ",
+      "state_local": "കേരളം"
     },
     {
       "id": "sambalpur",
@@ -5055,7 +5447,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 41
-      }
+      },
+      "name_local": "ସମ୍ବଲପୁର",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "puri",
@@ -5078,7 +5472,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 38
-      }
+      },
+      "name_local": "ପୁରୀ",
+      "state_local": "ଓଡ଼ିଶା"
     },
     {
       "id": "hisar",
@@ -5101,7 +5497,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 45
-      }
+      },
+      "name_local": "हिसार",
+      "state_local": "हरियाणा"
     },
     {
       "id": "karnal",
@@ -5124,7 +5522,9 @@
         "emoji": "🟠",
         "driver": "chikungunya",
         "driver_score": 59
-      }
+      },
+      "name_local": "करनाल",
+      "state_local": "हरियाणा"
     },
     {
       "id": "ambala",
@@ -5147,7 +5547,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 47
-      }
+      },
+      "name_local": "अंबाला",
+      "state_local": "हरियाणा"
     },
     {
       "id": "bathinda",
@@ -5170,7 +5572,9 @@
         "emoji": "🟡",
         "driver": "chikungunya",
         "driver_score": 37
-      }
+      },
+      "name_local": "ਬਠਿੰਡਾ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "mohali",
@@ -5193,7 +5597,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 47
-      }
+      },
+      "name_local": "ਮੋਹਾਲੀ",
+      "state_local": "ਪੰਜਾਬ"
     },
     {
       "id": "haridwar",
@@ -5216,7 +5622,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 44
-      }
+      },
+      "name_local": "हरिद्वार",
+      "state_local": "उत्तराखंड"
     },
     {
       "id": "haldwani",
@@ -5239,7 +5647,9 @@
         "emoji": "🟠",
         "driver": "dengue",
         "driver_score": 48
-      }
+      },
+      "name_local": "हल्द्वानी",
+      "state_local": "उत्तराखंड"
     },
     {
       "id": "dibrugarh",
@@ -5262,7 +5672,9 @@
         "emoji": "🟠",
         "driver": "typhoid",
         "driver_score": 50
-      }
+      },
+      "name_local": "डिब्रूगढ़",
+      "state_local": "असम"
     },
     {
       "id": "silchar",
@@ -5285,7 +5697,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 59
-      }
+      },
+      "name_local": "सिलचर",
+      "state_local": "असम"
     },
     {
       "id": "deoghar",
@@ -5308,7 +5722,9 @@
         "emoji": "🟡",
         "driver": "dengue",
         "driver_score": 44
-      }
+      },
+      "name_local": "देवघर",
+      "state_local": "झारखंड"
     },
     {
       "id": "hazaribagh",
@@ -5331,7 +5747,9 @@
         "emoji": "🟠",
         "driver": "malaria",
         "driver_score": 55
-      }
+      },
+      "name_local": "हजारीबाग",
+      "state_local": "झारखंड"
     },
     {
       "id": "raigarh",
@@ -5354,7 +5772,9 @@
         "emoji": "🟡",
         "driver": "malaria",
         "driver_score": 41
-      }
+      },
+      "name_local": "रायगढ़",
+      "state_local": "छत्तीसगढ़"
     }
   ],
   "diseases": [
