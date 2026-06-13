@@ -28,14 +28,20 @@ def load_json_or(path: str, default=None):
         return default
 
 
-def write_json_atomic(path: str, payload, indent: int = 2) -> None:
-    """Serialize `payload` to `path` atomically (temp file in the same dir + os.replace)."""
+def write_json_atomic(path: str, payload, indent: int | None = 2) -> None:
+    """Serialize `payload` to `path` atomically (temp file in the same dir + os.replace).
+
+    indent=2 (default) pretty-prints. Pass indent=None to MINIFY: no newlines and
+    compact (',', ':') separators, used by the per-year weather backfill store
+    where file size matters because it is committed to Git.
+    """
     directory = os.path.dirname(os.path.abspath(path))
     os.makedirs(directory, exist_ok=True)
+    separators = (",", ":") if indent is None else None
     fd, tmp = tempfile.mkstemp(dir=directory, prefix=os.path.basename(path) + ".", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, indent=indent, ensure_ascii=False)
+            json.dump(payload, fh, indent=indent, separators=separators, ensure_ascii=False)
             fh.flush()
             os.fsync(fh.fileno())
         os.replace(tmp, path)  # atomic on the same filesystem

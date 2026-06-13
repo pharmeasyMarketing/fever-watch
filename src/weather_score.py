@@ -16,6 +16,7 @@ config/scoring.json so the formula stays transparent and easy to defend.
 """
 from __future__ import annotations
 
+from datetime import date, timedelta
 from statistics import mean
 
 
@@ -49,6 +50,23 @@ def temp_fit(temp_c, fam) -> float:
         return 0.0
     v = 1.0 - ((temp_c - fam["temp_optimal_c"]) / fam["temp_width"]) ** 2
     return _clamp01(v)
+
+
+def window_for_date(records, as_of, days):
+    """Return records whose ISO date falls in [as_of-(days-1) .. as_of] inclusive.
+
+    `as_of` and the record dates are compared as ISO 'YYYY-MM-DD' strings (the
+    DailyWeather.date format), which sort chronologically. `as_of` may be a
+    datetime.date or an ISO string. Unlike aggregate()'s precs[-n:] ('last n
+    AVAILABLE days'), this anchors the trailing window on a real calendar date,
+    so an interior gap shrinks the window rather than silently reaching further
+    back. This is the correct rule for per-date historical recompute.
+    """
+    as_of_iso = as_of.isoformat() if hasattr(as_of, "isoformat") else str(as_of)
+    y, m, d = (int(p) for p in as_of_iso.split("-"))
+    floor = date(y, m, d) - timedelta(days=days - 1)
+    floor_iso = floor.isoformat()
+    return [r for r in records if floor_iso <= r.date <= as_of_iso]
 
 
 def aggregate(records) -> dict:

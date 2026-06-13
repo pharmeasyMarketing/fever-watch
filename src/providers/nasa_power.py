@@ -46,33 +46,64 @@ class NasaPowerProvider(WeatherProvider):
             },
         )
         data = get_json(url)
+        return _parse(data)
 
-        params = (((data.get("properties") or {}).get("parameter")) or {})
-        t_mean = params.get("T2M") or {}
-        t_max = params.get("T2M_MAX") or {}
-        t_min = params.get("T2M_MIN") or {}
-        rh = params.get("RH2M") or {}
-        precip = params.get("PRECTOTCORR") or {}
+    def fetch_range(self, lat: float, lon: float, start: date, end: date) -> list[DailyWeather]:
+        """Return the full inclusive daily series for [start, end].
 
-        if not t_mean and not precip:
-            raise RuntimeError("NASA POWER returned no parameter data")
+        Builds the IDENTICAL request as fetch_daily (same endpoint, parameters,
+        community and format) but with caller-supplied start/end. NASA POWER
+        returns the whole inclusive daily series for any START..END in one call,
+        so a single request per city covers an arbitrary historical range.
+        """
+        url = build_url(
+            ENDPOINT,
+            {
+                "parameters": "T2M,T2M_MAX,T2M_MIN,RH2M,PRECTOTCORR",
+                "community": "AG",
+                "latitude": lat,
+                "longitude": lon,
+                "start": start.strftime("%Y%m%d"),
+                "end": end.strftime("%Y%m%d"),
+                "format": "JSON",
+            },
+        )
+        data = get_json(url)
+        return _parse(data)
 
-        all_days = sorted(set(t_mean) | set(precip) | set(rh))
-        records: list[DailyWeather] = []
-        for ymd in all_days:
-            rec = DailyWeather(
-                date=f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}",
-                temp_mean_c=_clean(t_mean.get(ymd)),
-                temp_max_c=_clean(t_max.get(ymd)),
-                temp_min_c=_clean(t_min.get(ymd)),
-                humidity_pct=_clean(rh.get(ymd)),
-                precip_mm=_clean(precip.get(ymd)),
-            )
-            # Drop trailing days NASA hasn't filled yet (all key fields missing).
-            if rec.temp_mean_c is None and rec.precip_mm is None:
-                continue
-            records.append(rec)
-        return records
+
+def _parse(data) -> list[DailyWeather]:
+    """Turn a NASA POWER point-daily JSON payload into sorted DailyWeather records.
+
+    Shared by fetch_daily and fetch_range so both paths normalize identically.
+    Trailing days NASA has not filled yet (every key field missing) are dropped.
+    """
+    params = (((data.get("properties") or {}).get("parameter")) or {})
+    t_mean = params.get("T2M") or {}
+    t_max = params.get("T2M_MAX") or {}
+    t_min = params.get("T2M_MIN") or {}
+    rh = params.get("RH2M") or {}
+    precip = params.get("PRECTOTCORR") or {}
+
+    if not t_mean and not precip:
+        raise RuntimeError("NASA POWER returned no parameter data")
+
+    all_days = sorted(set(t_mean) | set(precip) | set(rh))
+    records: list[DailyWeather] = []
+    for ymd in all_days:
+        rec = DailyWeather(
+            date=f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}",
+            temp_mean_c=_clean(t_mean.get(ymd)),
+            temp_max_c=_clean(t_max.get(ymd)),
+            temp_min_c=_clean(t_min.get(ymd)),
+            humidity_pct=_clean(rh.get(ymd)),
+            precip_mm=_clean(precip.get(ymd)),
+        )
+        # Drop trailing days NASA hasn't filled yet (all key fields missing).
+        if rec.temp_mean_c is None and rec.precip_mm is None:
+            continue
+        records.append(rec)
+    return records
 
 
 def _clean(val):

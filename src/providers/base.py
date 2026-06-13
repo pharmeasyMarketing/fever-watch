@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass
@@ -41,3 +42,12 @@ class WeatherProvider(ABC):
         orchestrator can count it as a failed city rather than scoring garbage.
         """
         raise NotImplementedError
+
+    def fetch_range(self, lat: float, lon: float, start: date, end: date) -> list[DailyWeather]:
+        """Return the inclusive daily series for [start, end] (historical backfill).
+
+        Concrete default (NOT abstract): only NASA POWER overrides this. Other
+        providers (e.g. Open-Meteo) intentionally inherit this raise, so the
+        backfill path can fail loud if pointed at a provider without history.
+        """
+        raise NotImplementedError(f"{self.name} does not support historical backfill")
