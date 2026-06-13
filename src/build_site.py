@@ -1100,8 +1100,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
                 "periods": periods,
                 "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"])}
-        fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
-              "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
+        fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "archiveUrl": rel + "data/archive/trend_series.json",
+              "base": rel, "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
@@ -1201,6 +1201,10 @@ def main() -> int:
     shutil.copy(os.path.join(ROOT, "prototypes", "tokens.css"), os.path.join(DIST, "assets", "css", "tokens.css"))
     os.makedirs(os.path.join(DIST, "data"), exist_ok=True)
     shutil.copy(grid_path, os.path.join(DIST, "data", "grid.json"))
+    arch_path = os.path.join(ROOT, "data", "archive", "trend_series.json")
+    if os.path.exists(arch_path):
+        os.makedirs(os.path.join(DIST, "data", "archive"), exist_ok=True)
+        shutil.copy(arch_path, os.path.join(DIST, "data", "archive", "trend_series.json"))
 
     # landing
     av = asset_version()

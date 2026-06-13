@@ -586,8 +586,12 @@
 
   // All render() dependencies (FAQ, METHOD, ...) are now defined. Boot: seed first (instant first
   // paint from the inlined city data), then the full grid in the background for the leaderboard.
+  function loadArchive() {
+    if (!FW.archiveUrl) return Promise.resolve(null);
+    return fetch(FW.archiveUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
   if (FW.seed) { try { boot(FW.seed); idleWarm(); } catch (e) { console.error("seed boot failed:", e); } }
   loadGrid(4).then(function (j) {
-    boot(j); maybeGeo(); idleWarm();
+    return loadArchive().then(function (a) { if (a) j.archive = a; boot(j); maybeGeo(); idleWarm(); });
   }).catch(function (e) { console.error("grid load/boot failed:", e); if (!DATA) app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 })();

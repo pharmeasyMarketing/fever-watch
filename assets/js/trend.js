@@ -55,6 +55,19 @@
     return { now: V, series: ty, last: ly, delta: delta, slope: slope, peak: peak, avail: true };
   }
 
+  // REAL last-year + this-year series from the committed archive (data/archive/trend_series.json), used
+  // for the WEATHER and SEARCH tabs when DATA.archive is present. Same return shape as metricSeries so
+  // everything downstream (chart, caption, tooltip) is unchanged; peak is the real last-year MAX (not a
+  // seeded mock). JS-ONLY by design: the SSR (build_site.py) bakes only the Overall chart, which stays on
+  // the mock, so Overall + Labs keep the deterministic mock until real lab-positivity history lands.
+  function realSeries(blk, asOf) {
+    var ly = blk.ly, ty = blk.ty;
+    var a = ty[asOf], b = ly[asOf];
+    var delta = b > 0 ? r((a - b) / b * 100) : 0;
+    var slope = asOf >= 1 ? ty[asOf] - ty[asOf - 1] : 0;
+    return { now: a, series: ty, last: ly, delta: delta, slope: slope, peak: Math.max.apply(null, ly), avail: true };
+  }
+
   function meanSignal(cells, key) {
     var sum = 0, n = 0, i, v;
     for (i = 0; i < cells.length; i++) { v = cells[i].signals ? cells[i].signals[key] : null; if (v != null) { sum += v; n++; } }
@@ -62,7 +75,7 @@
   }
 
   // The full per-city data model the widget renders from.
-  function build(city, cells, generatedAt) {
+  function build(city, cells, generatedAt, arch) {
     var cid = city.id, blend = city.blend;
     var ga = generatedAt || "";
     var gy = +ga.slice(0, 4) || 2026, gm = +ga.slice(5, 7) || 6, gd = +ga.slice(8, 10) || 1;
@@ -75,10 +88,14 @@
     var searchNow = meanSignal(cells, "trends");
     var labsNow = meanSignal(cells, "positivity");
 
+    // Use REAL archive series for weather + search when present (both years share one normalisation);
+    // else fall back to the deterministic mock. Overall + labs stay on the mock (see realSeries note).
+    var wReal = arch && arch.weather && arch.weather.ly && arch.weather.ly.length === NW && arch.weather.ty && arch.weather.ty.length === asOf + 1;
+    var sReal = arch && arch.search && arch.search.ly && arch.search.ly.length === NW && arch.search.ty && arch.search.ty.length === asOf + 1;
     var metrics = {
       overall: metricSeries(cid, "overall", blend.score, asOf),
-      weather: weatherNow == null ? { avail: false } : metricSeries(cid, "weather", weatherNow, asOf),
-      search: searchNow == null ? { avail: false } : metricSeries(cid, "search", searchNow, asOf),
+      weather: wReal ? realSeries(arch.weather, asOf) : (weatherNow == null ? { avail: false } : metricSeries(cid, "weather", weatherNow, asOf)),
+      search: sReal ? realSeries(arch.search, asOf) : (searchNow == null ? { avail: false } : metricSeries(cid, "search", searchNow, asOf)),
       labs: labsNow == null ? { avail: false } : metricSeries(cid, "labs", labsNow, asOf)
     };
 
@@ -108,7 +125,8 @@
   function forCity(city, DATA) {
     var cid = city.id;
     var cells = DATA.grid.filter(function (g) { return g.city === cid; });
-    return build(city, cells, DATA.generated_at);
+    var arch = (DATA.archive && DATA.archive.cities) ? DATA.archive.cities[cid] : null;
+    return build(city, cells, DATA.generated_at, arch);
   }
 
   // --- captions (one sentence restating the takeaway for the selected metric) --------------------
