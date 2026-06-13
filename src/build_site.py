@@ -564,27 +564,11 @@ def _fmt_date_js(generated_at: str) -> str:
         return ""
 
 
-def _gauge_svg(score: int, color: str, size: int = 116) -> str:
-    """Byte-for-byte the same SVG the flows' gauge() builds, so hydration is a no-op repaint."""
-    sw = 11
-    cx = size / 2.0
-    r = (size - sw) / 2.0 - 1
-    c = 2 * math.pi * r
-    arc = 0.75
-    track, gap = "%.1f" % (arc * c), "%.1f" % (c - arc * c)
-    prog, c2 = "%.1f" % (max(0, min(100, score)) / 100.0 * arc * c), "%.1f" % (c * 2)
-    cs, rs = _num(cx), _num(r)
-    return ('<div class="gaugewrap" style="width:' + str(size) + 'px;height:' + str(size) + 'px">'
-            '<svg width="' + str(size) + '" height="' + str(size) + '" viewBox="0 0 ' + str(size) + ' ' + str(size) + '">'
-            '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>'
-            '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + color + '" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + prog + ' ' + c2 + '" transform="rotate(135 ' + cs + ' ' + cs + ')" style="transition:stroke-dasharray 1s ease"/>'
-            '</svg><div class="num"><b style="color:' + color + '">' + str(score) + '</b><span>/ 100</span></div></div>')
-
-
-# --- mobile redesign: segmented ring, legend, band chip, breeding-weather cards (mirror mobile.js) ----
-# Everything below renders the MOBILE flow only (desktop keeps _gauge_svg / _week_section). The risk
-# card + breeding-weather card are above the fold, so each helper is byte-identical to its mobile.js
-# twin (ring()/riskCard()/weatherCard()) - hydration must be a no-op repaint (CLS 0). Edit BOTH together.
+# --- redesign: segmented ring, legend, band chip, breeding-weather cards (mirror mobile.js + desktop.js) -
+# Both flows now share these above-fold helpers: mobile _mobile_pre and desktop _desktop_pre both embed
+# _risk_card / _weather_card, and BOTH mobile.js + desktop.js emit byte-identical markup. Each helper is
+# above the fold for at least one flow, so hydration must be a no-op repaint (CLS 0) - edit ALL twins
+# together (build_site.py + mobile.js + desktop.js).
 BAND_TITLE = {"HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low"}
 
 # Per-disease IDENTITY colours (NOT the severity ramp) - used for the dial segments, the legend dots and
@@ -757,89 +741,47 @@ def _beacon(band: str) -> str:
             + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>')
 
 
-def _search_hero_d(city: dict) -> str:
-    """Byte-identical to desktop.js searchHero(c) at first render (state.comboOpen = false)."""
+def _search_hero_d(city: dict, generated_at: str) -> str:
+    """Byte-identical to desktop.js searchHero(c) at first render (state.comboOpen = false). H1 drops the
+    comma (keeps the city); the hero gets the mobile vertical-fade gradient (CSS) plus a centered
+    Updated/date note below the search bar. Edit BOTH this and searchHero() together (CLS 0)."""
     nm = city["name"]
     return ('<section class="srch"><div class="srchin">'
-            '<h1>Live monsoon-fever risk for ' + esc(nm) + ', in <em>one score</em>.</h1>'
+            '<h1>Live monsoon-fever risk for ' + esc(nm) + ' in <em>one score</em>.</h1>'
             '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
             '<div class="searchbar"><span class="ico">\U0001F50E</span>'
             '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
             '<button class="searchbtn" data-act="combo">Search</button>'
             '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
-            '</div><p class="microcopy">Available in select cities.</p></div></section>')
+            '</div><p class="microcopy">Available in select cities.</p>'
+            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in selected cities.</p></div></section>')
 
 
-_CAT = {"mosquito": "Mosquito-borne", "waterborne": "Water / food-borne"}
+def _week_section_d(city: dict, diseases: list, cells_by: dict, periods: list) -> str:
+    """Desktop s-week above-fold twin. REUSES _risk_card verbatim (the mobile-proven proportional identity
+    dial + legend + band chip + period tabs), wrapped in the desktop section. Byte-identical to
+    desktop.js weekSectionD(c, b)."""
+    return ('<section id="s-week"><h2 class="sechead">Overall fever risk in ' + esc(city["name"]) + '</h2>'
+            + _risk_card(city, diseases, cells_by, periods) + '</section>')
 
 
-def _heatmap_card(city: dict, diseases: list, cells_by: dict) -> str:
-    """Ranked composite bars, byte-identical to desktop.js heatmapCard(c): each fever as one composite bar
-    (segment width = signal / sum * score, integer %; Math.round mirrored via floor(x+0.5)), ordered by
-    score high to low, top concern flagged, score in its band colour."""
-    cid = city["id"]
-    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
-    rows = ""
-    for i, d in enumerate(ordered):
-        cell = cells_by[(cid, d["id"])]; col = RISK.get(cell["band"], "#888"); sg = cell.get("signals", {})
-        weather = sg.get("weather"); search = sg.get("trends"); labs = sg.get("positivity")
-        wn = weather or 0; sn = search or 0; ln = labs or 0; denom = wn + sn + ln; sc = cell["score"]
-        ww = int(math.floor(wn / denom * sc + 0.5)) if denom else 0
-        ws = int(math.floor(sn / denom * sc + 0.5)) if denom else 0
-        wl = int(math.floor(ln / denom * sc + 0.5)) if denom else 0
-        wv = "n/a" if weather is None else str(weather)
-        sv = "n/a" if search is None else str(search)
-        lv = "n/a" if labs is None else str(labs)
-        top = '<span class="sbar-top">Top concern</span>' if i == 0 else ''
-        rows += ('<div class="sbar-row"><div class="sbar-id"><span class="sbar-rank">' + str(i + 1) + '</span><span class="sbar-emoji">' + d["emoji"] + '</span><span class="sbar-name"><b>' + d["label"] + '</b><i>' + _CAT.get(cell["family"], "") + '</i></span></div>'
-                 + '<div class="sbar-mid"><div class="sbar-track"><span style="width:' + str(ww) + '%;background:#15ACA5"></span><span style="width:' + str(ws) + '%;background:#7C6CD6"></span><span style="width:' + str(wl) + '%;background:#3661B0"></span></div>'
-                 + '<div class="sbar-strip"><span><i style="background:#15ACA5"></i>Weather ' + wv + '</span><span><i style="background:#7C6CD6"></i>Search ' + sv + '</span><span><i style="background:#3661B0"></i>Labs ' + lv + '</span></div></div>'
-                 + '<div class="sbar-score" style="color:' + col + '">' + str(sc) + top + '</div></div>')
-    return ('<div class="card sbars"><div class="sbar-head"><div class="sbar-title">This week\'s outbreak signal score</div><div class="sbar-sub">Ranked by composite score - four fevers we track in ' + city["name"] + '</div></div><div class="sbar-list">' + rows + '</div>'
-            '<div class="sbar-legend"><span class="k"><span class="sw" style="background:#15ACA5"></span>Weather (leading)</span>'
-            '<span class="k"><span class="sw" style="background:#7C6CD6"></span>Search (coincident)</span>'
-            '<span class="k"><span class="sw" style="background:#3661B0"></span>Labs (ground truth)</span></div></div>')
-
-
-def _week_section(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
-    """Byte-identical to desktop.js weekSection(c, b): the gauge card + heatmap inside .grid2."""
-    cid = city["id"]; b = city["blend"]; band = b["band"]; col = RISK.get(band, "#888")
-    drv_cell = cells_by[(cid, b["driver"])]
-    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
-    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
-    pills = "".join(
-        '<span class="dpill"><span class="dot" style="background:' + RISK.get(cells_by[(cid, d["id"])]["band"], "#888")
-        + '"></span>' + d["emoji"] + ' ' + d["label"] + ' <b>' + str(cells_by[(cid, d["id"])]["score"]) + '</b></span>'
-        for d in ordered)
-    card = ('<div class="card risk"><div class="rtop">' + _gauge_svg(b["score"], col, 112)
-            + '<div class="rhead"><div class="ov">Overall monsoon-fever risk, this week</div>'
-            '<div class="bandlbl" style="color:' + col + '">' + _beacon(band) + band + '</div></div></div>'
-            '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT.get(drv_cell["band"], "#eee")
-            + ';color:' + RISK.get(drv_cell["band"], "#888") + '">Top concern: ' + drv["emoji"] + ' ' + drv["label"]
-            + ' ' + drv_cell["band"] + ' (' + str(b["driver_score"]) + ')</span></div>'
-            '<div class="pills">' + pills + '</div>'
-            '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>'
-            '<button class="sharebtn" data-act="share">⤴ Share</button></div></div>')
-    return ('<section id="s-week"><h2 class="sechead">' + city["name"] + ', this week</h2>'
-            '<p class="secsub">Updated ' + _fmt_date_js(generated_at) + '. One headline score plus the signal mix behind it.</p>'
-            '<div class="grid2">' + card + _heatmap_card(city, diseases, cells_by) + '</div></section>')
-
-
-def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
-    """Desktop seamless first paint. Server-render .srch + .shell{.toc + .main{weekSection}} so it is
+def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, periods: list) -> str:
+    """Desktop seamless first paint. Server-render .srch + .shell{.toc + .main{s-week}} so it is
     byte-identical to what desktop.js render() paints from the inlined seed; hydration is then a no-op
     repaint over identical above-fold DOM (kills the desktop CLS). The .fw-below SEO block underneath
     stays for crawlers / no-JS. Mirrors the mobile _mobile_pre / _risk_card pattern. Gated .fw-pre-d."""
     # NOTE: this TOC must stay byte-identical to desktop.js render()'s .toc so desktop hydration is a
-    # no-op repaint (CLS 0). Edit BOTH together (incl. the new "This year vs last year" -> s-trend link).
+    # no-op repaint (CLS 0). Edit BOTH together. The data-jump set MUST equal desktop.js spyScroll()'s
+    # ids array, with one section id per jump target and vice-versa (s-method is reached via "Know more",
+    # so it is intentionally NOT a TOC jump target).
     toc = ('<aside class="toc">'
-           '<a class="cur" data-jump="s-week">This week</a><a data-jump="s-method">Scoring methodology</a>'
-           '<a data-jump="s-do">What to do</a><a data-jump="s-other">City-level insights</a>'
-           '<a data-jump="s-trend">This year vs last year</a>'
+           '<a class="cur" data-jump="s-week">Overall fever risk</a><a data-jump="s-why">Why this score</a>'
+           '<a data-jump="s-weather">Breeding weather</a><a data-jump="s-do">Take the right precautions</a>'
+           '<a data-jump="s-trend">This year vs last year</a><a data-jump="s-other">City-level insights</a>'
            '<a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a></aside>')
-    return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city)
+    return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)
             + '<div class="shell">' + toc + '<div class="main">'
-            + _week_section(city, diseases, cells_by, generated_at) + '</div></div></div>')
+            + _week_section_d(city, diseases, cells_by, periods) + '</div></div></div>')
 
 
 # --- "This monsoon vs last year" trend module (static SSR; mirrors assets/js/trend.js) -----------
@@ -1071,7 +1013,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
 
     # Designed above-fold, server-rendered to match each flow's JS output, so the FIRST paint is the
     # product (dial + legend) - not a plain list - and the flow hydrates over identical DOM (no flash).
-    pre = _mobile_pre(city, diseases, cells_by, date_str, periods) + _desktop_pre(city, diseases, cells_by, generated_at)
+    pre = _mobile_pre(city, diseases, cells_by, date_str, periods) + _desktop_pre(city, diseases, cells_by, generated_at, periods)
 
     head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
     rows = ""
