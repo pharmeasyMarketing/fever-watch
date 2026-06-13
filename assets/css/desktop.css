@@ -65,30 +65,32 @@
 
   /* shell: 3-col first fold (Quick Links sidebar | s-week score card | s-why breakdown card); the
      below-fold JS-only sections live in .main, which spans the two content columns on row 2. */
-  .shell { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr); gap: 30px; padding: 28px 24px 36px; align-items: start; }
+  .shell { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 180px minmax(0, 0.78fr) minmax(0, 1.22fr); gap: 30px; padding: 28px 24px 36px; align-items: start; }
   .toc { position: sticky; top: 84px; grid-column: 1; grid-row: 1 / span 2; align-self: start; }
   .toc h2 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--pe-muted); margin: 0 0 10px; padding: 0 12px; }
   .toc a { display: block; padding: 10px 12px; border-radius: 9px; color: var(--pe-ink-2); font-size: 13.5px; font-weight: 500; margin-bottom: 3px; border-left: 2px solid transparent; cursor: pointer; text-decoration: none; }
   .toc a.cur, .toc a:hover { background: #fff; color: var(--pe-green); border-left-color: var(--pe-green); font-weight: 600; }
-  /* First-fold row stretches so the score card (#s-week) and the breakdown card (#s-why) end at the same
-     height: the compact 3-col signal row makes the breakdown shorter, so stretch pulls it up to match. */
-  #s-week { grid-column: 2; grid-row: 1; align-self: stretch; }
-  #s-why { grid-column: 3; grid-row: 1; align-self: stretch; }
-  #s-week > .card, #s-why > .card { height: 100%; box-sizing: border-box; }
+  /* First-fold row: the score card (#s-week, narrower) and the breakdown card (#s-why, wider) each sit at
+     their NATURAL height (no stretch), so the short dial card has no internal blank space. */
+  #s-week { grid-column: 2; grid-row: 1; }
+  #s-why { grid-column: 3; grid-row: 1; }
+  #s-week > .card, #s-why > .card { box-sizing: border-box; }
   .main { grid-column: 2 / 4; grid-row: 2; min-width: 0; }
-  section[id^="s-"] { scroll-margin-top: 78px; margin-bottom: 32px; }
-  /* s-why rides in the narrower right rail (~456px) of the first fold: a HORIZONTAL 3-column row of
-     compact light-gray sub-cards (matches the reference snap). Tighter padding/gap + smaller signal type
-     so three columns fit the half-width rail. */
-  #s-why .acc.open .accbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 9px; padding: 4px 14px 16px; }
-  #s-why .acc.open .accbody .sig { min-width: 0; background: var(--pe-bg); border: 1px solid var(--pe-line); border-radius: 12px; padding: 10px 10px 12px; margin: 14px 0 0; }
-  #s-why .sig .row { gap: 5px; }
-  #s-why .sig .lbl { font-size: 11px; line-height: 1.25; }
-  #s-why .sig .v { font-size: 11.5px; }
-  #s-why .sig .v i { font-size: 10.5px; }
-  #s-why .sig .tag { font-size: 10px; line-height: 1.35; }
-  #s-why .sigbadge { width: 18px; height: 18px; }
-  #s-why .sigbadge svg { width: 11px; height: 11px; }
+  /* Consistent 30px gaps: the .shell grid gap (30px) spaces the first-fold row from .main; below-fold
+     sections carry a 30px bottom margin. The margin is NOT on the grid cards, or it would stack with the gap. */
+  section[id^="s-"] { scroll-margin-top: 78px; }
+  .main > section { margin-bottom: 30px; }
+  /* s-why is the WIDER right column of the first fold: a HORIZONTAL 3-column row of light-gray sub-cards
+     (matches the reference snap). The wider column lets the signal type sit at a comfortable size. */
+  #s-why .acc.open .accbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 4px 16px 18px; }
+  #s-why .acc.open .accbody .sig { min-width: 0; background: var(--pe-bg); border: 1px solid var(--pe-line); border-radius: 12px; padding: 12px 12px 13px; margin: 14px 0 0; }
+  #s-why .sig .row { gap: 6px; }
+  #s-why .sig .lbl { font-size: 12px; line-height: 1.3; }
+  #s-why .sig .v { font-size: 12.5px; }
+  #s-why .sig .v i { font-size: 11px; }
+  #s-why .sig .tag { font-size: 11px; line-height: 1.4; }
+  #s-why .sigbadge { width: 20px; height: 20px; }
+  #s-why .sigbadge svg { width: 12px; height: 12px; }
   /* Narrow desktop: collapse the 3-col shell to a single column (CSS-only; no DOM change). The 3-col
      signal row + compact sub-card styling above still apply (the rail is now full width, so it is roomy). */
   @media (max-width: 1100px) {
@@ -255,7 +257,7 @@
   .pophead h3 { margin: 0; font-size: 16px; }
   .pophead .x { border: none; background: var(--pe-bg-2); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
   .popbody { padding: 18px; }
-  .sharecard-img { display: block; width: 100%; height: auto; border-radius: 16px; background: #0C3B37; }
+  .sharecard-img { display: block; width: auto; max-width: 100%; height: auto; max-height: 52vh; margin: 0 auto; border-radius: 16px; background: #0C3B37; }
   .sharetext { font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.55; background: var(--pe-bg); border-radius: var(--radius-sm); padding: 13px; margin: 14px 0; }
   .sharebtns { display: flex; gap: 8px; margin-top: 14px; }
   .sharebtns button { flex: 1; border: none; color: #fff; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }

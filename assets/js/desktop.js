@@ -525,7 +525,7 @@
   function onClick(e) {
     if (e.target.id === "scrim") { document.getElementById("scrim").classList.remove("open"); return; }
     var jump = e.target.closest ? e.target.closest('.toc a[href^="#"]') : null;
-    if (jump) { if (e.preventDefault) e.preventDefault(); var t = document.getElementById(jump.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); jump.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
+    if (jump) { if (e.preventDefault) e.preventDefault(); var hid = jump.getAttribute("href"); var t = document.getElementById(hid.slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); try { history.pushState(null, "", hid); } catch (e2) {} var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); jump.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
     var el = e.target.closest ? e.target.closest("[data-act]") : null;
     if (!el) { if (state.comboOpen) { state.comboOpen = false; render(); } return; }
     var a = el.getAttribute("data-act");
@@ -535,7 +535,7 @@
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("s-other").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "method") { state.methodOpen = !state.methodOpen; var bdy = document.getElementById("methbody"); bdy.classList.toggle("open", state.methodOpen); document.getElementById("methtog").textContent = state.methodOpen ? "Hide details ▴" : "Show details ▾"; }
-    else if (a === "expand") { var xid = el.getAttribute("data-id"); state.expanded = state.expanded === xid ? null : xid; render(); }
+    else if (a === "expand") { state.expanded = el.getAttribute("data-id"); render(); }
     else if (a === "openMethod") {
       // The riskcard "Know more" opens + scrolls to the methodology section (which lives at #s-method).
       state.methodOpen = true;
