@@ -110,7 +110,7 @@
       '<p class="searchnote" style="margin-top:14px">Available in select cities.</p></div></div>' +
       '<div class="sheet" id="sharesheet"><div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>' +
       '<div class="sheetbody" id="sharebody"></div></div>' +
-      '<div class="sheet" id="methodsheet"><div class="sheethead"><h3>How we calculate this</h3><button class="x" data-act="closeMethod">✕</button></div>' +
+      '<div class="sheet" id="methodsheet"><div class="sheethead"><h3>How we calculate the score</h3><button class="x" data-act="closeMethod">✕</button></div>' +
       '<div class="sheetbody"><div class="methbody open" id="methbody"></div></div></div>';
     var wrap = document.createElement("div");
     wrap.innerHTML = html;

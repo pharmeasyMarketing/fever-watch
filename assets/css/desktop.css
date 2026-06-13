@@ -70,26 +70,43 @@
   .toc h2 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--pe-muted); margin: 0 0 10px; padding: 0 12px; }
   .toc a { display: block; padding: 10px 12px; border-radius: 9px; color: var(--pe-ink-2); font-size: 13.5px; font-weight: 500; margin-bottom: 3px; border-left: 2px solid transparent; cursor: pointer; text-decoration: none; }
   .toc a.cur, .toc a:hover { background: #fff; color: var(--pe-green); border-left-color: var(--pe-green); font-weight: 600; }
-  #s-week { grid-column: 2; grid-row: 1; }
-  #s-why { grid-column: 3; grid-row: 1; }
+  /* First-fold row stretches so the score card (#s-week) and the breakdown card (#s-why) end at the same
+     height: the compact 3-col signal row makes the breakdown shorter, so stretch pulls it up to match. */
+  #s-week { grid-column: 2; grid-row: 1; align-self: stretch; }
+  #s-why { grid-column: 3; grid-row: 1; align-self: stretch; }
+  #s-week > .card, #s-why > .card { height: 100%; box-sizing: border-box; }
   .main { grid-column: 2 / 4; grid-row: 2; min-width: 0; }
   section[id^="s-"] { scroll-margin-top: 78px; margin-bottom: 32px; }
-  /* s-why rides in the narrower right rail of the first fold: stack the 3-signal grid to one column so
-     it fits the half-width card. */
-  #s-why .acc.open .accbody { grid-template-columns: 1fr; gap: 0; }
-  /* Narrow desktop: collapse the 3-col shell to a single column (CSS-only; no DOM change). */
+  /* s-why rides in the narrower right rail (~456px) of the first fold: a HORIZONTAL 3-column row of
+     compact light-gray sub-cards (matches the reference snap). Tighter padding/gap + smaller signal type
+     so three columns fit the half-width rail. */
+  #s-why .acc.open .accbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 9px; padding: 4px 14px 16px; }
+  #s-why .acc.open .accbody .sig { min-width: 0; background: var(--pe-bg); border: 1px solid var(--pe-line); border-radius: 12px; padding: 10px 10px 12px; margin: 14px 0 0; }
+  #s-why .sig .row { gap: 5px; }
+  #s-why .sig .lbl { font-size: 11px; line-height: 1.25; }
+  #s-why .sig .v { font-size: 11.5px; }
+  #s-why .sig .v i { font-size: 10.5px; }
+  #s-why .sig .tag { font-size: 10px; line-height: 1.35; }
+  #s-why .sigbadge { width: 18px; height: 18px; }
+  #s-why .sigbadge svg { width: 11px; height: 11px; }
+  /* Narrow desktop: collapse the 3-col shell to a single column (CSS-only; no DOM change). The 3-col
+     signal row + compact sub-card styling above still apply (the rail is now full width, so it is roomy). */
   @media (max-width: 1100px) {
     .shell { display: block; }
     .toc { position: static; width: auto; margin-bottom: 24px; }
-    #s-why .acc.open .accbody { grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+    #s-week > .card, #s-why > .card { height: auto; }
+    #s-why .acc.open .accbody { gap: 22px; padding: 4px 18px 18px; }
   }
+  /* The 8 desktop section headings normalize to a consistent 21px (item 4): .sechead already 21px;
+     .sectiontitle (weather card, line below) + .fwtrend-title (trend card) are bumped to match. */
   .sechead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }
+  .fwtrend-title { font-size: 21px; }
   .secsub { font-size: 13.5px; color: var(--pe-muted); margin: 0 0 16px; }
   .fwtrend-months { font-size: 13px; padding-top: 3px; }   /* desktop: larger, slightly roomier month labels */
   .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; }
 
   /* section card sub-heads (ported from the redesign; desktop.css lacked these) */
-  .sectiontitle { font-size: 17px; font-weight: 700; margin: 0; }
+  .sectiontitle { font-size: 21px; font-weight: 700; margin: 0; }
   .sectionsub { font-size: 13px; color: var(--pe-muted); margin: 4px 0 16px; }
 
   /* --- risk card: period tabs + proportional identity dial + identity legend + band chip --- */

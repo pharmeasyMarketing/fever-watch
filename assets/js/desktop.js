@@ -188,7 +188,7 @@
     if (spyScroll.lock && Date.now() < spyScroll.lock) return;
     // == the TOC href targets, in document order (s-method is NOT a TOC target: it is reached via the
     // riskcard "Know more"). Keep this set identical to the .toc links in render() and _desktop_pre.
-    var ids = ["s-week", "s-why", "s-weather", "s-do", "s-other", "s-trend", "s-faq"], cur = ids[0];
+    var ids = ["s-week", "s-why", "s-weather", "s-do", "s-trend", "s-other", "s-faq"], cur = ids[0];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el && el.getBoundingClientRect().top <= 110) cur = ids[i];
@@ -216,10 +216,10 @@
     // '<div class="main">'.
     app.innerHTML = searchHero(c) +
       '<div class="shell"><aside class="toc"><h2>Quick Links</h2>' +
-        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a><a href="#s-other">What is happening in other cities?</a><a href="#s-trend">This year vs last year</a><a href="#s-faq">Common questions</a>' +
+        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
       '</aside>' + weekSectionD(c, b) + whySection(c) + '<div class="main">' + weatherSection(c) +
-        doSection(c) + methodSection() +
-        '<section id="s-trend" class="fwtrend-host"></section>' + otherSection(c) +
+        doSection(c) +
+        '<section id="s-trend" class="fwtrend-host"></section>' + methodSection() + otherSection(c) +
         faqSection() + readsSection() + '</div></div>';
     wireLeaderboard();
     mountTrend(c);
@@ -249,7 +249,7 @@
   // _risk_card (which _desktop_pre embeds). The proportional identity dial + legend + band chip + period
   // tabs all live in riskCard(); the section wrapper matches _desktop_pre.
   function weekSectionD(c, b) {
-    return '<section id="s-week"><h2 class="sechead">Overall fever risk in ' + esc(c.name) + '</h2>' + riskCard(c, b) + '</section>';
+    return '<section id="s-week">' + riskCard(c, b) + '</section>';
   }
 
   function riskCard(c, b) {
@@ -295,7 +295,7 @@
   // Why this score: the horizontal 3-signal breakdown, one accordion per disease (ported from mobile
   // breakdownCard). The driver accordion opens first (state.expanded init in boot/setCity).
   function whySection(c) {
-    return '<section id="s-why"><h2 class="sechead">Why this score?</h2><p class="secsub">Tap a disease to see its three signals.</p>' + breakdownCard(c) + '</section>';
+    return '<section id="s-why">' + breakdownCard(c) + '</section>';
   }
   function breakdownCard(c) {
     var accs = orderedDiseases(c).map(function (d) {
@@ -307,7 +307,7 @@
         '<span class="dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span><span class="sc">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
-    return '<div class="card">' + accs + '</div>';
+    return '<div class="card whycard"><h2 class="sechead">Why this score?</h2><p class="secsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
   }
 
   // Per-signal day-over-day badge (red up = rising / green down = easing). Empty unless a present,
@@ -338,7 +338,7 @@
 
   function methodSection() {
     return '<section id="s-method"><div class="card">' +
-      '<h2 class="sechead" style="margin:0 0 2px">How we calculate this</h2>' +
+      '<h2 class="sechead" style="margin:0 0 2px">How we calculate the score</h2>' +
       '<button class="methhead" data-act="method"><span class="secsub" style="margin:0">Transparent and decomposable, not a black box.</span>' +
       '<span class="methtog" id="methtog">Show details ▾</span></button>' +
       '<div class="methbody' + (state.methodOpen ? ' open' : '') + '" id="methbody">' + METHOD + '<p class="dashnote">' + DASHNOTE + '</p></div></div></section>';
@@ -482,11 +482,18 @@
     el.addEventListener("touchstart", function () { el.classList.add("held"); }, { passive: true });
     ["touchend", "touchcancel"].forEach(function (ev) { el.addEventListener(ev, function () { el.classList.remove("held"); }); });
   }
+  // Floating share dock. Severity-tiered copy keyed off the band (ported from mobile buildShareFooter /
+  // footCopy) so a calm city never reads as "elevated". Persistent (no dismiss).
+  function dockCopy(b, city) {
+    if (b.band === "HIGH") return { t: "Fever risk is high in " + city + " right now", s: "Share this alert so people you care about can take precautions." };
+    if (b.band === "MODERATE") return { t: "Worth watching: fever risk in " + city, s: "A quick heads-up helps your family stay ahead of monsoon fevers." };
+    return { t: "Help your family stay ahead of monsoon fevers", s: "Share " + city + "'s daily fever-risk tracker." };
+  }
   function buildDock() {
     if (document.getElementById("fwdock") || !DATA) return;
     var el = document.createElement("aside");
     el.className = "fw-dock"; el.id = "fwdock";
-    el.innerHTML = '<div class="fw-dock-title">1 in 3 fevers in India isn\'t just a fever</div>' +
+    el.innerHTML = '<div class="fw-dock-title" id="fwdocktitle"></div>' +
       '<div class="fw-dock-sub" id="fwdocksub"></div>' +
       '<div class="fw-dock-actions"><button class="fw-dock-share" data-act="share">⤴ Share</button>' +
       '<button class="fw-dock-copy" data-act="dockcopy" aria-label="Copy link">🔗</button></div>';
@@ -494,8 +501,11 @@
     updateDock();
   }
   function updateDock() {
-    var s = document.getElementById("fwdocksub");
-    if (s && DATA) s.textContent = "Spread awareness. Share " + cityObj(state.cityId).name + "'s score.";
+    var t = document.getElementById("fwdocktitle"), s = document.getElementById("fwdocksub");
+    if (!DATA || (!t && !s)) return;
+    var c = cityObj(state.cityId), copy = dockCopy(c.blend, c.name);
+    if (t) t.textContent = copy.t;
+    if (s) s.textContent = copy.s;
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }

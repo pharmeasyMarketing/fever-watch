@@ -294,13 +294,13 @@
       // Desktop: title + Hide toggle INSIDE the card (like mobile), so the section title rides with the
       // card; the desktop small-multiples still live in the body (smallsHtml, gated on st.mode above).
       return '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'
-        + '<div class="fwtrend-head"><div><div class="fwtrend-eyebrow">Season trend</div>'
+        + '<div class="fwtrend-head"><div>'
         + '<h2 class="fwtrend-title">' + title + '</h2></div>' + toggle + '</div>'
         + lead + '<div class="fwtrend-body">' + body + '</div></div>';
     }
-    // Mobile: keep the eyebrow + title inside the card, like the other mobile cards.
+    // Mobile: keep the title inside the card, like the other mobile cards.
     return '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'
-      + '<div class="fwtrend-head"><div><div class="fwtrend-eyebrow">Season trend</div>'
+      + '<div class="fwtrend-head"><div>'
       + '<h2 class="fwtrend-title">' + title + '</h2></div>' + toggle + '</div>'
       + lead + '<div class="fwtrend-body">' + body + '</div></div>';
   }

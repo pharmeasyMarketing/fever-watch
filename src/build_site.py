@@ -812,22 +812,24 @@ def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
                  '<span class="emoji">' + d["emoji"] + '</span><span class="name">' + d["label"] + '</span>'
                  '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
                  '<span class="chev">▾</span></button>' + body + '</div>')
-    return '<div class="card">' + accs + '</div>'
+    return ('<div class="card whycard"><h2 class="sechead">Why this score?</h2>'
+            '<p class="secsub">Tap a disease to see its three signals.</p>' + accs + '</div>')
 
 
 def _why_section_d(city: dict, diseases: list, cells_by: dict) -> str:
     """Desktop s-why above-fold twin. Byte-identical to desktop.js whySection(c) ("Why this score?" WITH
-    the question mark). Now lives in the first fold (right rail of the 3-col shell)."""
-    return ('<section id="s-why"><h2 class="sechead">Why this score?</h2>'
-            '<p class="secsub">Tap a disease to see its three signals.</p>'
+    the question mark). The title + subtitle now live INSIDE the card (see _breakdown_card_d). Now lives
+    in the first fold (right rail of the 3-col shell)."""
+    return ('<section id="s-why">'
             + _breakdown_card_d(city, diseases, cells_by) + '</section>')
 
 
 def _week_section_d(city: dict, diseases: list, cells_by: dict, periods: list) -> str:
     """Desktop s-week above-fold twin. REUSES _risk_card verbatim (the mobile-proven proportional identity
-    dial + legend + band chip + period tabs), wrapped in the desktop section. Byte-identical to
-    desktop.js weekSectionD(c, b)."""
-    return ('<section id="s-week"><h2 class="sechead">Overall fever risk in ' + esc(city["name"]) + '</h2>'
+    dial + legend + band chip + period tabs), wrapped in the desktop section. The outside title is removed
+    (matches the reference snap); the TOC link "Overall fever risk" -> #s-week still works. Byte-identical
+    to desktop.js weekSectionD(c, b)."""
+    return ('<section id="s-week">'
             + _risk_card(city, diseases, cells_by, periods) + '</section>')
 
 
@@ -845,7 +847,7 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, 
     toc = ('<aside class="toc"><h2>Quick Links</h2>'
            '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a>'
            '<a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a>'
-           '<a href="#s-other">What is happening in other cities?</a><a href="#s-trend">This year vs last year</a>'
+           '<a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a>'
            '<a href="#s-faq">Common questions</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)
             + '<div class="shell">' + toc
@@ -1054,7 +1056,7 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
     # re-renders this. Below the fold, so no parity impact (the trend host is a JS-only section).
     return ('<section id="s-trend" class="fwtrend-host">'
             '<div class="card fwtrend open" data-metric="overall">'
-            '<div class="fwtrend-head"><div><div class="fwtrend-eyebrow">Season trend</div>'
+            '<div class="fwtrend-head"><div>'
             '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(city["name"]) + '</h2></div>'
             '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
             '<span class="chev" aria-hidden="true"></span></button></div>'
@@ -1099,7 +1101,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         + '<th scope="col">Score</th></tr></thead><tbody>' + rows + '</tbody></table></section>'
     )
 
-    method_sec = ('<section><h2>How we calculate this</h2>' + METHOD_HTML
+    method_sec = ('<section><h2>How we calculate the score</h2>' + METHOD_HTML
                   + '<p class="dashnote">' + esc(DASHBOARD_NOTE) + '</p></section>')
 
     acts = "".join(
@@ -1132,7 +1134,7 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
     other_sec = ('<section><h2>Monsoon fever risk by city, this week</h2>'
                  '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'
                  + _cities_table(all_cities, "") + '</section>')
-    method_sec = ('<section><h2>How we calculate this</h2>' + METHOD_HTML
+    method_sec = ('<section><h2>How we calculate the score</h2>' + METHOD_HTML
                   + '<p class="dashnote">' + esc(DASHBOARD_NOTE) + '</p></section>')
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
