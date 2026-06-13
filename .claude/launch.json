@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8137"],
       "port": 8137
+    },
+    {
+      "name": "fever-watch-dist",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["scripts/serve_dist.py"],
+      "port": 8138
     }
   ]
 }

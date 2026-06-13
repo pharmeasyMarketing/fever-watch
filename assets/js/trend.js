@@ -242,7 +242,13 @@
   function renderCard(model, st) {
     var metric = model.metrics[st.metric].avail ? st.metric : "overall";
     var col = metricCol(model, metric);
-    var toneIcon = model.tone === "below" ? "▼" : (model.tone === "above" ? "▲" : "≈");
+    // Trend-line icon (up for "above", down for "below", flat for "inline"), white on the tone circle.
+    var _ti = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">';
+    var toneIcon = model.tone === "below" ? (_ti + '<path d="M4 8l5 5 3-3 8 8"/><path d="M20 14v4h-4"/></svg>')
+      : model.tone === "above" ? (_ti + '<path d="M4 16l5-5 3 3 8-8"/><path d="M20 10V6h-4"/></svg>')
+      : (_ti + '<path d="M5 12h14"/></svg>');
+    var phrase = model.tone === "above" ? "higher than last year"
+      : model.tone === "below" ? "lower than last year" : "about the same as last year";
     var avail = model.metrics[metric].avail;
     st.geo = avail ? chartGeom(false, st.mode, model.metrics[metric]) : null;  // for the tooltip's coords
     var title = "This monsoon vs last in " + esc(model.city);
@@ -263,9 +269,8 @@
       + (st.mode === "desktop" ? smallsHtml(model, metric, st.mode) : "")
       + '<p class="fwtrend-sources">Sources: NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>';
     var lead =
-      '<div class="fwtrend-verdict"><span class="fwtrend-vicon ' + model.tone + '">' + toneIcon + '</span>'
-      + '<span class="fwtrend-vtext">' + esc(model.verdict) + '</span>'
-      + '<span class="fwtrend-chip ' + model.tone + '">' + esc(model.chip) + '</span></div>'
+      '<div class="fwtrend-pill ' + model.tone + '"><span class="fwtrend-vicon">' + toneIcon + '</span>'
+      + '<b>' + esc(model.chip) + '</b> ' + phrase + '</div>'
       + '<p class="fwtrend-context">' + esc(model.context) + '</p>';
     var card = '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'
       + lead + '<div class="fwtrend-body">' + body + '</div></div>';
@@ -301,7 +306,7 @@
       var yRef = tyHas ? Y(ty) : Y(ly);
       var yPx = yRef * (rect.height / g.H) + (rect.top - wrapRect.top);
       tip.innerHTML = '<b>Week of ' + esc(model.weeks[i]) + '</b>'
-        + '<span><i style="background:' + col + '"></i>This year ' + (tyHas ? ty : "—") + '</span>'
+        + '<span><i style="background:' + col + '"></i>This year ' + (tyHas ? ty : "n/a") + '</span>'
         + '<span><i style="background:#aab6c6"></i>Last year ' + ly + '</span>';
       tip.style.left = clamp(xPx, 38, wrapRect.width - 38) + "px";
       tip.style.top = Math.max(2, yPx - 10) + "px";

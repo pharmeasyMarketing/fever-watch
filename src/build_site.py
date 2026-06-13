@@ -175,8 +175,10 @@ PAGE = """<!DOCTYPE html>
 
 
 def esc(s) -> str:
+    # Mirror assets/js/mobile.js esc() exactly (incl. the single quote -> &#39;), so the server-rendered
+    # above-the-fold block stays byte-identical to the JS repaint even for a name containing an apostrophe.
     return (str("" if s is None else s).replace("&", "&amp;").replace("<", "&lt;")
-            .replace(">", "&gt;").replace('"', "&quot;"))
+            .replace(">", "&gt;").replace('"', "&quot;").replace("'", "&#39;"))
 
 
 def load_json(path: str) -> dict:
@@ -263,7 +265,7 @@ def ticker_html(all_cities: list, rel: str) -> str:
                   + ' <b style="color:' + col + '">' + str(b["score"]) + '</b>'
                   + '<span class="tpill" style="color:' + col + ';background:' + soft + '">' + esc(b["band"]) + '</span></a>')
     return ('<div class="fw-ticker" id="fwticker"><div class="fw-ticker-in">'
-            '<span class="fw-ticker-label"><span class="livedot"></span> Live this week</span>'
+            '<span class="fw-ticker-label"><span class="livedot"></span> Live</span>'
             '<div class="fw-ticker-vp"><div class="fw-ticker-track">' + items + items + '</div></div></div></div>')
 
 
@@ -579,36 +581,170 @@ def _gauge_svg(score: int, color: str, size: int = 116) -> str:
             '</svg><div class="num"><b style="color:' + color + '">' + str(score) + '</b><span>/ 100</span></div></div>')
 
 
-def _risk_card(city: dict, diseases: list, cells_by: dict) -> str:
-    """The .card risk card, identical to the flows' riskCard (shared classes, styled by both)."""
-    cid = city["id"]; b = city["blend"]; band = b["band"]; col = RISK.get(band, "#888")
-    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
-    dc = cells_by[(cid, b["driver"])]; db = dc["band"]
+# --- mobile redesign: segmented ring, legend, band chip, breeding-weather cards (mirror mobile.js) ----
+# Everything below renders the MOBILE flow only (desktop keeps _gauge_svg / _week_section). The risk
+# card + breeding-weather card are above the fold, so each helper is byte-identical to its mobile.js
+# twin (ring()/riskCard()/weatherCard()) - hydration must be a no-op repaint (CLS 0). Edit BOTH together.
+BAND_TITLE = {"HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low"}
+
+# Per-disease IDENTITY colours (NOT the severity ramp) - used for the dial segments, the legend dots and
+# the breakdown dots so the risk card reads consistently (Figma node 49-1303, measured from the render).
+DISEASE = {"dengue": "#F1839D", "malaria": "#887ADE", "chikungunya": "#46CFE7", "typhoid": "#4681EF"}
+
+# Red map-pin ("location drop") icon for the location card, matching the Figma (replaces the emoji).
+# Kept byte-identical to the LOC_PIN string in assets/js/mobile.js (above the fold).
+LOC_PIN = ('<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">'
+           '<path fill="#F0493F" d="M12 2.2c-3.9 0-7 3.1-7 7 0 5 7 12.6 7 12.6s7-7.6 7-12.6c0-3.9-3.1-7-7-7z"/>'
+           '<circle cx="12" cy="9.2" r="2.6" fill="#fff"/></svg>')
+
+# Outline icons for the breeding-weather cards (droplet / rain cloud / water waves / sparkle). Kept
+# byte-identical to the WX_* strings in assets/js/mobile.js (above the fold).
+_WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
+WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>'
+WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>'
+WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>'
+WX_PEAK = _WX_A + '<path d="M12 3v18M3 12h18M5.6 5.6 18.4 18.4M18.4 5.6 5.6 18.4"/></svg>'
+
+# Period tabs above the dial. Only granularities present in grid["periods"] render (the data layer gates
+# week/month by how many committed days exist); "today" is always the active default.
+_PERIOD_LABELS = [("today", "Today"), ("week", "This week"), ("month", "This month")]
+
+
+def _period_tabs(periods: list) -> str:
+    avail = set(periods or ["today"])
+    out = ""
+    for key, label in _PERIOD_LABELS:
+        if key not in avail:
+            continue
+        out += '<button class="ftab' + (" on" if key == "today" else "") + '" type="button">' + label + '</button>'
+    return '<div class="ftabs">' + out + '</div>'
+
+
+def _delta_arrow(delta) -> str:
+    """Day-over-day arrow (vs yesterday). Empty unless a present, non-zero delta exists; up = risk rose
+    (red), down = risk eased (green). Mirrors mobile.js deltaArrow(). Stays empty until history.json has
+    a yesterday entry, so today it renders nothing."""
+    if delta is None or delta == 0:
+        return ""
+    up = delta > 0
+    return ('<span class="legtrend ' + ("up" if up else "down") + '">' + ("▲" if up else "▼")
+            + " " + str(abs(delta)) + "</span>")
+
+
+def _ring_svg(segs: list, score: int, size: int = 120) -> str:
+    """The risk dial: a 270deg gauge FILLED to the overall score, the filled arc subdivided into one slot
+    per disease sized by that disease's share of the summed scores, drawn in the disease IDENTITY colour
+    with a fixed ~6deg white gap between slots, grey track behind. Centre = overall score (dark) + /100 +
+    "Overall fever risk". Byte-identical to mobile.js ring(): rotations + dashes use %.1f == toFixed(1)."""
+    sw = 12
+    cx = size / 2.0
+    r = (size - sw) / 2.0 - 1
+    c = 2 * math.pi * r
+    arc = 0.75
+    fill_frac = (score / 100.0) * arc            # fraction of the full circle that is coloured
+    total = sum(s for s, _ in segs) or 1
+    # Rounded segment caps (per Figma): a round cap adds ~sw/2 of arc on each end. The dash is shortened
+    # by GAP_PX (~= sw + a tiny ~1.5deg visible gap, matching the Figma's near-touching caps). NO nudge:
+    # each segment starts at its slot start, so the FIRST segment starts at the track start (the "0"
+    # position) with no leading grey gap; its round cap aligns with the grey track's round cap.
+    GAP_PX = 13.5
+    track, gap_all, off = "%.1f" % (arc * c), "%.1f" % (c - arc * c), "%.1f" % (c * 2)
+    cs, rs = _num(cx), _num(r)
+    track_c = ('<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="'
+               + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap_all
+               + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>')
+    segs_html = ""
+    cum = 0.0
+    for s, col in segs:
+        slot_frac = (s / total) * fill_frac
+        dash_px = slot_frac * c - GAP_PX
+        if dash_px < 0:
+            dash_px = 0.0
+        dash = "%.1f" % dash_px
+        rot = "%.1f" % (135 + cum * 360)
+        segs_html += ('<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + col
+                      + '" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + off
+                      + '" transform="rotate(' + rot + ' ' + cs + ' ' + cs + ')"/>')
+        cum += slot_frac
+    return ('<div class="ringwrap" style="width:' + str(size) + 'px;height:' + str(size) + 'px">'
+            '<svg width="' + str(size) + '" height="' + str(size) + '" viewBox="0 0 ' + str(size) + ' ' + str(size) + '">'
+            + track_c + segs_html +
+            '</svg><div class="num"><div class="numtop"><b>' + str(score) + '</b><span>/ 100</span></div>'
+            '<em>Overall fever risk</em></div></div>')
+
+
+def _legend_rows(city: dict, diseases: list, cells_by: dict) -> str:
+    """Per-disease legend beside the dial: identity-colour dot + "Name : score" + (dormant) day-over-day
+    arrow, ordered by score descending. No emoji, no "Top concern" badge. Mirrors mobile.js legend."""
+    cid = city["id"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
-    pills = "".join(
-        '<span class="dpill"><span class="dot" style="background:' + RISK.get(cells_by[(cid, d["id"])]["band"], "#888")
-        + '"></span>' + d["emoji"] + ' ' + esc(d["label"]) + ' <b>' + str(cells_by[(cid, d["id"])]["score"]) + '</b></span>'
-        for d in ordered)
-    beacon = '<span class="beacon" style="--c:' + col + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>'
-    return ('<div class="card"><div class="rtop">' + _gauge_svg(b["score"], col, 116)
-            + '<div class="rhead"><div class="ov">Overall monsoon-fever risk</div>'
-            '<div class="bandlbl" style="color:' + col + '">' + beacon + band + '</div></div></div>'
-            '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT.get(db, "#eee") + ';color:' + RISK.get(db, "#888")
-            + '">Top concern: ' + drv["emoji"] + ' ' + esc(drv["label"]) + ' ' + db + ' (' + str(b["driver_score"]) + ')</span></div>'
-            '<div class="pills">' + pills + '</div>'
-            '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>'
+    rows = ""
+    for d in ordered:
+        cell = cells_by[(cid, d["id"])]; col = DISEASE.get(d["id"], "#888")
+        rows += ('<div class="legrow"><span class="legdot" style="background:' + col + '"></span>'
+                 '<span class="legname">' + esc(d["label"]) + ' : <b>' + str(cell["score"]) + '</b></span>'
+                 + _delta_arrow(cell.get("delta_1d")) + '</div>')
+    return '<div class="leg">' + rows + '</div>'
+
+
+def _band_chip(city: dict) -> str:
+    # MODERATE uses the Figma gold; other bands keep the locked risk ramp. Beacon colour follows suit.
+    band = city["blend"]["band"]
+    if band == "MODERATE":
+        bg, bd, bc = "#FFF8E3", "#F0D27A", "#F5B630"
+    else:
+        bg, bd, bc = RISK_SOFT.get(band, "#eee"), RISK.get(band, "#888"), RISK.get(band, "#888")
+    beacon = ('<span class="beacon" style="--c:' + bc + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>')
+    return ('<div class="bandchip" style="background:' + bg + ';border-color:' + bd + '">'
+            + beacon + BAND_TITLE.get(band, band) + ' fever risk in ' + esc(city["name"]) + '</div>')
+
+
+def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str:
+    """The mobile .card risk card, byte-identical to mobile.js riskCard(): period tabs, the segmented dial
+    + per-disease legend, the band chip with the animated beacon, then a caption with Know-more + Share."""
+    cid = city["id"]
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    segs = [(cells_by[(cid, d["id"])]["score"], DISEASE.get(d["id"], "#888")) for d in ordered]
+    return ('<div class="card riskcard">' + _period_tabs(periods) + '<div class="rtop">'
+            + _ring_svg(segs, city["blend"]["score"], 120) + _legend_rows(city, diseases, cells_by) + '</div>'
+            + _band_chip(city)
+            + '<div class="rfoot"><span class="note">Scores calculated from breeding weather, Google search '
+            'interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>'
             '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>')
 
 
-def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str) -> str:
+def _weather_card(city: dict) -> str:
+    """Breeding-weather conditions today: humidity + recent rain (live), an ESTIMATED stagnation index
+    and the static dawn/dusk peak tip, each as an outline icon + "Label . value" + a short line. Mirrors
+    mobile.js weatherCard(). Above the fold, so byte-identical to the JS twin."""
+    w = city.get("weather") or {}
+    hum, r7 = w.get("humidity_pct"), w.get("rain_7d_mm")
+    stag = (w.get("stagnation") or {}).get("level")
+    cards = [
+        (WX_HUM, "Humidity", ("n/a" if hum is None else str(_t_r(hum)) + "%"), "Mosquitoes survive longer and breed more."),
+        (WX_RAIN, "Rainfall", ("n/a" if r7 is None else str(_t_r(r7)) + "mm"), "Standing water increases mosquito growth."),
+        (WX_STAG, "Stagnation", (stag.lower() if stag else "n/a"), "Increases mosquito breeding (estimated)."),
+        (WX_PEAK, "Mosquito peak", "Dawn & Dusk", "Use extra protection."),
+    ]
+    cells = ""
+    for ic, label, val, sub in cards:
+        cells += ('<div class="wxcard"><div class="wxtop">' + ic + '<span class="wxhead">' + esc(label)
+                  + '<span class="wxsep"></span><b>' + esc(val) + '</b></span></div>'
+                  '<div class="wxsub">' + esc(sub) + '</div></div>')
+    return ('<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions today</h2>'
+            '<p class="sectionsub">What today\'s weather means for mosquito breeding.</p>'
+            '<div class="wxgrid">' + cells + '</div></div>')
+
+
+def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, periods: list) -> str:
     nm = esc(city["name"])
     return ('<div class="fw-pre fw-pre-m">'
-            '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ', in <em>one score</em>.</h1>'
+            '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ' in <em>one score</em>.</h1>'
             '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
-            '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">\U0001F50E</span> Search your city</div>'
-            '<p class="searchnote">Available in select cities.</p></div>'
-            '<div class="wrap"><div class="citymeta"><div><h2>' + nm + '</h2><div class="date">This week, updated ' + date_str + '</div></div>'
-            '<button class="changecity" data-act="openCity">Change</button></div>' + _risk_card(city, diseases, cells_by) + '</div></div>')
+            '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
+            '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
+            '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>'
+            '<div class="wrap">' + _risk_card(city, diseases, cells_by, periods) + _weather_card(city) + '</div></div>')
 
 
 SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
@@ -928,14 +1064,14 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
-                   generated_at: str, disclaimer: str, rel: str, faq: list) -> str:
+                   generated_at: str, disclaimer: str, rel: str, faq: list, periods: list) -> str:
     cid = city["id"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
     date_str = _fmt_date_js(generated_at)
 
     # Designed above-fold, server-rendered to match each flow's JS output, so the FIRST paint is the
-    # product (gauge + pills) - not a plain list - and the flow hydrates over identical DOM (no flash).
-    pre = _mobile_pre(city, diseases, cells_by, date_str) + _desktop_pre(city, diseases, cells_by, generated_at)
+    # product (dial + legend) - not a plain list - and the flow hydrates over identical DOM (no flash).
+    pre = _mobile_pre(city, diseases, cells_by, date_str, periods) + _desktop_pre(city, diseases, cells_by, generated_at)
 
     head = "".join('<th scope="col">' + esc(lbl) + '</th>' for _, lbl in SIG_COLS)
     rows = ""
@@ -1007,7 +1143,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
         faq = faq_items(city, diseases, cells_by, grid["cities"], generated_at)
-        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel, faq)
+        periods = grid.get("periods", ["today"])
+        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel, faq, periods)
         # Inline per-city seed so the JS paints the designed view instantly (no wait for the ~850KB
         # grid). The full grid still loads in the background for the other-cities leaderboard.
         city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
@@ -1019,6 +1156,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         # We keep the national rank so the "vs other cities" answer first-paints right before the grid.
         seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
+                "periods": periods,
                 "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"])}
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "base": rel,
               "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}

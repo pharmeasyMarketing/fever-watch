@@ -18,7 +18,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 if SRC_DIR not in sys.path:
@@ -92,6 +92,31 @@ def _prev_week_scores(history: dict, today: date) -> dict:
     return {cid: v[1] for cid, v in best.items()}
 
 
+def _yesterday_maps(history: dict, today: date):
+    """The committed day exactly one day back, as (blend_scores, per_disease_cells, per_signal_sigs).
+    Empty until a yesterday entry exists; the per-disease cells and per-signal sigs need the expanded
+    schema, so each light up only once a full day has been written under it.
+    sigs[city][disease] = [weather, trends, positivity] (the three signal values, null where absent)."""
+    target = (today - timedelta(days=1)).isoformat()
+    for entry in (history.get("days") or []):
+        if entry.get("date") == target:
+            return (entry.get("scores") or {}), (entry.get("cells") or {}), (entry.get("sigs") or {})
+    return {}, {}, {}
+
+
+def _stagnation(weather: dict):
+    """Estimated standing-water index from the lagged rain (rain that fell 8-14 days ago and is now
+    sitting), the 1-2 week breeding lag the methodology already designs around. NOT a measurement -
+    a heuristic three-band index, labelled as estimated in the UI. None when rain inputs are missing.
+    Only the level is exposed (the raw mm is intentionally not surfaced, to avoid implying precision)."""
+    r7, r14 = weather.get("rain_7d_mm"), weather.get("rain_14d_mm")
+    if r7 is None or r14 is None:
+        return None
+    standing = max(0.0, r14 - r7)
+    level = "High" if standing >= 22 else ("Moderate" if standing >= 9 else "Low")
+    return {"level": level}
+
+
 def normalize_signal(value, city, disease):
     """Per-city z-score normalization hook (kills big-city bias).
 
@@ -140,6 +165,7 @@ def main() -> int:
     today = now_dt.date()
     history = load_json(HISTORY_PATH) if os.path.exists(HISTORY_PATH) else {"days": []}
     prev_by_city = _prev_week_scores(history, today)
+    y_blend, y_cells, y_sigs = _yesterday_maps(history, today)  # day-over-day "vs yesterday" source
     stale_days = int((consol.get("freshness") or {}).get("stale_days", 3))
     weather_age = _age_days(weather.get("generated_at"), now_dt)
     weather_fresh = _fresh_tag(weather_age, stale_days)
@@ -232,6 +258,26 @@ def main() -> int:
                 },
             })
 
+    # Day-over-day deltas vs yesterday's committed cell. None (key omitted) until a yesterday entry
+    # under the expanded schema exists; the front end shows an arrow only for a present, non-zero delta.
+    # PER-SIGNAL delta (sig_delta) powers the breakdown trend badges (red up = rising, green down =
+    # falling). Needs a yesterday entry that carries 'sigs', so it lights up one day after this ships.
+    _SIG_KEYS = ("weather", "trends", "positivity")
+    for r in rows:
+        py = (y_cells.get(r["city"]) or {}).get(r["disease"])
+        if py is not None:
+            r["delta_1d"] = r["score"] - py
+        ys = (y_sigs.get(r["city"]) or {}).get(r["disease"])  # [weather, trends, positivity] or None
+        if ys:
+            sd = {}
+            for i, k in enumerate(_SIG_KEYS):
+                cur = r["signals"].get(k)
+                prev = ys[i] if i < len(ys) else None
+                if cur is not None and prev is not None:
+                    sd[k] = cur - prev
+            if sd:
+                r["sig_delta"] = sd
+
     print_matrix(cities, diseases, rows)
 
     # --- data-quality guard -------------------------------------------------
@@ -279,13 +325,18 @@ def main() -> int:
     for c in cities:
         wsum = (weather_by_city.get(c["id"], {}) or {}).get("weather", {})
         b = city_blend(c["id"])
-        if b is not None and c["id"] in prev_by_city:
-            b["prev_score"] = prev_by_city[c["id"]]  # real blend score ~7 days ago (share-card "up from N last week")
+        if b is not None:
+            if c["id"] in prev_by_city:
+                b["prev_score"] = prev_by_city[c["id"]]  # real blend score ~7 days ago (share-card "up from N last week")
+            yb = y_blend.get(c["id"])
+            if yb is not None:
+                b["delta_1d"] = b["score"] - yb  # vs yesterday (headline trend arrow)
         ec = {**c, "weather": {
             "temp_mean_c": wsum.get("temp_mean_c"),
             "humidity_pct": wsum.get("humidity_pct"),
             "rain_7d_mm": wsum.get("rain_7d_mm"),
             "rain_14d_mm": wsum.get("rain_14d_mm"),
+            "stagnation": _stagnation(wsum),
         }, "blend": b}
         nl = (local_names.get("cities") or {}).get(c["id"])
         sl = (local_names.get("states") or {}).get(c.get("state", ""))
@@ -294,6 +345,28 @@ def main() -> int:
         if sl:
             ec["state_local"] = sl
         enriched_cities.append(ec)
+
+    # Roll today's scores into the rolling history. Per-city blend scores feed the "last week" delta;
+    # per-disease cells are stored too, so tomorrow's build has a real per-disease yesterday for the
+    # day-over-day arrows. (The past-7-days strip recomputes its trail from this history when its UI
+    # lands; we do not pre-bake a trail array into grid.json, to keep every page lean.)
+    today_iso = today.isoformat()
+    today_scores = {c["id"]: c["blend"]["score"] for c in enriched_cities if c.get("blend")}
+    today_cells: dict = {}
+    today_sigs: dict = {}  # sigs[city][disease] = [weather, trends, positivity] - feeds tomorrow's per-signal deltas
+    for r in rows:
+        today_cells.setdefault(r["city"], {})[r["disease"]] = r["score"]
+        s = r["signals"]
+        today_sigs.setdefault(r["city"], {})[r["disease"]] = [s.get("weather"), s.get("trends"), s.get("positivity")]
+    hist_days = [d for d in (history.get("days") or []) if d.get("date") != today_iso]
+    hist_days.append({"date": today_iso, "scores": today_scores, "cells": today_cells, "sigs": today_sigs})
+    hist_days.sort(key=lambda d: d.get("date", ""))
+    hist_days = hist_days[-HISTORY_KEEP_DAYS:]
+
+    # Which period tabs the front end may show: "today" always; "week"/"month" only once enough
+    # committed days exist to make that granularity honest (the UI hides tabs not listed here).
+    ndays = len(hist_days)
+    periods = ["today"] + (["week"] if ndays >= 7 else []) + (["month"] if ndays >= 28 else [])
 
     payload = {
         "engine_version": consol.get("model_version", "unknown"),
@@ -307,6 +380,7 @@ def main() -> int:
         },
         "trends_provider": trends_p.name,
         "positivity_provider": positivity_p.name,
+        "periods": periods,
         "cities": enriched_cities,
         "diseases": diseases,
         "bands": consol.get("bands", []),
@@ -320,12 +394,9 @@ def main() -> int:
 
     write_json_atomic(args.out, payload)  # atomic: a crash never corrupts the last-good grid.json
 
-    # Roll today's per-city blend scores into the rolling history (the real "last week" source).
-    today_scores = {c["id"]: c["blend"]["score"] for c in enriched_cities if c.get("blend")}
-    hist_days = [d for d in (history.get("days") or []) if d.get("date") != today.isoformat()]
-    hist_days.append({"date": today.isoformat(), "scores": today_scores})
-    hist_days.sort(key=lambda d: d.get("date", ""))
-    write_json_atomic(HISTORY_PATH, {"updated": payload["generated_at"], "days": hist_days[-HISTORY_KEEP_DAYS:]})
+    # Persist the rolling history (built above). Carries per-city blend scores (the "last week" source)
+    # plus per-disease cells (tomorrow's per-disease "vs yesterday" source).
+    write_json_atomic(HISTORY_PATH, {"updated": payload["generated_at"], "days": hist_days})
 
     if failures:
         print(f"Note: {len(failures)} cell(s) failed but stayed under the abort threshold.")

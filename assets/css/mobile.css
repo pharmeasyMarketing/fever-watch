@@ -1,4 +1,4 @@
-  body { padding-top: 56px; }
+  body { padding-top: 56px; background: #EDEFF7; }
 
   .fw-nav { position: fixed; top: 0; left: 0; right: 0; background: var(--pe-green); z-index: 40; }
   .navin { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
@@ -21,20 +21,13 @@
   .pe-nav-drop a { display: block; padding: 11px 12px; color: #eafffb; font-size: 14px; font-weight: 500; text-decoration: none; border-radius: 7px; }
   .pe-nav-drop a:hover { background: rgba(255,255,255,.12); color: #fff; }
 
-  .hero { background: linear-gradient(160deg, var(--pe-green-dark), var(--pe-green) 78%); color: #fff; padding: 24px 16px 34px; }
+  .hero { background: linear-gradient(180deg, #0A534F 0%, #0A534F 6%, #246965 38%, #307471 51%, #559190 76%, #89B8B9 100%); color: #fff; padding: 24px 16px 38px; }
   .hero h1 { font-size: 24px; line-height: 1.28; font-weight: 700; margin: 0 0 8px; letter-spacing: -.2px; }
   .hero h1 em { font-style: normal; color: var(--pe-gold); }
   .hero p { font-size: 13px; line-height: 1.55; margin: 0; color: #d8efed; }
-  .searchwrap { margin: -20px 16px 0; position: relative; z-index: 5; }
-  .searchfield { width: 100%; background: #fff; border: none; border-radius: 14px; box-shadow: var(--shadow); padding: 15px 16px; display: flex; align-items: center; gap: 11px; font-size: 15px; color: var(--pe-muted); font-weight: 500; }
-  .searchfield .ico { color: var(--pe-green); font-size: 16px; }
   .searchnote { font-size: 11.5px; color: var(--pe-muted-2); margin: 9px 4px 0; }
 
   .wrap { padding: 18px 16px 28px; }
-  .citymeta { display: flex; align-items: center; justify-content: space-between; margin: 2px 2px 14px; }
-  .citymeta h2 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.2; }
-  .citymeta .date { font-size: 12px; color: var(--pe-muted); margin-top: 2px; }
-  .changecity { font-size: 13px; color: var(--pe-green); font-weight: 600; background: none; border: none; padding: 6px 4px; }
 
   .card { background: #fff; border: 1px solid var(--pe-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 18px; margin-bottom: 14px; }
   .sectiontitle { font-size: 16px; font-weight: 700; margin: 0; }
@@ -42,18 +35,6 @@
 
   /* risk card */
   .rtop { display: flex; gap: 14px; align-items: center; }
-  .gaugewrap { position: relative; flex-shrink: 0; }
-  .gaugewrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .gaugewrap .num b { font-size: 32px; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
-  .gaugewrap .num span { font-size: 10px; color: var(--pe-muted-2); margin-top: 2px; }
-  .rhead .ov { font-size: 12px; color: var(--pe-muted); font-weight: 600; }
-  .rhead .bandlbl { font-size: 25px; font-weight: 700; line-height: 1.1; margin: 2px 0 0; letter-spacing: -.3px; }
-  .driverrow { margin-top: 13px; }
-  .driver { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: var(--pill); line-height: 1.35; }
-  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
-  .dpill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--pe-line); border-radius: var(--pill); padding: 6px 11px; font-size: 12px; font-weight: 600; }
-  .dpill .dot { width: 9px; height: 9px; border-radius: 50%; }
-  .dpill b { font-weight: 700; }
   .rfoot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
   .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 800; font-size: 13.5px; padding: 11px 16px; border-radius: 12px; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 6px 18px rgba(16,132,126,.28); }
@@ -71,27 +52,31 @@
   .accbody { padding: 6px 14px 16px; background: var(--pe-bg); display: none; }
   .acc.open .accbody { display: block; }
   .sig { margin: 13px 0; }
-  .sig .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-  .sig .lbl { font-size: 13px; font-weight: 600; }
-  .sig .v { font-size: 12.5px; font-weight: 700; }
-  .sig .tag { font-size: 11px; color: var(--pe-muted); margin: 0 0 6px; }
-  .track { height: 8px; background: #e7edf5; border-radius: 5px; overflow: hidden; }
-  .fill { height: 100%; border-radius: 5px; }
+  .sig .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .sig .lbl { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--pe-ink); }
+  .sig .v { font-size: 13.5px; font-weight: 800; color: var(--pe-ink); white-space: nowrap; }
+  .sigbadge { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .sigbadge svg { width: 13px; height: 13px; display: block; }
+  .sigbadge.up { background: var(--risk-high); }
+  .sigbadge.down { background: var(--risk-low); }
+  .sig .v i { font-style: normal; font-weight: 600; color: var(--pe-muted); }
+  .sig .tag { font-size: 11.5px; color: var(--pe-muted); margin: 0 0 7px; }
+  .track { height: 8px; background: #E7EDF5; border-radius: 5px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 5px; background: #BFC8D3; }
   .accnote { font-size: 11.5px; color: var(--pe-ink-2); line-height: 1.55; margin: 12px 0 0; padding-top: 11px; border-top: 1px dashed var(--pe-line); }
 
   /* actions */
   .actcard { display: flex; align-items: center; gap: 13px; padding: 13px 14px; border: 1px solid var(--pe-line); border-radius: var(--radius-sm); margin-bottom: 10px; background: #fff; }
-  .actcard .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; background: var(--pe-green-100); flex-shrink: 0; }
+  .actcard .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--pe-green-100); flex-shrink: 0; }
+  .actcard .ic svg { width: 24px; height: 24px; display: block; }
+  .actcard .tx b { color: var(--pe-green); }
   .actcard .tx { flex: 1; }
   .actcard .tx b { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
   .actcard .tx span { font-size: 11.5px; color: var(--pe-muted); line-height: 1.4; }
   .actcard .go { color: var(--pe-muted-2); font-size: 20px; }
   .ctabig { display: block; box-sizing: border-box; text-align: center; text-decoration: none; width: 100%; border: none; color: #fff; font-weight: 700; font-size: 14.5px; padding: 14px; border-radius: var(--radius-sm); margin-top: 4px; cursor: pointer; }
 
-  /* methodology */
-  .methhead { width: 100%; background: none; border: none; padding: 0; display: flex; align-items: center; justify-content: space-between; text-align: left; }
-  .methsub { font-size: 12.5px; color: var(--pe-muted); font-weight: 500; padding-right: 12px; }
-  .methtog { color: var(--pe-green); font-weight: 700; font-size: 12.5px; }
+  /* methodology (now shown in the #methodsheet bottom sheet, opened by the risk-card "Know more" link) */
   .methbody { display: none; margin-top: 14px; font-size: 12.5px; color: var(--pe-ink-2); line-height: 1.65; }
   .methbody.open { display: block; }
   .methbody h3 { font-size: 13px; margin: 16px 0 5px; color: var(--pe-ink); font-weight: 700; }
@@ -217,6 +202,52 @@
   @keyframes fwMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes fwLive { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .fw-ticker-track { animation: none; } }
+
+  /* --- redesign: single location card (full width; red map-pin; Change with caret) --- */
+  /* width:calc forces the <button> to fill the row minus the 16px insets (a bare button shrinks to content). */
+  .loccard { width: calc(100% - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 11px; background: #fff; border: 1px solid var(--pe-line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; margin: -20px 16px 0; text-align: left; cursor: pointer; }
+  .locpin { width: 19px; height: 19px; flex-shrink: 0; display: block; }
+  .locname { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; color: var(--pe-ink); line-height: 1.2; }
+  .locchange { font-size: 14px; color: var(--pe-green); font-weight: 700; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
+  .loccaret { font-size: 10px; line-height: 1; }
+  .loc-note { margin-top: 10px; text-align: center; }
+
+  /* --- redesign: period tabs + per-disease dial + legend + band chip --- */
+  .ftabs { display: flex; gap: 22px; border-bottom: 1px solid var(--pe-bg-2); margin: 0 0 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ftabs::-webkit-scrollbar { display: none; }
+  .ftab { border: none; background: none; padding: 0 0 11px; font-size: 14.5px; font-weight: 600; color: var(--pe-muted); cursor: pointer; white-space: nowrap; position: relative; flex-shrink: 0; }
+  .ftab.on { color: var(--pe-ink); font-weight: 700; }
+  .ftab.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; background: var(--pe-ink); border-radius: 2px; }
+
+  .ringwrap { position: relative; flex-shrink: 0; }
+  .ringwrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ringwrap .numtop { display: flex; align-items: baseline; gap: 2px; }
+  .ringwrap .num b { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.5px; color: var(--pe-ink); }
+  .ringwrap .num span { font-size: 11px; color: var(--pe-muted-2); }
+  .ringwrap .num em { font-size: 9px; font-style: normal; color: var(--pe-muted-2); line-height: 1.15; max-width: 64px; text-align: center; margin-top: 3px; }
+  .leg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .legrow { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .legdot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+  .legname { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--pe-ink); }
+  .legname b { font-weight: 800; font-size: 15.5px; }
+  .legtrend { font-size: 10.5px; font-weight: 800; flex-shrink: 0; }
+  .legtrend.up { color: var(--risk-high); }
+  .legtrend.down { color: var(--risk-low); }
+  .bandchip { display: block; font-size: 13.5px; font-weight: 700; padding: 11px 14px; border-radius: 12px; margin-top: 16px; line-height: 1.3; color: var(--pe-ink); border: 1.5px solid; }
+  .knowmore { font: inherit; border: none; background: none; padding: 0; color: var(--pe-green); font-weight: 700; cursor: pointer; text-decoration: underline; }
+
+  /* --- redesign: breeding weather conditions cards (icon + "Label . value" + a short line) --- */
+  .wxgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .wxcard { border: 1px solid var(--pe-line); border-radius: 14px; padding: 14px; background: #fff; }
+  .wxtop { display: flex; align-items: flex-start; gap: 8px; }
+  .wxic { width: 19px; height: 19px; color: var(--pe-muted); flex-shrink: 0; display: block; }
+  .wxhead { font-size: 14px; color: var(--pe-ink); line-height: 1.35; }
+  .wxhead b { font-weight: 800; }
+  .wxsep { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--pe-ink); vertical-align: middle; margin: 0 6px; }
+  .wxsub { font-size: 12px; color: var(--pe-muted); line-height: 1.45; margin-top: 9px; }
+
+  /* Precaution card titles in brand teal (Figma "Take the right precautions") */
+  .actcard .tx b { color: var(--pe-green-dark); }
 
   /* server-rendered above-fold: show the mobile designed card, hide the desktop shell pre */
   .fw-pre-d { display: none; }

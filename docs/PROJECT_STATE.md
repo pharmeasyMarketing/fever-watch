@@ -3,6 +3,53 @@
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
+>
+> **LATEST (2026-06-13, BUILT ON DEV, UNCOMMITTED - awaiting user sign-off; MOBILE flow only so far):** a full
+> mobile FIRST-FOLD + sections REDESIGN matching the updated Figma (file `m2JNYbCaHkS3rGpKoU8J0S`, node 49-1303).
+> Specs: `.claude/plans/fever-watch-first-fold-redesign.md` + `fever-watch-figma-benchmark.md`. SSR/JS byte-parity
+> held throughout (`scripts/parity_check.js` PARITY OK = CLS-0). Desktop flow UNTOUCHED. 5 independent QA passes,
+> all PASS (no blocker/high). Changes (assets/js/mobile.js + src/build_site.py twins, assets/css/mobile.css,
+> prototypes/tokens.css, assets/js/trend.js):
+> - **PIPELINE (src/build_daily.py):** history.json day schema expanded to per-disease `cells` (was blend-only);
+>   grid bakes `blend.delta_1d` + per-cell `delta_1d` (vs yesterday), `weather.stagnation`={level} (estimated index
+>   = rain_14d-rain_7d), and `payload.periods` (today always; week at >=7 committed days; month at >=28). history.json
+>   now has 2 committed days. NO trail/standing_mm baked (review = dead weight; history accrues the raw scores).
+> - **DIAL:** proportional gauge - fill = overall-score % of the 270deg arc, subdivided into one ROUNDED segment per
+>   disease sized by score share, in DISEASE IDENTITY colours (dengue #F1839D / malaria #887ADE / chikungunya
+>   #46CFE7 / typhoid #4681EF; tokens.css --dis-*). First segment starts at the track start (no nudge). Centre =
+>   dark score + "/ 100" inline + "Overall fever risk". Identity colours also on the legend + breakdown dots.
+> - **LOCATION:** one full-width card (red SVG map-pin + city + "Change v" caret; date moved OUT); centered note
+>   "Updated {date}. Available in select cities." H1 KEEPS the city, drops the comma. Hero gradient is now a pure
+>   180deg vertical fade #0A534F -> #307471 -> #89B8B9 (the 170deg angle was leaving the bottom-centre dark).
+> - **LEGEND** "Name : score" (no emoji, no Top concern). **BAND CHIP:** MODERATE -> gold (#F5B630 beacon /
+>   #FFF8E3 bg / #F0D27A border), other bands keep the locked risk ramp; animated `.beacon`.
+> - **PERIOD TABS** (Today / This week / This month, NO year) above the dial, data-gated by grid.periods (only
+>   "Today" renders now). **KNOW MORE** -> methodology bottom sheet. Share-nudge bar made PERSISTENT (x/dismiss removed).
+> - **BREEDING WEATHER** cards: outline line-icons + "Label . value" (CSS-dot separator, not a middot char) + mock copy
+>   (stagnation keeps "(estimated)"). **BREAKDOWN:** dark bold values + neutral grey bars; per-signal trend badges
+>   (red-up = rising / green-down = easing vs yesterday) NOW BUILT - build_daily stores per-signal values daily in
+>   history.json `sigs` ([weather,trends,positivity] per city/disease) and bakes `cell.sig_delta`; the badge (mobile.js
+>   sigBadge/sig) self-activates from 2026-06-14 (first yesterday carrying sigs). End-to-end verified via a simulated
+>   yesterday. **PRECAUTIONS:** emoji -> line SVG icons (shield/syringe/thermometer/stethoscope), brighter teal titles.
+>   **SEASON-TREND** verdict -> a single pink "+N% higher than last year" pill (trend.js / tokens.css).
+> - **Ticker** label "Today's risk" -> "Live". Removed dead CSS/JS (old single-arc gauge, pills, beacon helper, nudge).
+> - **DAILY COLLECTION (now comprehensive):** every build stores per-city blend score + per-disease `cells` +
+>   per-signal `sigs` in history.json (rolling 35 days). So week/month dial aggregates AND per-signal badges all
+>   accrue from real daily data going forward - no further wiring needed for forward collection.
+> - **PENDING / NEXT (a new session each):** (1) DESKTOP parity port - the ENTIRE mobile redesign re-laid-out for the
+>   2-col desktop shell (one scope): TOC relabel to mobile section names (This week->Overall fever risk, Scoring
+>   methodology->Why this score, +Breeding weather, What to do->Take the right precautions, etc.), new
+>   dial/legend/chip/tabs + breakdown (horizontal 3-signal) + breeding-weather + precautions, remove the
+>   "{city}, this week / Updated... signal mix behind it" header, port hero/location/gradient; desktop H1 KEEPS the
+>   city (consistent with mobile, per user). Above-fold _desktop_pre<->desktop.js must stay byte-identical (CLS-0).
+>   (2) HISTORICAL BACKFILL (data-eng): season-to-date (Jun 1-12 2026, before history started) + a one-time LAST YEAR
+>   (Jun 1-Oct 30 2025) to power week/month dial aggregates + REAL YoY trends (would replace trend.js/_t_lypeak's
+>   deterministic mock last-year). FEASIBILITY: NASA POWER weather = REAL & backfillable (historical time series);
+>   SerpApi trends = real but weekly granularity (+API quota); positivity = MOCK (no real history - same fidelity as
+>   today's live data, since live positivity is mock). NEEDS: build_weather date-range/"as-of" support + a backfill
+>   runner that recomputes per-date grids + a COMPACT seasonal/last-year store (a full season x 228 cities x sigs would
+>   bloat the committed history.json to many MB - keep history.json as the rolling 35d window, add a separate archive).
+>
 > LATEST SHIPPED (2026-06-12, commits `9d9ba9b` + `ad9ccf9` + `b71d987`, all deploy runs green, verified
 > live): the **#5 share-card redesign in production** - new per-city og:image (landscape) + WhatsApp share
 > image (portrait, 11 language variants), one CI renderer feeding the page's share modal, ~67KB cards with

@@ -45,6 +45,13 @@
   --sig-search: #7C6CD6;      /* violet */
   --sig-lab: #3661B0;         /* diagnostics blue */
 
+  /* Per-disease IDENTITY colors (dial segments + legend + breakdown dots; mobile first-fold redesign).
+     Kept in sync with the DISEASE maps in assets/js/mobile.js and src/build_site.py. */
+  --dis-dengue: #F1839D;
+  --dis-malaria: #887ADE;
+  --dis-chikungunya: #46CFE7;
+  --dis-typhoid: #4681EF;
+
   /* Shape & elevation (Figma: Elevation 12 DP) */
   --radius: 16px;
   --radius-sm: 12px;
@@ -119,9 +126,22 @@ img, svg { max-width: 100%; }
 
 .fwtrend-verdict { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 12px 0 6px; }
 .fwtrend-vicon { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; flex-shrink: 0; }
+.fwtrend-vicon svg { width: 14px; height: 14px; }
 .fwtrend-vicon.below { background: var(--risk-low); }
 .fwtrend-vicon.above { background: var(--risk-high); }
 .fwtrend-vicon.inline { background: var(--pe-muted); }
+
+/* Figma "+16% higher than last year" pill: tone-tinted rounded bar, icon circle + bold delta + phrase. */
+.fwtrend-pill { display: inline-flex; align-items: center; gap: 9px; margin: 12px 0 8px; padding: 8px 14px 8px 9px; border-radius: var(--pill); font-size: 14px; color: var(--pe-ink); line-height: 1.3; }
+.fwtrend-pill b { font-weight: 800; }
+.fwtrend-pill.above { background: #FCEBE4; }
+.fwtrend-pill.above b { color: var(--risk-high); }
+.fwtrend-pill.below { background: #E4F4EC; }
+.fwtrend-pill.below b { color: var(--risk-low); }
+.fwtrend-pill.inline { background: var(--pe-bg-2); }
+.fwtrend-pill .fwtrend-vicon.above, .fwtrend-pill.above .fwtrend-vicon { background: var(--risk-high); }
+.fwtrend-pill.below .fwtrend-vicon { background: var(--risk-low); }
+.fwtrend-pill.inline .fwtrend-vicon { background: var(--pe-muted); }
 .fwtrend-vtext { font-size: 16px; font-weight: 700; color: var(--pe-ink); line-height: 1.3; }
 .fwtrend-chip { font-size: 12.5px; font-weight: 800; padding: 3px 10px; border-radius: var(--pill); }
 .fwtrend-chip.below { color: var(--risk-low); background: #E4F4EC; }

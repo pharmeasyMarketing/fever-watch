@@ -3,18 +3,41 @@
   var FW = window.FW || {};
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
+  var BAND_TITLE = { "HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low" };
+  // Per-disease IDENTITY colours (NOT the severity ramp): dial segments + legend dots + breakdown dots.
+  var DISEASE = { dengue: "#F1839D", malaria: "#887ADE", chikungunya: "#46CFE7", typhoid: "#4681EF" };
+  // Red map-pin ("location drop") icon - byte-identical to LOC_PIN in build_site.py (above the fold).
+  var LOC_PIN = '<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path fill="#F0493F" d="M12 2.2c-3.9 0-7 3.1-7 7 0 5 7 12.6 7 12.6s7-7.6 7-12.6c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9.2" r="2.6" fill="#fff"/></svg>';
+  // Breeding-weather outline icons - byte-identical to WX_* in build_site.py (above the fold).
+  var _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">';
+  var WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>';
+  var WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>';
+  var WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>';
+  var WX_PEAK = _WX_A + '<path d="M12 3v18M3 12h18M5.6 5.6 18.4 18.4M18.4 5.6 5.6 18.4"/></svg>';
   var BEACON_DUR = { "HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s" };
-  function beacon(band) { return '<span class="beacon" style="--c:' + (RISK[band] || "#888") + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>'; }
+  var PERIOD_LABELS = [["today", "Today"], ["week", "This week"], ["month", "This month"]];
+  function periodTabs(periods) {
+    var avail = {}; (periods || ["today"]).forEach(function (p) { avail[p] = 1; });
+    var out = PERIOD_LABELS.filter(function (t) { return avail[t[0]]; }).map(function (t) {
+      return '<button class="ftab' + (t[0] === "today" ? " on" : "") + '" type="button">' + t[1] + '</button>';
+    }).join("");
+    return '<div class="ftabs">' + out + '</div>';
+  }
   var SIG = {
     weather: { c: "#15ACA5", label: "🌧 Breeding weather", tag: "Leading. Conditions weeks ahead." },
     trends: { c: "#7C6CD6", label: "🔍 Google Search Interest", tag: "Coincident. Public concern." },
     positivity: { c: "#3661B0", label: "🧪 PharmEasy lab signal", tag: "Lagging. Confirmed positivity." }
   };
+  var _IC = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+  var IC_SHIELD = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M12 3.2 5.5 6v5.2c0 4 2.7 7.2 6.5 8.6 3.8-1.4 6.5-4.6 6.5-8.6V6L12 3.2Z"/><path d="m9.3 11.7 1.9 1.9 3.5-3.8"/></svg>';
+  var IC_VACC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="m17 4 3 3M18.5 5.5 8 16l-3.2 1.2L6 14 16.5 3.5M12.5 7l2 2M9.5 10l2 2"/></svg>';
+  var IC_THERMO = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M14 14.5V5.5a2 2 0 0 0-4 0v9a3.5 3.5 0 1 0 4 0Z"/><path d="M12 9.5v5"/></svg>';
+  var IC_DOC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="M6 4v4.5a4 4 0 0 0 8 0V4M10 18.2a4.4 4.4 0 0 0 8.8 0v-2"/><circle cx="18.8" cy="13.5" r="2.2"/></svg>';
   var ACTIONS = [
-    { ic: "🛡", t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "#" },
-    { ic: "💉", t: "Vaccination: does it work?", s: "What helps, what does not", href: "#" },
-    { ic: "🌡", t: "Fever? Follow our framework", s: "When to test, when to wait", href: "#" },
-    { ic: "🩺", t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
+    { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "#" },
+    { ic: IC_VACC, t: "Vaccination: does it work?", s: "What helps, what does not", href: "#" },
+    { ic: IC_THERMO, t: "Fever? Follow our framework", s: "When to test, when to wait", href: "#" },
+    { ic: IC_DOC, t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
   ];
   var DASHNOTE = "This is a daily updated dashboard where we compute a monsoon-risk score (0-100) based on multiple data inputs, including weather data, Google search trends, and aggregate data from PharmEasy Labs and its Partner Affiliates.";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -86,7 +109,9 @@
       '<div class="locrow" data-act="useLoc">◎ Use my location</div><div id="citylist"></div>' +
       '<p class="searchnote" style="margin-top:14px">Available in select cities.</p></div></div>' +
       '<div class="sheet" id="sharesheet"><div class="sheethead"><h3>Share this risk</h3><button class="x" data-act="closeShare">✕</button></div>' +
-      '<div class="sheetbody" id="sharebody"></div></div>';
+      '<div class="sheetbody" id="sharebody"></div></div>' +
+      '<div class="sheet" id="methodsheet"><div class="sheethead"><h3>How we calculate this</h3><button class="x" data-act="closeMethod">✕</button></div>' +
+      '<div class="sheetbody"><div class="methbody open" id="methbody"></div></div></div>';
     var wrap = document.createElement("div");
     wrap.innerHTML = html;
     while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
@@ -169,14 +194,13 @@
   function render() {
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML =
-      '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ', in <em>one score</em>.</h1>' +
+      '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ' in <em>one score</em>.</h1>' +
       '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>' +
-      '<div class="searchwrap"><div class="searchfield" data-act="openCity"><span class="ico">🔎</span> Search your city</div>' +
-      '<p class="searchnote">Available in select cities.</p></div>' +
+      '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + esc(c.name) + '</span>' +
+      '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>' +
+      '<p class="searchnote loc-note">Updated ' + fmtDate(DATA.generated_at) + '. Available in select cities.</p>' +
       '<div class="wrap">' +
-        '<div class="citymeta"><div><h2>' + c.name + '</h2><div class="date">This week, updated ' + fmtDate(DATA.generated_at) + '</div></div>' +
-        '<button class="changecity" data-act="openCity">Change</button></div>' +
-        riskCard(c, b) + methodologyCard() + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) +
+        riskCard(c, b) + weatherCard(c) + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) +
         '<section id="s-trend" class="fwtrend-host"></section>' + faqCard() + readsCard() +
       '</div>';
     wireLeaderboard();
@@ -192,53 +216,80 @@
   }
 
   function riskCard(c, b) {
-    var col = RISK[b.band], drv = diseaseObj(b.driver), drvCell = cellFor(c.id, b.driver);
-    var pills = orderedDiseases(c).map(function (d) {
-      var cell = cellFor(c.id, d.id);
-      return '<span class="dpill"><span class="dot" style="background:' + RISK[cell.band] + '"></span>' + d.emoji + ' ' + d.label + ' <b>' + cell.score + '</b></span>';
+    var ordered = orderedDiseases(c);
+    var segs = ordered.map(function (d) { return [cellFor(c.id, d.id).score, DISEASE[d.id] || "#888"]; });
+    var leg = ordered.map(function (d) {
+      var cell = cellFor(c.id, d.id), cc = DISEASE[d.id] || "#888";
+      return '<div class="legrow"><span class="legdot" style="background:' + cc + '"></span>' +
+        '<span class="legname">' + esc(d.label) + ' : <b>' + cell.score + '</b></span>' + deltaArrow(cell.delta_1d) + '</div>';
     }).join("");
-    return '<div class="card"><div class="rtop">' + gauge(b.score, col, 116) +
-      '<div class="rhead"><div class="ov">Overall monsoon-fever risk</div>' +
-      '<div class="bandlbl" style="color:' + col + '">' + beacon(b.band) + b.band + '</div></div></div>' +
-      '<div class="driverrow"><span class="driver" style="background:' + RISK_SOFT[drvCell.band] + ';color:' + RISK[drvCell.band] + '">Top concern: ' + drv.emoji + ' ' + drv.label + ' ' + drvCell.band + ' (' + b.driver_score + ')</span></div>' +
-      '<div class="pills">' + pills + '</div>' +
-      '<div class="rfoot"><span class="note">Scores modeled from breeding weather, Google search interest and PharmEasy lab signals.</span>' +
+    var band = b.band, cbg = "#FFF8E3", cbd = "#F0D27A", cbc = "#F5B630";  // MODERATE = gold; others = ramp
+    if (band !== "MODERATE") { cbg = RISK_SOFT[band]; cbd = RISK[band]; cbc = RISK[band]; }
+    var chip = '<div class="bandchip" style="background:' + cbg + ';border-color:' + cbd + '">' +
+      '<span class="beacon" style="--c:' + cbc + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>' +
+      (BAND_TITLE[band] || band) + ' fever risk in ' + esc(c.name) + '</div>';
+    return '<div class="card riskcard">' + periodTabs(DATA.periods) + '<div class="rtop">' + ring(segs, b.score, 120) + '<div class="leg">' + leg + '</div></div>' + chip +
+      '<div class="rfoot"><span class="note">Scores calculated from breeding weather, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>' +
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
+  }
+
+  // Breeding weather conditions today: humidity + recent rain (live), an ESTIMATED stagnation index
+  // (labelled as such, not a measurement) and the static dawn/dusk peak tip. Byte-identical to
+  // build_site.py _weather_card() (above the fold, CLS 0).
+  function weatherCard(c) {
+    var w = c.weather || {}, hum = w.humidity_pct, r7 = w.rain_7d_mm, stag = (w.stagnation || {}).level;
+    var cards = [
+      [WX_HUM, "Humidity", (hum == null ? "n/a" : Math.round(hum) + "%"), "Mosquitoes survive longer and breed more."],
+      [WX_RAIN, "Rainfall", (r7 == null ? "n/a" : Math.round(r7) + "mm"), "Standing water increases mosquito growth."],
+      [WX_STAG, "Stagnation", (stag ? stag.toLowerCase() : "n/a"), "Increases mosquito breeding (estimated)."],
+      [WX_PEAK, "Mosquito peak", "Dawn & Dusk", "Use extra protection."]
+    ];
+    var cells = cards.map(function (x) {
+      return '<div class="wxcard"><div class="wxtop">' + x[0] + '<span class="wxhead">' + esc(x[1]) +
+        '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
+    }).join("");
+    return '<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions today</h2>' +
+      '<p class="sectionsub">What today\'s weather means for mosquito breeding.</p>' +
+      '<div class="wxgrid">' + cells + '</div></div>';
   }
 
   function breakdownCard(c) {
     var accs = orderedDiseases(c).map(function (d) {
-      var cell = cellFor(c.id, d.id), open = state.expanded === d.id, s = cell.signals, w = cell.weights;
-      var body = '<div class="accbody">' + sig(SIG.weather, s.weather, w.weather) + sig(SIG.trends, s.trends, w.trends) +
-        sig(SIG.positivity, s.positivity, w.positivity) + '<p class="accnote">' + cell.note + '</p></div>';
+      var cell = cellFor(c.id, d.id), open = state.expanded === d.id, s = cell.signals, w = cell.weights, sd = cell.sig_delta || {};
+      var body = '<div class="accbody">' + sig(SIG.weather, s.weather, w.weather, sd.weather) + sig(SIG.trends, s.trends, w.trends, sd.trends) +
+        sig(SIG.positivity, s.positivity, w.positivity, sd.positivity) + '<p class="accnote">' + cell.note + '</p></div>';
       return '<div class="acc' + (open ? ' open' : '') + '"><button class="acchead" data-act="expand" data-id="' + d.id + '">' +
         '<span class="emoji">' + d.emoji + '</span><span class="name">' + d.label + '</span>' +
-        '<span class="dot" style="background:' + RISK[cell.band] + '"></span><span class="sc" style="color:' + RISK[cell.band] + '">' + cell.score + '</span>' +
+        '<span class="dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span><span class="sc">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
     return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
   }
 
-  function sig(meta, value, weight) {
+  // Per-signal day-over-day badge (red up = rising / green down = easing vs yesterday). Empty unless a
+  // present, non-zero delta exists - so it stays hidden until history.json carries a yesterday with 'sigs'.
+  function sigBadge(delta) {
+    if (typeof delta !== "number" || delta === 0) return "";
+    var up = delta > 0;
+    var arrow = up
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg>';
+    return '<span class="sigbadge ' + (up ? "up" : "down") + '" title="' + (up ? "Rising vs yesterday" : "Easing vs yesterday") + '">' + arrow + '</span>';
+  }
+  function sig(meta, value, weight, delta) {
     var absent = value == null;
     return '<div class="sig"><div class="row"><span class="lbl">' + meta.label + '</span>' +
-      '<span class="v" style="color:' + meta.c + '">' + (absent ? "no data" : value + " (" + weight + "%)") + '</span></div>' +
+      '<span class="v">' + (absent ? "no data" : value + " <i>(" + weight + "%)</i>") + '</span>' + sigBadge(delta) + '</div>' +
       '<div class="tag">' + (absent ? "No confirmed-case data here yet." : meta.tag) + '</div>' +
-      '<div class="track"><div class="fill" style="width:' + (absent ? 0 : value) + '%;background:' + meta.c + '"></div></div></div>';
+      '<div class="track"><div class="fill" style="width:' + (absent ? 0 : value) + '%"></div></div></div>';
   }
 
   function actionsCard(c) {
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
-    return '<div class="card"><h2 class="sectiontitle">So, what should I do?</h2><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
+    return '<div class="card"><h2 class="sectiontitle">Take the right precautions</h2><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
       '<a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div>';
-  }
-
-  function methodologyCard() {
-    return '<div class="card"><h2 class="sectiontitle" style="margin-bottom:6px">How we calculate this</h2>' +
-      '<button class="methhead" data-act="method"><span class="methsub">A transparent, decomposable formula, not a black box.</span><span class="methtog" id="methtog">Show ▾</span></button>' +
-      '<div class="methbody" id="methbody">' + METHOD + '<p class="dashnote">' + DASHNOTE + '</p></div></div>';
   }
 
   function leaderboardCard(c) {
@@ -246,7 +297,7 @@
     var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
     var chips = '<button class="chip' + (isOverall ? ' on' : '') + '" data-act="leader" data-id="overall">📊 Overall</button>' +
       DATA.diseases.map(function (d) { return '<button class="chip' + (d.id === state.leader ? ' on' : '') + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    return '<div class="card" id="others"><h2 class="sectiontitle">🏆 What is happening in other cities?</h2><p class="sectionsub">' + label + ' risk leaderboard this week.</p>' +
+    return '<div class="card" id="others"><h2 class="sectiontitle">What is happening in other cities?</h2><p class="sectionsub">' + label + ' risk leaderboard this week.</p>' +
       '<div class="chips">' + chips + '</div>' +
       '<input class="citysearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" style="margin-bottom:10px" />' +
       '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div>';
@@ -323,14 +374,34 @@
     return '<section id="faq" class="faqsec"><h2 class="sectiontitle">Common questions</h2><div class="faq-list">' + items + '</div></section>';
   }
 
-  function gauge(score, color, size) {
-    var sw = 11, cx = size / 2, r = (size - sw) / 2 - 1, C = 2 * Math.PI * r, arc = 0.75;
-    var track = (arc * C).toFixed(1), gap = (C - arc * C).toFixed(1), prog = (Math.max(0, Math.min(100, score)) / 100 * arc * C).toFixed(1);
-    return '<div class="gaugewrap" style="width:' + size + 'px;height:' + size + 'px">' +
-      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
-      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="#e9eef5" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap + '" transform="rotate(135 ' + cx + ' ' + cx + ')"/>' +
-      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + prog + ' ' + (C * 2).toFixed(1) + '" transform="rotate(135 ' + cx + ' ' + cx + ')" style="transition:stroke-dasharray 1s ease"/>' +
-      '</svg><div class="num"><b style="color:' + color + '">' + score + '</b><span>/ 100</span></div></div>';
+  // The risk dial: a 270deg gauge FILLED to the overall score, the filled arc subdivided into one slot
+  // per disease sized by its share of the summed scores, drawn in the disease IDENTITY colour with a
+  // fixed ~6deg white gap between slots. Byte-identical to build_site.py _ring_svg() (above-fold, CLS 0).
+  function ns(x) { return x === Math.floor(x) ? String(x) : ("" + x); }
+  function ring(segs, score, size) {
+    var sw = 12, cx = size / 2, r = (size - sw) / 2 - 1, C = 2 * Math.PI * r, arc = 0.75;
+    var fillFrac = (score / 100) * arc;
+    var total = segs.reduce(function (a, s) { return a + s[0]; }, 0) || 1;
+    var GAP_PX = 13.5;  // no nudge: first segment starts at the track start (the "0" position)
+    var track = (arc * C).toFixed(1), gapAll = (C - arc * C).toFixed(1), off = (C * 2).toFixed(1), cs = ns(cx), rs = ns(r);
+    var trackC = '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gapAll + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>';
+    var out = "", cum = 0;
+    for (var i = 0; i < segs.length; i++) {
+      var slotFrac = (segs[i][0] / total) * fillFrac, dashPx = slotFrac * C - GAP_PX;
+      if (dashPx < 0) dashPx = 0;
+      var dash = dashPx.toFixed(1), rot = (135 + cum * 360).toFixed(1);
+      out += '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + segs[i][1] + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + off + '" transform="rotate(' + rot + ' ' + cs + ' ' + cs + ')"/>';
+      cum += slotFrac;
+    }
+    return '<div class="ringwrap" style="width:' + size + 'px;height:' + size + 'px">' +
+      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + trackC + out +
+      '</svg><div class="num"><div class="numtop"><b>' + score + '</b><span>/ 100</span></div><em>Overall fever risk</em></div></div>';
+  }
+  // Day-over-day arrow (vs yesterday); empty unless a present, non-zero delta exists. Mirrors _delta_arrow().
+  function deltaArrow(delta) {
+    if (delta == null || delta === 0) return "";
+    var up = delta > 0;
+    return '<span class="legtrend ' + (up ? "up" : "down") + '">' + (up ? "▲" : "▼") + " " + Math.abs(delta) + "</span>";
   }
 
   function renderCityList() {
@@ -374,37 +445,49 @@
     el.addEventListener("touchstart", function () { el.classList.add("held"); }, { passive: true });
     ["touchend", "touchcancel"].forEach(function (ev) { el.addEventListener(ev, function () { el.classList.remove("held"); }); });
   }
-  // Floating awareness + share CTA bar (ticker now lives under the header).
+  // Floating share-nudge bar (ticker now lives under the header). Severity-tiered copy keyed off the
+  // band so a calm city never reads as "elevated". Persistent (no dismiss).
+  function footCopy(b, city) {
+    if (b.band === "HIGH") return { t: "Fever risk is high in " + city + " right now", s: "Share this alert so people you care about can take precautions." };
+    if (b.band === "MODERATE") return { t: "Worth watching: fever risk in " + city, s: "A quick heads-up helps your family stay ahead of monsoon fevers." };
+    return { t: "Help your family stay ahead of monsoon fevers", s: "Share " + city + "'s daily fever-risk tracker." };
+  }
   function buildShareFooter() {
     if (document.getElementById("fwfoot") || !DATA) return;
     var el = document.createElement("div");
     el.className = "fw-foot"; el.id = "fwfoot";
     el.innerHTML = '<div class="fw-foot-cta"><div class="fw-foot-text">' +
-      '<div class="fw-foot-title">1 in 3 fevers in India isn\'t just a fever</div>' +
+      '<div class="fw-foot-title" id="fwfoottitle"></div>' +
       '<div class="fw-foot-sub" id="fwfootsub"></div></div>' +
       '<button class="fw-foot-share" data-act="openShare">⤴ Share</button></div>';
     document.body.appendChild(el);
     updateShareFooter();
   }
   function updateShareFooter() {
-    var s = document.getElementById("fwfootsub");
-    if (s && DATA) s.textContent = "Spread awareness. Share " + cityObj(state.cityId).name + "'s score.";
+    var t = document.getElementById("fwfoottitle"), s = document.getElementById("fwfootsub");
+    if (!DATA || (!t && !s)) return;
+    var c = cityObj(state.cityId), copy = footCopy(c.blend, c.name);
+    if (t) t.textContent = copy.t;
+    if (s) s.textContent = copy.s;
   }
 
   function openSheet(id) { document.getElementById("scrim").classList.add("open"); document.getElementById(id).classList.add("open"); }
-  function closeSheets() { document.getElementById("scrim").classList.remove("open"); document.getElementById("citysheet").classList.remove("open"); document.getElementById("sharesheet").classList.remove("open"); }
+  function closeSheets() {
+    document.getElementById("scrim").classList.remove("open");
+    Array.prototype.forEach.call(document.querySelectorAll(".sheet.open"), function (s) { s.classList.remove("open"); });
+  }
 
   function onClick(e) {
     var el = e.target.closest ? e.target.closest("[data-act]") : null; if (!el) return;
     var a = el.getAttribute("data-act");
     if (a === "openCity") { renderCityList(); openSheet("citysheet"); }
-    else if (a === "closeCity" || a === "closeShare") closeSheets();
+    else if (a === "closeCity" || a === "closeShare" || a === "closeMethod") closeSheets();
     else if (a === "pickCity" || a === "pickrow") { if (e.preventDefault) e.preventDefault(); closeSheets(); setCity(el.getAttribute("data-id"), true); window.scrollTo(0, 0); }
     else if (a === "useLoc") useMyLocation();
     else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
-    else if (a === "method") { var bdy = document.getElementById("methbody"); bdy.classList.toggle("open"); document.getElementById("methtog").textContent = bdy.classList.contains("open") ? "Hide ▴" : "Show ▾"; }
+    else if (a === "openMethod") { var mb = document.getElementById("methbody"); if (mb && !mb.dataset.filled) { mb.innerHTML = METHOD + '<p class="dashnote">' + DASHNOTE + '</p>'; mb.dataset.filled = "1"; } openSheet("methodsheet"); }
     else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
     else if (a === "shareWA") doShare("wa");
     else if (a === "shareDL") doShare("dl");
