@@ -98,6 +98,39 @@ class SerpApiTrendsProvider:
                 out[loc] = int(val)
         return out
 
+    def interest_over_time_by_state(self, query: str, geo: str, date_range: str) -> list:
+        """State-level interest-over-time history for one query.
+
+        Issues a TIMESERIES call scoped to a single ISO 3166-2:IN subregion (geo,
+        e.g. "IN-MH") over an explicit date range ("2025-06-01 2026-06-13"), and
+        returns a weekly series [[week_start_iso, int_value], ...].
+
+        week_start is DERIVED from the point's Unix `timestamp` as a UTC date
+        (the localized label has thin-spaces + en-dashes, so it is not parsed).
+        Value is values[0].extracted_value, defaulting to 0 when missing.
+        Same param/parse pattern as national_news_spike(); used by the one-time
+        historical backfill (src/backfill_trends.py), not the weekly grid pull.
+        """
+        from datetime import datetime, timezone
+
+        data = self._get({
+            "engine": "google_trends",
+            "data_type": "TIMESERIES",
+            "q": query,
+            "geo": geo,
+            "date": date_range,
+        })
+        series = []
+        for pt in ((data.get("interest_over_time") or {}).get("timeline_data") or []):
+            ts = pt.get("timestamp")
+            if ts is None:
+                continue
+            week_start = datetime.fromtimestamp(int(ts), tz=timezone.utc).date().isoformat()
+            vals = pt.get("values") or []
+            val = vals[0].get("extracted_value") if vals else None
+            series.append([week_start, int(val) if val is not None else 0])
+        return series
+
     def national_news_spike(self, query: str) -> bool:
         """True if the latest national interest is well above its trailing average."""
         data = self._get({
