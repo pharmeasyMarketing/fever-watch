@@ -290,12 +290,13 @@
       '<div class="fwtrend-pill ' + model.tone + '"><span class="fwtrend-vicon">' + toneIcon + '</span>'
       + '<b>' + esc(model.chip) + '</b> ' + phrase + '</div>'
       + '<p class="fwtrend-context">' + esc(model.context) + '</p>';
-    var card = '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'
-      + lead + '<div class="fwtrend-body">' + body + '</div></div>';
     if (st.mode === "desktop") {
-      // Desktop: title + subtitle OUTSIDE the card, matching the other page sections (.sechead/.secsub).
-      return '<div class="fwtrend-sectop"><div class="fwtrend-sechead"><h2 class="sechead">' + title
-        + '</h2><p class="secsub">Season trend</p></div>' + toggle + '</div>' + card;
+      // Desktop: title + Hide toggle INSIDE the card (like mobile), so the section title rides with the
+      // card; the desktop small-multiples still live in the body (smallsHtml, gated on st.mode above).
+      return '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'
+        + '<div class="fwtrend-head"><div><div class="fwtrend-eyebrow">Season trend</div>'
+        + '<h2 class="fwtrend-title">' + title + '</h2></div>' + toggle + '</div>'
+        + lead + '<div class="fwtrend-body">' + body + '</div></div>';
     }
     // Mobile: keep the eyebrow + title inside the card, like the other mobile cards.
     return '<div class="card fwtrend' + (st.expanded ? " open" : "") + '" data-metric="' + metric + '">'

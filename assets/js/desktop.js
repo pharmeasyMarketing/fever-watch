@@ -186,9 +186,9 @@
   // Scroll-spy: highlight the TOC link for the section currently in view as the page scrolls.
   function spyScroll() {
     if (spyScroll.lock && Date.now() < spyScroll.lock) return;
-    // == the TOC data-jump targets, in document order (s-method is NOT a jump target: it is reached via
-    // the riskcard "Know more"). Keep this set identical to the .toc links in render() and _desktop_pre.
-    var ids = ["s-week", "s-weather", "s-why", "s-trend", "s-do", "s-other", "s-faq", "s-reads"], cur = ids[0];
+    // == the TOC href targets, in document order (s-method is NOT a TOC target: it is reached via the
+    // riskcard "Know more"). Keep this set identical to the .toc links in render() and _desktop_pre.
+    var ids = ["s-week", "s-why", "s-weather", "s-do", "s-other", "s-trend", "s-faq"], cur = ids[0];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el && el.getBoundingClientRect().top <= 110) cur = ids[i];
@@ -196,7 +196,7 @@
     var doc = document.documentElement;
     if ((window.innerHeight + (window.scrollY || window.pageYOffset || 0)) >= (doc.scrollHeight - 4)) cur = ids[ids.length - 1];
     var links = document.querySelectorAll(".toc a");
-    for (var j = 0; j < links.length; j++) links[j].classList.toggle("cur", links[j].getAttribute("data-jump") === cur);
+    for (var j = 0; j < links.length; j++) links[j].classList.toggle("cur", links[j].getAttribute("href") === "#" + cur);
   }
   function wireScrollSpy() {
     if (!wireScrollSpy.wired) {
@@ -209,14 +209,17 @@
 
   function render() {
     var c = cityObj(state.cityId), b = c.blend;
-    // The above-fold prefix (searchHero + shell + toc + main-open + s-week) MUST stay byte-identical to
+    // The above-fold prefix (searchHero + shell-open + toc + s-week + s-why) MUST stay byte-identical to
     // build_site.py _desktop_pre so hydration is a no-op repaint (CLS 0). Edit BOTH together. The toc
-    // data-jump set MUST equal spyScroll()'s ids array, in document order.
+    // href targets MUST equal spyScroll()'s ids array, in document order (s-method is reached via the
+    // riskcard "Know more", so it is intentionally NOT a TOC target). The first JS-only bytes are
+    // '<div class="main">'.
     app.innerHTML = searchHero(c) +
-      '<div class="shell"><aside class="toc">' +
-        '<a class="cur" data-jump="s-week">Overall fever risk</a><a data-jump="s-why">Why this score</a><a data-jump="s-weather">Breeding weather</a><a data-jump="s-do">Take the right precautions</a><a data-jump="s-trend">This year vs last year</a><a data-jump="s-other">City-level insights</a><a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a>' +
-      '</aside><div class="main">' + weekSectionD(c, b) + weatherSection(c) + whySection(c) +
-        '<section id="s-trend" class="fwtrend-host"></section>' + doSection(c) + methodSection() + otherSection(c) +
+      '<div class="shell"><aside class="toc"><h2>Quick Links</h2>' +
+        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a><a href="#s-other">What is happening in other cities?</a><a href="#s-trend">This year vs last year</a><a href="#s-faq">Common questions</a>' +
+      '</aside>' + weekSectionD(c, b) + whySection(c) + '<div class="main">' + weatherSection(c) +
+        doSection(c) + methodSection() +
+        '<section id="s-trend" class="fwtrend-host"></section>' + otherSection(c) +
         faqSection() + readsSection() + '</div></div>';
     wireLeaderboard();
     mountTrend(c);
@@ -235,12 +238,11 @@
     return '<section class="srch"><div class="srchin">' +
       '<h1>Live monsoon-fever risk for ' + esc(c.name) + ' in <em>one score</em>.</h1>' +
       '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>' +
-      '<div class="searchbar"><span class="ico">🔎</span>' +
-        '<button class="field" data-act="combo">📍 ' + c.name + '  <span class="ph">| change your city</span></button>' +
-        '<button class="searchbtn" data-act="combo">Search</button>' +
+      '<div class="locwrap"><button class="loccard" data-act="combo">' + LOC_PIN + '<span class="locname">' + esc(c.name) + '</span>' +
+        '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>' +
         '<div class="combopanel' + (state.comboOpen ? ' open' : '') + '"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>' +
-      '</div><p class="microcopy">Available in select cities.</p>' +
-      '<p class="searchnote loc-note">Updated ' + fmtDate(DATA.generated_at) + '. Available in selected cities.</p></div></section>';
+      '</div>' +
+      '<p class="searchnote loc-note">Updated ' + fmtDate(DATA.generated_at) + '. Available in select cities.</p></div></section>';
   }
 
   // s-week above-fold twin: REUSES the mobile-proven riskCard() verbatim, byte-identical to build_site.py
@@ -271,7 +273,7 @@
   // Breeding weather conditions today (ported from mobile weatherCard; the WX strings + cards are
   // byte-frozen with the mobile twin / build_site.py _weather_card). JS-only, below the fold on desktop.
   function weatherSection(c) {
-    return '<section id="s-weather"><h2 class="sechead">Breeding weather in ' + esc(c.name) + '</h2>' + weatherCard(c) + '</section>';
+    return '<section id="s-weather">' + weatherCard(c) + '</section>';
   }
   function weatherCard(c) {
     var w = c.weather || {}, hum = w.humidity_pct, r7 = w.rain_7d_mm, stag = (w.stagnation || {}).level;
@@ -293,7 +295,7 @@
   // Why this score: the horizontal 3-signal breakdown, one accordion per disease (ported from mobile
   // breakdownCard). The driver accordion opens first (state.expanded init in boot/setCity).
   function whySection(c) {
-    return '<section id="s-why"><h2 class="sechead">Why this score</h2><p class="secsub">Tap a disease to see its three signals.</p>' + breakdownCard(c) + '</section>';
+    return '<section id="s-why"><h2 class="sechead">Why this score?</h2><p class="secsub">Tap a disease to see its three signals.</p>' + breakdownCard(c) + '</section>';
   }
   function breakdownCard(c) {
     var accs = orderedDiseases(c).map(function (d) {
@@ -330,8 +332,8 @@
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
-    return '<section id="s-do"><h2 class="sechead">Take the right precautions</h2><p class="secsub">Quick, practical follow-through for ' + c.name + '.</p>' +
-      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></section>';
+    return '<section id="s-do"><div class="card"><h2 class="sechead">Take the right precautions</h2><p class="secsub">Practical follow-through for ' + c.name + ' this week.</p>' +
+      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div></section>';
   }
 
   function methodSection() {
@@ -347,10 +349,10 @@
     var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
     var tabs = '<button class="lbtab' + (isOverall ? " on" : "") + '" data-act="leader" data-id="overall">📊 Overall</button>' +
       DATA.diseases.map(function (d) { return '<button class="lbtab' + (d.id === state.leader ? " on" : "") + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    return '<section id="s-other"><h2 class="sechead">What is happening in other cities?</h2><p class="secsub">' + label + ' risk leaderboard this week. Pick a disease to re-rank.</p>' +
+    return '<section id="s-other"><div class="card"><h2 class="sechead">What is happening in other cities?</h2><p class="secsub">' + label + ' risk leaderboard this week. Pick a disease to re-rank.</p>' +
       '<div class="lbtabs">' + tabs + '</div>' +
       '<input class="lbsearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" />' +
-      '<div id="lbcontainer">' + leaderboardInner(c) + '</div></section>';
+      '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div></section>';
   }
 
   function leaderboardInner(c) {
@@ -512,9 +514,10 @@
 
   function onClick(e) {
     if (e.target.id === "scrim") { document.getElementById("scrim").classList.remove("open"); return; }
-    var el = e.target.closest ? e.target.closest("[data-act],[data-jump]") : null;
+    var jump = e.target.closest ? e.target.closest('.toc a[href^="#"]') : null;
+    if (jump) { if (e.preventDefault) e.preventDefault(); var t = document.getElementById(jump.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); jump.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
+    var el = e.target.closest ? e.target.closest("[data-act]") : null;
     if (!el) { if (state.comboOpen) { state.comboOpen = false; render(); } return; }
-    if (el.hasAttribute("data-jump")) { var t = document.getElementById(el.getAttribute("data-jump")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); el.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
     var a = el.getAttribute("data-act");
     if (a === "combo") { state.comboOpen = !state.comboOpen; render(); if (state.comboOpen) { var inp = document.getElementById("cityinput"); renderCombo(); inp.addEventListener("input", renderCombo); inp.focus(); } e.stopPropagation(); }
     else if (a === "useLoc") { useMyLocation(); e.stopPropagation(); }

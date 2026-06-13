@@ -76,5 +76,6 @@ function check(label, jsRel, preMarker, BREAK) {
 
 // MOBILE: SSR closes its pre after the weather card; the breakdown card is the first JS-only section.
 check("mobile", "mobile.js", '<div class="fw-pre fw-pre-m">', '<div class="card"><h2 class="sectiontitle">Why this score?');
-// DESKTOP: SSR closes its pre after the s-week section; s-weather is the first JS-only section.
-check("desktop", "desktop.js", '<div class="fw-pre fw-pre-d">', '<section id="s-weather"');
+// DESKTOP: SSR closes its pre after the s-why section (s-why is now in the first fold); the .main wrapper
+// holding the below-fold JS-only sections is the first JS-only markup.
+check("desktop", "desktop.js", '<div class="fw-pre fw-pre-d">', '<div class="main">');

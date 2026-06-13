@@ -39,14 +39,16 @@
   .srch h1 { font-size: 30px; font-weight: 700; margin: 0 0 10px; letter-spacing: -.3px; color: #fff; }
   .srch h1 em { font-style: normal; color: var(--pe-gold); }
   .srch .subtitle { font-size: 14.5px; color: #d8efed; margin: 0 auto 22px; max-width: 600px; line-height: 1.55; }
-  /* Updated/date note below the search bar (mirrors mobile loc-note copy). */
+  /* Updated/date note below the location pill (mirrors mobile loc-note copy). */
   .srch .loc-note { font-size: 12.5px; color: #cfe6e4; margin: 12px 0 0; text-align: center; }
-  .searchbar { display: flex; align-items: center; max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid var(--pe-line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px 6px 6px 18px; position: relative; }
-  .searchbar .ico { color: var(--pe-green); font-size: 18px; }
-  .searchbar .field { flex: 1; font-size: 16px; color: var(--pe-ink); font-weight: 600; padding: 13px 12px; text-align: left; background: none; border: none; cursor: pointer; }
-  .searchbar .field .ph { color: var(--pe-muted-2); font-weight: 500; }
-  .searchbtn { background: var(--pe-green); color: #fff; border: none; padding: 13px 30px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
-  .microcopy { font-size: 12.5px; color: #cfe6e4; margin: 14px 0 0; }
+  /* Centered location pill (the mobile .loccard, reused as the city picker trigger). .locwrap anchors the
+     .combopanel dropdown directly under the pill. */
+  .locwrap { position: relative; max-width: 420px; margin: 0 auto; }
+  .srch .loccard { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 11px; background: #fff; border: 1px solid var(--pe-line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 18px; text-align: left; cursor: pointer; }
+  .srch .locpin { width: 19px; height: 19px; flex-shrink: 0; display: block; }
+  .srch .locname { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; color: var(--pe-ink); line-height: 1.2; }
+  .srch .locchange { font-size: 14px; color: var(--pe-green); font-weight: 700; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
+  .srch .loccaret { font-size: 10px; line-height: 1; }
   .combopanel { display: none; position: absolute; top: 62px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: var(--shadow); z-index: 20; overflow: hidden; text-align: left; }
   .combopanel.open { display: block; }
   .combopanel input { width: 100%; border: none; border-bottom: 1px solid var(--pe-bg-2); padding: 14px 16px; font-size: 14px; }
@@ -61,13 +63,26 @@
   .cityopt small { color: var(--pe-muted); font-size: 12px; }
   .cityopt .sb { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--pill); }
 
-  /* shell */
-  .shell { max-width: 1200px; margin: 0 auto; display: flex; gap: 30px; padding: 28px 24px 36px; align-items: flex-start; }
-  .toc { position: sticky; top: 84px; width: 180px; flex-shrink: 0; }
-  .toc a { display: block; padding: 10px 12px; border-radius: 9px; color: var(--pe-ink-2); font-size: 13.5px; font-weight: 500; margin-bottom: 3px; border-left: 2px solid transparent; cursor: pointer; }
+  /* shell: 3-col first fold (Quick Links sidebar | s-week score card | s-why breakdown card); the
+     below-fold JS-only sections live in .main, which spans the two content columns on row 2. */
+  .shell { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr); gap: 30px; padding: 28px 24px 36px; align-items: start; }
+  .toc { position: sticky; top: 84px; grid-column: 1; grid-row: 1 / span 2; align-self: start; }
+  .toc h2 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--pe-muted); margin: 0 0 10px; padding: 0 12px; }
+  .toc a { display: block; padding: 10px 12px; border-radius: 9px; color: var(--pe-ink-2); font-size: 13.5px; font-weight: 500; margin-bottom: 3px; border-left: 2px solid transparent; cursor: pointer; text-decoration: none; }
   .toc a.cur, .toc a:hover { background: #fff; color: var(--pe-green); border-left-color: var(--pe-green); font-weight: 600; }
-  .main { flex: 1; min-width: 0; }
+  #s-week { grid-column: 2; grid-row: 1; }
+  #s-why { grid-column: 3; grid-row: 1; }
+  .main { grid-column: 2 / 4; grid-row: 2; min-width: 0; }
   section[id^="s-"] { scroll-margin-top: 78px; margin-bottom: 32px; }
+  /* s-why rides in the narrower right rail of the first fold: stack the 3-signal grid to one column so
+     it fits the half-width card. */
+  #s-why .acc.open .accbody { grid-template-columns: 1fr; gap: 0; }
+  /* Narrow desktop: collapse the 3-col shell to a single column (CSS-only; no DOM change). */
+  @media (max-width: 1100px) {
+    .shell { display: block; }
+    .toc { position: static; width: auto; margin-bottom: 24px; }
+    #s-why .acc.open .accbody { grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+  }
   .sechead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }
   .secsub { font-size: 13.5px; color: var(--pe-muted); margin: 0 0 16px; }
   .fwtrend-months { font-size: 13px; padding-top: 3px; }   /* desktop: larger, slightly roomier month labels */

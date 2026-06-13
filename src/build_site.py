@@ -734,6 +734,14 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, perio
 SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
 SIGNAME = {"weather": "Breeding weather", "trends": "Google Search Interest", "positivity": "PharmEasy labs"}
 
+# Per-signal breakdown metadata, byte-identical to the SIG map in assets/js/desktop.js (and mobile.js).
+# The emoji bytes in the labels are intentional and must stay UTF-8-exact (the JS twin emits them raw).
+SIG = {
+    "weather": {"label": "\U0001F327 Breeding weather", "tag": "Leading. Conditions weeks ahead."},
+    "trends": {"label": "\U0001F50D Google Search Interest", "tag": "Coincident. Public concern."},
+    "positivity": {"label": "\U0001F9EA PharmEasy lab signal", "tag": "Lagging. Confirmed positivity."},
+}
+
 
 def _beacon(band: str) -> str:
     """The pulsing risk beacon, byte-identical to the flows' beacon()."""
@@ -742,19 +750,77 @@ def _beacon(band: str) -> str:
 
 
 def _search_hero_d(city: dict, generated_at: str) -> str:
-    """Byte-identical to desktop.js searchHero(c) at first render (state.comboOpen = false). H1 drops the
-    comma (keeps the city); the hero gets the mobile vertical-fade gradient (CSS) plus a centered
-    Updated/date note below the search bar. Edit BOTH this and searchHero() together (CLS 0)."""
-    nm = city["name"]
+    """Byte-identical to desktop.js searchHero(c) at first render (state.comboOpen = false). H1 keeps the
+    city; the hero gets the mobile vertical-fade gradient (CSS), a centered location pill (the mobile
+    .loccard, reused as the city picker trigger via data-act="combo") with the existing desktop
+    .combopanel dropdown anchored under it, plus a centered Updated/date note. SSR omits the " open"
+    class the JS adds when state.comboOpen is true, so the first-paint byte string is exactly
+    "combopanel". Edit BOTH this and searchHero() together (CLS 0)."""
+    nm = esc(city["name"])
     return ('<section class="srch"><div class="srchin">'
-            '<h1>Live monsoon-fever risk for ' + esc(nm) + ' in <em>one score</em>.</h1>'
+            '<h1>Live monsoon-fever risk for ' + nm + ' in <em>one score</em>.</h1>'
             '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
-            '<div class="searchbar"><span class="ico">\U0001F50E</span>'
-            '<button class="field" data-act="combo">\U0001F4CD ' + nm + '  <span class="ph">| change your city</span></button>'
-            '<button class="searchbtn" data-act="combo">Search</button>'
+            '<div class="locwrap"><button class="loccard" data-act="combo">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
+            '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
             '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
-            '</div><p class="microcopy">Available in select cities.</p>'
-            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in selected cities.</p></div></section>')
+            '</div>'
+            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in select cities.</p></div></section>')
+
+
+def _sig_badge(delta) -> str:
+    """Per-signal day-over-day badge, byte-identical to desktop.js sigBadge(). Empty unless a present,
+    non-zero delta exists; sig_delta is absent on cells today, so this renders nothing (same as the JS)."""
+    if not isinstance(delta, (int, float)) or isinstance(delta, bool) or delta == 0:
+        return ""
+    up = delta > 0
+    arrow = ('<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>'
+             if up else
+             '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg>')
+    return ('<span class="sigbadge ' + ("up" if up else "down") + '" title="'
+            + ("Rising vs yesterday" if up else "Easing vs yesterday") + '">' + arrow + '</span>')
+
+
+def _sig(meta: dict, value, weight, delta) -> str:
+    """One signal row, byte-identical to desktop.js sig(meta, value, weight, delta). meta.label carries
+    the UTF-8 emoji RAW (no esc), matching the JS."""
+    absent = value is None
+    return ('<div class="sig"><div class="row"><span class="lbl">' + meta["label"] + '</span>'
+            '<span class="v">' + ("no data" if absent else str(value) + " <i>(" + str(weight) + "%)</i>") + '</span>'
+            + _sig_badge(delta) + '</div>'
+            '<div class="tag">' + ("No confirmed-case data here yet." if absent else meta["tag"]) + '</div>'
+            '<div class="track"><div class="fill" style="width:' + ("0" if absent else str(value)) + '%"></div></div></div>')
+
+
+def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
+    """The horizontal 3-signal breakdown, one accordion per disease, byte-identical to desktop.js
+    breakdownCard(c). Diseases sorted by cell score descending (stable, == orderedDiseases). The driver
+    disease (city blend driver) is the pre-opened accordion, matching the JS boot (state.expanded =
+    blend.driver). cell["note"] and d["emoji"]/d["label"] are emitted RAW (no esc), matching the JS."""
+    cid = city["id"]
+    driver = city["blend"]["driver"]
+    ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    accs = ""
+    for d in ordered:
+        cell = cells_by[(cid, d["id"])]
+        open_ = driver == d["id"]
+        s = cell.get("signals", {}); w = cell.get("weights", {}); sd = cell.get("sig_delta") or {}
+        body = ('<div class="accbody">' + _sig(SIG["weather"], s.get("weather"), w.get("weather"), sd.get("weather"))
+                + _sig(SIG["trends"], s.get("trends"), w.get("trends"), sd.get("trends"))
+                + _sig(SIG["positivity"], s.get("positivity"), w.get("positivity"), sd.get("positivity"))
+                + '<p class="accnote">' + cell["note"] + '</p></div>')
+        accs += ('<div class="acc' + (" open" if open_ else "") + '"><button class="acchead" data-act="expand" data-id="' + d["id"] + '">'
+                 '<span class="emoji">' + d["emoji"] + '</span><span class="name">' + d["label"] + '</span>'
+                 '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
+                 '<span class="chev">▾</span></button>' + body + '</div>')
+    return '<div class="card">' + accs + '</div>'
+
+
+def _why_section_d(city: dict, diseases: list, cells_by: dict) -> str:
+    """Desktop s-why above-fold twin. Byte-identical to desktop.js whySection(c) ("Why this score?" WITH
+    the question mark). Now lives in the first fold (right rail of the 3-col shell)."""
+    return ('<section id="s-why"><h2 class="sechead">Why this score?</h2>'
+            '<p class="secsub">Tap a disease to see its three signals.</p>'
+            + _breakdown_card_d(city, diseases, cells_by) + '</section>')
 
 
 def _week_section_d(city: dict, diseases: list, cells_by: dict, periods: list) -> str:
@@ -766,22 +832,25 @@ def _week_section_d(city: dict, diseases: list, cells_by: dict, periods: list) -
 
 
 def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, periods: list) -> str:
-    """Desktop seamless first paint. Server-render .srch + .shell{.toc + .main{s-week}} so it is
+    """Desktop seamless first paint. Server-render .srch + .shell{.toc + s-week + s-why} so it is
     byte-identical to what desktop.js render() paints from the inlined seed; hydration is then a no-op
-    repaint over identical above-fold DOM (kills the desktop CLS). The .fw-below SEO block underneath
-    stays for crawlers / no-JS. Mirrors the mobile _mobile_pre / _risk_card pattern. Gated .fw-pre-d."""
+    repaint over identical above-fold DOM (kills the desktop CLS). s-why (the breakdown) is now in the
+    first fold (3-col shell right rail), so the SSR twin extends through it. The .fw-below SEO block
+    underneath stays for crawlers / no-JS. Mirrors the mobile _mobile_pre / _risk_card pattern. Gated
+    .fw-pre-d. The first JS-only bytes are '<div class="main">'."""
     # NOTE: this TOC must stay byte-identical to desktop.js render()'s .toc so desktop hydration is a
-    # no-op repaint (CLS 0). Edit BOTH together. The data-jump set MUST equal desktop.js spyScroll()'s
-    # ids array, with one section id per jump target and vice-versa (s-method is reached via "Know more",
-    # so it is intentionally NOT a TOC jump target).
-    toc = ('<aside class="toc">'
-           '<a class="cur" data-jump="s-week">Overall fever risk</a><a data-jump="s-why">Why this score</a>'
-           '<a data-jump="s-weather">Breeding weather</a><a data-jump="s-do">Take the right precautions</a>'
-           '<a data-jump="s-trend">This year vs last year</a><a data-jump="s-other">City-level insights</a>'
-           '<a data-jump="s-faq">Common questions</a><a data-jump="s-reads">Monsoon reads</a></aside>')
+    # no-op repaint (CLS 0). Edit BOTH together. The href target set MUST equal desktop.js spyScroll()'s
+    # ids array, with one section id per TOC link and vice-versa (s-method is reached via "Know more",
+    # and s-reads renders below but is intentionally NOT a TOC target).
+    toc = ('<aside class="toc"><h2>Quick Links</h2>'
+           '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a>'
+           '<a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a>'
+           '<a href="#s-other">What is happening in other cities?</a><a href="#s-trend">This year vs last year</a>'
+           '<a href="#s-faq">Common questions</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)
-            + '<div class="shell">' + toc + '<div class="main">'
-            + _week_section_d(city, diseases, cells_by, periods) + '</div></div></div>')
+            + '<div class="shell">' + toc
+            + _week_section_d(city, diseases, cells_by, periods)
+            + _why_section_d(city, diseases, cells_by) + '</div></div>')
 
 
 # --- "This monsoon vs last year" trend module (static SSR; mirrors assets/js/trend.js) -----------
@@ -981,14 +1050,14 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
                  + '" data-tact="metric" data-metric="' + k + '"' + (' aria-current="true"' if on else "")
                  + '>' + lbl + ("" if avail else ' <i>soon</i>') + '</button>')
     months = '<div class="fwtrend-months">' + "".join('<span>' + m + '</span>' for m in TREND_MONTHS) + '</div>'
-    # Title + subtitle OUTSIDE the card (matches the other page sections); the flow JS re-renders this.
+    # Title + Hide toggle INSIDE the card (matches the mobile twin + the desktop JS branch); the flow JS
+    # re-renders this. Below the fold, so no parity impact (the trend host is a JS-only section).
     return ('<section id="s-trend" class="fwtrend-host">'
-            '<div class="fwtrend-sectop"><div class="fwtrend-sechead">'
-            '<h2 class="sechead">This monsoon vs last in ' + esc(city["name"]) + '</h2>'
-            '<p class="secsub">Season trend</p></div>'
+            '<div class="card fwtrend open" data-metric="overall">'
+            '<div class="fwtrend-head"><div><div class="fwtrend-eyebrow">Season trend</div>'
+            '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(city["name"]) + '</h2></div>'
             '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
             '<span class="chev" aria-hidden="true"></span></button></div>'
-            '<div class="card fwtrend open" data-metric="overall">'
             '<div class="fwtrend-verdict"><span class="fwtrend-vicon ' + tone + '">' + tone_icon + '</span>'
             '<span class="fwtrend-vtext">' + esc(model["verdict"]) + '</span>'
             '<span class="fwtrend-chip ' + tone + '">' + esc(model["chip"]) + '</span></div>'
