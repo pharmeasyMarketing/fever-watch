@@ -4,7 +4,36 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **LATEST (2026-06-13, BUILT ON DEV, UNCOMMITTED - awaiting user sign-off; MOBILE flow only so far):** a full
+> **LATEST (2026-06-14, COMMITTED + PUSHED to master; staging redeploying):** a large multi-stream session shipped
+> ALL of the items the older banner below lists as PENDING/NEXT. 14 commits `1d3f36e`..`3438705`:
+> - **Mobile first-fold redesign COMMITTED** (`1d3f36e`) - the dial/legend/chip/tabs/breeding-weather/breakdown
+>   redesign detailed in the older banner is now live (was uncommitted).
+> - **DESKTOP port + reference redesign** (`c5880a7` port; `671e95b` v2; `3fe3db5`/`49046f4`/`25f1e59`/`bdf572b`/`3438705`
+>   refinements): the mobile redesign re-laid into the 2-col desktop flow, then restructured to the reference design -
+>   a 3-COLUMN first fold (Quick Links sidebar | score card | "Why this score?" breakdown, the breakdown PROMOTED
+>   above the fold via new byte-identical SSR twins), a mobile-style city-selector pill, Quick Links as real
+>   `<a href="#...">` SEO anchors (the URL hash updates on click) + scroll-spy, in-card 21px section titles, the method
+>   section moved after the trend section + renamed "How we calculate the score", a desktop share dock using the
+>   mobile band-tiered copy, the share-modal image capped (no scroll), consistent 30px gaps, and a BIG centered dial
+>   (188px) with the 4 diseases stacked below + chip/note/Share snug at the bottom, equal-height with the breakdown.
+>   `scripts/parity_check.js` was extended with a desktop `.fw-pre-d` twin; BOTH flows stay PARITY OK (CLS-0).
+> - **HISTORICAL BACKFILL shipped** (`b9ea4f9` NASA weather, `d75c1ac` SerpApi trends, `7023f55` archive runner,
+>   `4ccdd2c` trend wiring): build_weather.py gained `--start/--end/--as-of` (date-ranged NASA POWER); a new SerpApi
+>   per-state interest-over-time puller (`config/in_state_geo.json` + `src/backfill_trends.py`); `src/build_archive.py`
+>   recomputes per-city REAL weekly WEATHER + SEARCH curves for 2025 (full season) + 2026 (to date) into the COMMITTED
+>   `data/archive/trend_series.json` (~47KB). The season-trend module now shows the REAL last-year line on the Weather +
+>   Search tabs (Overall + Labs stay on the deterministic mock until real lab positivity lands). `data/backfill/` is
+>   gitignored (regenerable intermediates); only `data/archive/` is committed.
+> - **SHEET LOGGER BACKFILL** (`42a27a4` CSV, `57f85e4` XLSX): `src/backfill_sheetlog.py` replicates the live `raw_data`
+>   26-col schema for historical dates and emits `.xlsx` workbooks (default) whose K/L/S/T/U/V columns are REAL baked
+>   Apps Script formulas (or literal-value CSVs) for 2026-06-01..08 (append to `raw_data`) + 2025-06-01..10-30 daily
+>   (separate spreadsheet, ~173K rows). Outputs to `data/backfill/sheet/` (gitignored); the user imports them.
+> - **STILL PENDING (user-gated):** the real PharmEasy lab-positivity Google Sheet (unlocks the Overall + Labs real
+>   trend and flips positivity off mock); the mobile past-7-days trail strip (DEFERRED, no design yet); production
+>   `base_url` + reverse-proxy; brand sign-off; the `mira-bhayandar` local-name confirmation; coords QA.
+>
+> **SUPERSEDED 2026-06-13 banner (the mobile redesign below is NOW COMMITTED `1d3f36e`, and its PENDING/NEXT is all
+> DONE - see the 2026-06-14 banner above):** a full
 > mobile FIRST-FOLD + sections REDESIGN matching the updated Figma (file `m2JNYbCaHkS3rGpKoU8J0S`, node 49-1303).
 > Specs: `.claude/plans/fever-watch-first-fold-redesign.md` + `fever-watch-figma-benchmark.md`. SSR/JS byte-parity
 > held throughout (`scripts/parity_check.js` PARITY OK = CLS-0). Desktop flow UNTOUCHED. 5 independent QA passes,
