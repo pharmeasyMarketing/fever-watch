@@ -76,9 +76,9 @@
   #s-week { grid-column: 2; grid-row: 1; align-self: stretch; }
   #s-why { grid-column: 3; grid-row: 1; align-self: stretch; }
   #s-week > .card, #s-why > .card { height: 100%; box-sizing: border-box; }
-  /* Dial card spreads its content top-to-bottom to fill the equal height (airy), so there is no single void;
-     the full-width Share sits at the bottom. */
-  .riskcard { display: flex; flex-direction: column; justify-content: space-between; }
+  /* Big centered dial + legend stacked below fills the dial card's (equal) height naturally, so it flows
+     top-to-bottom with the band chip + note + Share snug at the bottom (no airy gaps needed). */
+  .riskcard { display: flex; flex-direction: column; }
   .main { grid-column: 2 / 4; grid-row: 2; min-width: 0; }
   /* Consistent 30px gaps: the .shell grid gap (30px) spaces the first-fold row from .main; below-fold
      sections carry a 30px bottom margin. The margin is NOT on the grid cards, or it would stack with the gap. */
@@ -120,14 +120,17 @@
   .ftab { border: none; background: none; padding: 0 0 12px; font-size: 15px; font-weight: 600; color: var(--pe-muted); cursor: pointer; white-space: nowrap; position: relative; }
   .ftab.on { color: var(--pe-ink); font-weight: 700; }
   .ftab.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; background: var(--pe-ink); border-radius: 2px; }
-  .rtop { display: flex; gap: 30px; align-items: center; }
+  /* Big centered dial with the legend stacked BELOW it, so the dial card fills its (equal) height
+     naturally and the band chip + note + Share sit snug at the bottom. */
+  .rtop { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
   .ringwrap { position: relative; flex-shrink: 0; }
+  .ringwrap svg { width: 188px; height: 188px; max-width: none; display: block; }
   .ringwrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .ringwrap .numtop { display: flex; align-items: baseline; gap: 2px; }
-  .ringwrap .num b { font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: -.5px; color: var(--pe-ink); }
-  .ringwrap .num span { font-size: 11px; color: var(--pe-muted-2); }
-  .ringwrap .num em { font-size: 9.5px; font-style: normal; color: var(--pe-muted-2); line-height: 1.15; max-width: 66px; text-align: center; margin-top: 3px; }
-  .leg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ringwrap .numtop { display: flex; align-items: baseline; gap: 3px; }
+  .ringwrap .num b { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -.5px; color: var(--pe-ink); }
+  .ringwrap .num span { font-size: 14px; color: var(--pe-muted-2); }
+  .ringwrap .num em { font-size: 12px; font-style: normal; color: var(--pe-muted-2); line-height: 1.2; max-width: 100px; text-align: center; margin-top: 4px; }
+  .leg { min-width: 0; width: 100%; max-width: 290px; display: flex; flex-direction: column; gap: 6px; }
   .legrow { display: flex; align-items: center; gap: 11px; padding: 6px 0; }
   .legdot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
   .legname { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 500; color: var(--pe-ink); }
