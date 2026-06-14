@@ -24,7 +24,13 @@ week). The search metric MUST take this-year from the same per-state TIMESERIES 
 GEO_MAP_0 value) so the two lines share one normalisation. Weeks are anchored to 1 Jun + 7 day steps, exactly
 like trend.js build() / _trend_series, so the archive lines align with the module's week axis.
 
-Run from the repo root: python src/build_archive.py
+Three modes (run from the repo root):
+  python src/build_archive.py                 # full build from the backfills (weather + search, both years)
+  python src/build_archive.py --daily         # CI daily: extend weather ty from grid.json; length-pad search ty
+  python src/build_archive.py --search-only   # CI weekly: recompute EXACT search ly+ty from a fresh per-state
+                                              #   TIMESERIES (data/backfill/trends_history.json), weather untouched.
+                                              #   Fed by refresh_trends_timeseries.py. This is what makes the
+                                              #   cross-year SEARCH YoY EXACT (one normalisation for both years).
 """
 import argparse
 import datetime
@@ -74,6 +80,53 @@ def _nearest(series_dates, target):
     return best
 
 
+def _parse_tseries(trends_diseases, dids):
+    """Parse each disease x state weekly series into sorted [(date, value), ...] for nearest-week lookup."""
+    tseries = {}
+    for did in dids:
+        by_state = trends_diseases.get(did, {}).get("by_state", {})
+        tseries[did] = {st: sorted((datetime.date.fromisoformat(p[0]), p[1]) for p in pts)
+                        for st, pts in by_state.items()}
+    return tseries
+
+
+def _search_blocks(tseries, dids, cities, as_of, nw=NW):
+    """Per-city search {ly, ty} = mean over the diseases of the city's STATE weekly interest, with BOTH years
+    read from the SAME timeseries (one Google normalisation). A null/empty state falls back to that disease's
+    national mean (mean over the states present), mirroring CachedTrendsProvider. Returns (blocks, weak_count)."""
+    natmean_cache = {}
+
+    def national_mean(did, target):
+        key = (did, target)
+        if key not in natmean_cache:
+            vals = [_nearest(s, target) for s in tseries[did].values()]
+            vals = [v for v in vals if v is not None]
+            natmean_cache[key] = (sum(vals) / len(vals)) if vals else 0.0
+        return natmean_cache[key]
+
+    def search_metric(year, w, state):
+        target = _week_date(year, w)
+        per_disease = []
+        for did in dids:
+            s = tseries[did].get(state)
+            v = _nearest(s, target) if s else None
+            if v is None:
+                v = national_mean(did, target)
+            per_disease.append(v)
+        return _r(sum(per_disease) / float(len(per_disease)))
+
+    blocks, weak = {}, 0
+    for c in cities:
+        cid, state = c["id"], c.get("state", "")
+        blocks[cid] = {
+            "ly": [search_metric(LY_YEAR, w, state) for w in range(nw)],
+            "ty": [search_metric(TY_YEAR, w, state) for w in range(as_of + 1)],
+        }
+        if state not in tseries[dids[0]] and state not in tseries[dids[-1]]:
+            weak += 1
+    return blocks, weak
+
+
 def main():
     cities = _load(os.path.join("config", "cities.json"))
     cities = cities["cities"] if isinstance(cities, dict) and "cities" in cities else cities
@@ -87,27 +140,13 @@ def main():
         TY_YEAR: _load(os.path.join("data", "backfill", "weather_%d.json" % TY_YEAR)).get("by_date", {}),
     }
     trends = _load(os.path.join("data", "backfill", "trends_history.json")).get("diseases", {})
-    # Pre-parse each disease x state weekly series into sorted (date, value) lists for nearest-week lookup.
-    tseries = {}
-    for did in dids:
-        by_state = trends.get(did, {}).get("by_state", {})
-        tseries[did] = {st: sorted((datetime.date.fromisoformat(p[0]), p[1]) for p in pts)
-                        for st, pts in by_state.items()}
+    tseries = _parse_tseries(trends, dids)
 
     generated_at = _load(os.path.join("data", "grid.json")).get("generated_at", "")
     as_of = _as_of(generated_at)
 
-    # National mean per disease per target week (mean over the states present for that disease), used as the
-    # fallback for cities whose state has no Trends subregion (null geo) or no data for that disease.
-    natmean_cache = {}
-
-    def national_mean(did, target):
-        key = (did, target)
-        if key not in natmean_cache:
-            vals = [_nearest(s, target) for s in tseries[did].values()]
-            vals = [v for v in vals if v is not None]
-            natmean_cache[key] = (sum(vals) / len(vals)) if vals else 0.0
-        return natmean_cache[key]
+    # EXACT search ly+ty from the per-state TIMESERIES so both years share one Google normalisation.
+    search_by_city, weak_search = _search_blocks(tseries, dids, cities, as_of)
 
     def weather_metric(year, w, cid):
         e = weather[year].get(_week_date(year, w).isoformat(), {}).get(cid)
@@ -116,17 +155,6 @@ def main():
         fams = e.get("families", {})
         scores = [fams.get(fam_of[did], 0) for did in dids]
         return _r(sum(scores) / float(len(scores)))
-
-    def search_metric(year, w, state):
-        target = _week_date(year, w)
-        per_disease = []
-        for did in dids:
-            s = tseries[did].get(state)
-            v = _nearest(s, target) if s else None
-            if v is None:
-                v = national_mean(did, target)
-            per_disease.append(v)
-        return _r(sum(per_disease) / float(len(per_disease)))
 
     def carry_forward(arr):
         """Replace any None with the previous (then next) non-None, so a stray missing week never breaks the line."""
@@ -145,18 +173,14 @@ def main():
         return [v if v is not None else 0 for v in out]
 
     out_cities = {}
-    weak_weather, weak_search = 0, 0
+    weak_weather = 0
     for c in cities:
-        cid, state = c["id"], c.get("state", "")
+        cid = c["id"]
         w_ly = carry_forward([weather_metric(LY_YEAR, w, cid) for w in range(NW)])
         w_ty = carry_forward([weather_metric(TY_YEAR, w, cid) for w in range(as_of + 1)])
-        s_ly = [search_metric(LY_YEAR, w, state) for w in range(NW)]
-        s_ty = [search_metric(TY_YEAR, w, state) for w in range(as_of + 1)]
         if not any(weather[LY_YEAR].get(_week_date(LY_YEAR, w).isoformat(), {}).get(cid) for w in range(NW)):
             weak_weather += 1
-        if state not in tseries[dids[0]] and state not in tseries[dids[-1]]:
-            weak_search += 1
-        out_cities[cid] = {"weather": {"ly": w_ly, "ty": w_ty}, "search": {"ly": s_ly, "ty": s_ty}}
+        out_cities[cid] = {"weather": {"ly": w_ly, "ty": w_ty}, "search": search_by_city[cid]}
 
     out = {
         "generated_at": generated_at,
@@ -179,12 +203,11 @@ def update_daily():
     so the values line up with the rest of the page:
       - WEATHER is EXACT: grid signals.weather are the same NASA family scores the last-year backfill used,
         so this-year and last-year weather share one scale (YoY is exact and genuinely changes daily).
-      - SEARCH this-year uses the LIVE cross-state interest the dial + breakdown already show on the page
-        (so the trend's this-year search 'now' matches the rest of the page). The last-year search line was
-        backfilled from the per-state TIMESERIES (a different normalisation), so the cross-year search YoY is
-        DIRECTIONAL, not exact. Making it exact needs a weekly per-state TIMESERIES re-pull (SerpApi quota);
-        see docs/season-trend-module-brief.md. We extend ty here so the trend.js real-branch length guard
-        (search.ty.length === asOf+1) keeps holding as the season advances.
+      - SEARCH is NOT injected from the live grid here. This cron only LENGTH-PADS search ty (carry-forward
+        of the last value) so the trend.js real-branch length guard (search.ty.length === asOf+1) keeps
+        holding as the season advances. The EXACT search ly+ty - both years read from ONE per-state TIMESERIES
+        normalisation - is recomputed WEEKLY by refresh_search() (--search-only), fed by
+        refresh_trends_timeseries.py. So the cross-year search YoY is now EXACT, not directional.
     """
     if not os.path.exists(OUT_PATH):
         print("update_daily: %s missing - run the full build_archive first. Skipping." % OUT_PATH)
@@ -220,13 +243,22 @@ def update_daily():
         if val is not None:
             vec[idx] = val
 
+    def pad_only(vec, idx):
+        # Extend the vector to length idx+1 by carrying the last value forward, WITHOUT overwriting the
+        # current week. Keeps trend.js's length guard (search.ty.length === asOf+1) satisfied between the
+        # weekly EXACT refreshes, without injecting the directional live cross-state value.
+        while len(vec) <= idx:
+            vec.append(vec[-1] if vec else 0)
+
     updated = 0
     for cid, block in arch.get("cities", {}).items():
         cells = cells_by.get(cid)
         if not cells:
             continue
         upsert(block.get("weather", {}).get("ty", []), as_of, metric(cells, "weather"))
-        upsert(block.get("search", {}).get("ty", []), as_of, metric(cells, "trends"))
+        # SEARCH: only keep the length in step; the EXACT search ly+ty is recomputed weekly by refresh_search()
+        # from a fresh per-state TIMESERIES pull (refresh_trends_timeseries.py). See the module docstring.
+        pad_only(block.get("search", {}).get("ty", []), as_of)
         updated += 1
 
     arch["generated_at"] = generated_at
@@ -236,12 +268,81 @@ def update_daily():
           % (updated, as_of, as_of + 1, generated_at[:10]))
 
 
+def refresh_search():
+    """WEEKLY MODE: recompute the EXACT search ly+ty from a fresh per-state TIMESERIES pull
+    (data/backfill/trends_history.json, written by refresh_trends_timeseries.py in the same CI job),
+    leaving the committed weather blocks untouched.
+
+    This is what makes the cross-year SEARCH YoY EXACT: both years are read from the SAME single-window
+    timeseries pull (one Google normalisation), replacing the directional live cross-state value the daily
+    cron used to inject. Reads ONLY committed / CI-available inputs (the archive, cities/diseases/grid, and
+    the fresh trends_history the weekly pull just wrote) - NOT the gitignored weather backfills - so it is
+    CI-safe. Run AFTER --daily (so weather ty and search ty share the same as_of length). Skips gracefully if
+    the archive or the trends history is missing, or if the season has rolled over.
+    """
+    th_path = os.path.join("data", "backfill", "trends_history.json")
+    if not os.path.exists(OUT_PATH):
+        print("refresh_search: %s missing - run the full build_archive first. Skipping." % OUT_PATH)
+        return
+    if not os.path.exists(th_path):
+        print("refresh_search: %s missing - run refresh_trends_timeseries.py first. Skipping." % th_path)
+        return
+    arch = _load(OUT_PATH)
+    cities = _load(os.path.join("config", "cities.json"))
+    cities = cities["cities"] if isinstance(cities, dict) and "cities" in cities else cities
+    diseases = _load(os.path.join("config", "diseases.json"))
+    diseases = diseases["diseases"] if isinstance(diseases, dict) and "diseases" in diseases else diseases
+    dids = [d["id"] for d in diseases]
+
+    generated_at = _load(os.path.join("data", "grid.json")).get("generated_at", "")
+    gy = int(generated_at[0:4]) if generated_at[0:4].isdigit() else TY_YEAR
+    if gy != arch.get("ty_year"):
+        print("refresh_search: grid year %s != archive ty_year %s (season rolled over) - re-run the full "
+              "backfill for the new season. Skipping." % (gy, arch.get("ty_year")))
+        return
+    as_of = _as_of(generated_at)
+
+    trends = _load(th_path).get("diseases", {})
+    tseries = _parse_tseries(trends, dids)
+    search_by_city, _ = _search_blocks(tseries, dids, cities, as_of)
+
+    # Guard against a thin / degraded pull silently overwriting good committed lines: only overwrite a city
+    # whose STATE actually produced a series this run. A state with no series for ANY disease this run would
+    # otherwise drop to the national-mean / zero fallback, so we PRESERVE its prior committed block instead.
+    states_present = set()
+    for did in dids:
+        states_present |= set(tseries.get(did, {}).keys())
+    state_by_cid = {c["id"]: c.get("state", "") for c in cities}
+
+    updated, preserved = 0, 0
+    for cid, block in arch.get("cities", {}).items():
+        sb = search_by_city.get(cid)
+        if sb is None:
+            continue
+        if state_by_cid.get(cid, "") in states_present:
+            block["search"] = sb
+            updated += 1
+        else:
+            preserved += 1  # null-geo / no series this run: keep last-good rather than degrade to fallback
+
+    arch["generated_at"] = generated_at
+    arch["asOf"] = as_of
+    write_json_atomic(OUT_PATH, arch, indent=None)
+    print("refresh_search: recomputed EXACT search for %d cities to as-of week %d (ty len %d); "
+          "%d preserved (state had no series this run)." % (updated, as_of, as_of + 1, preserved))
+
+
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="Build or daily-refresh the committed season-trend archive.")
+    ap = argparse.ArgumentParser(description="Build or refresh the committed season-trend archive.")
     ap.add_argument("--daily", action="store_true",
-                    help="Cron mode: extend this-year (ty) from data/grid.json only (no backfill inputs needed).")
+                    help="CI daily: extend weather ty from data/grid.json; length-pad search ty (no backfills needed).")
+    ap.add_argument("--search-only", action="store_true",
+                    help="CI weekly: recompute EXACT search ly+ty from data/backfill/trends_history.json "
+                         "(written by refresh_trends_timeseries.py); leaves weather blocks untouched.")
     args = ap.parse_args()
-    if args.daily:
+    if args.search_only:
+        refresh_search()
+    elif args.daily:
         update_daily()
     else:
         main()

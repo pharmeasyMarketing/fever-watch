@@ -106,13 +106,21 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 ## Data cadence (LOCKED)
 
 - **Weather (NASA POWER):** pulled **daily** to `data/weather.json`. ~228 calls/day for 228 cities, no key (keyless / US public domain, no hard daily limit).
-- **Google Trends (SerpApi, 5 API keys with failover):** pulled **weekly** to `data/trends.json`. Port the SerpApi
-  provider + multi-key loader from Mosquito Watch into `src/signals/serpapi.py` behind the existing interface.
+- **Google Trends (SerpApi, 5 API keys with failover):** TWO pulls, both inside `daily.yml`:
+  (1) the LIVE cross-state snapshot (`build_trends.py` -> `data/trends.json`, GEO_MAP_0 + news-spike, ~8 searches)
+  runs **daily** and feeds the dial/breakdown/leaderboard; (2) the per-state interest-over-time TIMESERIES
+  re-pull (`refresh_trends_timeseries.py` -> `data/backfill/trends_history.json`, ~132 searches) runs **weekly**
+  (Mondays, aligned to the 1-Jun season week boundary) so the season-trend "this year vs last year" SEARCH lines
+  share one Google normalisation - i.e. the cross-year search YoY is now EXACT, not directional. ~817 searches/mo
+  in-season (of 5 x 250 = 1,250 free); keys roll over on quota/error. The weekly step then runs
+  `build_archive.py --search-only` to recompute the EXACT search ly+ty into the committed archive.
 - **PharmEasy lab positivity (Google Sheet):** read **daily** (backend analytics updates the sheet daily).
   Implement `src/signals/googlesheet.py` (stdlib `urllib` + `csv`). Sheet ID/URL pending from user. Feed format:
   `docs/lab_feed_format.md` + `docs/lab_feed_sample.csv`.
-- **Grid recompute:** **daily** (latest weather + latest lab + most-recent weekly trends) -> `data/grid.json` ->
-  SSG -> commit -> deploy. Two workflows: `daily.yml` (weather + lab + grid + deploy), `weekly.yml` (SerpApi trends).
+- **Grid recompute:** **daily** (latest weather + latest lab + most-recent trends) -> `data/grid.json` ->
+  SSG -> commit -> deploy. ONE workflow `daily.yml` does it all (weather + live trends + grid + the Monday-gated
+  per-state TIMESERIES re-pull + archive + deploy); the SerpApi weekly work was folded into `daily.yml` (there is
+  no separate `weekly.yml`) so the minified single-line `data/archive/trend_series.json` has exactly one committer.
 
 ## UX (LOCKED)
 

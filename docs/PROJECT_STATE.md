@@ -4,6 +4,24 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-14, point #5 EXACT cross-year SEARCH YoY - committed + pushed):** the season-trend "this monsoon
+> vs last year" SEARCH comparison is now EXACT, not directional. NEW `src/refresh_trends_timeseries.py` (env/Actions-
+> secret keys, window `2025-06-01..today` so both years share ONE Google normalisation) does a weekly per-state
+> interest-over-time re-pull -> `data/backfill/trends_history.json`. `src/build_archive.py` gained a `--search-only`
+> mode that recomputes the EXACT search ly+ty from it (weather untouched, + a thin-pull guard that preserves a city's
+> last-good block when its state returns no series this run rather than degrading to the national-mean fallback); and
+> `--daily` NO LONGER injects the live directional search value - it only length-pads search ty so trend.js's
+> `search.ty.length===asOf+1` guard keeps holding between weekly refreshes. `pull_history` was extracted from
+> `backfill_trends.py` and is shared by both pullers. Wired into `daily.yml` as a MONDAY-gated step (aligned to the
+> 1-Jun season week boundary so as_of advances the same day; new `force_search_refresh` workflow_dispatch input to run
+> it on demand) - deliberately NOT a separate `weekly.yml`, because the minified single-line archive JSON must have
+> exactly one committer or two workflows git-conflict. Cost ~132 SerpApi searches/Mon (~817/mo in-season of 5 x 250 =
+> 1,250 free; keys roll over on quota/error). Verified offline (0 quota spent): full rebuild reproduces the committed
+> archive on ly + ty[0] across all 228 cities; --daily is pad-only (no directional injection, weather still grid-
+> sourced); --search-only recomputes exact (225 updated / 3 null-geo preserved); no-key run aborts cleanly; YAML +
+> step order valid; adversarial review verdict SHIP. FIRST LIVE RUN: next Monday cron, or Actions -> Run workflow with
+> force_search_refresh=true (watch for `calls made: ~132` + `recomputed EXACT search`). Lab positivity is still mock.
+>
 > **LATEST (2026-06-14, COMMITTED + PUSHED to master; staging redeploying):** a large multi-stream session shipped
 > ALL of the items the older banner below lists as PENDING/NEXT. 14 commits `1d3f36e`..`3438705`:
 > - **Mobile first-fold redesign COMMITTED** (`1d3f36e`) - the dial/legend/chip/tabs/breeding-weather/breakdown
@@ -42,8 +60,8 @@
 >   commit `080d324` was merged - kept the new-schema grid/history, took the cron's weather/trends).
 > - **STILL PENDING (user-gated):** the real PharmEasy lab-positivity Google Sheet (unlocks the Overall + Labs real
 >   trend and flips positivity off mock); the mobile past-7-days trail strip (DEFERRED, no design yet); production
->   `base_url` + reverse-proxy; brand sign-off; the `mira-bhayandar` local-name confirmation; coords QA;
->   (optional) the weekly per-state TIMESERIES re-pull for EXACT search YoY.
+>   `base_url` + reverse-proxy; brand sign-off; the `mira-bhayandar` local-name confirmation; coords QA.
+>   (DONE 2026-06-14: the weekly per-state TIMESERIES re-pull for EXACT search YoY - see the NEWEST banner at top.)
 >
 > **SUPERSEDED 2026-06-13 banner (the mobile redesign below is NOW COMMITTED `1d3f36e`, and its PENDING/NEXT is all
 > DONE - see the 2026-06-14 banner above):** a full

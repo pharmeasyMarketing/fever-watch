@@ -16,6 +16,11 @@ on:
   schedule:
     - cron: "30 1 * * *"          # ~07:00 IST daily
   workflow_dispatch:
+    inputs:
+      force_search_refresh:
+        description: "Run the weekly per-state TIMESERIES search refresh now (point #5), even if it is not Monday (~132 SerpApi searches)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write                  # commit refreshed data back to master
@@ -94,7 +99,31 @@ jobs:
       - name: Refresh season-trend archive (this-year line) from today's grid
         if: steps.grid.outcome == 'success'
         continue-on-error: true        # soft feature; a hiccup must never block the daily refresh + deploy
-        run: python src/build_archive.py --daily   # extends data/archive/trend_series.json ty (this-year) from grid.json; no backfill inputs needed
+        run: python src/build_archive.py --daily   # weather ty exact from grid.json + length-pad search ty; no backfill inputs needed
+
+      # Point #5: EXACT cross-year SEARCH YoY. Weekly (Mondays, aligned to the 1-Jun season week boundary so
+      # the archive's as_of index advances on the same day the search line is recomputed), a per-state TIMESERIES
+      # re-pull puts last-year and this-year search on ONE Google normalisation, replacing the directional value
+      # the daily step used to inject. Folded into THIS workflow (not a separate weekly.yml) so the minified
+      # single-line archive JSON has exactly one writer/commit and never git-conflicts. ~132 SerpApi searches.
+      - name: Decide if the weekly search refresh runs today (Mon = 1, or forced via dispatch)
+        id: dow
+        run: |
+          DOW=$(date -u +%u)
+          FORCE="${{ github.event.inputs.force_search_refresh }}"
+          echo "UTC day-of-week=$DOW (1=Mon); force_search_refresh=$FORCE"
+          if [ "$DOW" = "1" ] || [ "$FORCE" = "true" ]; then echo "weekly=true" >> "$GITHUB_OUTPUT"; else echo "weekly=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Weekly EXACT search YoY - per-state TIMESERIES re-pull + archive recompute (point #5)
+        if: steps.grid.outcome == 'success' && steps.dow.outputs.weekly == 'true'
+        continue-on-error: true        # soft feature; never block the daily refresh + deploy
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SERPAPI_KEY_2: ${{ secrets.SERPAPI_KEY_2 }}
+          SERPAPI_KEY_3: ${{ secrets.SERPAPI_KEY_3 }}
+          SERPAPI_KEY_4: ${{ secrets.SERPAPI_KEY_4 }}
+          SERPAPI_KEY_5: ${{ secrets.SERPAPI_KEY_5 }}
+        run: python src/refresh_trends_timeseries.py && python src/build_archive.py --search-only
 
       - name: Commit refreshed data back
         run: |
