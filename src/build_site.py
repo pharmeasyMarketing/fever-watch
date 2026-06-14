@@ -587,7 +587,7 @@ _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>'
 WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>'
 WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>'
-WX_PEAK = _WX_A + '<path d="M12 3v18M3 12h18M5.6 5.6 18.4 18.4M18.4 5.6 5.6 18.4"/></svg>'
+WX_TEMP = _WX_A + '<path d="M14 14.3V5.5a2 2 0 0 0-4 0v8.8a3.4 3.4 0 1 0 4 0Z"/><path d="M12 9.5v4.8"/></svg>'
 
 # Period tabs above the dial. Only granularities present in grid["periods"] render (the data layer gates
 # week/month by how many committed days exist); "today" is always the active default.
@@ -698,25 +698,28 @@ def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str
 
 
 def _weather_card(city: dict) -> str:
-    """Breeding-weather conditions today: humidity + recent rain (live), an ESTIMATED stagnation index
-    and the static dawn/dusk peak tip, each as an outline icon + "Label . value" + a short line. Mirrors
-    mobile.js weatherCard(). Above the fold, so byte-identical to the JS twin."""
+    """Breeding-weather conditions this week: the live inputs that drive the mosquito weather sub-score -
+    temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
+    humidity - plus an ESTIMATED stagnation index (labelled as such), each as an outline icon +
+    "Label . value" + a short line. Mirrors mobile.js weatherCard(). Above the fold, so byte-identical
+    to the JS twin."""
     w = city.get("weather") or {}
-    hum, r7 = w.get("humidity_pct"), w.get("rain_7d_mm")
+    temp, r14 = w.get("temp_mean_c"), w.get("rain_14d_mm")
+    hum = w.get("humidity_pct")
     stag = (w.get("stagnation") or {}).get("level")
     cards = [
+        (WX_TEMP, "Temperature", ("n/a" if temp is None else str(_t_r(temp)) + "°C"), "Breeding is fastest near 29°C, so more mosquitoes emerge."),
+        (WX_RAIN, "Rainfall", ("n/a" if r14 is None else str(_t_r(r14)) + "mm"), "Last 2-week total; lagged water fuels breeding now."),
         (WX_HUM, "Humidity", ("n/a" if hum is None else str(_t_r(hum)) + "%"), "Mosquitoes survive longer and breed more."),
-        (WX_RAIN, "Rainfall", ("n/a" if r7 is None else str(_t_r(r7)) + "mm"), "Standing water increases mosquito growth."),
-        (WX_STAG, "Stagnation", (stag.lower() if stag else "n/a"), "Increases mosquito breeding (estimated)."),
-        (WX_PEAK, "Mosquito peak", "Dawn & Dusk", "Use extra protection."),
+        (WX_STAG, "Stagnation", (stag.lower() if stag else "n/a"), "Still water breeds mosquitoes (estimated)."),
     ]
     cells = ""
     for ic, label, val, sub in cards:
         cells += ('<div class="wxcard"><div class="wxtop">' + ic + '<span class="wxhead">' + esc(label)
                   + '<span class="wxsep"></span><b>' + esc(val) + '</b></span></div>'
                   '<div class="wxsub">' + esc(sub) + '</div></div>')
-    return ('<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions today</h2>'
-            '<p class="sectionsub">What today\'s weather means for mosquito breeding.</p>'
+    return ('<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions this week</h2>'
+            '<p class="sectionsub">What weather means for mosquito breeding.</p>'
             '<div class="wxgrid">' + cells + '</div></div>')
 
 
@@ -737,10 +740,11 @@ SIGNAME = {"weather": "Breeding weather", "trends": "Google Search Interest", "p
 # Per-signal breakdown metadata, byte-identical to the SIG map in assets/js/desktop.js (and mobile.js).
 # The emoji bytes in the labels are intentional and must stay UTF-8-exact (the JS twin emits them raw).
 SIG = {
-    "weather": {"label": "\U0001F327 Breeding weather", "tag": "Leading. Conditions weeks ahead."},
-    "trends": {"label": "\U0001F50D Google Search Interest", "tag": "Coincident. Public concern."},
-    "positivity": {"label": "\U0001F9EA PharmEasy lab signal", "tag": "Lagging. Confirmed positivity."},
+    "weather": {"c": "#15ACA5", "label": "\U0001F327 Breeding weather", "what": "How friendly recent weather is for breeding."},
+    "trends": {"c": "#7C6CD6", "label": "\U0001F50D Search interest", "what": "Search interest vs this city's own range."},
+    "positivity": {"c": "#3661B0", "label": "\U0001F9EA Lab signal", "what": "Lab positivity vs a 35% reference."},
 }
+SHORT = {"positivity": "Lab", "weather": "Weather", "trends": "Search"}
 
 
 def _beacon(band: str) -> str:
@@ -780,15 +784,41 @@ def _sig_badge(delta) -> str:
             + ("Rising vs yesterday" if up else "Easing vs yesterday") + '">' + arrow + '</span>')
 
 
-def _sig(meta: dict, value, weight, delta) -> str:
-    """One signal row, byte-identical to desktop.js sig(meta, value, weight, delta). meta.label carries
-    the UTF-8 emoji RAW (no esc), matching the JS."""
-    absent = value is None
-    return ('<div class="sig"><div class="row"><span class="lbl">' + meta["label"] + '</span>'
-            '<span class="v">' + ("no data" if absent else str(value) + " <i>(" + str(weight) + "%)</i>") + '</span>'
-            + _sig_badge(delta) + '</div>'
-            '<div class="tag">' + ("No confirmed-case data here yet." if absent else meta["tag"]) + '</div>'
-            '<div class="track"><div class="fill" style="width:' + ("0" if absent else str(value)) + '%"></div></div></div>')
+def _contribs(cell: dict) -> dict:
+    """Largest-remainder (Hamilton) apportionment of cell.score across the signals' weighted shares, so the
+    per-signal contribution points sum EXACTLY to the displayed integer score in every mode (agree x1.08,
+    disagree x0.96, forecast cap 69 absorbed). Byte-identical results to desktop.js contribs(cell)."""
+    s = cell.get("signals", {}); w = cell.get("weights", {}); score = cell["score"]; order = ["positivity", "weather", "trends"]
+    sh = {}; base = 0.0
+    for k in order:
+        v = s.get(k); sh[k] = 0.0 if v is None else (w.get(k, 0) / 100) * v; base += sh[k]
+    pts = {"positivity": 0, "weather": 0, "trends": 0}; fr = {}
+    if base > 0:
+        used = 0
+        for k in order:
+            e = score * sh[k] / base; f = math.floor(e); pts[k] = f; fr[k] = e - f; used += f
+        rem = score - used
+        ranked = sorted(order, key=lambda k: (-fr[k], order.index(k)))
+        for i in range(rem):
+            pts[ranked[i]] += 1
+    else:
+        pts[order[0]] = score
+    return pts
+
+
+def _sig(meta: dict, cell: dict, k: str, pt) -> str:
+    """One signal row, byte-identical to desktop.js sig(meta, cell, k, pt). Bar length = the signal's
+    CONTRIBUTION points; raw value + weight kept as small provenance text. meta.label carries the UTF-8
+    emoji RAW (no esc), matching the JS. Absent (forecast) lab -> muted no-data tile, no bar."""
+    v = cell.get("signals", {}).get(k)
+    if v is None:
+        return ('<div class="sig"><div style="font-size:11.5px;font-weight:700;line-height:1.2;color:var(--pe-ink)">' + meta["label"] + '</div>'
+                '<div style="font-size:10px;color:var(--pe-muted);margin-top:5px">No confirmed lab data yet, conditions-only forecast.</div></div>')
+    bw = math.floor(pt / cell["score"] * 100 + 0.5)
+    return ('<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta["label"] + '</span><span style="font-size:15px;font-weight:800;color:' + meta["c"] + '">+' + str(pt) + '</span>' + _sig_badge((cell.get("sig_delta") or {}).get(k)) + '</div>'
+            '<div style="font-size:10px;color:var(--pe-muted);margin:2px 0 5px">' + str(v) + ' raw, ' + str(cell["weights"][k]) + '%</div>'
+            '<div class="track" style="height:6px"><div class="fill" style="width:' + str(bw) + '%;background:' + meta["c"] + '"></div></div>'
+            '<div style="font-size:10px;color:var(--pe-muted);line-height:1.35;margin-top:6px">' + meta["what"] + '</div></div>')
 
 
 def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
@@ -799,21 +829,28 @@ def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
     cid = city["id"]
     driver = city["blend"]["driver"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    ORDER = ["positivity", "weather", "trends"]
     accs = ""
     for d in ordered:
         cell = cells_by[(cid, d["id"])]
         open_ = driver == d["id"]
-        s = cell.get("signals", {}); w = cell.get("weights", {}); sd = cell.get("sig_delta") or {}
-        body = ('<div class="accbody">' + _sig(SIG["weather"], s.get("weather"), w.get("weather"), sd.get("weather"))
-                + _sig(SIG["trends"], s.get("trends"), w.get("trends"), sd.get("trends"))
-                + _sig(SIG["positivity"], s.get("positivity"), w.get("positivity"), sd.get("positivity"))
-                + '<p class="accnote">' + cell["note"] + '</p></div>')
+        pts = _contribs(cell)
+        order = sorted(ORDER, key=lambda k: (-pts[k], ORDER.index(k)))
+        rows = ""
+        sumparts = []
+        for k in order:
+            rows += _sig(SIG[k], cell, k, pts[k])
+            if cell.get("signals", {}).get(k) is not None:
+                sumparts.append(SHORT[k] + " " + str(pts[k]))
+        body = ('<div class="accbody">' + rows
+                + '<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">'
+                + " + ".join(sumparts) + " = " + str(cell["score"]) + '</span>' + cell["note"] + '</p></div>')
         accs += ('<div class="acc' + (" open" if open_ else "") + '"><button class="acchead" data-act="expand" data-id="' + d["id"] + '">'
                  '<span class="emoji">' + d["emoji"] + '</span><span class="name">' + d["label"] + '</span>'
                  '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
                  '<span class="chev">▾</span></button>' + body + '</div>')
     return ('<div class="card whycard"><h2 class="sechead">Why this score?</h2>'
-            '<p class="secsub">Tap a disease to see its three signals.</p>' + accs + '</div>')
+            '<p class="secsub">Tap a disease to see how each signal builds the score.</p>' + accs + '</div>')
 
 
 def _why_section_d(city: dict, diseases: list, cells_by: dict) -> str:
@@ -846,7 +883,7 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, 
     # and s-reads renders below but is intentionally NOT a TOC target).
     toc = ('<aside class="toc"><h2>Quick Links</h2>'
            '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a>'
-           '<a href="#s-weather">Breeding weather conditions today</a><a href="#s-do">Take the right precautions</a>'
+           '<a href="#s-weather">Breeding weather conditions this week</a><a href="#s-do">Take the right precautions</a>'
            '<a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a>'
            '<a href="#s-faq">Common questions</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)

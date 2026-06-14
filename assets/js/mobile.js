@@ -13,7 +13,7 @@
   var WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>';
   var WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>';
   var WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>';
-  var WX_PEAK = _WX_A + '<path d="M12 3v18M3 12h18M5.6 5.6 18.4 18.4M18.4 5.6 5.6 18.4"/></svg>';
+  var WX_TEMP = _WX_A + '<path d="M14 14.3V5.5a2 2 0 0 0-4 0v8.8a3.4 3.4 0 1 0 4 0Z"/><path d="M12 9.5v4.8"/></svg>';
   var BEACON_DUR = { "HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s" };
   var PERIOD_LABELS = [["today", "Today"], ["week", "This week"], ["month", "This month"]];
   function periodTabs(periods) {
@@ -24,10 +24,11 @@
     return '<div class="ftabs">' + out + '</div>';
   }
   var SIG = {
-    weather: { c: "#15ACA5", label: "🌧 Breeding weather", tag: "Leading. Conditions weeks ahead." },
-    trends: { c: "#7C6CD6", label: "🔍 Google Search Interest", tag: "Coincident. Public concern." },
-    positivity: { c: "#3661B0", label: "🧪 PharmEasy lab signal", tag: "Lagging. Confirmed positivity." }
+    weather: { c: "#15ACA5", label: "🌧 Breeding weather", what: "How friendly recent weather is for breeding." },
+    trends: { c: "#7C6CD6", label: "🔍 Search interest", what: "Search interest vs this city's own range." },
+    positivity: { c: "#3661B0", label: "🧪 Lab signal", what: "Lab positivity vs a 35% reference." }
   };
+  var SHORT = { positivity: "Lab", weather: "Weather", trends: "Search" };
   var _IC = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   var IC_SHIELD = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M12 3.2 5.5 6v5.2c0 4 2.7 7.2 6.5 8.6 3.8-1.4 6.5-4.6 6.5-8.6V6L12 3.2Z"/><path d="m9.3 11.7 1.9 1.9 3.5-3.8"/></svg>';
   var IC_VACC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="m17 4 3 3M18.5 5.5 8 16l-3.2 1.2L6 14 16.5 3.5M12.5 7l2 2M9.5 10l2 2"/></svg>';
@@ -233,37 +234,41 @@
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
   }
 
-  // Breeding weather conditions today: humidity + recent rain (live), an ESTIMATED stagnation index
-  // (labelled as such, not a measurement) and the static dawn/dusk peak tip. Byte-identical to
+  // Breeding weather conditions this week: the live inputs that drive the mosquito weather sub-score -
+  // temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
+  // humidity - plus an ESTIMATED stagnation index (labelled as such, not a measurement). Byte-identical to
   // build_site.py _weather_card() (above the fold, CLS 0).
   function weatherCard(c) {
-    var w = c.weather || {}, hum = w.humidity_pct, r7 = w.rain_7d_mm, stag = (w.stagnation || {}).level;
+    var w = c.weather || {}, temp = w.temp_mean_c, r14 = w.rain_14d_mm, hum = w.humidity_pct, stag = (w.stagnation || {}).level;
     var cards = [
+      [WX_TEMP, "Temperature", (temp == null ? "n/a" : Math.round(temp) + "°C"), "Breeding is fastest near 29°C, so more mosquitoes emerge."],
+      [WX_RAIN, "Rainfall", (r14 == null ? "n/a" : Math.round(r14) + "mm"), "Last 2-week total; lagged water fuels breeding now."],
       [WX_HUM, "Humidity", (hum == null ? "n/a" : Math.round(hum) + "%"), "Mosquitoes survive longer and breed more."],
-      [WX_RAIN, "Rainfall", (r7 == null ? "n/a" : Math.round(r7) + "mm"), "Standing water increases mosquito growth."],
-      [WX_STAG, "Stagnation", (stag ? stag.toLowerCase() : "n/a"), "Increases mosquito breeding (estimated)."],
-      [WX_PEAK, "Mosquito peak", "Dawn & Dusk", "Use extra protection."]
+      [WX_STAG, "Stagnation", (stag ? stag.toLowerCase() : "n/a"), "Still water breeds mosquitoes (estimated)."]
     ];
     var cells = cards.map(function (x) {
       return '<div class="wxcard"><div class="wxtop">' + x[0] + '<span class="wxhead">' + esc(x[1]) +
         '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
     }).join("");
-    return '<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions today</h2>' +
-      '<p class="sectionsub">What today\'s weather means for mosquito breeding.</p>' +
+    return '<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions this week</h2>' +
+      '<p class="sectionsub">What weather means for mosquito breeding.</p>' +
       '<div class="wxgrid">' + cells + '</div></div>';
   }
 
   function breakdownCard(c) {
+    var ORDER = ["positivity", "weather", "trends"];
     var accs = orderedDiseases(c).map(function (d) {
-      var cell = cellFor(c.id, d.id), open = state.expanded === d.id, s = cell.signals, w = cell.weights, sd = cell.sig_delta || {};
-      var body = '<div class="accbody">' + sig(SIG.weather, s.weather, w.weather, sd.weather) + sig(SIG.trends, s.trends, w.trends, sd.trends) +
-        sig(SIG.positivity, s.positivity, w.positivity, sd.positivity) + '<p class="accnote">' + cell.note + '</p></div>';
+      var cell = cellFor(c.id, d.id), open = state.expanded === d.id, pts = contribs(cell);
+      var order = ORDER.slice().sort(function (a, b) { return (pts[b] - pts[a]) || (ORDER.indexOf(a) - ORDER.indexOf(b)); });
+      var rows = "", sum = [];
+      order.forEach(function (k) { rows += sig(SIG[k], cell, k, pts[k]); if (cell.signals[k] != null) sum.push(SHORT[k] + " " + pts[k]); });
+      var body = '<div class="accbody">' + rows + '<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">' + sum.join(" + ") + " = " + cell.score + '</span>' + cell.note + '</p></div>';
       return '<div class="acc' + (open ? ' open' : '') + '"><button class="acchead" data-act="expand" data-id="' + d.id + '">' +
         '<span class="emoji">' + d.emoji + '</span><span class="name">' + d.label + '</span>' +
         '<span class="dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span><span class="sc">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
-    return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see its three signals.</p>' + accs + '</div>';
+    return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see how each signal builds the score.</p>' + accs + '</div>';
   }
 
   // Per-signal day-over-day badge (red up = rising / green down = easing vs yesterday). Empty unless a
@@ -276,12 +281,36 @@
       : '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg>';
     return '<span class="sigbadge ' + (up ? "up" : "down") + '" title="' + (up ? "Rising vs yesterday" : "Easing vs yesterday") + '">' + arrow + '</span>';
   }
-  function sig(meta, value, weight, delta) {
-    var absent = value == null;
-    return '<div class="sig"><div class="row"><span class="lbl">' + meta.label + '</span>' +
-      '<span class="v">' + (absent ? "no data" : value + " <i>(" + weight + "%)</i>") + '</span>' + sigBadge(delta) + '</div>' +
-      '<div class="tag">' + (absent ? "No confirmed-case data here yet." : meta.tag) + '</div>' +
-      '<div class="track"><div class="fill" style="width:' + (absent ? 0 : value) + '%"></div></div></div>';
+  // Largest-remainder (Hamilton) apportionment of the displayed integer score across the signals'
+  // weighted shares, so the per-signal contribution points sum EXACTLY to cell.score in every mode
+  // (agree x1.08, disagree x0.96, forecast cap 69 are all absorbed - we apportion the final score, not base).
+  function contribs(cell) {
+    var s = cell.signals, w = cell.weights, score = cell.score, order = ["positivity", "weather", "trends"];
+    var sh = {}, base = 0;
+    order.forEach(function (k) { var v = s[k]; sh[k] = (v == null) ? 0 : (w[k] / 100) * v; base += sh[k]; });
+    var pts = { positivity: 0, weather: 0, trends: 0 }, fr = {};
+    if (base > 0) {
+      var used = 0;
+      order.forEach(function (k) { var e = score * sh[k] / base, f = Math.floor(e); pts[k] = f; fr[k] = e - f; used += f; });
+      var rem = score - used, ranked = order.slice().sort(function (a, b) { return (fr[b] - fr[a]) || (order.indexOf(a) - order.indexOf(b)); });
+      for (var i = 0; i < rem; i++) pts[ranked[i]] += 1;
+    } else { pts[order[0]] = score; }
+    return pts;
+  }
+  // One signal row: bar length = the signal's CONTRIBUTION points (so the three bars sum to the score),
+  // coloured per signal; the raw value + weight stay as small provenance text. Absent (forecast) lab shows
+  // a muted no-data tile (no bar) so the desktop 3-col grid keeps three tiles.
+  function sig(meta, cell, k, pt) {
+    var v = cell.signals[k];
+    if (v == null) {
+      return '<div class="sig"><div style="font-size:11.5px;font-weight:700;line-height:1.2;color:var(--pe-ink)">' + meta.label + '</div>' +
+        '<div style="font-size:10px;color:var(--pe-muted);margin-top:5px">No confirmed lab data yet, conditions-only forecast.</div></div>';
+    }
+    var bw = Math.floor(pt / cell.score * 100 + 0.5);
+    return '<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta.label + '</span><span style="font-size:15px;font-weight:800;color:' + meta.c + '">+' + pt + '</span>' + sigBadge((cell.sig_delta || {})[k]) + '</div>' +
+      '<div style="font-size:10px;color:var(--pe-muted);margin:2px 0 5px">' + v + ' raw, ' + cell.weights[k] + '%</div>' +
+      '<div class="track" style="height:6px"><div class="fill" style="width:' + bw + '%;background:' + meta.c + '"></div></div>' +
+      '<div style="font-size:10px;color:var(--pe-muted);line-height:1.35;margin-top:6px">' + meta.what + '</div></div>';
   }
 
   function actionsCard(c) {

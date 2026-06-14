@@ -4,7 +4,39 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-14, point #5 EXACT cross-year SEARCH YoY - committed + pushed):** the season-trend "this monsoon
+> **NEWEST (2026-06-14, UI-honesty pass - breeding-weather drivers (#6) + contribution-based breakdown (#2 + #4) - committed + pushed):**
+> Two launch-blocker "does it make sense to the user" fixes from the like-to-like review, both verified on BOTH flows
+> (parity_check OK, CLS-0) with the contribution math reconciled across ALL 912 cells (0 mismatches).
+> - **#6 Breeding-weather card now shows what actually DRIVES the weather sub-score** (was humidity + 7-day rain + a
+>   static "Mosquito peak: Dawn & Dusk" tile). Tiles are now Temperature (near the 29C breeding optimum, the dominant
+>   45% term - previously invisible), 14-day LAGGED rainfall (the window the mosquito score actually uses, was 7-day),
+>   Humidity, and the estimated Stagnation index. New thermometer WX_TEMP icon (replaced WX_PEAK); heading "Breeding
+>   weather conditions this week"; subtitle "What weather means for mosquito breeding."
+> - **#2 + #4 "Why this score?" rebuilt to CONTRIBUTION bars.** Each signal's bar length + its "+N" = that signal's
+>   largest-remainder (Hamilton) share of the DISPLAYED integer score, so the three contributions SUM EXACTLY to the
+>   score in every mode (agree x1.08, disagree x0.96, forecast cap 69 all absorbed because we apportion the final
+>   score, not the pre-multiplier base). Bars are coloured per signal (weather #15ACA5 / search #7C6CD6 / lab #3661B0);
+>   the raw value + weight stay as small provenance; a per-signal "what this measures" line addresses #4 (each 0-100 is
+>   a DIFFERENT kind of measure: breeding favourability vs relative search interest vs lab-vs-35%-reference); a footer
+>   reconciles "Lab N + Weather N + Search N = score" followed by the engine note. Forecast cells drop the misleading
+>   empty lab bar for a muted "no confirmed data" tile. Rows ordered by contribution desc (driver signal first). Bar
+>   width = floor(pt/score*100+0.5) (integer, so byte-parity-safe across JS/Python).
+> - **Desktop layout (user-reviewed, several iterations):** the "three separate bars" option was chosen over a single
+>   stacked bar, laid out as COMPACT VERTICAL TILES inside the existing 3-col #s-why grid. Fixed a tile overlap (the
+>   long value collided with the label in the 152px column -> label + +N share one row), fixed cramped day-over-day
+>   badges (centered flex + 6px gap), and compacted the tiles so the dial card (#s-week) and the breakdown card
+>   (#s-why) are EQUAL HEIGHT (603px, both content-filled, no stretch gap).
+> - **Engine/parity:** a new contribs()/_contribs() largest-remainder helper is byte-identical across assets/js/mobile.js
+>   + assets/js/desktop.js + src/build_site.py; the SIG map gained a per-signal colour (.c), shortened labels, and the
+>   "what" microcopy (tag dropped); per-signal colours are emitted INLINE (no mobile.css/desktop.css churn); the desktop
+>   s-why SSR twin stays byte-identical (parity_check OK on the gulbarga forecast-cap fixture). The mobile breakdown is
+>   JS-only and stacks full-width.
+> - **Still mock-flagged (NOT yet addressed - points #1/#3):** lab positivity is still mock, so the lab "+N" + the
+>   "confirmed positivity leads" note are driven by a SIMULATED number. The all-red "rising vs yesterday" badges are now
+>   live (history has a prior day); toning them down + switching the crawlable no-JS table (still RAW values) to
+>   contributions are open optional follow-ups.
+>
+> **2026-06-14 (point #5 EXACT cross-year SEARCH YoY - committed + pushed):** the season-trend "this monsoon
 > vs last year" SEARCH comparison is now EXACT, not directional. NEW `src/refresh_trends_timeseries.py` (env/Actions-
 > secret keys, window `2025-06-01..today` so both years share ONE Google normalisation) does a weekly per-state
 > interest-over-time re-pull -> `data/backfill/trends_history.json`. `src/build_archive.py` gained a `--search-only`

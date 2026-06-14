@@ -129,6 +129,13 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
   `tokens.css`). Co-branded nav lockup at `assets/img/fever-watch-lockup-white.svg`.
 - **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **Top ~230 cities (228 live).**
 - Headline = **max-dominant blend** (`0.8 x top disease + 0.2 x mean of rest`) with the driver disease named.
+- **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
+  largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
+  agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"
+  line and a reconciliation footer. Helper `contribs()`/`_contribs()` is byte-identical across mobile.js/desktop.js/
+  build_site.py. Desktop renders compact vertical tiles in the 3-col `#s-why` grid, kept equal-height with the dial
+  card (`#s-week`). The **breeding-weather card shows the real weather-score drivers** (temperature near 29C, 14-day
+  lagged rain, humidity, estimated stagnation), not a static tip.
 
 ## Open decisions / TODO
 
