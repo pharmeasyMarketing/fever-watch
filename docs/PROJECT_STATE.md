@@ -28,9 +28,22 @@
 >   26-col schema for historical dates and emits `.xlsx` workbooks (default) whose K/L/S/T/U/V columns are REAL baked
 >   Apps Script formulas (or literal-value CSVs) for 2026-06-01..08 (append to `raw_data`) + 2025-06-01..10-30 daily
 >   (separate spreadsheet, ~173K rows). Outputs to `data/backfill/sheet/` (gitignored); the user imports them.
+> - **DAILY ARCHIVE REFRESH WIRED** (`913b363`): `build_archive.py --daily` extends the committed
+>   `data/archive/trend_series.json` this-year (ty) vectors from `data/grid.json` ONLY (CI-safe, needs no backfill
+>   inputs); `daily.yml` runs it after build_daily (continue-on-error) and adds the archive to its commit. So the
+>   season-trend "this year" line now grows on every cron run. WEATHER is EXACT (grid signals.weather are the same
+>   NASA family scores the backfill used); SEARCH this-year uses the live cross-state value (consistent with the
+>   dial + breakdown), so the cross-year SEARCH YoY is DIRECTIONAL not exact - making it exact needs a weekly
+>   per-state TIMESERIES re-pull (SerpApi quota; NOT yet added - offered to the user).
+> - **TEAM DOC:** `Fever_Watch_Project_Document.docx` at the repo root - a 15-section architecture + tech-stack
+>   overview with a full worked example of the score math (Pune, all four layers). Generated locally via docx-js
+>   (build script in a temp dir), NOT committed; the latest copy is `Fever_Watch_Project_Document_v2.docx`.
+> - **EVERYTHING THROUGH `913b363` IS PUSHED + LIVE** (the 2026-06-14 staging deploy ran green; the daily cron
+>   commit `080d324` was merged - kept the new-schema grid/history, took the cron's weather/trends).
 > - **STILL PENDING (user-gated):** the real PharmEasy lab-positivity Google Sheet (unlocks the Overall + Labs real
 >   trend and flips positivity off mock); the mobile past-7-days trail strip (DEFERRED, no design yet); production
->   `base_url` + reverse-proxy; brand sign-off; the `mira-bhayandar` local-name confirmation; coords QA.
+>   `base_url` + reverse-proxy; brand sign-off; the `mira-bhayandar` local-name confirmation; coords QA;
+>   (optional) the weekly per-state TIMESERIES re-pull for EXACT search YoY.
 >
 > **SUPERSEDED 2026-06-13 banner (the mobile redesign below is NOW COMMITTED `1d3f36e`, and its PENDING/NEXT is all
 > DONE - see the 2026-06-14 banner above):** a full
