@@ -91,11 +91,16 @@ jobs:
           python src/sheetlog.py log grid ${{ steps.grid.outcome }} "consolidation engine" "${{ steps.grid.outcome != 'success' && 'grid build did not finish - run cancelled or a weather/trends input problem' || '' }}"
           python src/sheetlog.py raw data/grid.json
 
+      - name: Refresh season-trend archive (this-year line) from today's grid
+        if: steps.grid.outcome == 'success'
+        continue-on-error: true        # soft feature; a hiccup must never block the daily refresh + deploy
+        run: python src/build_archive.py --daily   # extends data/archive/trend_series.json ty (this-year) from grid.json; no backfill inputs needed
+
       - name: Commit refreshed data back
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/weather.json data/trends.json data/grid.json data/history.json
+          git add data/weather.json data/trends.json data/grid.json data/history.json data/archive/trend_series.json
           if git diff --cached --quiet; then
             echo "No data changes to commit."
           else

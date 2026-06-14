@@ -26,6 +26,7 @@ like trend.js build() / _trend_series, so the archive lines align with the modul
 
 Run from the repo root: python src/build_archive.py
 """
+import argparse
 import datetime
 import json
 import math
@@ -169,5 +170,78 @@ def main():
     print("  cities with NO weather backfill: %d ; cities on national-mean search fallback: %d" % (weak_weather, weak_search))
 
 
+def update_daily():
+    """DAILY CRON MODE: extend the committed archive's THIS-YEAR (ty) vectors with today's metrics taken
+    straight from data/grid.json. Reads ONLY data/grid.json + the committed data/archive/trend_series.json -
+    NOT the gitignored backfills - so it is safe to run in CI (the daily.yml cron). Run after build_daily.
+
+    Metric definitions are identical to the full build (mean over the 4 diseases of each signal sub-score),
+    so the values line up with the rest of the page:
+      - WEATHER is EXACT: grid signals.weather are the same NASA family scores the last-year backfill used,
+        so this-year and last-year weather share one scale (YoY is exact and genuinely changes daily).
+      - SEARCH this-year uses the LIVE cross-state interest the dial + breakdown already show on the page
+        (so the trend's this-year search 'now' matches the rest of the page). The last-year search line was
+        backfilled from the per-state TIMESERIES (a different normalisation), so the cross-year search YoY is
+        DIRECTIONAL, not exact. Making it exact needs a weekly per-state TIMESERIES re-pull (SerpApi quota);
+        see docs/season-trend-module-brief.md. We extend ty here so the trend.js real-branch length guard
+        (search.ty.length === asOf+1) keeps holding as the season advances.
+    """
+    if not os.path.exists(OUT_PATH):
+        print("update_daily: %s missing - run the full build_archive first. Skipping." % OUT_PATH)
+        return
+    arch = _load(OUT_PATH)
+    diseases = _load(os.path.join("config", "diseases.json"))
+    diseases = diseases["diseases"] if isinstance(diseases, dict) and "diseases" in diseases else diseases
+    dids = [d["id"] for d in diseases]
+
+    grid = _load(os.path.join("data", "grid.json"))
+    generated_at = grid.get("generated_at", "")
+    gy = int(generated_at[0:4]) if generated_at[0:4].isdigit() else TY_YEAR
+    if gy != arch.get("ty_year"):
+        print("update_daily: grid year %s != archive ty_year %s (season rolled over) - re-run the full "
+              "backfill for the new season. Skipping." % (gy, arch.get("ty_year")))
+        return
+    as_of = _as_of(generated_at)
+
+    cells_by = {}
+    for r in grid.get("grid", []):
+        cells_by.setdefault(r["city"], {})[r["disease"]] = r
+
+    def metric(cells, key):
+        vals = [cells[did].get("signals", {}).get(key) for did in dids if did in cells]
+        vals = [v for v in vals if v is not None]
+        return _r(sum(vals) / len(vals)) if vals else None
+
+    def upsert(vec, idx, val):
+        # Pad any skipped weeks by carrying the last value forward (the cron runs daily, so idx grows by
+        # at most 1 per week and gaps are not expected), then set the current week.
+        while len(vec) <= idx:
+            vec.append(vec[-1] if vec else (val if val is not None else 0))
+        if val is not None:
+            vec[idx] = val
+
+    updated = 0
+    for cid, block in arch.get("cities", {}).items():
+        cells = cells_by.get(cid)
+        if not cells:
+            continue
+        upsert(block.get("weather", {}).get("ty", []), as_of, metric(cells, "weather"))
+        upsert(block.get("search", {}).get("ty", []), as_of, metric(cells, "trends"))
+        updated += 1
+
+    arch["generated_at"] = generated_at
+    arch["asOf"] = as_of
+    write_json_atomic(OUT_PATH, arch, indent=None)
+    print("update_daily: extended %d cities to as-of week %d (ty len %d) from data/grid.json (%s)."
+          % (updated, as_of, as_of + 1, generated_at[:10]))
+
+
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description="Build or daily-refresh the committed season-trend archive.")
+    ap.add_argument("--daily", action="store_true",
+                    help="Cron mode: extend this-year (ty) from data/grid.json only (no backfill inputs needed).")
+    args = ap.parse_args()
+    if args.daily:
+        update_daily()
+    else:
+        main()
