@@ -123,7 +123,9 @@
   /* Big centered dial with the legend stacked BELOW it, so the dial card fills its (equal) height
      naturally and the band chip + note + Share sit snug at the bottom. */
   .rtop { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-  .ringwrap { position: relative; flex-shrink: 0; }
+  /* The shared ring() markup inline-styles .ringwrap to 120px (size param, shared with mobile); override to
+     188px on desktop only via !important so the wrapper actually contains the scaled dial (no legend overlap). */
+  .ringwrap { position: relative; flex-shrink: 0; width: 188px !important; height: 188px !important; }
   .ringwrap svg { width: 188px; height: 188px; max-width: none; display: block; }
   .ringwrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .ringwrap .numtop { display: flex; align-items: baseline; gap: 3px; }
