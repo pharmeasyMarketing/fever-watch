@@ -88,15 +88,29 @@
     var searchNow = meanSignal(cells, "trends");
     var labsNow = meanSignal(cells, "positivity");
 
-    // Use REAL archive series for weather + search when present (both years share one normalisation);
-    // else fall back to the deterministic mock. Overall + labs stay on the mock (see realSeries note).
+    // Use REAL archive series for weather + search + labs when present (both years share one normalisation);
+    // else fall back to the deterministic mock. Overall stays on the mock (see realSeries note).
     var wReal = arch && arch.weather && arch.weather.ly && arch.weather.ly.length === NW && arch.weather.ty && arch.weather.ty.length === asOf + 1;
     var sReal = arch && arch.search && arch.search.ly && arch.search.ly.length === NW && arch.search.ty && arch.search.ty.length === asOf + 1;
+    // Labs is REAL when the committed archive carries a full-season last-year line that is not all-zero
+    // (an all-zero / missing labs.ly means no 2025 lab history for this city -> "coming soon" empty state),
+    // and the this-year line is at the current length. labs.ty seeds from the grid (signals.positivity);
+    // if it is short (no live positivity yet) we still chart last-year and fill ty from the live mean.
+    var labsLy = arch && arch.labs && arch.labs.ly;
+    var labsHasLy = labsLy && labsLy.length === NW && labsLy.some(function (v) { return v > 0; });
+    var labsTy = arch && arch.labs && arch.labs.ty ? arch.labs.ty : [];
+    var labsTyOk = labsTy.length === asOf + 1 && labsTy.every(function (v) { return v != null; });
+    // Labs this-year: prefer the committed grid-seeded ty; if it is short/missing (archive not yet extended
+    // by the daily cron), fall back to the live labs mean carried flat across the weeks, matching the grid
+    // seed in build_archive (a single daily snapshot -> the same value each week, current week overwritten daily).
+    var labsTyFinal = labsTyOk ? labsTy
+      : (labsNow != null ? Array.apply(null, { length: asOf + 1 }).map(function () { return labsNow; }) : null);
+    var labsReal = labsHasLy && labsTyFinal;
     var metrics = {
       overall: metricSeries(cid, "overall", blend.score, asOf),
       weather: wReal ? realSeries(arch.weather, asOf) : (weatherNow == null ? { avail: false } : metricSeries(cid, "weather", weatherNow, asOf)),
       search: sReal ? realSeries(arch.search, asOf) : (searchNow == null ? { avail: false } : metricSeries(cid, "search", searchNow, asOf)),
-      labs: labsNow == null ? { avail: false } : metricSeries(cid, "labs", labsNow, asOf)
+      labs: labsReal ? realSeries({ ly: labsLy, ty: labsTyFinal }, asOf) : { avail: false }
     };
 
     var ov = metrics.overall;

@@ -30,7 +30,7 @@
       "spreadsheet_id": "1ng_rj-vyFTr_I78o1JLVImLwKfVUNrNA84-taFTgiVo",
       "tab": "Year 2026 DoD data(TC Data)",
       "key_file": "secrets/gsheets_sa.json",
-      "window_days": 28,
+      "window_days": 14,
       "min_tests": 30,
       "ref_positivity_pct": 35
     }

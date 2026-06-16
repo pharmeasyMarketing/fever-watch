@@ -28,19 +28,24 @@ container-bound or standalone - change `SHEET_ID` below to retarget.
   - `score` (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O), mirroring
     `config/consolidation.json`; OVERALL = `ROUND(0.8*top + 0.2*mean-of-rest)` over that city's disease rows.
   - `confidence` (S) downgrades one step (High->Moderate, Moderate->Low) when the cell is `stale` (Z) -
-    i.e. it used a carried-forward reading. When the real lab feed is wired, `tests_booked / positives`
-    can be added ahead of `positivity`.
+    i.e. it used a carried-forward reading.
+  - **Labs build-up (live):** `tests_booked` (AB) + `positives` (AC) are POSTed (the raw window-summed lab
+    inputs, from the gitignored sidecar `data/positivity_detail.json` build_daily writes), and
+    `positivity_pct` (AD) is a FORMULA = `positives/tests_booked*100`. The positivity signal (O) =
+    `MIN(100, ROUND(positivity_pct/35*100))`, blank when `tests_booked < 30` (forecast-only). So the
+    sheet shows the WHOLE chain: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).
+    These columns are appended at the END so the existing A-AA letters (and all formulas) never shift.
 - **`daily_summary`** - date- and city-level scores, all **by formula** (auto-update as `raw_data` grows):
   avg disease score by `date x disease` (excludes OVERALL rows); a daily `avg / peak / cells`; and the
   **city headline blend** per `date x city`, read straight from the `OVERALL` rows (now exact, not the
   old `0.75*peak + 0.25*avg` approximation). Pure in-sheet formulas - edit/extend freely.
 
-> **Applying the new columns/formulas to your existing sheet:** the column sets changed - `raw_data`
-> gained the weather_score/trends_score build-up formulas plus `trends_state_interest`, `weather_fresh`,
-> `trends_fresh`, `stale`; `run_log` gained `reason`. So: paste the updated `Code.gs`, re-deploy a **new
-> version**, then **delete the `raw_data` + `daily_summary` tabs** (the script recreates them with the new
-> columns + formulas on the next run) and **add a `reason` header in `run_log!G1`** (or clear `run_log`
-> to let it self-heal the header - clearing loses history). Then re-run `gh workflow run daily.yml`.
+> **Applying the new columns/formulas to your existing sheet:** the column set changed again - `raw_data`
+> gained `tests_booked` (AB), `positives` (AC) and the `positivity_pct` (AD) build-up formula (the live
+> labs chain). So: paste the updated `Code.gs`, re-deploy a **new version**, then **delete the `raw_data`
+> + `daily_summary` tabs** (the script recreates them with the new columns + formulas on the next run).
+> Then re-run `gh workflow run daily.yml` (or wait for the scheduled cron). No secret changes are needed -
+> the labs values flow through the existing `raw_data` push.
 
 ## One-time setup (~5 min)
 
@@ -75,7 +80,7 @@ const HEADERS = {
   // score/band/mode (T-V) are FORMULAS the script writes per row - the full BUILD-UP, so each derived
   // cell shows HOW it is computed (mirrors config/scoring.json + config/consolidation.json). Each city
   // also gets one disease="OVERALL" row whose score formula is the headline blend over its disease rows.
-  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale','weather_source'],
+  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale','weather_source','tests_booked','positives','positivity_pct'],
 };
 
 function doPost(e) {
@@ -110,7 +115,7 @@ function doPost(e) {
 //  - score (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O). OVERALL rows: 0.8*top +
 //    0.2*mean-of-rest over that run's disease rows for the city (matched on run_id B + city C).
 function _setRawFormulas(sh, start, n, rows) {
-  const fK = [], fL = [], fS = [], fT = [], fU = [], fV = [];
+  const fK = [], fL = [], fS = [], fT = [], fU = [], fV = [], fAD = [];
   for (let i = 0; i < n; i++) {
     const r = start + i;
     if (rows[i][4] === 'OVERALL') {
@@ -120,7 +125,7 @@ function _setRawFormulas(sh, start, n, rows) {
       const ct = 'COUNTIFS($B:$B,$B' + r + ',$C:$C,$C' + r + ',$E:$E,"<>OVERALL")';
       fK.push(['=""']); fL.push(['=""']); fS.push(['=""']);  // no per-signal sub-scores on the blend row
       fT.push(['=IFERROR(ROUND(0.8*' + mx + '+0.2*(' + sm + '-' + mx + ')/(' + ct + '-1)),ROUND(' + mx + '))']);
-      fV.push(['="blend"']);
+      fV.push(['="blend"']); fAD.push(['=""']);
     } else {
       // weather_score (K): family-weighted build-up over G temp_c / H humidity / I rain_7d / J rain_14d.
       fK.push(['=IF($F' + r + '="mosquito",ROUND((0.45*IF(OR($G' + r + '<=14,$G' + r + '>=38),0,MAX(0,MIN(1,1-(($G' + r + '-29)/13)^2)))+0.35*MAX(0,MIN(1,$J' + r + '/60))+0.20*MAX(0,MIN(1,($H' + r + '-40)/50)))*100),IF($F' + r + '="waterborne",ROUND((0.6*MAX(0,MIN(1,$I' + r + '/80))+0.4*MAX(0,MIN(1,$J' + r + '/80)))*100),""))']);
@@ -133,6 +138,10 @@ function _setRawFormulas(sh, start, n, rows) {
         'ROUND(MIN(100,(($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + '+($R' + r + '/100)*$O' + r + ')*' +
         'IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,1.08,0.96))))']);
       fV.push(['=IF($O' + r + '="","forecast","confirmed")']);
+      // AD positivity_pct: the raw labs build-up = positives(AC)/tests_booked(AB)*100. The
+      // positivity signal (O) = MIN(100, ROUND(positivity_pct/35*100)) and is blank (forecast-only)
+      // when tests_booked < 30. So the full chain is AB,AC -> AD -> O -> T (score).
+      fAD.push(['=IF(OR($AB' + r + '="",$AB' + r + '=0),"",ROUND($AC' + r + '/$AB' + r + '*100,1))']);
     }
     fU.push(['=IFS($T' + r + '>=70,"HIGH",$T' + r + '>=45,"MODERATE",$T' + r + '>=25,"LOW-MODERATE",TRUE,"LOW")']);
   }
@@ -142,6 +151,7 @@ function _setRawFormulas(sh, start, n, rows) {
   sh.getRange(start, 20, n, 1).setFormulas(fT);  // T score
   sh.getRange(start, 21, n, 1).setFormulas(fU);  // U band
   sh.getRange(start, 22, n, 1).setFormulas(fV);  // V mode
+  sh.getRange(start, 30, n, 1).setFormulas(fAD); // AD positivity_pct (raw labs build-up)
 }
 
 function _ensure(ss, name) {
@@ -200,6 +210,9 @@ const DICT = [
   ['trends_fresh', 'How fresh this disease trends data is (build_trends carries forward the last-good per disease on a SerpApi failure): fresh / carried Nd / stale Nd / unknown.'],
   ['stale', 'TRUE if any signal is older than stale_days (config/consolidation.json) - the cell used a carried-forward reading and its confidence is downgraded one step.'],
   ['weather_source', 'Provenance of the weather inputs: rainfall from NOAA CPC (gauge-based, US public domain); temperature and humidity from NASA POWER.'],
+  ['tests_booked', 'Aggregate lab tests for this city/disease over the trailing window (config window_days), live PharmEasy/ThyroCare feed via the Sheets API. Raw input to positivity; logged here only (never in the public site).'],
+  ['positives', 'Aggregate positive results over the same window. positivity_pct = positives / tests_booked * 100.'],
+  ['positivity_pct', 'FORMULA: positives(AC)/tests_booked(AB)*100. The positivity signal (O) = MIN(100, ROUND(positivity_pct/35*100)), blank (forecast-only) when tests_booked < 30. Completes the build-up: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).'],
 ];
 function _ensureDictionary(ss) {
   if (ss.getSheetByName('data_dictionary')) return;

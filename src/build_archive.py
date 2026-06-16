@@ -24,13 +24,19 @@ week). The search metric MUST take this-year from the same per-state TIMESERIES 
 GEO_MAP_0 value) so the two lines share one normalisation. Weeks are anchored to 1 Jun + 7 day steps, exactly
 like trend.js build() / _trend_series, so the archive lines align with the module's week axis.
 
-Three modes (run from the repo root):
+Four modes (run from the repo root):
   python src/build_archive.py                 # full build from the backfills (weather + search, both years)
-  python src/build_archive.py --daily         # CI daily: extend weather ty from grid.json; length-pad search ty
+  python src/build_archive.py --daily         # CI daily: extend weather ty + labs ty from grid.json; length-pad search ty
   python src/build_archive.py --search-only   # CI weekly: recompute EXACT search ly+ty from a fresh per-state
                                               #   TIMESERIES (data/backfill/trends_history.json), weather untouched.
                                               #   Fed by refresh_trends_timeseries.py. This is what makes the
                                               #   cross-year SEARCH YoY EXACT (one normalisation for both years).
+  python src/build_archive.py --labs-history  # ONE-OFF (re-run on a new 2025 lab pull): build the REAL labs.ly
+                                              #   per city from the "Last Year DoD data(PE Data)" Google Sheet tab
+                                              #   via the Sheets API, COUNTS-FREE (only the 0-100 positivity signal
+                                              #   is written; never raw tests/positives), and merge labs{ly,ty} into
+                                              #   the committed archive (weather/search untouched). Run the full
+                                              #   build first so the city blocks exist.
 """
 import argparse
 import datetime
@@ -40,10 +46,19 @@ import os
 
 from iohelpers import write_json_atomic
 
+try:  # works whether src/ is on sys.path (import signals) or imported as src.signals
+    from signals.gsheet_api import read_values as _gs_read_values, _signal as _lab_signal
+    from citymap import CityResolver
+except (ImportError, ValueError):  # pragma: no cover - import path shim
+    from .signals.gsheet_api import read_values as _gs_read_values, _signal as _lab_signal
+    from .citymap import CityResolver
+
 NW = 22                      # weeks in the season window (1 Jun -> 30 Oct), matches TREND_SHAPE length
 LY_YEAR, TY_YEAR = 2025, 2026
 TREND_TOL_DAYS = 4           # nearest-week match tolerance (Google's weekly buckets drift vs the 1-Jun anchor across a year)
 OUT_PATH = os.path.join("data", "archive", "trend_series.json")
+LABS_TAB = "Last Year DoD data(PE Data)"   # 2025 daily lab feed tab (dt, city, disease, total_tests, total_positive_cases)
+SIGNALS_PATH = os.path.join("config", "signals.json")
 
 
 def _r(x):
@@ -156,22 +171,6 @@ def main():
         scores = [fams.get(fam_of[did], 0) for did in dids]
         return _r(sum(scores) / float(len(scores)))
 
-    def carry_forward(arr):
-        """Replace any None with the previous (then next) non-None, so a stray missing week never breaks the line."""
-        out, last = list(arr), None
-        for i, v in enumerate(out):
-            if v is None:
-                out[i] = last
-            else:
-                last = v
-        nxt = None
-        for i in range(len(out) - 1, -1, -1):
-            if out[i] is None:
-                out[i] = nxt
-            else:
-                nxt = out[i]
-        return [v if v is not None else 0 for v in out]
-
     out_cities = {}
     weak_weather = 0
     for c in cities:
@@ -203,6 +202,10 @@ def update_daily():
     so the values line up with the rest of the page:
       - WEATHER is EXACT: grid signals.weather are the same NASA family scores the last-year backfill used,
         so this-year and last-year weather share one scale (YoY is exact and genuinely changes daily).
+      - LABS is extended from the live grid the same way as weather: ty[as_of] = mean over the diseases of
+        each cell's signals.positivity (already the 0-100 gated positivity signal, so it stays COUNTS-FREE).
+        It shares the same scale as labs.ly (both apply gsheet_api._signal vs ref 35%), so the lab YoY is
+        exact. Cities with no live positivity (mock/no-data) keep their existing ty (no overwrite).
       - SEARCH is NOT injected from the live grid here. This cron only LENGTH-PADS search ty (carry-forward
         of the last value) so the trend.js real-branch length guard (search.ty.length === asOf+1) keeps
         holding as the season advances. The EXACT search ly+ty - both years read from ONE per-state TIMESERIES
@@ -259,6 +262,14 @@ def update_daily():
         # SEARCH: only keep the length in step; the EXACT search ly+ty is recomputed weekly by refresh_search()
         # from a fresh per-state TIMESERIES pull (refresh_trends_timeseries.py). See the module docstring.
         pad_only(block.get("search", {}).get("ty", []), as_of)
+        # LABS: extend ty from the live grid like weather (mean of signals.positivity over diseases). Only
+        # cities that already have a labs block (i.e. real 2025 labs.ly) get a ty - a city with no lab
+        # history stays on the "coming soon" empty state. signals.positivity is already the 0-100 gated
+        # signal, so this is COUNTS-FREE.
+        labs = block.get("labs")
+        if labs is not None:
+            labs.setdefault("ty", [])
+            upsert(labs["ty"], as_of, metric(cells, "positivity"))
         updated += 1
 
     arch["generated_at"] = generated_at
@@ -332,6 +343,183 @@ def refresh_search():
           "%d preserved (state had no series this run)." % (updated, as_of, as_of + 1, preserved))
 
 
+def _labs_cfg():
+    """Resolve the Sheets API config for the 2025 lab tab from config/signals.json positivity.gsheet_api.
+    The key file is read from cfg.key_file / env GOOGLE_SHEETS_SA_JSON|FILE inside gsheet_api._load_credentials,
+    so this only needs to surface spreadsheet_id + the gate parameters."""
+    pos = _load(SIGNALS_PATH).get("positivity", {})
+    cfg = dict(pos.get("gsheet_api", {}))
+    if not cfg.get("spreadsheet_id"):
+        raise ValueError("config/signals.json positivity.gsheet_api.spreadsheet_id is empty")
+    return cfg
+
+
+def _labs_ly_blocks(values, resolver, dids, *, min_tests=30, ref_pct=35.0):
+    """Build the COUNTS-FREE last-year (2025) labs.ly per city id from the raw "Last Year DoD data(PE Data)"
+    rows. A week's metric = mean over the diseases that have a non-None positivity signal that week; weeks
+    with no qualifying disease are None and carried forward. A city with NO lab rows at all gets all-zeros so
+    the frontend shows the "coming soon" empty state. Returns {city_id: [22 ints]} - ONLY 0-100 signals are
+    ever materialised here; raw tests/positives stay in local sums and are never returned or written.
+
+    season_week = ((dt - 2025-06-01).days // 7), keeping weeks 0..21 (week 0 = 1 Jun, matching _week_date)."""
+    header = [str(h).strip().lower() for h in (values[0] if values else [])]
+
+    def col(name):
+        return header.index(name) if name in header else None
+    ci = {k: col(k) for k in ("dt", "city", "disease", "total_tests", "total_positive_cases")}
+    missing = [k for k, v in ci.items() if v is None]
+    if missing:
+        raise ValueError("labs sheet header missing columns %s; saw %s" % (missing, header))
+
+    season_start = datetime.date(LY_YEAR, 6, 1)
+    # sums[(cid, disease, week)] = [tests, positives]  (raw counts kept ONLY in this local accumulator)
+    sums = {}
+    cids_seen = set()
+    for row in values[1:]:
+        def g(k):
+            j = ci[k]
+            return row[j] if j is not None and j < len(row) else None
+        d = _parse_lab_date(g("dt"))
+        cid = resolver.resolve(g("city"))
+        disease = str(g("disease") or "").strip().lower()
+        tests = _to_int_lab(g("total_tests"))
+        if d is None or cid is None or not disease or tests is None:
+            continue
+        cids_seen.add(cid)
+        wk = (d - season_start).days // 7
+        if wk < 0 or wk >= NW:
+            continue
+        pos = _to_int_lab(g("total_positive_cases")) or 0
+        acc = sums.setdefault((cid, disease, wk), [0, 0])
+        acc[0] += tests
+        acc[1] += pos
+
+    blocks = {}
+    for cid in cids_seen:
+        weekly = []
+        for wk in range(NW):
+            sigs = []
+            for did in dids:
+                acc = sums.get((cid, did, wk))
+                if not acc:
+                    continue
+                s = _lab_signal(acc[0], acc[1], min_tests, ref_pct)  # COUNTS-FREE 0-100 (or None below the 30 gate)
+                if s is not None:
+                    sigs.append(s)
+            weekly.append(_r(sum(sigs) / float(len(sigs))) if sigs else None)
+        ly = carry_forward(weekly)
+        # carry_forward already zero-fills a fully-empty vector, but be explicit: no qualifying week -> all zeros.
+        blocks[cid] = ly if any(v is not None for v in weekly) else [0] * NW
+    return blocks
+
+
+def _parse_lab_date(s):
+    s = str(s or "").strip()
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+        try:
+            return datetime.datetime.strptime(s, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _to_int_lab(v):
+    if v in (None, ""):
+        return None
+    try:
+        return int(float(str(v).replace(",", "")))
+    except (TypeError, ValueError):
+        return None
+
+
+def carry_forward(arr):
+    """Replace any None with the previous (then next) non-None, so a stray missing week never breaks the line.
+    Identical to main()'s local carry_forward; lifted to module scope so the labs builder reuses it."""
+    out, last = list(arr), None
+    for i, v in enumerate(out):
+        if v is None:
+            out[i] = last
+        else:
+            last = v
+    nxt = None
+    for i in range(len(out) - 1, -1, -1):
+        if out[i] is None:
+            out[i] = nxt
+        else:
+            nxt = out[i]
+    return [v if v is not None else 0 for v in out]
+
+
+def build_labs_history():
+    """ONE-OFF / RE-RUNNABLE: build the REAL COUNTS-FREE labs.ly per city from the 2025 lab Google Sheet tab
+    and merge a labs{ly,ty} block into each city of the committed archive (weather/search untouched).
+
+    Reads the "Last Year DoD data(PE Data)" tab via the Sheets API (service-account creds resolved by
+    gsheet_api from config.key_file / env), computes per (city,disease,week) the gated 0-100 positivity
+    signal (gsheet_api._signal vs ref 35%, 30-test gate), means it over the diseases present that week, and
+    carry-forwards - exactly mirroring how the rest of the page derives the lab sub-score. CRITICAL: only the
+    0-100 signals are written to the public archive; raw tests/positives never leave this process.
+
+    labs.ty is seeded from data/grid.json if available (mean of signals.positivity over diseases, up to the
+    current week), else left as [] for the daily cron (--daily) to extend. Run the full build first so the
+    per-city weather/search blocks exist; cities present only in the lab feed still get a labs block added.
+    """
+    if not os.path.exists(OUT_PATH):
+        print("build_labs_history: %s missing - run the full build_archive first. Skipping." % OUT_PATH)
+        return
+    cfg = _labs_cfg()
+    min_tests = int(cfg.get("min_tests", 30))
+    ref_pct = float(cfg.get("ref_positivity_pct", 35.0))
+
+    diseases = _load(os.path.join("config", "diseases.json"))
+    diseases = diseases["diseases"] if isinstance(diseases, dict) and "diseases" in diseases else diseases
+    dids = [d["id"] for d in diseases]
+
+    resolver = CityResolver()
+    values = _gs_read_values(cfg["spreadsheet_id"], LABS_TAB, cfg)
+    ly_blocks = _labs_ly_blocks(values, resolver, dids, min_tests=min_tests, ref_pct=ref_pct)
+    if resolver.unmapped:
+        unmapped_path = os.path.join("data", "citymap", "unmapped_labs_history.csv")
+        os.makedirs(os.path.dirname(unmapped_path), exist_ok=True)
+        n = resolver.dump_unmapped(unmapped_path)
+        print("  %d unmapped lab city strings logged to %s" % (n, unmapped_path))
+
+    # this-year labs ty: seed from the live grid if present, mirroring update_daily's metric().
+    labs_ty_by_city, ty_as_of = {}, None
+    grid_path = os.path.join("data", "grid.json")
+    if os.path.exists(grid_path):
+        grid = _load(grid_path)
+        ty_as_of = _as_of(grid.get("generated_at", ""))
+        cells_by = {}
+        for r in grid.get("grid", []):
+            cells_by.setdefault(r["city"], {})[r["disease"]] = r
+        for cid, cells in cells_by.items():
+            week = []
+            for wk in range(ty_as_of + 1):
+                # the grid is a single (current) snapshot, so every ty week carries the same current value;
+                # the daily cron then overwrites the current week each day. COUNTS-FREE (signals.positivity).
+                vals = [cells[did].get("signals", {}).get("positivity") for did in dids if did in cells]
+                vals = [v for v in vals if v is not None]
+                week.append(_r(sum(vals) / len(vals)) if vals else None)
+            labs_ty_by_city[cid] = carry_forward(week) if any(v is not None for v in week) else []
+
+    arch = _load(OUT_PATH)
+    cities_blk = arch.setdefault("cities", {})
+    nonzero = 0
+    for cid, ly in ly_blocks.items():
+        block = cities_blk.setdefault(cid, {})  # add labs even if the city was absent from weather/search
+        ty = labs_ty_by_city.get(cid, [])
+        block["labs"] = {"ly": ly, "ty": ty}
+        if any(v for v in ly):
+            nonzero += 1
+
+    write_json_atomic(OUT_PATH, arch, indent=None)
+    size = os.path.getsize(OUT_PATH)
+    print("build_labs_history: wrote labs.ly for %d cities (%d with real >0 lab history) into %s (%d bytes)%s."
+          % (len(ly_blocks), nonzero, OUT_PATH, size,
+             "" if ty_as_of is None else "; seeded labs.ty to as-of week %d" % ty_as_of))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Build or refresh the committed season-trend archive.")
     ap.add_argument("--daily", action="store_true",
@@ -339,8 +527,13 @@ if __name__ == "__main__":
     ap.add_argument("--search-only", action="store_true",
                     help="CI weekly: recompute EXACT search ly+ty from data/backfill/trends_history.json "
                          "(written by refresh_trends_timeseries.py); leaves weather blocks untouched.")
+    ap.add_argument("--labs-history", action="store_true",
+                    help="ONE-OFF: build the REAL COUNTS-FREE labs.ly per city from the 2025 lab Google Sheet "
+                         "tab via the Sheets API; merge labs{ly,ty} into the archive (weather/search untouched).")
     args = ap.parse_args()
-    if args.search_only:
+    if args.labs_history:
+        build_labs_history()
+    elif args.search_only:
         refresh_search()
     elif args.daily:
         update_daily()

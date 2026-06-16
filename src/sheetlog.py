@@ -88,14 +88,26 @@ def _load_terms() -> dict:
         return {}
 
 
+def _load_pos_detail() -> dict:
+    """The gitignored raw-labs sidecar build_daily writes (tests/positives behind each
+    positivity signal). Best-effort: {} if absent (e.g. mock positivity, or local runs)."""
+    try:
+        with open(os.path.join(ROOT, "data", "positivity_detail.json"), "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return {}
+
+
 def push_raw(grid: dict) -> int:
-    """Push the day's full city x disease grid as raw INPUT columns (A-S). The Apps
-    Script derives score/band/mode (T-V) as in-sheet formulas. Per city we also append
-    one disease='OVERALL' row whose score formula is the headline blend over that
-    city's disease rows (0.8*top + 0.2*mean-of-rest)."""
+    """Push the day's full city x disease grid as raw INPUT columns (A-AC). The Apps Script
+    derives weather_score/trends_score/confidence/score/band/mode AND positivity_pct (AD) as
+    in-sheet formulas - the full BUILD-UP from raw labs (tests AB, positives AC) through
+    positivity (O) to the score (T). Per city we also append one disease='OVERALL' row whose
+    score formula is the headline blend over that city's disease rows (0.8*top + 0.2*mean-of-rest)."""
     date = (grid.get("generated_at") or "")[:10]
     labels = {d["id"]: d["label"] for d in grid.get("diseases", [])}
     terms = _load_terms()
+    pos_detail = _load_pos_detail()
     cells_by_city: dict = {}
     for r in grid.get("grid", []):
         cells_by_city.setdefault(r["city"], []).append(r)
@@ -114,6 +126,7 @@ def push_raw(grid: dict) -> int:
             w = r.get("weights", {})
             fr = r.get("freshness", {})
             kw = ", ".join(terms.get(r["disease"], [])) if terms else ""
+            det = pos_detail.get("%s|%s" % (cid, r["disease"])) or {}  # raw labs behind positivity
             rows.append([
                 date, RUN_ID, c.get("name", cid), c.get("state", ""),
                 labels.get(r["disease"], r["disease"]), r.get("family", ""),
@@ -124,6 +137,7 @@ def push_raw(grid: dict) -> int:
                 "", "", "", "",                                    # S confidence, T score, U band, V mode -> FORMULAS
                 s.get("trends_raw"), fr.get("weather", ""), fr.get("trends", ""), r.get("stale", ""),  # W-Z posted
                 WEATHER_SOURCE,                                    # AA weather provenance
+                det.get("tests", ""), det.get("positives", ""), "",  # AB tests_booked, AC positives, AD positivity_pct -> FORMULA
             ])
         # One city-overall line item: the headline blend, score derived by formula (T).
         rows.append([
@@ -133,6 +147,7 @@ def push_raw(grid: dict) -> int:
             "", "", "", "",                                        # S-V formulas (T = blend)
             "", "", "", "",                                        # W-Z blank
             WEATHER_SOURCE,                                        # AA weather provenance
+            "", "", "",                                            # AB-AD blank for the blend row
         ])
 
     sent = 0

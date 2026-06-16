@@ -953,7 +953,7 @@ def _t_metric_series(cid: str, metric: str, V: int, asOf: int) -> dict:
     return {"now": V, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": ly[TREND_PEAK], "avail": True}
 
 
-def _trend_series(city: dict, cells: list, generated_at: str) -> dict:
+def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict | None = None) -> dict:
     cid = city["id"]
     blend = city["blend"]
     ga = generated_at or ""
@@ -962,11 +962,21 @@ def _trend_series(city: dict, cells: list, generated_at: str) -> dict:
     gd = int(ga[8:10]) if ga[8:10].isdigit() else 1
     as_of = _t_clamp((datetime.date(gy, gm, gd) - datetime.date(gy, 6, 1)).days // 7, 0, TREND_NW - 1)
     weather_now, search_now, labs_now = _t_mean(cells, "weather"), _t_mean(cells, "trends"), _t_mean(cells, "positivity")
+    # LABS avail mirrors trend.js build(): real when the committed archive carries a full-season last-year
+    # line that is not all-zero (an all-zero / missing labs.ly = no 2025 lab history -> "coming soon"). The
+    # SSR only BAKES the Overall chart, so for labs we just need the tab's avail flag to match what the JS
+    # will hydrate; the deterministic _t_metric_series stands in for the (JS-replaced) baked series value.
+    labs_ly = (archive_city or {}).get("labs", {}).get("ly") if archive_city else None
+    labs_real = bool(labs_ly) and len(labs_ly) == TREND_NW and any(v > 0 for v in labs_ly)
+    if labs_real:
+        labs_metric = _t_metric_series(cid, "labs", labs_now if labs_now is not None else max(labs_ly), as_of)
+    else:
+        labs_metric = {"avail": False}
     metrics = {
         "overall": _t_metric_series(cid, "overall", blend["score"], as_of),
         "weather": {"avail": False} if weather_now is None else _t_metric_series(cid, "weather", weather_now, as_of),
         "search": {"avail": False} if search_now is None else _t_metric_series(cid, "search", search_now, as_of),
-        "labs": {"avail": False} if labs_now is None else _t_metric_series(cid, "labs", labs_now, as_of),
+        "labs": labs_metric,
     }
     ov = metrics["overall"]
     level = "below" if ov["delta"] <= -6 else ("above" if ov["delta"] >= 6 else "inline")
@@ -1075,10 +1085,10 @@ def _trend_chart_static(model: dict) -> str:
             + zones + yaxis + ly_area + ly_stroke + ty_line + dot + labels + axis + '</svg>')
 
 
-def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -> str:
+def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, archive_city: dict | None = None) -> str:
     cid = city["id"]
     cells = [cells_by[(cid, d["id"])] for d in diseases if (cid, d["id"]) in cells_by]
-    model = _trend_series(city, cells, generated_at)
+    model = _trend_series(city, cells, generated_at, archive_city)
     col = RISK[_t_band(model["metrics"]["overall"]["now"])]
     tone = model["tone"]
     tone_icon = {"below": "▼", "above": "▲", "inline": "≈"}[tone]
@@ -1115,7 +1125,8 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
 
 
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
-                   generated_at: str, disclaimer: str, rel: str, faq: list, periods: list) -> str:
+                   generated_at: str, disclaimer: str, rel: str, faq: list, periods: list,
+                   archive_city: dict | None = None) -> str:
     cid = city["id"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
     date_str = _fmt_date_js(generated_at)
@@ -1153,7 +1164,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                  '<p>Overall monsoon-fever risk this week across ' + str(len(all_cities))
                  + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
 
-    trend_sec = _trend_html(city, diseases, cells_by, generated_at)
+    trend_sec = _trend_html(city, diseases, cells_by, generated_at, archive_city)
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
@@ -1182,7 +1193,8 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
 
 # --- page assembly -----------------------------------------------------------
 
-def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av: str) -> str:
+def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av: str,
+         archive: dict | None = None) -> str:
     rel = "../" if city else ""
     diseases = grid["diseases"]
     generated_at = grid.get("generated_at", "")
@@ -1195,7 +1207,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         canonical = cfg["base_url"] + city["id"] + "/"
         faq = faq_items(city, diseases, cells_by, grid["cities"], generated_at)
         periods = grid.get("periods", ["today"])
-        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel, faq, periods)
+        archive_city = ((archive or {}).get("cities", {}) or {}).get(city["id"])
+        fallback = render_content(city, diseases, cells_by, grid["cities"], generated_at, disclaimer, rel, faq, periods, archive_city)
         # Inline per-city seed so the JS paints the designed view instantly (no wait for the ~850KB
         # grid). The full grid still loads in the background for the other-cities leaderboard.
         city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
@@ -1311,16 +1324,20 @@ def main() -> int:
     os.makedirs(os.path.join(DIST, "data"), exist_ok=True)
     shutil.copy(grid_path, os.path.join(DIST, "data", "grid.json"))
     arch_path = os.path.join(ROOT, "data", "archive", "trend_series.json")
+    archive = None
     if os.path.exists(arch_path):
         os.makedirs(os.path.join(DIST, "data", "archive"), exist_ok=True)
         shutil.copy(arch_path, os.path.join(DIST, "data", "archive", "trend_series.json"))
+        # Load once so the SSR labs-tab avail flag (and the no-JS first paint) matches what trend.js will
+        # hydrate from the committed archive (real labs line for cities with 2025 history, "coming soon" else).
+        archive = load_json(arch_path)
 
     # landing
     av = asset_version()
-    _write("index.html", page(cfg, grid, cells_by, None, env, av))
+    _write("index.html", page(cfg, grid, cells_by, None, env, av, archive))
     # cities
     for c in cities:
-        _write(os.path.join(c["id"], "index.html"), page(cfg, grid, cells_by, c, env, av))
+        _write(os.path.join(c["id"], "index.html"), page(cfg, grid, cells_by, c, env, av, archive))
 
     write_robots(cfg, env)
     write_sitemap(cfg, cities, grid.get("generated_at", ""))

@@ -302,6 +302,18 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
+# Project scope LOCKED to cities with PharmEasy lab-positivity data (2026-06-16, user decision).
+# These 19 had NO lab data in the 2025 season; dropping them takes the config from 228 -> 209.
+# The 3 satellite metros among them (kalyan-dombivli, mira-bhayandar, vasai-virar) are FOLDED into
+# their parent metro for lab routing (see data/citymap/manual_aliases.csv: Kalyan-Dombivli->Thane;
+# Mira-Bhayandar / Vasai-Virar->Mumbai). If a dropped city later gains lab data, remove it from here.
+DROP_NO_LAB_DATA = {
+    "aizawl", "bhavnagar", "gangtok", "imphal", "itanagar", "kalyan-dombivli", "kohima", "leh",
+    "loni", "malegaon", "mira-bhayandar", "morbi", "sambhal", "shillong", "shimla", "shivamogga",
+    "silchar", "ulhasnagar", "vasai-virar",
+}
+
+
 def main() -> int:
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(root, "config", "cities.json")
@@ -309,6 +321,8 @@ def main() -> int:
     seen, cities, errors = set(), [], []
     for name, state, lat, lon, climate in CITIES:
         cid = slugify(name)
+        if cid in DROP_NO_LAB_DATA:
+            continue
         if cid in seen:
             errors.append(f"duplicate id '{cid}' ({name})")
             continue

@@ -197,6 +197,19 @@ def main() -> int:
     )
     print("-" * 88)
 
+    # Sidecar for the score-derivation logger (src/sheetlog.py): the RAW labs inputs
+    # (tests + positives) behind each positivity signal. GITIGNORED on purpose - raw lab
+    # counts are proprietary and must never enter the public grid.json; only the derived
+    # 0-100 signal is public. The logging Google Sheet (internal) shows the full build-up.
+    _pos_detail = getattr(positivity_p, "detail_map", None)
+    if _pos_detail:
+        try:
+            with open(os.path.join(ROOT, "data", "positivity_detail.json"), "w", encoding="utf-8") as _f:
+                json.dump({"%s|%s" % (k[0], k[1]): {"tests": v["tests"], "positives": v["positives"], "pct": v["pct"]}
+                           for k, v in _pos_detail.items()}, _f)
+        except Exception as _e:
+            print("WARN: could not write positivity_detail sidecar: %s" % _e, file=sys.stderr)
+
     rows: list[dict] = []
     failures: list[dict] = []
 

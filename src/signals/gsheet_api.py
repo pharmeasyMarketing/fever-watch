@@ -90,10 +90,15 @@ def _to_int(v) -> Optional[int]:
 
 
 def build_index(values: list[list], resolver: CityResolver, *, window_days: int = 28,
-                min_tests: int = 30, ref_pct: float = 35.0) -> dict:
-    """Aggregate raw rows -> {(city_id, disease): signal|None}. Pure, testable offline."""
+                min_tests: int = 30, ref_pct: float = 35.0, with_detail: bool = False):
+    """Aggregate raw rows -> {(city_id, disease): signal|None}. Pure, testable offline.
+
+    With with_detail=True, returns (index, detail) where detail[(city_id, disease)] =
+    {tests, positives, pct, window_days, gated} for the trailing window - the raw labs
+    inputs used to derive the signal (for the score-derivation logger / explainer; these
+    raw counts are NEVER written to the public grid.json)."""
     if not values:
-        return {}
+        return ({}, {}) if with_detail else {}
     header = [str(h).strip().lower() for h in values[0]]
 
     def col(names):
@@ -126,12 +131,15 @@ def build_index(values: list[list], resolver: CityResolver, *, window_days: int 
     max_date = max(d for recs in daily.values() for (d, _, _) in recs)
     cutoff = max_date - _dt.timedelta(days=window_days - 1) if window_days and window_days > 0 else _dt.date.min
 
-    index = {}
+    index, detail = {}, {}
     for key, recs in daily.items():
         t = sum(tt for (d, tt, _) in recs if d >= cutoff)
         p = sum(pp for (d, _, pp) in recs if d >= cutoff)
         index[key] = _signal(t, p, min_tests, ref_pct)
-    return index
+        detail[key] = {"tests": t, "positives": p,
+                       "pct": round(p / t * 100, 1) if t else None,
+                       "window_days": window_days, "gated": t < min_tests}
+    return (index, detail) if with_detail else index
 
 
 def _signal(tests: int, positives: int, min_tests: int, ref_pct: float) -> Optional[int]:
@@ -155,11 +163,17 @@ class GSheetApiPositivityProvider(PositivityProvider):
         self.window_days = int(cfg.get("window_days", 28))
         resolver = CityResolver()
         values = read_values(self.spreadsheet_id, self.tab, cfg)
-        self._index = build_index(values, resolver, window_days=self.window_days,
-                                  min_tests=self.min_tests, ref_pct=self.ref_pct)
+        self._index, self.detail_map = build_index(
+            values, resolver, window_days=self.window_days,
+            min_tests=self.min_tests, ref_pct=self.ref_pct, with_detail=True)
+        self.ref_pct_used = self.ref_pct
         unmapped_path = cfg.get("unmapped_log", os.path.join("data", "citymap", "unmapped_live.csv"))
         if resolver.unmapped:
             resolver.dump_unmapped(unmapped_path)
 
     def fetch(self, city: dict, disease: dict) -> Optional[int]:
         return self._index.get((city["id"].lower(), disease["id"].lower()))
+
+    def detail(self, city: dict, disease: dict) -> Optional[dict]:
+        """Raw labs inputs (tests, positives, pct) behind the signal, or None. Local/logging only."""
+        return self.detail_map.get((city["id"].lower(), disease["id"].lower()))
