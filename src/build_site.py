@@ -54,7 +54,7 @@ FAQ_ITEMS = [
      "forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This "
      "keeps the read honest."),
     ("How often is it updated?",
-     "Weather is refreshed daily from NASA POWER, search interest weekly, and the lab signal daily. "
+     "Weather is refreshed daily from NOAA CPC and NASA POWER, search interest weekly, and the lab signal daily. "
      "The score for each city is recomputed every day."),
     ("Which cities are covered?",
      "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search "
@@ -92,7 +92,8 @@ METHOD_HTML = (
     "(maximum 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a "
     "max-dominant blend (0.8 times the top disease plus 0.2 times the mean of the rest) with the driver disease named.</p>"
     "<h3>Data sources</h3><ul>"
-    "<li>Weather: NASA POWER (NASA Langley, US public domain / CC0)</li>"
+    "<li>Rainfall: NOAA CPC (US public domain)</li>"
+    "<li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li>"
     "<li>Search: Google Trends</li>"
     "<li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>"
     "<h3>Selected research</h3><ul>"
@@ -328,7 +329,7 @@ def footer_html() -> str:
     return (
         '<footer class="footer"><div class="footin">' + col1 + col2 + col3 + col4 + '</div>'
         '<div class="footbar"><div class="footbarin">'
-        '<span class="footdisc">' + MEDICAL_DISCLAIMER + ' Live weather via NASA POWER (public domain); Google search trends via Google Trends; aggregate lab data from PharmEasy Labs and its Partner Affiliates.</span>'
+        '<span class="footdisc">' + MEDICAL_DISCLAIMER + ' Live rainfall via NOAA CPC (public domain) and temperature/humidity via NASA POWER (public domain); Google search trends via Google Trends; aggregate lab data from PharmEasy Labs and its Partner Affiliates.</span>'
         '<span>&#169; 2026 PharmEasy. All Rights Reserved</span></div></div></footer>'
     )
 
@@ -1109,7 +1110,7 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str) -
             '<span><i class="ty" style="background:' + col + '"></i>This year</span>'
             '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'
             '<p class="fwtrend-caption">' + esc(_trend_caption(model, "overall")) + '</p>'
-            '<p class="fwtrend-sources">Sources: NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>'
+            '<p class="fwtrend-sources">Sources: NOAA CPC, NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>'
             '</div></div></section>')
 
 

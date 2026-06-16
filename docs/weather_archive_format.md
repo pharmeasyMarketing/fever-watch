@@ -28,9 +28,9 @@ python src/build_weather.py --as-of 2025-09-15
 `--start`/`--end` (a range) and `--as-of` (one date) are mutually exclusive. Each also has
 an environment-variable fallback so the archive runner can drive the script without flags:
 `WEATHER_START`, `WEATHER_END`, `WEATHER_AS_OF`. The output directory defaults to
-`data/backfill/` and can be overridden with `--out-archive`. Backfill requires the
-`nasa-power` provider (the only source with real history); pointing it at any other
-provider aborts loudly.
+`data/backfill/` and can be overridden with `--out-archive`. Backfill requires a provider
+that implements `fetch_range` (the default `cpc` hybrid, or `nasa-power`); pointing it at a
+provider without real history (e.g. `open-meteo`) aborts loudly.
 
 Re-running an overlapping range MERGES new dates and cities into the existing per-year
 file; it never clobbers prior dates. A re-fetched (date, city) cell is overwritten in

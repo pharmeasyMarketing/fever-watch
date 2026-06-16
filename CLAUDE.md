@@ -23,7 +23,7 @@ different point in the illness pipeline:
 
 | Signal | Source | Role | Status |
 |---|---|---|---|
-| Weather / breeding | **NASA POWER** (public domain, no key) | Leading (conditions ahead) | live |
+| Weather / breeding | **NOAA CPC** rain + **NASA POWER** temp/humidity (public domain, no key) | Leading (conditions ahead) | live |
 | Search interest | Google Trends (SerpApi / pytrends) | Coincident (public concern) | mock first |
 | Lab positivity | PharmEasy internal labs | Lagging, the ground truth | mock first |
 
@@ -42,10 +42,15 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   history and the future Random-Forest training set.
 - **Front-end:** Python SSG (one static page per city x disease, for programmatic SEO) plus vanilla
   JS for interactivity. No Node build toolchain.
-- **Weather source:** NASA POWER (CC0 / U.S. public domain). ~3-day latency and no forecast, both
-  fine for a trailing breeding index that already designs around a 1-2 week rain-to-emergence lag.
-  Open-Meteo is kept behind the same interface as a dev/forecast option only (its free tier is
-  non-commercial).
+- **Weather source (hybrid, default `cpc`):** RAINFALL from **NOAA CPC** (Global Unified Gauge-Based
+  Analysis; gauge-based, US public domain) - it tracks Indian gauge truth far better than NASA's
+  reanalysis rain, which over-reads the pre-monsoon South (228-city benchmark vs IMD; see
+  `Rain_Data_Provider_Analysis_and_Decision.docx`). TEMPERATURE and HUMIDITY stay on **NASA POWER**
+  (CC0 / U.S. public domain). Both keyless, ~1-3 day latency, no forecast - fine for a trailing breeding
+  index designed around a 1-2 week rain-to-emergence lag. Revert to all-NASA with `--provider nasa-power`
+  (or `WEATHER_PROVIDER=nasa-power`). Open-Meteo stays behind the same interface as a dev/forecast option
+  (its free tier is non-commercial). IMD gauge data is NOT used in production (non-commercial licence);
+  it was the offline validation truth only.
 - **Hosting:** GitHub Pages (public repo) + Actions cron. Production = a subpath on the pharmeasy.in
   apex via reverse-proxy, mirroring Mosquito Watch. `base_url` lives only in `config/site.json`.
 
@@ -95,7 +100,7 @@ but is now unused):
 
 ```
 python scripts/gen_cities.py     # regenerate config/cities.json (228 cities)
-python src/build_weather.py      # NASA POWER -> data/weather.json (daily)
+python src/build_weather.py      # NOAA CPC rain + NASA temp/humidity -> data/weather.json (daily)
 python src/build_daily.py        # compose the grid (reads config/signals.json) -> data/grid.json
 python src/build_trends.py       # WEEKLY: SerpApi -> data/trends.json (needs SERPAPI_KEY)
 python src/consolidate.py        # smoke-test the ensemble engine
@@ -105,7 +110,7 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 
 ## Data cadence (LOCKED)
 
-- **Weather (NASA POWER):** pulled **daily** to `data/weather.json`. ~228 calls/day for 228 cities, no key (keyless / US public domain, no hard daily limit).
+- **Weather (NOAA CPC rain + NASA POWER temp/humidity):** pulled **daily** to `data/weather.json`. ~228 NASA calls/day for temp/humidity + one NOAA CPC NetCDF/year (cached in `data/cpc_cache/`, gitignored) for rain; no key (both US public domain, no hard daily limit).
 - **Google Trends (SerpApi, 5 API keys with failover):** TWO pulls, both inside `daily.yml`:
   (1) the LIVE cross-state snapshot (`build_trends.py` -> `data/trends.json`, GEO_MAP_0 + news-spike, ~8 searches)
   runs **daily** and feeds the dial/breakdown/leaderboard; (2) the per-state interest-over-time TIMESERIES

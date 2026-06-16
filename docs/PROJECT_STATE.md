@@ -4,6 +4,24 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-16, RAIN SOURCE SWITCHED: NASA POWER -> NOAA CPC):** a 228-city benchmark vs IMD
+> gauge truth (dry + wet windows) showed NASA POWER over-reads PRE-MONSOON rainfall in the South
+> peninsula (inflating the breeding + typhoid score in the high-dengue belt; Bengaluru live 14d 194mm
+> NASA vs 61mm IMD). RAIN is now **NOAA CPC** (Global Unified Gauge-Based Analysis; gauge-based, US
+> public domain, no licence). TEMPERATURE + HUMIDITY stay on **NASA POWER**. New HYBRID provider
+> `src/providers/cpc.py` (composes NasaPowerProvider for temp/humidity, overlays CPC precip with a
+> coastal nearest-valid-cell guard); `cpc` is the registry DEFAULT, `--provider nasa-power` (or
+> `WEATHER_PROVIDER=nasa-power`) reverts to all-NASA. COVERED: live daily path, the 2025 (Jun1-Oct30)
+> + 2026 (Jun1+) weather backfills + the season-trend archive (regenerated with CPC), the Google-Sheet
+> logger (new `weather_source` provenance col AA -> RE-DEPLOY the Apps Script + clear the
+> data_dictionary tab), ALL page source citations (rainfall=NOAA CPC, temp/humidity=NASA POWER; SSR<->JS
+> twins + prototypes), and CI deps (netCDF4/xarray added to daily.yml). IMD is NOT used in production
+> (non-commercial licence) - it was the offline validation truth only. Full analysis + decision:
+> `Rain_Data_Provider_Analysis_and_Decision.docx`. Verified live: grid.json on `provider: cpc`,
+> Bengaluru rain_14d 194->62mm (dengue saturation-robust, typhoid + moderate-rain South correctly drop),
+> SSR<->JS parity OK, full SSG builds. Note CPC is ~0.5deg (same as NASA POWER), gauge-based; its edge
+> is concentrated in the early/shoulder season (peak monsoon saturates the rain term regardless).
+>
 > **NEWEST (2026-06-14, UI-honesty pass - breeding-weather drivers (#6) + contribution-based breakdown (#2 + #4) - committed + pushed):**
 > Two launch-blocker "does it make sense to the user" fixes from the like-to-like review, both verified on BOTH flows
 > (parity_check OK, CLS-0) with the contribution math reconciled across ALL 912 cells (0 mismatches).
@@ -583,7 +601,7 @@ Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirr
 ```
 
 ### The 3-signal engine (the heart, built + tested)
-- **Weather / breeding** (leading): NASA POWER, per-disease-family shaping (see scoring.json). Daily.
+- **Weather / breeding** (leading): rain from NOAA CPC + temp/humidity from NASA POWER, per-disease-family shaping (see scoring.json). Daily.
 - **Google Search Interest** (coincident): SerpApi Google Trends, per-state. Weekly -> `trends.json` (read by `cached`).
 - **PharmEasy lab positivity** (lagging, ground truth): Google Sheet, daily.
 
@@ -600,8 +618,9 @@ Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirr
 - **Storage:** static JSON in Git (no server/DB). Daily commits = history + future RF training set.
 - **Front-end:** Python SSG + vanilla JS, **device-adaptive** (separate purpose-built mobile and desktop flows
   served from one URL; NOT responsive).
-- **Weather source:** NASA POWER (US public domain / CC0; ~3-day latency, no forecast - both fine for a trailing
-  breeding index). Open-Meteo kept behind the interface as a dev/forecast-only option (its free tier is non-commercial).
+- **Weather source (hybrid, default `cpc`):** rain from NOAA CPC (gauge-based, US public domain), temp/humidity from
+  NASA POWER (US public domain / CC0; ~1-3 day latency, no forecast - both fine for a trailing breeding index). Revert
+  with `--provider nasa-power`. Open-Meteo kept behind the interface as a dev/forecast-only option (free tier non-commercial).
 - **Cadence:** weather **daily**, trends **weekly** (SerpApi, 5 keys), lab **daily** (Google Sheet, backend-updated).
 - **Blend:** max-dominant `0.8/0.2` + named driver.
 - **Geolocation source:** BigDataCloud `reverse-geocode-client` (keyless, client-side, commercial-OK; client-side-only
@@ -619,7 +638,7 @@ Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirr
 (ensemble + bands + city_blend), `signals.json` (trends/positivity provider selection + config).
 
 **Builders (`src/`):**
-- `build_weather.py` -> `data/weather.json`: NASA POWER per city, per-family sub-scores. Fail-loud guard.
+- `build_weather.py` -> `data/weather.json`: NOAA CPC rain + NASA POWER temp/humidity per city, per-family sub-scores. Fail-loud guard.
 - `consolidate.py`: the ensemble engine (smoke-tested; caught + fixed a real forecast-cap-vs-HIGH bug the prototype had).
 - `weather_score.py`: the per-family shaping (mosquito unimodal temp ~29C x lagged rain x humidity; waterborne rain-led;
   febrile humidity + temp swing + rain).
@@ -704,7 +723,7 @@ Remaining:
 ```
 # Data (from the project root)
 python scripts/gen_cities.py            # regenerate config/cities.json (228 cities)
-python src/build_weather.py             # NASA POWER -> data/weather.json   (daily; ~2 min for 228 cities)
+python src/build_weather.py             # NOAA CPC rain + NASA POWER temp/humidity -> data/weather.json   (daily; ~2 min for 228 cities)
 python src/build_daily.py               # compose the grid (reads signals.json) -> data/grid.json
 python src/build_trends.py              # WEEKLY: SerpApi -> data/trends.json (needs SERPAPI_KEY in env)
 python src/consolidate.py               # smoke-test the ensemble engine

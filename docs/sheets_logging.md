@@ -71,11 +71,11 @@ const SHEET_ID = '1Iz9nAf38PB1UnQr8wR7umuMId4lp9RQuaaJ3HBKcjgc';  // the logs sh
 const HEADERS = {
   run_log:  ['timestamp','run_id','trigger','step','status','detail','reason'],
   // raw_data: the POSTed cells are the raw inputs (G-J weather, M-O trends/positivity, P-R weights,
-  // W-Z trends_state_interest + freshness). weather_score (K), trends_score (L), confidence (S) and
+  // W-Z trends_state_interest + freshness, AA weather_source provenance). weather_score (K), trends_score (L), confidence (S) and
   // score/band/mode (T-V) are FORMULAS the script writes per row - the full BUILD-UP, so each derived
   // cell shows HOW it is computed (mirrors config/scoring.json + config/consolidation.json). Each city
   // also gets one disease="OVERALL" row whose score formula is the headline blend over its disease rows.
-  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale'],
+  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale','weather_source'],
 };
 
 function doPost(e) {
@@ -181,8 +181,8 @@ const DICT = [
   ['family', 'Weather model family: mosquito / waterborne / febrile (selects how weather is shaped).'],
   ['temp_c', 'Trailing mean air temperature (C), NASA POWER. Input to weather_score.'],
   ['humidity_pct', 'Trailing mean relative humidity (%), NASA POWER. Input to weather_score.'],
-  ['rain_7d_mm', 'Rainfall over the last 7 days (mm), NASA POWER. Input to weather_score.'],
-  ['rain_14d_mm', 'Rainfall over the last 14 days (mm), NASA POWER; the lagged breeding signal.'],
+  ['rain_7d_mm', 'Rainfall over the last 7 days (mm), NOAA CPC (gauge-based, US public domain). Input to weather_score.'],
+  ['rain_14d_mm', 'Rainfall over the last 14 days (mm), NOAA CPC (gauge-based, US public domain); the lagged breeding signal.'],
   ['weather_score', 'FORMULA (build-up): 0-100 breeding/transmission favourability, derived in-cell from temp_c/humidity_pct/rain_7d_mm/rain_14d_mm. mosquito = (0.45*tempfit + 0.35*rain14_unit + 0.20*humidity_unit)*100; waterborne = (0.6*rain7_unit + 0.4*rain14_unit)*100. tempfit = unimodal peak at 29C (0 outside 14-38C); *_unit = saturating ramps (config/scoring.json).'],
   ['trends_score', 'FORMULA: MAX(4, MIN(100, trends_state_interest)) - the state Google Trends index for trends_keywords, floored at 4 and capped at 100.'],
   ['trends_keywords', 'The search terms (OR-joined) whose combined interest is trends_score.'],
@@ -199,6 +199,7 @@ const DICT = [
   ['weather_fresh', 'How fresh the weather data is: fresh (today) / carried Nd (1..stale_days old) / stale Nd (older). From weather.json generated_at.'],
   ['trends_fresh', 'How fresh this disease trends data is (build_trends carries forward the last-good per disease on a SerpApi failure): fresh / carried Nd / stale Nd / unknown.'],
   ['stale', 'TRUE if any signal is older than stale_days (config/consolidation.json) - the cell used a carried-forward reading and its confidence is downgraded one step.'],
+  ['weather_source', 'Provenance of the weather inputs: rainfall from NOAA CPC (gauge-based, US public domain); temperature and humidity from NASA POWER.'],
 ];
 function _ensureDictionary(ss) {
   if (ss.getSheetByName('data_dictionary')) return;

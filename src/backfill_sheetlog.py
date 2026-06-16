@@ -24,8 +24,9 @@ K/L/S/T/U/V differ (formulas vs literals). The header row is byte-identical to t
 live raw_data header in both.
 
 Two date ranges (locked decisions):
-  * 2026 backfill: 2026-06-01 .. 2026-06-08 ONLY (the live tab already has 06-09+).
-    -> data/backfill/sheet/raw_data_2026_backfill.{xlsx,csv}  (append to the live tab).
+  * 2026 backfill: 2026-06-01 .. latest backfilled date. (The raw_data tab was RESET 2026-06-16 for the
+    NOAA CPC rain switch, so the FULL Jun 1 history is regenerated; was 06-01..06-08 when the live tab
+    already held 06-09+.) -> data/backfill/sheet/raw_data_2026_backfill.{xlsx,csv}  (import into the tab).
   * 2025 backfill: 2025-06-01 .. 2025-10-30, DAILY (exact replicate).
     -> data/backfill/sheet/raw_data_2025.{xlsx,csv}  (a SEPARATE new spreadsheet).
 
@@ -64,8 +65,9 @@ from signals.mock import MockPositivityProvider  # date-independent positivity s
 ROOT = os.path.dirname(SRC_DIR)
 BACKFILL_DIR = os.path.join(ROOT, "data", "backfill")
 OUT_DIR = os.path.join(BACKFILL_DIR, "sheet")
+WEATHER_SOURCE = "rain: NOAA CPC (public domain); temp/humidity: NASA POWER (public domain)"
 
-# The 26-column raw_data header, byte-identical to HEADERS.raw_data in the Apps
+# The 27-column raw_data header, byte-identical to HEADERS.raw_data in the Apps
 # Script (docs/sheets_logging.md) and the order src/sheetlog.py posts.
 HEADER = [
     "date", "run_id", "city", "state", "disease", "family",
@@ -73,7 +75,7 @@ HEADER = [
     "weather_score", "trends_score", "trends_keywords", "news_spike", "positivity",
     "w_weather", "w_trends", "w_positivity",
     "confidence", "score", "band", "mode",
-    "trends_state_interest", "weather_fresh", "trends_fresh", "stale",
+    "trends_state_interest", "weather_fresh", "trends_fresh", "stale", "weather_source",
 ]
 
 
@@ -281,6 +283,7 @@ def build_grid_for_date(
                 w.get("weather"), w.get("trends"), w.get("positivity"),  # P-R weights
                 res["confidence"], res["score"], bnd["label"], res["mode"],  # S-V (LITERAL)
                 raw, "fresh", "fresh", "FALSE",                  # W trends_state_interest, X/Y fresh, Z stale
+                WEATHER_SOURCE,                                  # AA weather provenance
             ])
 
         # OVERALL city-blend row: score = round(0.8*top + 0.2*mean-of-rest), same as build_daily.
@@ -299,6 +302,7 @@ def build_grid_for_date(
             "", "", "",                                          # P-R weights blank
             "", blended, bnd["label"], "blend",                  # S blank; T score, U band, V "blend"
             "", "fresh", "fresh", "FALSE",                       # W blank; X/Y fresh, Z stale
+            WEATHER_SOURCE,                                      # AA weather provenance
         ])
 
     return rows
@@ -432,7 +436,7 @@ def main() -> int:
 
     run_year(
         "2026", os.path.join(BACKFILL_DIR, "weather_2026.json"),
-        date(2026, 6, 1), date(2026, 6, 8),
+        date(2026, 6, 1), date(2026, 6, 14),
         cities, diseases, consol, trends_hist, pos_provider, terms,
         os.path.join(OUT_DIR, "raw_data_2026_backfill"), fmt)
 

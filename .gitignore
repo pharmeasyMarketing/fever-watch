@@ -16,6 +16,8 @@ serpapi.env
 
 # Local data caches (committed data/*.json outputs are explicit and tracked)
 data/cache/
+# NOAA CPC yearly NetCDF rainfall files (regenerable; downloaded by providers/cpc.py)
+data/cpc_cache/
 
 # Historical weather backfill intermediates (regenerable from NASA POWER via
 # build_weather.py --start/--end; the compact committed artifact is data/archive/)

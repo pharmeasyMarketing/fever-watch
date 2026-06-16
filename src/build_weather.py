@@ -167,12 +167,13 @@ def run_backfill(args, targets: list[date]) -> int:
     used_families = sorted({d["family"] for d in diseases})
     provider = providers.get_provider(args.provider)
 
-    # FIX (step 4): NASA POWER is the only provider with real history; abort
-    # loudly rather than fetch_range -> NotImplementedError on every city.
-    if provider.name != "nasa-power":
+    # Backfill needs real daily history. NASA POWER and the CPC hybrid both
+    # implement fetch_range; open-meteo intentionally inherits the base raise.
+    if type(provider).fetch_range is providers.WeatherProvider.fetch_range:
         raise SystemExit(
-            f"ABORT: historical backfill requires provider 'nasa-power', got "
-            f"'{provider.name}'. Re-run with --provider nasa-power."
+            f"ABORT: historical backfill requires a provider that implements "
+            f"fetch_range (nasa-power or cpc), got '{provider.name}'. "
+            f"Re-run with --provider cpc or --provider nasa-power."
         )
 
     earliest_target = targets[0]

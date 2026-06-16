@@ -10,8 +10,9 @@ can never show HIGH.
 
 ## Architecture
 
-Serverless by design: scheduled scripts write static JSON, a static site reads it. Weather comes from
-NASA POWER (U.S. public domain, no API key, no commercial-licensing complications). See `CLAUDE.md`
+Serverless by design: scheduled scripts write static JSON, a static site reads it. Rainfall comes from
+NOAA CPC (gauge-based, U.S. public domain) and temperature/humidity from NASA POWER (U.S. public domain),
+both keyless and commercial-OK; NASA stays switchable (`--provider nasa-power`). See `CLAUDE.md`
 for the full brief and `docs/` for handoff notes.
 
 ## Run

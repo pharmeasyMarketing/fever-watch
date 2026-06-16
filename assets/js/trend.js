@@ -285,7 +285,7 @@
       + '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'
       + '<p class="fwtrend-caption">' + esc(caption(model, metric)) + '</p>'
       + (st.mode === "desktop" ? smallsHtml(model, metric, st.mode) : "")
-      + '<p class="fwtrend-sources">Sources: NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>';
+      + '<p class="fwtrend-sources">Sources: NOAA CPC, NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>';
     var lead =
       '<div class="fwtrend-pill ' + model.tone + '"><span class="fwtrend-vicon">' + toneIcon + '</span>'
       + '<b>' + esc(model.chip) + '</b> ' + phrase + '</div>'

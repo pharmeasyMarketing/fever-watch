@@ -16,7 +16,8 @@ Columns the Apps Script expects:
   raw_data: date, run_id, city, state, disease, family, temp_c, humidity_pct, rain_7d_mm,
             rain_14d_mm (G-J raw weather inputs); trends_keywords, news_spike, positivity (M-O);
             w_weather, w_trends, w_positivity (P-R weights); trends_state_interest, weather_fresh,
-            trends_fresh, stale (W-Z). weather_score (K), trends_score (L), confidence (S) and
+            trends_fresh, stale (W-Z); weather_source (AA, provenance: rain from NOAA CPC, temp/humidity
+            from NASA POWER). weather_score (K), trends_score (L), confidence (S) and
             score/band/mode (T-V) are in-sheet FORMULAS the Apps Script writes - the full BUILD-UP, so
             every derived cell shows HOW it is computed (weather_score from temp/humidity/rain x the
             family weights; trends_score = MAX(floor, MIN(100, trends_state_interest))). Each city also
@@ -41,6 +42,9 @@ RUN_ID = os.environ.get("GITHUB_RUN_ID", "local")
 TRIGGER = os.environ.get("GITHUB_EVENT_NAME", "manual")
 CHUNK = 400  # rows per POST (keeps each request modest for Apps Script)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Provenance for the weather inputs (col AA). Rainfall switched NASA POWER -> NOAA
+# CPC (gauge-based, US public domain); temperature + humidity stay on NASA POWER.
+WEATHER_SOURCE = "rain: NOAA CPC (public domain); temp/humidity: NASA POWER (public domain)"
 
 
 def _post(sheet: str, rows: list) -> bool:
@@ -119,6 +123,7 @@ def push_raw(grid: dict) -> int:
                 w.get("weather"), w.get("trends"), w.get("positivity"),  # P-R weights
                 "", "", "", "",                                    # S confidence, T score, U band, V mode -> FORMULAS
                 s.get("trends_raw"), fr.get("weather", ""), fr.get("trends", ""), r.get("stale", ""),  # W-Z posted
+                WEATHER_SOURCE,                                    # AA weather provenance
             ])
         # One city-overall line item: the headline blend, score derived by formula (T).
         rows.append([
@@ -127,6 +132,7 @@ def push_raw(grid: dict) -> int:
             "", "", "", "", "", "", "", "",                        # K-R blank for the blend row
             "", "", "", "",                                        # S-V formulas (T = blend)
             "", "", "", "",                                        # W-Z blank
+            WEATHER_SOURCE,                                        # AA weather provenance
         ])
 
     sent = 0

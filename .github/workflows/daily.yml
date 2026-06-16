@@ -48,8 +48,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install build deps (Pillow + share-card text shaping, pinned)
-        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0
+      - name: Install build deps (Pillow + share-card text shaping; netCDF4/xarray for NOAA CPC rain, pinned)
+        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0 "netCDF4>=1.6,<2" "xarray>=2023"
 
       - name: Check SerpApi secrets are present (values never printed)
         env:
@@ -64,12 +64,12 @@ jobs:
           echo "SerpApi keys present: $n / 5"
           if [ "$n" -eq 0 ]; then echo "::error::No SerpApi secrets found - add SERPAPI_KEY..._5"; exit 1; fi
 
-      - name: Build weather (NASA POWER)
+      - name: Build weather (NOAA CPC rain + NASA POWER temp/humidity)
         id: weather
         run: python src/build_weather.py
       - name: Log weather
         if: always()
-        run: python src/sheetlog.py log weather ${{ steps.weather.outcome }} "NASA POWER pull" "${{ steps.weather.outcome != 'success' && 'pull did not finish - run cancelled (e.g. a concurrent deploy) or a NASA POWER error' || '' }}"
+        run: python src/sheetlog.py log weather ${{ steps.weather.outcome }} "NOAA CPC + NASA POWER pull" "${{ steps.weather.outcome != 'success' && 'pull did not finish - run cancelled (e.g. a concurrent deploy) or a weather-provider error' || '' }}"
 
       - name: Build trends (SerpApi, real)
         id: trends
