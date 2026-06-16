@@ -11,3 +11,11 @@
 # A real Google Trends provider may add a dependency later (e.g. pytrends or an
 # HTTP client for SerpApi), but it stays behind the trends-provider interface and
 # is NOT required for the default mock build.
+#
+# Live lab positivity via the Google Sheets API (signal 3, src/signals/gsheet_api.py).
+# Needed ONLY when positivity.provider = "gsheet_api"; the mock/cached/googlesheet
+# (published-CSV) paths stay stdlib-only. Service-account auth requires a JWT/crypto
+# stack, so these are real deps behind the provider interface:
+google-auth>=2.0
+google-api-python-client>=2.0
+

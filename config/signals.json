@@ -20,8 +20,17 @@
   "positivity": {
     "provider": "mock",
     "googlesheet": {
-      "_note": "Set csv_url to the sheet's File > Share > Publish to web > CSV link, then set provider to 'googlesheet'. Format: docs/lab_feed_format.md.",
+      "_note": "Published-to-web CSV path. Set csv_url to the sheet's File > Share > Publish to web > CSV link, then set provider to 'googlesheet'. Format: docs/lab_feed_format.md.",
       "csv_url": "",
+      "min_tests": 30,
+      "ref_positivity_pct": 35
+    },
+    "gsheet_api": {
+      "_note": "LIVE 2026 feed via Google Sheets API + service account (sheet stays private). Setup: enable Sheets API, create a service account, share the sheet with its email as Viewer, provide its JSON key via env GOOGLE_SHEETS_SA_JSON / GOOGLE_SHEETS_SA_FILE or key_file below (gitignored). Then set provider to 'gsheet_api'. window_days = trailing days summed before the 30-test gate.",
+      "spreadsheet_id": "1ng_rj-vyFTr_I78o1JLVImLwKfVUNrNA84-taFTgiVo",
+      "tab": "Year 2026 DoD data(TC Data)",
+      "key_file": "secrets/gsheets_sa.json",
+      "window_days": 28,
       "min_tests": 30,
       "ref_positivity_pct": 35
     }

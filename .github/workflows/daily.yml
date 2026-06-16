@@ -6,8 +6,11 @@
 #
 # Trends provider is 'cached' (TRENDS_PROVIDER=cached) and reads the trends.json this job
 # writes. If SerpApi fails, build_trends writes nothing and build_daily falls back to mock
-# trends, so a SerpApi hiccup never blocks the deploy (weather stays real). Lab positivity
-# stays mock until config/signals.json positivity.csv_url is set.
+# trends, so a SerpApi hiccup never blocks the deploy (weather stays real). Lab positivity is
+# LIVE: POSITIVITY_PROVIDER=gsheet_api reads the private "Year 2026 DoD data(TC Data)" tab via
+# the Google Sheets API (service-account key in secret GOOGLE_SHEETS_SA_JSON); only the derived
+# 0-100 signal lands in grid.json, never the raw counts. The committed config default stays mock
+# so local builds without the key still work.
 #
 # Trigger now: Actions tab -> "Daily refresh + deploy (Fever Watch)" -> Run workflow. That
 # first run also VERIFIES the SerpApi Actions secrets (the "Check secrets" step + build_trends).
@@ -48,8 +51,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install build deps (Pillow + share-card text shaping; netCDF4/xarray for NOAA CPC rain, pinned)
-        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0 "netCDF4>=1.6,<2" "xarray>=2023"
+      - name: Install build deps (Pillow + share-card text shaping; netCDF4/xarray for NOAA CPC rain, pinned; google-auth/api-client for the live lab feed)
+        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0 "netCDF4>=1.6,<2" "xarray>=2023" "google-auth>=2" "google-api-python-client>=2"
 
       - name: Check SerpApi secrets are present (values never printed)
         env:
@@ -85,10 +88,12 @@ jobs:
         if: always()
         run: python src/sheetlog.py log trends ${{ steps.trends.outcome }} "SerpApi Google Trends" "${{ steps.trends.outcome != 'success' && 'SerpApi pull failed - the grid keeps last-good cached trends (mock only on cold start)' || '' }}"
 
-      - name: Build grid (cached real trends; mock fallback if trends missing)
+      - name: Build grid (cached real trends; LIVE lab positivity via Google Sheets API)
         id: grid
         env:
           TRENDS_PROVIDER: cached
+          POSITIVITY_PROVIDER: gsheet_api               # live 2026 TC feed (config default stays mock for local builds)
+          GOOGLE_SHEETS_SA_JSON: ${{ secrets.GOOGLE_SHEETS_SA_JSON }}
         run: python src/build_daily.py
       - name: Log grid + push raw data
         if: always()

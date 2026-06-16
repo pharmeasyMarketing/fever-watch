@@ -10,9 +10,24 @@ env/
 *.env
 !.env.example
 serpapi.env
+# Google Cloud service-account key for the Sheets API (live lab feed) - NEVER commit
+secrets/
+*.sa.json
+gsheets_sa.json
 
 # Internal docs and spreadsheets (never commit to a public repo)
 *.xlsx
+*.docx
+
+# Lab-positivity raw counts + full lab city footprint are PROPRIETARY - never commit to the
+# public repo (only the derived 0-100 signal in grid.json is public, by design). Keep only the
+# counts-free runtime files the city resolver needs (raw -> config_id mapping + manual folds).
+data/lab_feed_2025_historic.csv
+data/citymap/*
+!data/citymap/city_alias_map.csv
+!data/citymap/manual_aliases.csv
+# Rain-provider benchmark CSVs (internal validation vs IMD gauge truth)
+data/benchmark/
 
 # Local data caches (committed data/*.json outputs are explicit and tracked)
 data/cache/

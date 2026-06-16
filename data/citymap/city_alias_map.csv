@@ -1,0 +1,245 @@
+raw,config_id,confidence,basis,true_state,notes
+MUMBAI,mumbai,high,verified,Maharashtra,"India's largest city, Maharashtra capital; exact match to config mumbai. multi_map was a substring artifact."
+DELHI,delhi,high,verified,Delhi,National capital territory; exact match to config delhi. multi_map = substring/alias collision only.
+HYDERABAD,hyderabad,high,verified,Telangana,Capital of Telangana; exact match to config hyderabad. Not the Sindh Pakistan Hyderabad.
+BENGALURU,bengaluru,high,verified,Karnataka,Karnataka capital (Bangalore); exact match to config bengaluru (alias bangalore).
+PATNA,patna,high,verified,Bihar,Capital of Bihar; exact match. multi_map was a visakhaPATNAm substring false hit.
+KOLKATA,kolkata,high,verified,West Bengal,West Bengal capital (Calcutta); exact match to config kolkata (alias calcutta).
+LUCKNOW,lucknow,high,verified,Uttar Pradesh,Uttar Pradesh capital; exact match to config lucknow.
+RANCHI,ranchi,high,geonames+wikidata,Jharkhand,automated CONFIRMED
+PUNE,pune,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+CHENNAI,chennai,high,verified,Tamil Nadu,Tamil Nadu capital (Madras); exact match to config chennai (alias madras).
+BHOPAL,bhopal,high,verified,Madhya Pradesh,Bhopal MP capital; unique major-city name; exact match to config bhopal.
+BHUBANESWAR,bhubaneswar,high,geonames+wikidata,Odisha,automated CONFIRMED
+JAIPUR,jaipur,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+INDORE,indore,high,geonames+wikidata,Madhya Pradesh,automated CONFIRMED
+AHMEDABAD,ahmedabad,high,verified,Gujarat,Ahmedabad Gujarat; unique major-city name; exact match. multi_map = alias artifact.
+JAMSHEDPUR,jamshedpur,high,geonames+wikidata,Jharkhand,automated CONFIRMED
+KATIHAR,katihar,high,geonames+wikidata,Bihar,automated CONFIRMED
+SURAT,surat,high,geonames+wikidata,Gujarat,automated CONFIRMED
+DHANBAD,dhanbad,high,geonames+wikidata,Jharkhand,automated CONFIRMED
+NAGPUR,nagpur,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+VISAKHAPATNAM,visakhapatnam,high,verified,Andhra Pradesh,Vizag AP; unique name; exact match. multi_map = artifact.
+ASANSOL,asansol,high,verified,West Bengal,Asansol WB; unique major-city name; exact match. multi_map = artifact.
+GUWAHATI,guwahati,high,verified,Assam,Guwahati Assam; unique largest-NE-city; exact match. multi_map = artifact.
+VARANASI,varanasi,high,verified,Uttar Pradesh,Varanasi UP = config varanasi exactly; distinctive name. multi_map spurious.
+RAIPUR,raipur,high,geonames+wikidata,Chhattisgarh,automated CONFIRMED
+MUZAFFARPUR,muzaffarpur,high,verified,Bihar,Muzaffarpur Bihar = config (~3km). Distinct from Muzaffarnagar UP.
+CHANDIGARH,chandigarh,high,geonames+wikidata,Chandigarh,automated CONFIRMED
+GWALIOR,gwalior,high,verified,Madhya Pradesh,Gwalior MP = config gwalior exactly; distinctive name. multi_map spurious.
+JABALPUR,jabalpur,high,geonames+wikidata,Madhya Pradesh,automated CONFIRMED
+BHILAI,bhilai,high,verified,Chhattisgarh,Bhilai Durg district CG = config bhilai (~4km).
+BHAGALPUR,bhagalpur,high,verified,Bihar,Bhagalpur Bihar = config bhagalpur (~1km).
+BAREILLY,bareilly,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+DEWAS,dewas,high,geonames+wikidata,Madhya Pradesh,automated CONFIRMED
+BHIWANDI,bhiwandi,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+BOKARO,bokaro,high,verified,Jharkhand,Bokaro Steel City Jharkhand = config bokaro essentially exact; multi_map noise.
+UNNAO,unnao,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+KANPUR,kanpur,high,verified,Uttar Pradesh,Config kanpur matches Kanpur Nagar; dominant Kanpur city = config.
+JHANSI,jhansi,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+ALLAHABAD,prayagraj,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+DURGAPUR,durgapur,high,geonames+wikidata,West Bengal,automated CONFIRMED
+REWA,rewa,high,verified,Madhya Pradesh,Rewa city MP = config rewa within ~1km; same place same state.
+GORAKHPUR,gorakhpur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+PASCHIM BARDHAMAN,asansol,med,district_fold,West Bengal,district -> HQ config city (user decision 2026-06-16)
+COIMBATORE,coimbatore,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+NORTH GOA,panaji,high,geonames+wikidata,Goa,automated CONFIRMED
+RAEBARELI,raebareli,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+AMRITSAR,amritsar,high,verified,Punjab,Sole major Amritsar (Punjab); config amritsar matches.
+VIJAYAWADA,vijayawada,high,verified,Andhra Pradesh,Unambiguous major AP city; config vijayawada matches.
+GOA,panaji,med,user_decision,Goa,user: all Goa -> Panaji (2026-06-16)
+GAYA,gaya,high,verified,Bihar,Gaya Bihar; exact name+state match to config gaya.
+BILASPUR,bilaspur,med,user_decision,Chhattisgarh,user: Bilaspur = Chhattisgarh (2026-06-16)
+ARRAH,arrah,high,verified,Bihar,Arrah (Ara) Bhojpur dist Bihar; exact match to config arrah.
+GUNTUR,guntur,high,verified,Andhra Pradesh,Guntur AP; exact match to config guntur.
+HARDOI,hardoi,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+MEERUT,meerut,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+VADODARA,vadodara,high,geonames+wikidata,Gujarat,automated CONFIRMED
+KHAMMAM,khammam,high,geonames+wikidata,Telangana,automated CONFIRMED
+BEHRAMPUR,brahmapur,high,verified,Odisha,Berhampur=Brahmapur Ganjam dist Odisha = config brahmapur (alias berhampur). WB Baharampur has its own string. wd_guess ahmedabad wrong.
+SATNA,satna,high,geonames+wikidata,Madhya Pradesh,automated CONFIRMED
+NASHIK,nashik,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+WARANGAL,warangal,high,geonames+wikidata,Telangana,automated CONFIRMED
+PURNIA,purnia,high,verified,Bihar,Purnia (Purnea) Bihar = config purnia <1km. PURNEA variant also present -> same city.
+SAGAR,sagar,high,geonames+wikidata,Madhya Pradesh,automated CONFIRMED
+MOHALI,mohali,high,verified,Punjab,Mohali = SAS Nagar Punjab = config mohali ~0km.
+KATNI,katni,high,verified,Madhya Pradesh,Katni (Murwara) MP district HQ = config katni within ~25km same state.
+AGARTALA,agartala,high,verified,Tripura,Capital of Tripura; sole notable place; matches config agartala. multi_map false alarm.
+BARDHAMAN,bardhaman,high,verified,West Bengal,Bardhaman/Burdwan city = config bardhaman (alias burdwan) exactly. City name; multi_map false alarm.
+BEGUSARAI,begusarai,high,verified,Bihar,Begusarai city Bihar = config begusarai ~1km. multi_map false alarm.
+PONDICHERRY,puducherry,high,geonames+wikidata,Puducherry,automated CONFIRMED
+SOUTH GOA,panaji,med,user_decision,Goa,user: all Goa -> Panaji (2026-06-16)
+CUTTACK,cuttack,high,verified,Odisha,Cuttack city Odisha vs config cuttack ~13km apart same city/state. near_threshold does not change identity.
+JAMMU,jammu,high,geonames+wikidata,Jammu and Kashmir,automated CONFIRMED
+DEOGHAR,deoghar,high,geonames+wikidata,Jharkhand,automated CONFIRMED
+GURGAON,gurugram,high,geonames+wikidata,Haryana,automated CONFIRMED
+SITAPUR,sitapur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+HAZARIBAGH,hazaribagh,high,verified,Jharkhand,Hazaribagh Jharkhand = config hazaribagh ~0.5km. Confirmed.
+MATHURA,mathura,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+KOLHAPUR,kolhapur,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+PURI,puri,high,verified,Odisha,Puri Jagannath district HQ Odisha = config puri ~0km.
+HOWRAH,howrah,high,verified,West Bengal,Howrah distinct city across the Hooghly with its own config entry; kolkata guess WRONG. Map to howrah.
+DARBHANGA,darbhanga,high,geonames+wikidata,Bihar,automated CONFIRMED
+PARBHANI,parbhani,high,verified,Maharashtra,Config parbhani Maharashtra district HQ; same place. multi_map spurious.
+MIRZAPUR,mirzapur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+JALANDHAR,jalandhar,high,verified,Punjab,Jalandhar Doaba Punjab = config jalandhar exactly. multi_map spurious alias collision.
+ALIGARH,aligarh,high,verified,Uttar Pradesh,Aligarh UP = config aligarh ~1km. multi_map spurious.
+MUZAFFARNAGAR,muzaffarnagar,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+RAJAHMUNDRY,rajahmundry,high,verified,Andhra Pradesh,"Config rajahmundry AP; same place same state, exact match."
+LUDHIANA,ludhiana,high,geonames+wikidata,Punjab,automated CONFIRMED
+THANE,thane,high,verified,Maharashtra,Config thane Maharashtra; plain city name = Thane city. gn=ulhasnagar wrong; its own config city.
+BELGAUM,belagavi,med,wikidata,Karnataka,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+PURBA BARDHAMAN,bardhaman,high,verified,West Bengal,Bardhaman HQ of Purba Bardhaman district WB = config bardhaman exactly (alias burdwan).
+HOSUR,hosur,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+AURANGABAD,aurangabad,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+TIRUPATI,tirupati,med,wikidata,Andhra Pradesh,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+SATARA,satara,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+ROHTAK,rohtak,high,geonames+wikidata,Haryana,automated CONFIRMED
+SILIGURI,siliguri,high,verified,West Bengal,Siliguri WB ~5km from config siliguri; same place same state.
+GAUTAM BUDDHA NAGAR,noida,med,district_fold,Uttar Pradesh,district -> HQ config city (user decision 2026-06-16)
+FATEHPUR,fatehpur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+NIZAMABAD,nizamabad,high,geonames+wikidata,Telangana,automated CONFIRMED
+THANJAVUR,thanjavur,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+MADURAI,madurai,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+DHULE,dhule,high,verified,Maharashtra,Dhule MH = config dhule almost exactly; same place same state.
+SARAN,chhapra,high,verified,Bihar,Saran district HQ is Chhapra = config chhapra exactly. District string resolves to its HQ config city.
+HARIDWAR,haridwar,high,verified,Uttarakhand,Haridwar Uttarakhand = config haridwar exactly.
+ROURKELA,rourkela,high,geonames+wikidata,Odisha,automated CONFIRMED
+UJJAIN,ujjain,high,verified,Madhya Pradesh,Ujjain MP; exact match to config ujjain coords.
+TIRUCHI,tiruchirappalli,high,verified,Tamil Nadu,"Tiruchi = Trichy = Tiruchirappalli, same TN city = config tiruchirappalli."
+BULANDSHAHR,bulandshahr,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+SHAHJAHANPUR,shahjahanpur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+CHHAPRA,chhapra,high,verified,Bihar,Chhapra HQ Saran district Bihar = config chhapra 2.1km. multi_map is WB Chapra decoy; Bihar dominates.
+PANIPAT,panipat,high,geonames+wikidata,Haryana,automated CONFIRMED
+AMBALA,ambala,high,geonames+wikidata,Haryana,automated CONFIRMED
+VELLORE,vellore,high,verified,Tamil Nadu,"Vellore major city TN; matches config vellore exactly; uniquely TN, no same-name trap."
+AGRA,agra,high,verified,Uttar Pradesh,Agra Taj Mahal city UP; matches config agra exactly; uniquely UP.
+KURNOOL,kurnool,med,wikidata,Andhra Pradesh,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+DAVANGERE,davanagere,high,geonames+wikidata,Karnataka,automated CONFIRMED
+UDAIPUR,udaipur,high,verified,Rajasthan,Udaipur Rajasthan = config udaipur ~3km. Tripura Udaipur small; dominant is Rajasthan.
+BHARUCH,bharuch,high,verified,Gujarat,Bharuch Gujarat city/district HQ = config bharuch exactly. multi_map was city-vs-district; same place.
+CHANDRAPUR,chandrapur,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+AJMER,ajmer,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+RAJKOT,rajkot,high,geonames+wikidata,Gujarat,automated CONFIRMED
+DEHRADUN,dehradun,high,geonames+wikidata,Uttarakhand,automated CONFIRMED
+SALEM,salem,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+COCHIN,kochi,high,verified,Kerala,Cochin is the former name of Kochi Kerala; same city (config kochi).
+KARNAL,karnal,high,geonames+wikidata,Haryana,automated CONFIRMED
+KHARAGPUR,kharagpur,high,verified,West Bengal,Kharagpur Paschim Medinipur WB 11km from config kharagpur; dominant referent (IIT/railway) over minor Bihar namesake.
+NALANDA,bihar-sharif,med,verified,Bihar,Bihar Sharif HQ of Nalanda district; Nalanda town coords ~1.7km from config bihar-sharif. District label maps to HQ within tolerance.
+DAMAN,daman,high,geonames+wikidata,Dadra and Nagar Haveli and Daman and Diu,automated CONFIRMED
+RAMPUR,rampur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+KARIM NAGAR,karimnagar,med,geonames,Telangana,automated LIKELY | likely via same-state (gn only)
+BIHAR SHARIF,bihar-sharif,high,verified,Bihar,Bihar Sharif HQ Nalanda district Bihar = config bihar-sharif 0.1km. Exact match.
+SANGLI,sangli,high,verified,Maharashtra,Sangli HQ Sangli district Maharashtra = config sangli 0.2km. Unique name; exact match.
+SAHARANPUR,saharanpur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+KOTA,kota,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+RATLAM,ratlam,high,verified,Madhya Pradesh,Ratlam MP = config ratlam within 0.4km same state.
+NELLORE,nellore,med,wikidata,Andhra Pradesh,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+SAHAPUR,howrah,high,geonames+wikidata,West Bengal,automated CONFIRMED
+SAMBALPUR,sambalpur,high,geonames+wikidata,Odisha,automated CONFIRMED
+AMRAVATI,amravati,high,geonames+wikidata,Maharashtra,automated CONFIRMED
+ANANTAPUR,anantapur,high,verified,Andhra Pradesh,Anantapur AP = config anantapur exactly. No conflict; clean map.
+ELURU,eluru,high,verified,Andhra Pradesh,Eluru AP = config eluru ~1km. No same-name trap; clean map.
+PALAKKAD,palakkad,high,geonames+wikidata,Kerala,automated CONFIRMED
+THRISSUR,thrissur,high,geonames+wikidata,Kerala,automated CONFIRMED
+HAYATHNAGAR,hyderabad,high,verified,Telangana,"Hayathnagar Ranga Reddy dist, a locality of Hyderabad in GHMC; 14.1km from config Hyderabad center, same state."
+GULBARGA,gulbarga,high,verified,Karnataka,Gulbarga renamed Kalaburagi 2014 Karnataka; config gulbarga alias kalaburagi same coords. Unique to Karnataka.
+AKOLA,akola,high,verified,Maharashtra,Akola distinctive Maharashtra district HQ = config akola; no trap.
+NANDED,nanded,high,verified,Maharashtra,Nanded distinctive Maharashtra district HQ = config nanded; no same-name-other-state place.
+MORADABAD,moradabad,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+JODHPUR,jodhpur,med,wikidata,Rajasthan,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+KAKINADA,kakinada,high,geonames+wikidata,Andhra Pradesh,automated CONFIRMED
+JALGAON,jalgaon,high,verified,Maharashtra,Jalgaon distinctive Maharashtra district HQ = config jalgaon; no trap.
+HAPUR,hapur,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+SINGRAULI-1,singrauli,high,verified,Madhya Pradesh,-1 sublocality; base=Singrauli MP = config singrauli ~1km same state.
+JAMNAGAR,jamnagar,high,verified,Gujarat,Jamnagar Gujarat = config jamnagar ~0km. near_threshold false alarm.
+ANANTHAPUR,anantapur,high,verified,Andhra Pradesh,Anantapur/Ananthapuramu AP = config anantapur ~0.5km. Alternate transliteration; Bihar 'Anantapur' minor village.
+FIROZABAD,firozabad,high,verified,Uttar Pradesh,Firozabad (Glass City) UP = config firozabad ~1km. Not Firozpur Punjab; exact UP match.
+HALDWANI,haldwani,high,geonames+wikidata,Uttarakhand,automated CONFIRMED
+MYSORE,mysuru,high,geonames+wikidata,Karnataka,automated CONFIRMED
+PURNEA,purnia,high,verified,Bihar,Purnia (also Purnea) Bihar = config purnia exactly.
+ERODE,erode,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+CUDDAPAH,kadapa,high,verified,Andhra Pradesh,Cuddapah renamed Kadapa 2005 = config kadapa exactly.
+HASSAN,hassan,high,geonames+wikidata,Karnataka,automated CONFIRMED
+SOLAPUR,solapur,med,wikidata,Maharashtra,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+AMROHA,amroha,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+KAMRUP,guwahati,med,district_fold,Assam,district -> HQ config city (user decision 2026-06-16)
+RAIGARH,raigarh,med,wikidata,Chhattisgarh,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+HAZARIBAG,hazaribagh,high,verified,Jharkhand,Hazaribag(h) Jharkhand = config hazaribagh 0.47km same state. Spelling variant; safe map.
+AHMEDNAGAR,ahmednagar,high,verified,Maharashtra,Ahmednagar Maharashtra = config ahmednagar 0.57km. near_threshold resolved exact.
+TIRUPUR,tiruppur,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+MURSHIDABAD,baharampur,high,geonames+wikidata,West Bengal,automated CONFIRMED
+LATUR,latur,high,verified,Maharashtra,Latur Maharashtra = config latur identical coords.
+ANAND,anand,high,verified,Gujarat,Anand Gujarat = config anand exactly; base ANAND distinct from Nadiad/Sanand look-alikes.
+EAST GODAVARI,rajahmundry,med,district_fold,Andhra Pradesh,district -> HQ config city (user decision 2026-06-16)
+ERNAKULAM,kochi,high,verified,Kerala,"Ernakulam is the CBD of Kochi within Kochi Municipal Corp ~5km from config Kochi, same state."
+HISAR,hisar,high,geonames+wikidata,Haryana,automated CONFIRMED
+UDUPI,udupi,high,geonames+wikidata,Karnataka,automated CONFIRMED
+PATIALA,patiala,high,verified,Punjab,Config has Patiala Punjab matching exactly; wd guess Mohali wrong (50-65km away).
+KANNUR,kannur,high,verified,Kerala,Kannur Kerala = config kannur exactly ~0km. near_threshold false.
+ETAWAH,etawah,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+PRAKASAM,ongole,med,district_fold,Andhra Pradesh,district -> HQ config city (user decision 2026-06-16)
+BATHINDA,bathinda,high,geonames+wikidata,Punjab,automated CONFIRMED
+ALWAR,alwar,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+BIJAPUR,vijayapura,med,verified,Karnataka,"Bijapur Karnataka renamed Vijayapura 2014; config alias 'bijapur'. Bare string has no CGH paren and Bijapur CG is 578km from config coords, so this is the Karnataka city."
+DAKSHINA KANNADA,mangaluru,med,district_fold,Karnataka,district -> HQ config city (user decision 2026-06-16)
+TUMKUR,tumakuru,high,geonames+wikidata,Karnataka,automated CONFIRMED
+TUTICORIN,thoothukudi,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+KANYAKUMARI,nagercoil,med,district_fold,Tamil Nadu,district -> HQ config city (user decision 2026-06-16)
+HUBLI,hubballi,high,verified,Karnataka,Hubli is the older name of Hubballi Karnataka = config hubballi (alias hubli|dharwad) 1km same place/state.
+KAKDWIP,haldia,high,geonames+wikidata,West Bengal,automated CONFIRMED
+SIKAR,sikar,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+KANCHIPURAM,kanchipuram,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+BHILWARA,bhilwara,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+BHILAI-3,bhilai,high,verified,Chhattisgarh,"Bhilai-3/Charoda part of the Bhilai metropolis CG; strip '-3' to base town BHILAI = config bhilai, same state."
+BIKANER,bikaner,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+BAHARAMPUR,baharampur,high,verified,West Bengal,Berhampore aka Baharampur HQ Murshidabad dist WB = config baharampur 1km. wd_guess 'bardhaman' WRONG (104km away).
+NAVSARI,navsari,high,geonames+wikidata,Gujarat,automated CONFIRMED
+DHARWAD,hubballi,high,verified,Karnataka,Hubli-Dharwad official twin cities under one municipal corp ~16-20km apart same state; config 'hubballi' lists 'dharwad' as alias. Within 25km.
+RAMAGUNDAM,ramagundam,high,geonames+wikidata,Telangana,automated CONFIRMED
+BARAUNI,begusarai,med,verified,Bihar,"Barauni industrial refinery town Begusarai district on periphery of Begusarai town (~11km, same state). Within 25km of config Begusarai."
+KOLLAM,kollam,high,verified,Kerala,Kollam Kerala = config kollam exact same place and state.
+SANGLI AREA,sangli,high,verified,Maharashtra,"Sangli HQ Sangli dist Maharashtra = config sangli; 'AREA' is a non-place suffix, exact match."
+DELHI NXT,delhi,high,verified,Delhi,'NXT' lab/branch suffix on base Delhi; base = Delhi the config city. Same place and state.
+TIRUCHIRAPPALLI,tiruchirappalli,high,verified,Tamil Nadu,Tiruchirappalli (Trichy) HQ TN = config tiruchirappalli within ~3km.
+KANPUR NAGAR,kanpur,high,verified,Uttar Pradesh,Kanpur Nagar district HQ is Kanpur city UP; same place/state as config kanpur.
+KHANDWA (EAST NIMAR),khandwa,high,verified,Madhya Pradesh,"East Nimar is the old name of Khandwa district; HQ is Khandwa city MP = config khandwa. Parenthetical is district label, no state collision."
+ONGOLE,ongole,high,verified,Andhra Pradesh,Ongole HQ Prakasam district AP = config ongole exact; multi_map false alarm.
+NAGERCOIL,nagercoil,high,verified,Tamil Nadu,"Kanyakumari district HQ TN = config nagercoil 2.0km same state. Unique name, exact match."
+BUDAUN,budaun,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+TIRUNELVELI,tirunelveli,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+SILVASSA,silvassa,high,geonames+wikidata,Dadra and Nagar Haveli and Daman and Diu,automated CONFIRMED
+GHAZIABAD,ghaziabad,high,geonames+wikidata,Uttar Pradesh,automated CONFIRMED
+WEST GODAVARI,eluru,med,district_fold,Andhra Pradesh,district -> HQ config city (user decision 2026-06-16)
+EAST SINGHBHUM,jamshedpur,med,district_fold,Jharkhand,district -> HQ config city (user decision 2026-06-16)
+Lucknow,lucknow,high,verified,Uttar Pradesh,State capital of UP = config lucknow exactly (multi_map flag was case-variant dedup).
+SOUTH ANDAMAN,port-blair,med,wikidata,Andaman and Nicobar Islands,automated LIKELY | likely via same-state (wd only)
+MALDAH,malda,high,geonames+wikidata,West Bengal,automated CONFIRMED
+BELLARY,bellary,high,verified,Karnataka,Ballari (formerly Bellary) Karnataka = config bellary exactly.
+KOZHIKODE,kozhikode,high,verified,Kerala,Kozhikode (Calicut) Kerala = config kozhikode 1.0km same state. Exact match.
+GANDHIDHAM,gandhidham,high,geonames+wikidata,Gujarat,automated CONFIRMED
+WEST TRIPURA,agartala,med,verified,Tripura,West Tripura district HQ = Agartala (config city); district = Greater Agartala urban core. District-level string mapped to HQ.
+KORBA,korba,high,geonames+wikidata,Chhattisgarh,automated CONFIRMED
+SRINAGAR,srinagar,low,verified,Jammu and Kashmir,Bare 'Srinagar' canonically = J&K capital = config srinagar. A small Srinagar in Uttarakhand usually qualified 'Srinagar Garhwal'; residual same-name-different-state ambiguity -> low confidence.
+BHARATPUR,bharatpur,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+KOTTAYAM,kottayam,high,geonames+wikidata,Kerala,automated CONFIRMED
+NAGERCOIL-2,nagercoil,high,verified,Tamil Nadu,Nagercoil HQ Kanyakumari district TN = config nagercoil ~2km. '-2' sublocality/branch code stripped to base town.
+BILASPUR(CGH),bilaspur,high,verified,Chhattisgarh,(CGH)=Chhattisgarh code; Bilaspur CGH = config bilaspur (Chhattisgarh) exact; NOT the Himachal Bilaspur. State-collision resolved.
+DIBRUGARH,dibrugarh,high,geonames+wikidata,Assam,automated CONFIRMED
+GANGANAGAR,sri-ganganagar,med,wikidata,Rajasthan,automated LIKELY | likely via dist<15km+same-state (wd only)
+FARIDABAD,faridabad,high,geonames+wikidata,Haryana,automated CONFIRMED
+GANDHINAGAR,gandhinagar,high,verified,Gujarat,One-word 'Gandhinagar' = Gujarat state capital = config gandhinagar 0km; dominant referent for unqualified string.
+PALI,pali,high,geonames+wikidata,Rajasthan,automated CONFIRMED
+SINGRAULI,singrauli,high,verified,Madhya Pradesh,Singrauli city Singrauli district MP = config singrauli ~1km. multi_map false alarm.
+KHEDA,nadiad,high,geonames+wikidata,Gujarat,automated CONFIRMED
+MANGALORE,mangaluru,high,geonames+wikidata,Karnataka,automated CONFIRMED
+HANUMANGARH,hanumangarh,med,wikidata,Rajasthan,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+KADAPA,kadapa,high,verified,Andhra Pradesh,Kadapa (formerly Cuddapah) YSR Kadapa district HQ = config kadapa ~3km same place/state. multi_map false alarm.
+THIRUVANANTHAPURAM,thiruvananthapuram,high,geonames+wikidata,Kerala,automated CONFIRMED
+PARBHANI-1,parbhani,high,verified,Maharashtra,Trailing -1 sublocality; base PARBHANI HQ Parbhani district Maharashtra unique in India = config parbhani exactly. multi_map false fuzzy collision.
+SAHIBZADA AJIT SINGH NAGAR,mohali,high,verified,Punjab,Sahibzada Ajit Singh Nagar is the official name of Mohali HQ Mohali district Punjab; same city as config mohali.
+DINDIGUL,dindigul,high,geonames+wikidata,Tamil Nadu,automated CONFIRMED
+ALAPPUZHA,alappuzha,high,verified,Kerala,Alappuzha/Alleppey district HQ Kerala = config alappuzha exactly. gn=kottayam wrong (~21km away).
+RAICHUR,raichur,med,wikidata,Karnataka,automated LIKELY | likely via string-match+dist<15km+same-state (wd only)
+JUNAGADH,junagadh,high,verified,Gujarat,"Junagadh Gujarat = config junagadh ~1km; Odisha namesake is 'Junagarh' (Kalahandi), distinct spelling."

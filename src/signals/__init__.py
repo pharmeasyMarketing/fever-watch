@@ -10,10 +10,15 @@ from typing import Optional
 from .base import PositivityProvider, TrendsProvider
 from .mock import MockPositivityProvider, MockTrendsProvider
 from .googlesheet import GoogleSheetPositivityProvider
+from .gsheet_api import GSheetApiPositivityProvider
 from .cached import CachedTrendsProvider
 
 _TRENDS = {MockTrendsProvider.name: MockTrendsProvider}
-_POSITIVITY = {MockPositivityProvider.name: MockPositivityProvider}
+_POSITIVITY = {
+    MockPositivityProvider.name: MockPositivityProvider,
+    GoogleSheetPositivityProvider.name: GoogleSheetPositivityProvider,
+    GSheetApiPositivityProvider.name: GSheetApiPositivityProvider,
+}
 
 DEFAULT_TRENDS = MockTrendsProvider.name
 DEFAULT_POSITIVITY = MockPositivityProvider.name
@@ -44,7 +49,9 @@ def get_positivity_provider(name: Optional[str] = None, config: Optional[dict] =
         return MockPositivityProvider()
     if key == GoogleSheetPositivityProvider.name:
         return GoogleSheetPositivityProvider(cfg.get("googlesheet", {}))
-    raise SystemExit(f"Unknown positivity provider '{key}'. Available: mock, googlesheet")
+    if key == GSheetApiPositivityProvider.name:
+        return GSheetApiPositivityProvider(cfg.get("gsheet_api", {}))
+    raise SystemExit(f"Unknown positivity provider '{key}'. Available: mock, googlesheet, gsheet_api")
 
 
 __all__ = [
