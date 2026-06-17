@@ -1,7 +1,7 @@
 {
   "signal": "weather",
   "model_version": "FW-WEATHER-0.1.0",
-  "generated_at": "2026-06-17T05:12:19+00:00",
+  "generated_at": "2026-06-17T23:58:58+00:00",
   "provider": "cpc",
   "attribution": "Rainfall by NOAA CPC (Climate Prediction Center Global Unified Gauge-Based Analysis, public domain); temperature and humidity by NASA POWER (MERRA-2 / GMAO, public domain)",
   "disclaimer": "Weather-driven environmental favourability sub-scores per disease family, for city-level screening and comparison. One input to the Fever Watch risk indicator, not a disease forecast, a case count, or an individual health estimate.",
@@ -73,28 +73,28 @@
         "bombay"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.0,
         "humidity_pct": 64.0,
-        "rain_7d_mm": 0.4,
-        "rain_14d_mm": 9.5,
-        "temp_swing_c": 0.29,
+        "rain_7d_mm": 0.0,
+        "rain_14d_mm": 0.6,
+        "temp_swing_c": 0.27,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 58,
-        "waterborne": 5
+        "mosquito": 53,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
           "temp": 0.947,
-          "rain_lagged": 0.158,
+          "rain_lagged": 0.01,
           "humidity": 0.48
         },
         "waterborne": {
-          "rain_recent": 0.005,
-          "rain_lagged": 0.119
+          "rain_recent": 0.0,
+          "rain_lagged": 0.007
         }
       }
     },
@@ -106,28 +106,28 @@
       "lon": 77.1025,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.5,
-        "humidity_pct": 29.8,
-        "rain_7d_mm": 31.0,
-        "rain_14d_mm": 36.5,
-        "temp_swing_c": 1.13,
+        "n_days": 24,
+        "temp_mean_c": 36.4,
+        "humidity_pct": 30.0,
+        "rain_7d_mm": 32.0,
+        "rain_14d_mm": 40.8,
+        "temp_swing_c": 1.14,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 51,
-        "waterborne": 42
+        "mosquito": 54,
+        "waterborne": 44
       },
       "components": {
         "mosquito": {
-          "temp": 0.667,
-          "rain_lagged": 0.608,
+          "temp": 0.676,
+          "rain_lagged": 0.68,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.388,
-          "rain_lagged": 0.456
+          "rain_recent": 0.4,
+          "rain_lagged": 0.51
         }
       }
     },
@@ -142,28 +142,28 @@
         "bangalore"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 25.6,
-        "humidity_pct": 76.9,
+        "n_days": 24,
+        "temp_mean_c": 25.5,
+        "humidity_pct": 77.3,
         "rain_7d_mm": 46.8,
-        "rain_14d_mm": 62.0,
-        "temp_swing_c": 0.9,
+        "rain_14d_mm": 53.2,
+        "temp_swing_c": 0.89,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 92,
-        "waterborne": 66
+        "mosquito": 88,
+        "waterborne": 62
       },
       "components": {
         "mosquito": {
-          "temp": 0.932,
-          "rain_lagged": 1.0,
-          "humidity": 0.738
+          "temp": 0.928,
+          "rain_lagged": 0.887,
+          "humidity": 0.746
         },
         "waterborne": {
           "rain_recent": 0.585,
-          "rain_lagged": 0.775
+          "rain_lagged": 0.665
         }
       }
     },
@@ -175,28 +175,28 @@
       "lon": 78.4867,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.8,
-        "humidity_pct": 47.8,
-        "rain_7d_mm": 36.1,
-        "rain_14d_mm": 38.7,
-        "temp_swing_c": 0.63,
+        "n_days": 24,
+        "temp_mean_c": 32.7,
+        "humidity_pct": 47.9,
+        "rain_7d_mm": 27.4,
+        "rain_14d_mm": 38.3,
+        "temp_swing_c": 0.6,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 67,
-        "waterborne": 46
+        "waterborne": 40
       },
       "components": {
         "mosquito": {
-          "temp": 0.915,
-          "rain_lagged": 0.645,
-          "humidity": 0.156
+          "temp": 0.919,
+          "rain_lagged": 0.638,
+          "humidity": 0.158
         },
         "waterborne": {
-          "rain_recent": 0.451,
-          "rain_lagged": 0.484
+          "rain_recent": 0.342,
+          "rain_lagged": 0.479
         }
       }
     },
@@ -208,12 +208,12 @@
       "lon": 72.5714,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.1,
-        "humidity_pct": 43.3,
+        "humidity_pct": 43.6,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.1,
-        "temp_swing_c": 0.46,
+        "temp_swing_c": 0.49,
         "has_temp": true,
         "has_precip": true
       },
@@ -225,7 +225,7 @@
         "mosquito": {
           "temp": 0.702,
           "rain_lagged": 0.002,
-          "humidity": 0.066
+          "humidity": 0.072
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -244,27 +244,27 @@
         "madras"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.6,
-        "humidity_pct": 65.9,
-        "rain_7d_mm": 6.3,
+        "n_days": 24,
+        "temp_mean_c": 31.5,
+        "humidity_pct": 66.1,
+        "rain_7d_mm": 3.9,
         "rain_14d_mm": 6.7,
         "temp_swing_c": 0.53,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 57,
-        "waterborne": 8
+        "mosquito": 58,
+        "waterborne": 6
       },
       "components": {
         "mosquito": {
-          "temp": 0.96,
+          "temp": 0.963,
           "rain_lagged": 0.112,
-          "humidity": 0.518
+          "humidity": 0.522
         },
         "waterborne": {
-          "rain_recent": 0.079,
+          "rain_recent": 0.049,
           "rain_lagged": 0.084
         }
       }
@@ -280,27 +280,27 @@
         "calcutta"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.8,
-        "humidity_pct": 66.3,
-        "rain_7d_mm": 46.1,
-        "rain_14d_mm": 99.6,
-        "temp_swing_c": 0.41,
+        "humidity_pct": 66.4,
+        "rain_7d_mm": 36.1,
+        "rain_14d_mm": 100.3,
+        "temp_swing_c": 0.44,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 87,
-        "waterborne": 75
+        "waterborne": 67
       },
       "components": {
         "mosquito": {
           "temp": 0.915,
           "rain_lagged": 1.0,
-          "humidity": 0.526
+          "humidity": 0.528
         },
         "waterborne": {
-          "rain_recent": 0.576,
+          "rain_recent": 0.451,
           "rain_lagged": 1.0
         }
       }
@@ -313,10 +313,10 @@
       "lon": 72.8311,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.7,
+        "n_days": 24,
+        "temp_mean_c": 32.6,
         "humidity_pct": 61.7,
-        "rain_7d_mm": 0.3,
+        "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.3,
         "temp_swing_c": 0.23,
         "has_temp": true,
@@ -328,12 +328,12 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.919,
+          "temp": 0.923,
           "rain_lagged": 0.005,
           "humidity": 0.434
         },
         "waterborne": {
-          "rain_recent": 0.004,
+          "rain_recent": 0.0,
           "rain_lagged": 0.004
         }
       }
@@ -346,28 +346,28 @@
       "lon": 73.8567,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.5,
         "humidity_pct": 65.8,
-        "rain_7d_mm": 0.9,
-        "rain_14d_mm": 4.5,
-        "temp_swing_c": 0.38,
+        "rain_7d_mm": 0.2,
+        "rain_14d_mm": 3.8,
+        "temp_swing_c": 0.37,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 58,
-        "waterborne": 3
+        "mosquito": 57,
+        "waterborne": 2
       },
       "components": {
         "mosquito": {
           "temp": 0.999,
-          "rain_lagged": 0.075,
+          "rain_lagged": 0.063,
           "humidity": 0.516
         },
         "waterborne": {
-          "rain_recent": 0.011,
-          "rain_lagged": 0.056
+          "rain_recent": 0.003,
+          "rain_lagged": 0.048
         }
       }
     },
@@ -379,12 +379,12 @@
       "lon": 75.7873,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.2,
-        "humidity_pct": 29.2,
+        "humidity_pct": 29.5,
         "rain_7d_mm": 13.9,
         "rain_14d_mm": 49.3,
-        "temp_swing_c": 0.67,
+        "temp_swing_c": 0.68,
         "has_temp": true,
         "has_precip": true
       },
@@ -412,12 +412,12 @@
       "lon": 80.9462,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.6,
         "humidity_pct": 25.3,
         "rain_7d_mm": 10.7,
         "rain_14d_mm": 10.7,
-        "temp_swing_c": 0.87,
+        "temp_swing_c": 0.84,
         "has_temp": true,
         "has_precip": true
       },
@@ -445,12 +445,12 @@
       "lon": 80.3319,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.9,
-        "humidity_pct": 24.8,
-        "rain_7d_mm": 0.8,
-        "rain_14d_mm": 0.8,
-        "temp_swing_c": 0.84,
+        "humidity_pct": 24.9,
+        "rain_7d_mm": 0.9,
+        "rain_14d_mm": 0.9,
+        "temp_swing_c": 0.81,
         "has_temp": true,
         "has_precip": true
       },
@@ -461,12 +461,12 @@
       "components": {
         "mosquito": {
           "temp": 0.531,
-          "rain_lagged": 0.013,
+          "rain_lagged": 0.015,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.01,
-          "rain_lagged": 0.01
+          "rain_recent": 0.011,
+          "rain_lagged": 0.011
         }
       }
     },
@@ -478,28 +478,28 @@
       "lon": 79.0882,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 38.2,
-        "humidity_pct": 27.7,
-        "rain_7d_mm": 29.0,
-        "rain_14d_mm": 29.5,
+        "n_days": 24,
+        "temp_mean_c": 38.1,
+        "humidity_pct": 28.1,
+        "rain_7d_mm": 29.5,
+        "rain_14d_mm": 29.8,
         "temp_swing_c": 0.5,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 17,
-        "waterborne": 36
+        "waterborne": 37
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.492,
+          "rain_lagged": 0.497,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.362,
-          "rain_lagged": 0.369
+          "rain_recent": 0.369,
+          "rain_lagged": 0.372
         }
       }
     },
@@ -511,28 +511,28 @@
       "lon": 75.8577,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.1,
-        "humidity_pct": 44.2,
+        "n_days": 24,
+        "temp_mean_c": 34.0,
+        "humidity_pct": 44.6,
         "rain_7d_mm": 15.6,
-        "rain_14d_mm": 34.8,
-        "temp_swing_c": 0.53,
+        "rain_14d_mm": 30.2,
+        "temp_swing_c": 0.54,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 60,
-        "waterborne": 29
+        "mosquito": 58,
+        "waterborne": 27
       },
       "components": {
         "mosquito": {
-          "temp": 0.846,
-          "rain_lagged": 0.58,
-          "humidity": 0.084
+          "temp": 0.852,
+          "rain_lagged": 0.503,
+          "humidity": 0.092
         },
         "waterborne": {
           "rain_recent": 0.195,
-          "rain_lagged": 0.435
+          "rain_lagged": 0.378
         }
       }
     },
@@ -544,28 +544,28 @@
       "lon": 72.9781,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.0,
         "humidity_pct": 64.0,
-        "rain_7d_mm": 0.4,
-        "rain_14d_mm": 9.5,
-        "temp_swing_c": 0.29,
+        "rain_7d_mm": 0.0,
+        "rain_14d_mm": 0.6,
+        "temp_swing_c": 0.27,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 58,
-        "waterborne": 5
+        "mosquito": 53,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
           "temp": 0.947,
-          "rain_lagged": 0.158,
+          "rain_lagged": 0.01,
           "humidity": 0.48
         },
         "waterborne": {
-          "rain_recent": 0.005,
-          "rain_lagged": 0.119
+          "rain_recent": 0.0,
+          "rain_lagged": 0.007
         }
       }
     },
@@ -577,28 +577,28 @@
       "lon": 77.4126,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.3,
-        "humidity_pct": 33.6,
-        "rain_7d_mm": 23.5,
-        "rain_14d_mm": 76.0,
-        "temp_swing_c": 0.7,
+        "n_days": 24,
+        "temp_mean_c": 35.2,
+        "humidity_pct": 33.9,
+        "rain_7d_mm": 24.7,
+        "rain_14d_mm": 77.2,
+        "temp_swing_c": 0.69,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 69,
-        "waterborne": 56
+        "mosquito": 70,
+        "waterborne": 57
       },
       "components": {
         "mosquito": {
-          "temp": 0.765,
+          "temp": 0.773,
           "rain_lagged": 1.0,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.294,
-          "rain_lagged": 0.95
+          "rain_recent": 0.309,
+          "rain_lagged": 0.965
         }
       }
     },
@@ -610,28 +610,28 @@
       "lon": 83.2185,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.4,
-        "humidity_pct": 74.3,
-        "rain_7d_mm": 7.3,
-        "rain_14d_mm": 18.8,
-        "temp_swing_c": 0.52,
+        "humidity_pct": 74.2,
+        "rain_7d_mm": 6.6,
+        "rain_14d_mm": 8.5,
+        "temp_swing_c": 0.5,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 68,
-        "waterborne": 15
+        "mosquito": 62,
+        "waterborne": 9
       },
       "components": {
         "mosquito": {
           "temp": 0.966,
-          "rain_lagged": 0.313,
-          "humidity": 0.686
+          "rain_lagged": 0.142,
+          "humidity": 0.684
         },
         "waterborne": {
-          "rain_recent": 0.091,
-          "rain_lagged": 0.235
+          "rain_recent": 0.082,
+          "rain_lagged": 0.106
         }
       }
     },
@@ -643,9 +643,9 @@
       "lon": 85.1376,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.3,
-        "humidity_pct": 32.7,
+        "n_days": 24,
+        "temp_mean_c": 37.4,
+        "humidity_pct": 32.5,
         "rain_7d_mm": 10.0,
         "rain_14d_mm": 17.6,
         "temp_swing_c": 0.98,
@@ -653,12 +653,12 @@
         "has_precip": true
       },
       "families": {
-        "mosquito": 37,
+        "mosquito": 36,
         "waterborne": 16
       },
       "components": {
         "mosquito": {
-          "temp": 0.592,
+          "temp": 0.582,
           "rain_lagged": 0.293,
           "humidity": 0.0
         },
@@ -679,24 +679,24 @@
         "baroda"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.2,
-        "humidity_pct": 48.7,
+        "n_days": 24,
+        "temp_mean_c": 35.1,
+        "humidity_pct": 48.8,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.0,
-        "temp_swing_c": 0.39,
+        "temp_swing_c": 0.38,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
+        "mosquito": 39,
         "waterborne": 0
       },
       "components": {
         "mosquito": {
-          "temp": 0.773,
+          "temp": 0.78,
           "rain_lagged": 0.0,
-          "humidity": 0.174
+          "humidity": 0.176
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -712,28 +712,28 @@
       "lon": 77.4538,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.4,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 31.0,
-        "rain_14d_mm": 36.5,
+        "humidity_pct": 29.7,
+        "rain_7d_mm": 32.0,
+        "rain_14d_mm": 40.8,
         "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 52,
-        "waterborne": 42
+        "mosquito": 54,
+        "waterborne": 44
       },
       "components": {
         "mosquito": {
           "temp": 0.676,
-          "rain_lagged": 0.608,
+          "rain_lagged": 0.68,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.388,
-          "rain_lagged": 0.456
+          "rain_recent": 0.4,
+          "rain_lagged": 0.51
         }
       }
     },
@@ -745,12 +745,12 @@
       "lon": 75.8573,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.6,
-        "humidity_pct": 24.2,
+        "humidity_pct": 24.4,
         "rain_7d_mm": 38.4,
-        "rain_14d_mm": 45.1,
-        "temp_swing_c": 0.98,
+        "rain_14d_mm": 44.6,
+        "temp_swing_c": 1.02,
         "has_temp": true,
         "has_precip": true
       },
@@ -761,12 +761,12 @@
       "components": {
         "mosquito": {
           "temp": 0.658,
-          "rain_lagged": 0.752,
+          "rain_lagged": 0.743,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.48,
-          "rain_lagged": 0.564
+          "rain_lagged": 0.557
         }
       }
     },
@@ -778,18 +778,18 @@
       "lon": 78.0081,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.5,
-        "humidity_pct": 28.4,
-        "rain_7d_mm": 16.0,
+        "humidity_pct": 28.5,
+        "rain_7d_mm": 15.6,
         "rain_14d_mm": 17.2,
-        "temp_swing_c": 1.09,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 36,
-        "waterborne": 21
+        "waterborne": 20
       },
       "components": {
         "mosquito": {
@@ -798,7 +798,7 @@
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.2,
+          "rain_recent": 0.195,
           "rain_lagged": 0.215
         }
       }
@@ -811,28 +811,28 @@
       "lon": 73.7898,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 30.3,
-        "humidity_pct": 61.7,
+        "n_days": 24,
+        "temp_mean_c": 30.2,
+        "humidity_pct": 61.8,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 30.4,
-        "temp_swing_c": 0.26,
+        "rain_14d_mm": 0.3,
+        "temp_swing_c": 0.27,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 71,
-        "waterborne": 15
+        "mosquito": 54,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
-          "temp": 0.99,
-          "rain_lagged": 0.507,
-          "humidity": 0.434
+          "temp": 0.991,
+          "rain_lagged": 0.005,
+          "humidity": 0.436
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.38
+          "rain_lagged": 0.004
         }
       }
     },
@@ -844,28 +844,28 @@
       "lon": 77.3178,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.4,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 21.8,
-        "rain_14d_mm": 31.4,
+        "humidity_pct": 29.7,
+        "rain_7d_mm": 23.0,
+        "rain_14d_mm": 35.8,
         "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 49,
-        "waterborne": 32
+        "mosquito": 51,
+        "waterborne": 35
       },
       "components": {
         "mosquito": {
           "temp": 0.676,
-          "rain_lagged": 0.523,
+          "rain_lagged": 0.597,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.273,
-          "rain_lagged": 0.392
+          "rain_recent": 0.287,
+          "rain_lagged": 0.447
         }
       }
     },
@@ -877,28 +877,28 @@
       "lon": 77.7064,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.0,
-        "humidity_pct": 29.3,
-        "rain_7d_mm": 45.9,
-        "rain_14d_mm": 48.0,
-        "temp_swing_c": 1.22,
+        "humidity_pct": 29.4,
+        "rain_7d_mm": 45.1,
+        "rain_14d_mm": 49.4,
+        "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 60,
-        "waterborne": 58
+        "mosquito": 61,
+        "waterborne": 59
       },
       "components": {
         "mosquito": {
           "temp": 0.71,
-          "rain_lagged": 0.8,
+          "rain_lagged": 0.823,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.574,
-          "rain_lagged": 0.6
+          "rain_recent": 0.564,
+          "rain_lagged": 0.617
         }
       }
     },
@@ -910,12 +910,12 @@
       "lon": 70.8022,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.2,
-        "humidity_pct": 57.8,
+        "n_days": 24,
+        "temp_mean_c": 33.1,
+        "humidity_pct": 57.9,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.7,
-        "temp_swing_c": 0.32,
+        "temp_swing_c": 0.31,
         "has_temp": true,
         "has_precip": true
       },
@@ -925,9 +925,9 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.896,
+          "temp": 0.901,
           "rain_lagged": 0.012,
-          "humidity": 0.356
+          "humidity": 0.358
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -943,28 +943,28 @@
       "lon": 82.9739,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 38.1,
-        "humidity_pct": 25.8,
-        "rain_7d_mm": 3.8,
-        "rain_14d_mm": 5.4,
-        "temp_swing_c": 0.91,
+        "humidity_pct": 25.6,
+        "rain_7d_mm": 1.8,
+        "rain_14d_mm": 5.0,
+        "temp_swing_c": 0.88,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 3,
-        "waterborne": 6
+        "waterborne": 4
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.09,
+          "rain_lagged": 0.083,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.048,
-          "rain_lagged": 0.068
+          "rain_recent": 0.022,
+          "rain_lagged": 0.062
         }
       }
     },
@@ -976,28 +976,28 @@
       "lon": 74.7973,
       "climate": "temperate",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 13.4,
-        "humidity_pct": 58.4,
-        "rain_7d_mm": 23.8,
-        "rain_14d_mm": 41.8,
-        "temp_swing_c": 1.2,
+        "humidity_pct": 58.9,
+        "rain_7d_mm": 35.7,
+        "rain_14d_mm": 50.0,
+        "temp_swing_c": 1.18,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 32,
-        "waterborne": 39
+        "mosquito": 37,
+        "waterborne": 52
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.697,
-          "humidity": 0.368
+          "rain_lagged": 0.833,
+          "humidity": 0.378
         },
         "waterborne": {
-          "rain_recent": 0.297,
-          "rain_lagged": 0.522
+          "rain_recent": 0.446,
+          "rain_lagged": 0.625
         }
       }
     },
@@ -1009,11 +1009,11 @@
       "lon": 75.3433,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.1,
-        "humidity_pct": 45.9,
+        "n_days": 24,
+        "temp_mean_c": 33.0,
+        "humidity_pct": 46.1,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 1.9,
+        "rain_14d_mm": 1.5,
         "temp_swing_c": 0.5,
         "has_temp": true,
         "has_precip": true
@@ -1024,13 +1024,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.901,
-          "rain_lagged": 0.032,
-          "humidity": 0.118
+          "temp": 0.905,
+          "rain_lagged": 0.025,
+          "humidity": 0.122
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.024
+          "rain_lagged": 0.019
         }
       }
     },
@@ -1042,28 +1042,28 @@
       "lon": 86.4304,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.3,
-        "humidity_pct": 45.2,
-        "rain_7d_mm": 22.4,
-        "rain_14d_mm": 41.5,
-        "temp_swing_c": 0.83,
+        "humidity_pct": 44.8,
+        "rain_7d_mm": 26.8,
+        "rain_14d_mm": 45.8,
+        "temp_swing_c": 0.89,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 64,
-        "waterborne": 38
+        "mosquito": 66,
+        "waterborne": 43
       },
       "components": {
         "mosquito": {
           "temp": 0.834,
-          "rain_lagged": 0.692,
-          "humidity": 0.104
+          "rain_lagged": 0.763,
+          "humidity": 0.096
         },
         "waterborne": {
-          "rain_recent": 0.28,
-          "rain_lagged": 0.519
+          "rain_recent": 0.335,
+          "rain_lagged": 0.573
         }
       }
     },
@@ -1075,28 +1075,28 @@
       "lon": 74.8723,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.8,
-        "humidity_pct": 23.9,
-        "rain_7d_mm": 35.2,
-        "rain_14d_mm": 47.4,
-        "temp_swing_c": 0.96,
+        "n_days": 24,
+        "temp_mean_c": 36.7,
+        "humidity_pct": 24.2,
+        "rain_7d_mm": 35.6,
+        "rain_14d_mm": 38.0,
+        "temp_swing_c": 1.0,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 56,
-        "waterborne": 50
+        "mosquito": 51,
+        "waterborne": 46
       },
       "components": {
         "mosquito": {
-          "temp": 0.64,
-          "rain_lagged": 0.79,
+          "temp": 0.649,
+          "rain_lagged": 0.633,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.44,
-          "rain_lagged": 0.593
+          "rain_recent": 0.445,
+          "rain_lagged": 0.475
         }
       }
     },
@@ -1111,28 +1111,28 @@
         "allahabad"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 38.5,
-        "humidity_pct": 23.5,
-        "rain_7d_mm": 12.6,
-        "rain_14d_mm": 14.8,
-        "temp_swing_c": 0.84,
+        "humidity_pct": 23.4,
+        "rain_7d_mm": 17.4,
+        "rain_14d_mm": 19.8,
+        "temp_swing_c": 0.82,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 9,
-        "waterborne": 17
+        "mosquito": 12,
+        "waterborne": 23
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.247,
+          "rain_lagged": 0.33,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.158,
-          "rain_lagged": 0.185
+          "rain_recent": 0.217,
+          "rain_lagged": 0.247
         }
       }
     },
@@ -1144,18 +1144,18 @@
       "lon": 85.3096,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.6,
         "humidity_pct": 37.8,
-        "rain_7d_mm": 78.2,
-        "rain_14d_mm": 89.3,
-        "temp_swing_c": 0.92,
+        "rain_7d_mm": 80.9,
+        "rain_14d_mm": 92.0,
+        "temp_swing_c": 0.94,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 74,
-        "waterborne": 99
+        "waterborne": 100
       },
       "components": {
         "mosquito": {
@@ -1164,7 +1164,7 @@
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.978,
+          "rain_recent": 1.0,
           "rain_lagged": 1.0
         }
       }
@@ -1177,27 +1177,27 @@
       "lon": 88.2636,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.8,
-        "humidity_pct": 66.3,
-        "rain_7d_mm": 46.1,
-        "rain_14d_mm": 99.6,
-        "temp_swing_c": 0.41,
+        "humidity_pct": 66.4,
+        "rain_7d_mm": 36.1,
+        "rain_14d_mm": 100.3,
+        "temp_swing_c": 0.44,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 87,
-        "waterborne": 75
+        "waterborne": 67
       },
       "components": {
         "mosquito": {
           "temp": 0.915,
           "rain_lagged": 1.0,
-          "humidity": 0.526
+          "humidity": 0.528
         },
         "waterborne": {
-          "rain_recent": 0.576,
+          "rain_recent": 0.451,
           "rain_lagged": 1.0
         }
       }
@@ -1210,28 +1210,28 @@
       "lon": 76.9558,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 25.1,
-        "humidity_pct": 89.4,
-        "rain_7d_mm": 9.6,
-        "rain_14d_mm": 35.3,
+        "humidity_pct": 89.3,
+        "rain_7d_mm": 7.9,
+        "rain_14d_mm": 30.2,
         "temp_swing_c": 0.4,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 81,
-        "waterborne": 25
+        "mosquito": 78,
+        "waterborne": 21
       },
       "components": {
         "mosquito": {
           "temp": 0.91,
-          "rain_lagged": 0.588,
-          "humidity": 0.988
+          "rain_lagged": 0.503,
+          "humidity": 0.986
         },
         "waterborne": {
-          "rain_recent": 0.12,
-          "rain_lagged": 0.441
+          "rain_recent": 0.099,
+          "rain_lagged": 0.378
         }
       }
     },
@@ -1243,28 +1243,28 @@
       "lon": 79.9864,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.2,
-        "humidity_pct": 27.9,
-        "rain_7d_mm": 17.4,
-        "rain_14d_mm": 23.6,
-        "temp_swing_c": 0.63,
+        "humidity_pct": 28.0,
+        "rain_7d_mm": 11.8,
+        "rain_14d_mm": 24.7,
+        "temp_swing_c": 0.61,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 45,
-        "waterborne": 25
+        "mosquito": 46,
+        "waterborne": 21
       },
       "components": {
         "mosquito": {
           "temp": 0.693,
-          "rain_lagged": 0.393,
+          "rain_lagged": 0.412,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.217,
-          "rain_lagged": 0.295
+          "rain_recent": 0.148,
+          "rain_lagged": 0.309
         }
       }
     },
@@ -1276,12 +1276,12 @@
       "lon": 78.1828,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.4,
         "humidity_pct": 27.8,
         "rain_7d_mm": 24.7,
         "rain_14d_mm": 25.2,
-        "temp_swing_c": 0.98,
+        "temp_swing_c": 0.99,
         "has_temp": true,
         "has_precip": true
       },
@@ -1309,12 +1309,12 @@
       "lon": 80.648,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.2,
-        "humidity_pct": 54.9,
-        "rain_7d_mm": 50.4,
-        "rain_14d_mm": 76.7,
-        "temp_swing_c": 0.77,
+        "n_days": 24,
+        "temp_mean_c": 34.1,
+        "humidity_pct": 55.2,
+        "rain_7d_mm": 50.6,
+        "rain_14d_mm": 76.4,
+        "temp_swing_c": 0.74,
         "has_temp": true,
         "has_precip": true
       },
@@ -1324,13 +1324,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.84,
+          "temp": 0.846,
           "rain_lagged": 1.0,
-          "humidity": 0.298
+          "humidity": 0.304
         },
         "waterborne": {
-          "rain_recent": 0.63,
-          "rain_lagged": 0.959
+          "rain_recent": 0.633,
+          "rain_lagged": 0.955
         }
       }
     },
@@ -1342,28 +1342,28 @@
       "lon": 73.0243,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.5,
-        "humidity_pct": 36.3,
-        "rain_7d_mm": 0.7,
-        "rain_14d_mm": 9.3,
-        "temp_swing_c": 0.67,
+        "n_days": 24,
+        "temp_mean_c": 36.4,
+        "humidity_pct": 36.5,
+        "rain_7d_mm": 0.9,
+        "rain_14d_mm": 9.4,
+        "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 35,
+        "mosquito": 36,
         "waterborne": 5
       },
       "components": {
         "mosquito": {
-          "temp": 0.667,
-          "rain_lagged": 0.155,
+          "temp": 0.676,
+          "rain_lagged": 0.157,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.009,
-          "rain_lagged": 0.116
+          "rain_recent": 0.011,
+          "rain_lagged": 0.118
         }
       }
     },
@@ -1375,28 +1375,28 @@
       "lon": 78.1198,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.1,
-        "humidity_pct": 72.0,
+        "humidity_pct": 71.8,
         "rain_7d_mm": 17.2,
-        "rain_14d_mm": 19.7,
-        "temp_swing_c": 0.43,
+        "rain_14d_mm": 17.3,
+        "temp_swing_c": 0.45,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 69,
-        "waterborne": 23
+        "mosquito": 68,
+        "waterborne": 22
       },
       "components": {
         "mosquito": {
           "temp": 1.0,
-          "rain_lagged": 0.328,
-          "humidity": 0.64
+          "rain_lagged": 0.288,
+          "humidity": 0.636
         },
         "waterborne": {
           "rain_recent": 0.215,
-          "rain_lagged": 0.246
+          "rain_lagged": 0.216
         }
       }
     },
@@ -1408,28 +1408,28 @@
       "lon": 81.6296,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 38.0,
-        "humidity_pct": 27.9,
-        "rain_7d_mm": 39.1,
-        "rain_14d_mm": 43.2,
-        "temp_swing_c": 0.86,
+        "n_days": 24,
+        "temp_mean_c": 37.9,
+        "humidity_pct": 28.3,
+        "rain_7d_mm": 37.6,
+        "rain_14d_mm": 48.9,
+        "temp_swing_c": 0.84,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 25,
-        "waterborne": 51
+        "mosquito": 52,
+        "waterborne": 53
       },
       "components": {
         "mosquito": {
-          "temp": 0.0,
-          "rain_lagged": 0.72,
+          "temp": 0.531,
+          "rain_lagged": 0.815,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.489,
-          "rain_lagged": 0.54
+          "rain_recent": 0.47,
+          "rain_lagged": 0.611
         }
       }
     },
@@ -1441,28 +1441,28 @@
       "lon": 75.8648,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.1,
-        "humidity_pct": 33.4,
-        "rain_7d_mm": 6.8,
-        "rain_14d_mm": 53.2,
-        "temp_swing_c": 0.77,
+        "n_days": 24,
+        "temp_mean_c": 36.0,
+        "humidity_pct": 33.8,
+        "rain_7d_mm": 14.8,
+        "rain_14d_mm": 61.2,
+        "temp_swing_c": 0.74,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 63,
-        "waterborne": 32
+        "mosquito": 67,
+        "waterborne": 42
       },
       "components": {
         "mosquito": {
-          "temp": 0.702,
-          "rain_lagged": 0.887,
+          "temp": 0.71,
+          "rain_lagged": 1.0,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.085,
-          "rain_lagged": 0.665
+          "rain_recent": 0.185,
+          "rain_lagged": 0.765
         }
       }
     },
@@ -1474,28 +1474,28 @@
       "lon": 91.7362,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 27.9,
-        "humidity_pct": 74.8,
-        "rain_7d_mm": 19.7,
-        "rain_14d_mm": 81.1,
+        "humidity_pct": 74.9,
+        "rain_7d_mm": 13.0,
+        "rain_14d_mm": 79.5,
         "temp_swing_c": 0.28,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 94,
-        "waterborne": 55
+        "waterborne": 50
       },
       "components": {
         "mosquito": {
           "temp": 0.993,
           "rain_lagged": 1.0,
-          "humidity": 0.696
+          "humidity": 0.698
         },
         "waterborne": {
-          "rain_recent": 0.246,
-          "rain_lagged": 1.0
+          "rain_recent": 0.163,
+          "rain_lagged": 0.994
         }
       }
     },
@@ -1507,12 +1507,12 @@
       "lon": 76.7794,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.5,
-        "humidity_pct": 25.1,
+        "n_days": 24,
+        "temp_mean_c": 34.4,
+        "humidity_pct": 25.2,
         "rain_7d_mm": 29.0,
         "rain_14d_mm": 39.6,
-        "temp_swing_c": 1.07,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
@@ -1522,7 +1522,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.821,
+          "temp": 0.827,
           "rain_lagged": 0.66,
           "humidity": 0.0
         },
@@ -1540,28 +1540,28 @@
       "lon": 75.9064,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.3,
         "humidity_pct": 55.8,
-        "rain_7d_mm": 1.9,
-        "rain_14d_mm": 33.5,
-        "temp_swing_c": 0.96,
+        "rain_7d_mm": 0.3,
+        "rain_14d_mm": 23.6,
+        "temp_swing_c": 0.92,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 69,
-        "waterborne": 18
+        "mosquito": 64,
+        "waterborne": 12
       },
       "components": {
         "mosquito": {
           "temp": 0.969,
-          "rain_lagged": 0.558,
+          "rain_lagged": 0.393,
           "humidity": 0.316
         },
         "waterborne": {
-          "rain_recent": 0.024,
-          "rain_lagged": 0.419
+          "rain_recent": 0.004,
+          "rain_lagged": 0.295
         }
       }
     },
@@ -1577,28 +1577,28 @@
         "dharwad"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 26.9,
-        "humidity_pct": 80.1,
-        "rain_7d_mm": 5.1,
-        "rain_14d_mm": 82.8,
-        "temp_swing_c": 0.85,
+        "humidity_pct": 80.4,
+        "rain_7d_mm": 1.8,
+        "rain_14d_mm": 79.1,
+        "temp_swing_c": 0.82,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 95,
-        "waterborne": 44
+        "waterborne": 41
       },
       "components": {
         "mosquito": {
           "temp": 0.974,
           "rain_lagged": 1.0,
-          "humidity": 0.802
+          "humidity": 0.808
         },
         "waterborne": {
-          "rain_recent": 0.064,
-          "rain_lagged": 1.0
+          "rain_recent": 0.022,
+          "rain_lagged": 0.989
         }
       }
     },
@@ -1613,28 +1613,28 @@
         "mysore"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 24.9,
-        "humidity_pct": 81.9,
-        "rain_7d_mm": 6.9,
-        "rain_14d_mm": 13.8,
-        "temp_swing_c": 0.59,
+        "humidity_pct": 82.1,
+        "rain_7d_mm": 6.7,
+        "rain_14d_mm": 11.3,
+        "temp_swing_c": 0.57,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 65,
-        "waterborne": 12
+        "mosquito": 64,
+        "waterborne": 11
       },
       "components": {
         "mosquito": {
           "temp": 0.901,
-          "rain_lagged": 0.23,
-          "humidity": 0.838
+          "rain_lagged": 0.188,
+          "humidity": 0.842
         },
         "waterborne": {
-          "rain_recent": 0.086,
-          "rain_lagged": 0.173
+          "rain_recent": 0.084,
+          "rain_lagged": 0.141
         }
       }
     },
@@ -1646,28 +1646,28 @@
       "lon": 78.7047,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 30.0,
-        "humidity_pct": 70.2,
-        "rain_7d_mm": 3.5,
-        "rain_14d_mm": 4.0,
+        "n_days": 24,
+        "temp_mean_c": 29.9,
+        "humidity_pct": 70.5,
+        "rain_7d_mm": 5.9,
+        "rain_14d_mm": 5.9,
         "temp_swing_c": 0.61,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 59,
-        "waterborne": 5
+        "mosquito": 60,
+        "waterborne": 7
       },
       "components": {
         "mosquito": {
-          "temp": 0.994,
-          "rain_lagged": 0.067,
-          "humidity": 0.604
+          "temp": 0.995,
+          "rain_lagged": 0.098,
+          "humidity": 0.61
         },
         "waterborne": {
-          "rain_recent": 0.044,
-          "rain_lagged": 0.05
+          "rain_recent": 0.074,
+          "rain_lagged": 0.074
         }
       }
     },
@@ -1679,12 +1679,12 @@
       "lon": 79.4304,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.6,
+        "n_days": 24,
+        "temp_mean_c": 36.5,
         "humidity_pct": 25.8,
         "rain_7d_mm": 50.3,
         "rain_14d_mm": 51.5,
-        "temp_swing_c": 0.99,
+        "temp_swing_c": 0.97,
         "has_temp": true,
         "has_precip": true
       },
@@ -1694,7 +1694,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.658,
+          "temp": 0.667,
           "rain_lagged": 0.858,
           "humidity": 0.0
         },
@@ -1712,12 +1712,12 @@
       "lon": 78.088,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.8,
         "humidity_pct": 28.8,
-        "rain_7d_mm": 15.3,
-        "rain_14d_mm": 15.8,
-        "temp_swing_c": 1.27,
+        "rain_7d_mm": 14.4,
+        "rain_14d_mm": 15.9,
+        "temp_swing_c": 1.29,
         "has_temp": true,
         "has_precip": true
       },
@@ -1728,12 +1728,12 @@
       "components": {
         "mosquito": {
           "temp": 0.64,
-          "rain_lagged": 0.263,
+          "rain_lagged": 0.265,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.191,
-          "rain_lagged": 0.198
+          "rain_recent": 0.18,
+          "rain_lagged": 0.199
         }
       }
     },
@@ -1745,28 +1745,28 @@
       "lon": 77.3411,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.3,
+        "n_days": 24,
+        "temp_mean_c": 27.2,
         "humidity_pct": 78.7,
-        "rain_7d_mm": 6.0,
-        "rain_14d_mm": 11.5,
-        "temp_swing_c": 0.43,
+        "rain_7d_mm": 5.4,
+        "rain_14d_mm": 8.6,
+        "temp_swing_c": 0.44,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 66,
-        "waterborne": 10
+        "mosquito": 65,
+        "waterborne": 8
       },
       "components": {
         "mosquito": {
-          "temp": 0.983,
-          "rain_lagged": 0.192,
+          "temp": 0.981,
+          "rain_lagged": 0.143,
           "humidity": 0.774
         },
         "waterborne": {
-          "rain_recent": 0.075,
-          "rain_lagged": 0.144
+          "rain_recent": 0.068,
+          "rain_lagged": 0.107
         }
       }
     },
@@ -1781,28 +1781,28 @@
         "gurgaon"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.5,
-        "humidity_pct": 29.8,
-        "rain_7d_mm": 21.8,
-        "rain_14d_mm": 31.4,
-        "temp_swing_c": 1.13,
+        "n_days": 24,
+        "temp_mean_c": 36.4,
+        "humidity_pct": 30.0,
+        "rain_7d_mm": 23.0,
+        "rain_14d_mm": 35.8,
+        "temp_swing_c": 1.14,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 48,
-        "waterborne": 32
+        "mosquito": 51,
+        "waterborne": 35
       },
       "components": {
         "mosquito": {
-          "temp": 0.667,
-          "rain_lagged": 0.523,
+          "temp": 0.676,
+          "rain_lagged": 0.597,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.273,
-          "rain_lagged": 0.392
+          "rain_recent": 0.287,
+          "rain_lagged": 0.447
         }
       }
     },
@@ -1814,12 +1814,12 @@
       "lon": 78.7733,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.7,
-        "humidity_pct": 27.1,
-        "rain_7d_mm": 54.3,
-        "rain_14d_mm": 54.9,
-        "temp_swing_c": 1.18,
+        "n_days": 24,
+        "temp_mean_c": 35.6,
+        "humidity_pct": 27.2,
+        "rain_7d_mm": 53.8,
+        "rain_14d_mm": 55.0,
+        "temp_swing_c": 1.19,
         "has_temp": true,
         "has_precip": true
       },
@@ -1829,13 +1829,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.734,
-          "rain_lagged": 0.915,
+          "temp": 0.742,
+          "rain_lagged": 0.917,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.679,
-          "rain_lagged": 0.686
+          "rain_recent": 0.672,
+          "rain_lagged": 0.688
         }
       }
     },
@@ -1847,28 +1847,28 @@
       "lon": 75.5762,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.2,
-        "humidity_pct": 24.6,
+        "humidity_pct": 24.9,
         "rain_7d_mm": 37.4,
-        "rain_14d_mm": 43.6,
-        "temp_swing_c": 0.9,
+        "rain_14d_mm": 40.7,
+        "temp_swing_c": 0.93,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 57,
-        "waterborne": 50
+        "mosquito": 55,
+        "waterborne": 48
       },
       "components": {
         "mosquito": {
           "temp": 0.693,
-          "rain_lagged": 0.727,
+          "rain_lagged": 0.678,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.467,
-          "rain_lagged": 0.545
+          "rain_lagged": 0.509
         }
       }
     },
@@ -1880,28 +1880,28 @@
       "lon": 85.8245,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.7,
-        "humidity_pct": 62.0,
-        "rain_7d_mm": 5.5,
-        "rain_14d_mm": 30.0,
-        "temp_swing_c": 0.45,
+        "humidity_pct": 62.1,
+        "rain_7d_mm": 5.4,
+        "rain_14d_mm": 30.3,
+        "temp_swing_c": 0.44,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 65,
+        "mosquito": 66,
         "waterborne": 19
       },
       "components": {
         "mosquito": {
           "temp": 0.869,
-          "rain_lagged": 0.5,
-          "humidity": 0.44
+          "rain_lagged": 0.505,
+          "humidity": 0.442
         },
         "waterborne": {
-          "rain_recent": 0.069,
-          "rain_lagged": 0.375
+          "rain_recent": 0.068,
+          "rain_lagged": 0.379
         }
       }
     },
@@ -1913,28 +1913,28 @@
       "lon": 78.146,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 28.7,
-        "humidity_pct": 73.1,
-        "rain_7d_mm": 28.0,
-        "rain_14d_mm": 30.1,
-        "temp_swing_c": 0.58,
+        "n_days": 24,
+        "temp_mean_c": 28.6,
+        "humidity_pct": 73.4,
+        "rain_7d_mm": 29.1,
+        "rain_14d_mm": 30.4,
+        "temp_swing_c": 0.57,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 76,
-        "waterborne": 36
+        "waterborne": 37
       },
       "components": {
         "mosquito": {
           "temp": 0.999,
-          "rain_lagged": 0.502,
-          "humidity": 0.662
+          "rain_lagged": 0.507,
+          "humidity": 0.668
         },
         "waterborne": {
-          "rain_recent": 0.35,
-          "rain_lagged": 0.376
+          "rain_recent": 0.364,
+          "rain_lagged": 0.38
         }
       }
     },
@@ -1946,12 +1946,12 @@
       "lon": 79.5941,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.0,
-        "humidity_pct": 41.9,
+        "n_days": 24,
+        "temp_mean_c": 34.9,
+        "humidity_pct": 42.2,
         "rain_7d_mm": 12.9,
-        "rain_14d_mm": 41.5,
-        "temp_swing_c": 0.47,
+        "rain_14d_mm": 40.8,
+        "temp_swing_c": 0.46,
         "has_temp": true,
         "has_precip": true
       },
@@ -1961,13 +1961,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.787,
-          "rain_lagged": 0.692,
-          "humidity": 0.038
+          "temp": 0.794,
+          "rain_lagged": 0.68,
+          "humidity": 0.044
         },
         "waterborne": {
           "rain_recent": 0.161,
-          "rain_lagged": 0.519
+          "rain_lagged": 0.51
         }
       }
     },
@@ -1979,28 +1979,28 @@
       "lon": 80.4365,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.2,
-        "humidity_pct": 54.9,
-        "rain_7d_mm": 55.7,
-        "rain_14d_mm": 75.7,
-        "temp_swing_c": 0.77,
+        "n_days": 24,
+        "temp_mean_c": 34.1,
+        "humidity_pct": 55.2,
+        "rain_7d_mm": 55.8,
+        "rain_14d_mm": 75.0,
+        "temp_swing_c": 0.74,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 79,
-        "waterborne": 80
+        "waterborne": 79
       },
       "components": {
         "mosquito": {
-          "temp": 0.84,
+          "temp": 0.846,
           "rain_lagged": 1.0,
-          "humidity": 0.298
+          "humidity": 0.304
         },
         "waterborne": {
-          "rain_recent": 0.696,
-          "rain_lagged": 0.946
+          "rain_recent": 0.698,
+          "rain_lagged": 0.938
         }
       }
     },
@@ -2012,28 +2012,28 @@
       "lon": 73.0631,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.2,
-        "humidity_pct": 62.3,
-        "rain_7d_mm": 2.4,
-        "rain_14d_mm": 16.1,
-        "temp_swing_c": 0.27,
+        "humidity_pct": 62.2,
+        "rain_7d_mm": 1.2,
+        "rain_14d_mm": 3.1,
+        "temp_swing_c": 0.26,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 61,
-        "waterborne": 10
+        "mosquito": 53,
+        "waterborne": 2
       },
       "components": {
         "mosquito": {
           "temp": 0.939,
-          "rain_lagged": 0.268,
-          "humidity": 0.446
+          "rain_lagged": 0.052,
+          "humidity": 0.444
         },
         "waterborne": {
-          "rain_recent": 0.03,
-          "rain_lagged": 0.201
+          "rain_recent": 0.015,
+          "rain_lagged": 0.039
         }
       }
     },
@@ -2045,28 +2045,28 @@
       "lon": 77.5552,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.9,
-        "humidity_pct": 25.9,
+        "humidity_pct": 26.0,
         "rain_7d_mm": 32.6,
-        "rain_14d_mm": 41.2,
-        "temp_swing_c": 1.07,
+        "rain_14d_mm": 40.1,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 60,
-        "waterborne": 45
+        "mosquito": 59,
+        "waterborne": 44
       },
       "components": {
         "mosquito": {
           "temp": 0.794,
-          "rain_lagged": 0.687,
+          "rain_lagged": 0.668,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.408,
-          "rain_lagged": 0.515
+          "rain_lagged": 0.501
         }
       }
     },
@@ -2078,12 +2078,12 @@
       "lon": 83.3732,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.9,
-        "humidity_pct": 28.6,
-        "rain_7d_mm": 36.2,
+        "humidity_pct": 28.4,
+        "rain_7d_mm": 35.6,
         "rain_14d_mm": 57.8,
-        "temp_swing_c": 0.88,
+        "temp_swing_c": 0.86,
         "has_temp": true,
         "has_precip": true
       },
@@ -2098,7 +2098,7 @@
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.453,
+          "rain_recent": 0.445,
           "rain_lagged": 0.722
         }
       }
@@ -2111,28 +2111,28 @@
       "lon": 73.3119,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.7,
-        "humidity_pct": 29.5,
-        "rain_7d_mm": 10.1,
-        "rain_14d_mm": 50.2,
-        "temp_swing_c": 0.6,
+        "humidity_pct": 29.6,
+        "rain_7d_mm": 14.2,
+        "rain_14d_mm": 54.4,
+        "temp_swing_c": 0.58,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 54,
-        "waterborne": 33
+        "mosquito": 57,
+        "waterborne": 38
       },
       "components": {
         "mosquito": {
           "temp": 0.552,
-          "rain_lagged": 0.837,
+          "rain_lagged": 0.907,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.126,
-          "rain_lagged": 0.628
+          "rain_recent": 0.177,
+          "rain_lagged": 0.68
         }
       }
     },
@@ -2144,28 +2144,28 @@
       "lon": 77.7796,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.0,
-        "humidity_pct": 33.6,
-        "rain_7d_mm": 22.1,
-        "rain_14d_mm": 37.1,
+        "n_days": 24,
+        "temp_mean_c": 35.9,
+        "humidity_pct": 33.9,
+        "rain_7d_mm": 24.1,
+        "rain_14d_mm": 39.1,
         "temp_swing_c": 0.55,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 54,
-        "waterborne": 35
+        "mosquito": 55,
+        "waterborne": 38
       },
       "components": {
         "mosquito": {
-          "temp": 0.71,
-          "rain_lagged": 0.618,
+          "temp": 0.718,
+          "rain_lagged": 0.652,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.276,
-          "rain_lagged": 0.464
+          "rain_recent": 0.301,
+          "rain_lagged": 0.489
         }
       }
     },
@@ -2177,28 +2177,28 @@
       "lon": 77.391,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.4,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 31.0,
-        "rain_14d_mm": 36.5,
+        "humidity_pct": 29.7,
+        "rain_7d_mm": 32.0,
+        "rain_14d_mm": 40.8,
         "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 52,
-        "waterborne": 42
+        "mosquito": 54,
+        "waterborne": 44
       },
       "components": {
         "mosquito": {
           "temp": 0.676,
-          "rain_lagged": 0.608,
+          "rain_lagged": 0.68,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.388,
-          "rain_lagged": 0.456
+          "rain_recent": 0.4,
+          "rain_lagged": 0.51
         }
       }
     },
@@ -2210,28 +2210,28 @@
       "lon": 86.2029,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.9,
-        "humidity_pct": 51.1,
-        "rain_7d_mm": 43.6,
-        "rain_14d_mm": 70.4,
-        "temp_swing_c": 0.81,
+        "humidity_pct": 50.6,
+        "rain_7d_mm": 48.8,
+        "rain_14d_mm": 75.4,
+        "temp_swing_c": 0.85,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 78,
-        "waterborne": 68
+        "waterborne": 74
       },
       "components": {
         "mosquito": {
           "temp": 0.858,
           "rain_lagged": 1.0,
-          "humidity": 0.222
+          "humidity": 0.212
         },
         "waterborne": {
-          "rain_recent": 0.545,
-          "rain_lagged": 0.88
+          "rain_recent": 0.61,
+          "rain_lagged": 0.943
         }
       }
     },
@@ -2243,28 +2243,28 @@
       "lon": 81.3509,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.1,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 18.3,
-        "rain_14d_mm": 20.1,
-        "temp_swing_c": 0.79,
+        "humidity_pct": 30.0,
+        "rain_7d_mm": 36.2,
+        "rain_14d_mm": 40.0,
+        "temp_swing_c": 0.78,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 39,
-        "waterborne": 24
+        "mosquito": 51,
+        "waterborne": 47
       },
       "components": {
         "mosquito": {
           "temp": 0.612,
-          "rain_lagged": 0.335,
+          "rain_lagged": 0.667,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.229,
-          "rain_lagged": 0.251
+          "rain_recent": 0.453,
+          "rain_lagged": 0.5
         }
       }
     },
@@ -2276,28 +2276,28 @@
       "lon": 85.883,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.7,
-        "humidity_pct": 62.0,
-        "rain_7d_mm": 5.5,
-        "rain_14d_mm": 30.0,
-        "temp_swing_c": 0.45,
+        "humidity_pct": 62.1,
+        "rain_7d_mm": 5.4,
+        "rain_14d_mm": 30.3,
+        "temp_swing_c": 0.44,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 65,
+        "mosquito": 66,
         "waterborne": 19
       },
       "components": {
         "mosquito": {
           "temp": 0.869,
-          "rain_lagged": 0.5,
-          "humidity": 0.44
+          "rain_lagged": 0.505,
+          "humidity": 0.442
         },
         "waterborne": {
-          "rain_recent": 0.069,
-          "rain_lagged": 0.375
+          "rain_recent": 0.068,
+          "rain_lagged": 0.379
         }
       }
     },
@@ -2309,18 +2309,18 @@
       "lon": 78.3958,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.5,
-        "humidity_pct": 28.4,
-        "rain_7d_mm": 16.0,
+        "humidity_pct": 28.5,
+        "rain_7d_mm": 15.6,
         "rain_14d_mm": 17.2,
-        "temp_swing_c": 1.09,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 36,
-        "waterborne": 21
+        "waterborne": 20
       },
       "components": {
         "mosquito": {
@@ -2329,7 +2329,7 @@
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.2,
+          "rain_recent": 0.195,
           "rain_lagged": 0.215
         }
       }
@@ -2342,27 +2342,27 @@
       "lon": 76.2673,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.8,
-        "humidity_pct": 86.0,
-        "rain_7d_mm": 88.4,
-        "rain_14d_mm": 355.1,
-        "temp_swing_c": 0.29,
+        "n_days": 24,
+        "temp_mean_c": 27.7,
+        "humidity_pct": 85.8,
+        "rain_7d_mm": 77.2,
+        "rain_14d_mm": 341.8,
+        "temp_swing_c": 0.28,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 98,
-        "waterborne": 100
+        "waterborne": 98
       },
       "components": {
         "mosquito": {
-          "temp": 0.991,
+          "temp": 0.99,
           "rain_lagged": 1.0,
-          "humidity": 0.92
+          "humidity": 0.916
         },
         "waterborne": {
-          "rain_recent": 1.0,
+          "rain_recent": 0.965,
           "rain_lagged": 1.0
         }
       }
@@ -2375,28 +2375,28 @@
       "lon": 79.9865,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.3,
-        "humidity_pct": 63.3,
-        "rain_7d_mm": 29.2,
-        "rain_14d_mm": 29.8,
-        "temp_swing_c": 0.68,
+        "n_days": 24,
+        "temp_mean_c": 32.2,
+        "humidity_pct": 63.7,
+        "rain_7d_mm": 28.8,
+        "rain_14d_mm": 29.7,
+        "temp_swing_c": 0.67,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 69,
-        "waterborne": 37
+        "waterborne": 36
       },
       "components": {
         "mosquito": {
-          "temp": 0.936,
-          "rain_lagged": 0.497,
-          "humidity": 0.466
+          "temp": 0.939,
+          "rain_lagged": 0.495,
+          "humidity": 0.474
         },
         "waterborne": {
-          "rain_recent": 0.365,
-          "rain_lagged": 0.372
+          "rain_recent": 0.36,
+          "rain_lagged": 0.371
         }
       }
     },
@@ -2408,28 +2408,28 @@
       "lon": 78.0322,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 25.9,
         "humidity_pct": 34.9,
-        "rain_7d_mm": 37.1,
-        "rain_14d_mm": 57.5,
+        "rain_7d_mm": 37.0,
+        "rain_14d_mm": 53.1,
         "temp_swing_c": 1.11,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 76,
-        "waterborne": 57
+        "mosquito": 73,
+        "waterborne": 54
       },
       "components": {
         "mosquito": {
           "temp": 0.943,
-          "rain_lagged": 0.958,
+          "rain_lagged": 0.885,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.464,
-          "rain_lagged": 0.719
+          "rain_recent": 0.463,
+          "rain_lagged": 0.664
         }
       }
     },
@@ -2441,28 +2441,28 @@
       "lon": 87.3119,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.7,
-        "humidity_pct": 58.3,
-        "rain_7d_mm": 18.1,
-        "rain_14d_mm": 40.3,
-        "temp_swing_c": 0.62,
+        "n_days": 24,
+        "temp_mean_c": 33.8,
+        "humidity_pct": 58.0,
+        "rain_7d_mm": 53.7,
+        "rain_14d_mm": 76.6,
+        "temp_swing_c": 0.64,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 70,
-        "waterborne": 34
+        "mosquito": 81,
+        "waterborne": 79
       },
       "components": {
         "mosquito": {
-          "temp": 0.869,
-          "rain_lagged": 0.672,
-          "humidity": 0.366
+          "temp": 0.864,
+          "rain_lagged": 1.0,
+          "humidity": 0.36
         },
         "waterborne": {
-          "rain_recent": 0.226,
-          "rain_lagged": 0.504
+          "rain_recent": 0.671,
+          "rain_lagged": 0.957
         }
       }
     },
@@ -2474,28 +2474,28 @@
       "lon": 86.9523,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.9,
-        "humidity_pct": 54.4,
-        "rain_7d_mm": 17.2,
-        "rain_14d_mm": 35.6,
-        "temp_swing_c": 0.74,
+        "humidity_pct": 54.0,
+        "rain_7d_mm": 31.9,
+        "rain_14d_mm": 50.4,
+        "temp_swing_c": 0.78,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 65,
-        "waterborne": 31
+        "mosquito": 74,
+        "waterborne": 49
       },
       "components": {
         "mosquito": {
           "temp": 0.858,
-          "rain_lagged": 0.593,
-          "humidity": 0.288
+          "rain_lagged": 0.84,
+          "humidity": 0.28
         },
         "waterborne": {
-          "rain_recent": 0.215,
-          "rain_lagged": 0.445
+          "rain_recent": 0.399,
+          "rain_lagged": 0.63
         }
       }
     },
@@ -2507,28 +2507,28 @@
       "lon": 84.8536,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.3,
+        "n_days": 24,
+        "temp_mean_c": 34.2,
         "humidity_pct": 42.9,
-        "rain_7d_mm": 11.1,
-        "rain_14d_mm": 58.2,
-        "temp_swing_c": 0.89,
+        "rain_7d_mm": 36.0,
+        "rain_14d_mm": 84.8,
+        "temp_swing_c": 0.96,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 73,
-        "waterborne": 37
+        "mosquito": 74,
+        "waterborne": 67
       },
       "components": {
         "mosquito": {
-          "temp": 0.834,
-          "rain_lagged": 0.97,
+          "temp": 0.84,
+          "rain_lagged": 1.0,
           "humidity": 0.058
         },
         "waterborne": {
-          "rain_recent": 0.139,
-          "rain_lagged": 0.728
+          "rain_recent": 0.45,
+          "rain_lagged": 1.0
         }
       }
     },
@@ -2540,11 +2540,11 @@
       "lon": 77.321,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.5,
-        "humidity_pct": 41.1,
+        "humidity_pct": 41.3,
         "rain_7d_mm": 23.3,
-        "rain_14d_mm": 36.3,
+        "rain_14d_mm": 36.1,
         "temp_swing_c": 0.72,
         "has_temp": true,
         "has_precip": true
@@ -2556,12 +2556,12 @@
       "components": {
         "mosquito": {
           "temp": 0.821,
-          "rain_lagged": 0.605,
-          "humidity": 0.022
+          "rain_lagged": 0.602,
+          "humidity": 0.026
         },
         "waterborne": {
           "rain_recent": 0.291,
-          "rain_lagged": 0.454
+          "rain_lagged": 0.451
         }
       }
     },
@@ -2573,27 +2573,27 @@
       "lon": 74.2433,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.9,
-        "humidity_pct": 75.1,
-        "rain_7d_mm": 1.5,
+        "n_days": 24,
+        "temp_mean_c": 27.8,
+        "humidity_pct": 75.5,
+        "rain_7d_mm": 0.0,
         "rain_14d_mm": 61.6,
-        "temp_swing_c": 0.72,
+        "temp_swing_c": 0.69,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 94,
-        "waterborne": 32
+        "waterborne": 31
       },
       "components": {
         "mosquito": {
-          "temp": 0.993,
+          "temp": 0.991,
           "rain_lagged": 1.0,
-          "humidity": 0.702
+          "humidity": 0.71
         },
         "waterborne": {
-          "rain_recent": 0.019,
+          "rain_recent": 0.0,
           "rain_lagged": 0.77
         }
       }
@@ -2606,27 +2606,27 @@
       "lon": 74.6399,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.2,
-        "humidity_pct": 32.3,
-        "rain_7d_mm": 5.2,
+        "n_days": 24,
+        "temp_mean_c": 36.1,
+        "humidity_pct": 32.6,
+        "rain_7d_mm": 5.3,
         "rain_14d_mm": 53.4,
-        "temp_swing_c": 0.61,
+        "temp_swing_c": 0.62,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 62,
+        "mosquito": 63,
         "waterborne": 31
       },
       "components": {
         "mosquito": {
-          "temp": 0.693,
+          "temp": 0.702,
           "rain_lagged": 0.89,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.065,
+          "rain_recent": 0.066,
           "rain_lagged": 0.667
         }
       }
@@ -2639,28 +2639,28 @@
       "lon": 77.0082,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.9,
-        "humidity_pct": 38.6,
-        "rain_7d_mm": 19.9,
-        "rain_14d_mm": 26.4,
-        "temp_swing_c": 0.53,
+        "humidity_pct": 38.9,
+        "rain_7d_mm": 21.0,
+        "rain_14d_mm": 27.5,
+        "temp_swing_c": 0.56,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 51,
-        "waterborne": 28
+        "mosquito": 52,
+        "waterborne": 30
       },
       "components": {
         "mosquito": {
           "temp": 0.794,
-          "rain_lagged": 0.44,
+          "rain_lagged": 0.458,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.249,
-          "rain_lagged": 0.33
+          "rain_recent": 0.263,
+          "rain_lagged": 0.344
         }
       }
     },
@@ -2675,28 +2675,28 @@
         "kalaburagi"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.6,
         "humidity_pct": 53.0,
-        "rain_7d_mm": 12.5,
-        "rain_14d_mm": 33.0,
-        "temp_swing_c": 0.78,
+        "rain_7d_mm": 5.9,
+        "rain_14d_mm": 25.6,
+        "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 68,
-        "waterborne": 26
+        "mosquito": 63,
+        "waterborne": 17
       },
       "components": {
         "mosquito": {
           "temp": 0.96,
-          "rain_lagged": 0.55,
+          "rain_lagged": 0.427,
           "humidity": 0.26
         },
         "waterborne": {
-          "rain_recent": 0.156,
-          "rain_lagged": 0.412
+          "rain_recent": 0.074,
+          "rain_lagged": 0.32
         }
       }
     },
@@ -2708,8 +2708,8 @@
       "lon": 70.0577,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.6,
+        "n_days": 24,
+        "temp_mean_c": 31.5,
         "humidity_pct": 68.7,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.0,
@@ -2723,7 +2723,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.96,
+          "temp": 0.963,
           "rain_lagged": 0.0,
           "humidity": 0.574
         },
@@ -2741,12 +2741,12 @@
       "lon": 75.7885,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.5,
-        "humidity_pct": 44.0,
+        "n_days": 24,
+        "temp_mean_c": 33.4,
+        "humidity_pct": 44.4,
         "rain_7d_mm": 5.0,
-        "rain_14d_mm": 20.8,
-        "temp_swing_c": 0.54,
+        "rain_14d_mm": 19.9,
+        "temp_swing_c": 0.55,
         "has_temp": true,
         "has_precip": true
       },
@@ -2756,13 +2756,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.88,
-          "rain_lagged": 0.347,
-          "humidity": 0.08
+          "temp": 0.885,
+          "rain_lagged": 0.332,
+          "humidity": 0.088
         },
         "waterborne": {
           "rain_recent": 0.062,
-          "rain_lagged": 0.26
+          "rain_lagged": 0.249
         }
       }
     },
@@ -2774,18 +2774,18 @@
       "lon": 88.3953,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.2,
         "humidity_pct": 58.1,
-        "rain_7d_mm": 67.2,
-        "rain_14d_mm": 174.6,
-        "temp_swing_c": 0.56,
+        "rain_7d_mm": 58.7,
+        "rain_14d_mm": 185.7,
+        "temp_swing_c": 0.55,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 86,
-        "waterborne": 90
+        "waterborne": 84
       },
       "components": {
         "mosquito": {
@@ -2794,7 +2794,7 @@
           "humidity": 0.362
         },
         "waterborne": {
-          "rain_recent": 0.84,
+          "rain_recent": 0.734,
           "rain_lagged": 1.0
         }
       }
@@ -2807,7 +2807,7 @@
       "lon": 78.5685,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.8,
         "humidity_pct": 26.4,
         "rain_7d_mm": 2.8,
@@ -2840,28 +2840,28 @@
       "lon": 74.857,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.9,
-        "humidity_pct": 26.6,
-        "rain_7d_mm": 49.8,
-        "rain_14d_mm": 59.3,
-        "temp_swing_c": 0.86,
+        "humidity_pct": 26.8,
+        "rain_7d_mm": 52.1,
+        "rain_14d_mm": 60.5,
+        "temp_swing_c": 0.88,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 73,
-        "waterborne": 67
+        "mosquito": 74,
+        "waterborne": 69
       },
       "components": {
         "mosquito": {
           "temp": 0.858,
-          "rain_lagged": 0.988,
+          "rain_lagged": 1.0,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.622,
-          "rain_lagged": 0.741
+          "rain_recent": 0.651,
+          "rain_lagged": 0.756
         }
       }
     },
@@ -2876,12 +2876,12 @@
         "mangalore"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 27.6,
-        "humidity_pct": 84.4,
-        "rain_7d_mm": 129.8,
-        "rain_14d_mm": 342.8,
-        "temp_swing_c": 0.29,
+        "humidity_pct": 84.5,
+        "rain_7d_mm": 110.3,
+        "rain_14d_mm": 322.5,
+        "temp_swing_c": 0.3,
         "has_temp": true,
         "has_precip": true
       },
@@ -2893,7 +2893,7 @@
         "mosquito": {
           "temp": 0.988,
           "rain_lagged": 1.0,
-          "humidity": 0.888
+          "humidity": 0.89
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -2909,28 +2909,28 @@
       "lon": 77.7172,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.3,
-        "humidity_pct": 77.1,
-        "rain_7d_mm": 6.7,
-        "rain_14d_mm": 9.9,
-        "temp_swing_c": 0.48,
+        "n_days": 24,
+        "temp_mean_c": 27.2,
+        "humidity_pct": 77.2,
+        "rain_7d_mm": 6.6,
+        "rain_14d_mm": 7.2,
+        "temp_swing_c": 0.49,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 65,
-        "waterborne": 10
+        "mosquito": 63,
+        "waterborne": 9
       },
       "components": {
         "mosquito": {
-          "temp": 0.983,
-          "rain_lagged": 0.165,
-          "humidity": 0.742
+          "temp": 0.981,
+          "rain_lagged": 0.12,
+          "humidity": 0.744
         },
         "waterborne": {
-          "rain_recent": 0.084,
-          "rain_lagged": 0.124
+          "rain_recent": 0.082,
+          "rain_lagged": 0.09
         }
       }
     },
@@ -2945,27 +2945,27 @@
         "belgaum"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.3,
-        "humidity_pct": 79.7,
-        "rain_7d_mm": 21.6,
-        "rain_14d_mm": 186.5,
-        "temp_swing_c": 0.68,
+        "n_days": 24,
+        "temp_mean_c": 27.2,
+        "humidity_pct": 80.1,
+        "rain_7d_mm": 10.9,
+        "rain_14d_mm": 184.4,
+        "temp_swing_c": 0.65,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 95,
-        "waterborne": 56
+        "waterborne": 48
       },
       "components": {
         "mosquito": {
-          "temp": 0.983,
+          "temp": 0.981,
           "rain_lagged": 1.0,
-          "humidity": 0.794
+          "humidity": 0.802
         },
         "waterborne": {
-          "rain_recent": 0.27,
+          "rain_recent": 0.136,
           "rain_lagged": 1.0
         }
       }
@@ -2978,28 +2978,28 @@
       "lon": 77.7567,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.6,
-        "humidity_pct": 82.0,
-        "rain_7d_mm": 15.7,
-        "rain_14d_mm": 32.9,
-        "temp_swing_c": 0.32,
+        "n_days": 24,
+        "temp_mean_c": 27.5,
+        "humidity_pct": 81.9,
+        "rain_7d_mm": 16.0,
+        "rain_14d_mm": 29.7,
+        "temp_swing_c": 0.36,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 80,
-        "waterborne": 28
+        "mosquito": 78,
+        "waterborne": 27
       },
       "components": {
         "mosquito": {
-          "temp": 0.988,
-          "rain_lagged": 0.548,
-          "humidity": 0.84
+          "temp": 0.987,
+          "rain_lagged": 0.495,
+          "humidity": 0.838
         },
         "waterborne": {
-          "rain_recent": 0.196,
-          "rain_lagged": 0.411
+          "rain_recent": 0.2,
+          "rain_lagged": 0.371
         }
       }
     },
@@ -3011,12 +3011,12 @@
       "lon": 85.0002,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.3,
-        "humidity_pct": 30.9,
+        "humidity_pct": 30.8,
         "rain_7d_mm": 5.5,
         "rain_14d_mm": 8.2,
-        "temp_swing_c": 1.05,
+        "temp_swing_c": 1.03,
         "has_temp": true,
         "has_precip": true
       },
@@ -3044,12 +3044,12 @@
       "lon": 73.7125,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.3,
-        "humidity_pct": 38.2,
+        "n_days": 24,
+        "temp_mean_c": 34.2,
+        "humidity_pct": 38.5,
         "rain_7d_mm": 2.2,
         "rain_14d_mm": 8.7,
-        "temp_swing_c": 0.61,
+        "temp_swing_c": 0.59,
         "has_temp": true,
         "has_precip": true
       },
@@ -3059,7 +3059,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.834,
+          "temp": 0.84,
           "rain_lagged": 0.145,
           "humidity": 0.0
         },
@@ -3077,12 +3077,12 @@
       "lon": 79.4192,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 30.7,
-        "humidity_pct": 63.5,
-        "rain_7d_mm": 14.9,
-        "rain_14d_mm": 16.2,
-        "temp_swing_c": 0.77,
+        "humidity_pct": 63.8,
+        "rain_7d_mm": 14.6,
+        "rain_14d_mm": 15.6,
+        "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
@@ -3093,12 +3093,12 @@
       "components": {
         "mosquito": {
           "temp": 0.983,
-          "rain_lagged": 0.27,
-          "humidity": 0.47
+          "rain_lagged": 0.26,
+          "humidity": 0.476
         },
         "waterborne": {
-          "rain_recent": 0.186,
-          "rain_lagged": 0.202
+          "rain_recent": 0.182,
+          "rain_lagged": 0.195
         }
       }
     },
@@ -3110,28 +3110,28 @@
       "lon": 75.9218,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 26.4,
-        "humidity_pct": 80.4,
-        "rain_7d_mm": 11.4,
-        "rain_14d_mm": 32.6,
-        "temp_swing_c": 0.73,
+        "n_days": 24,
+        "temp_mean_c": 26.3,
+        "humidity_pct": 80.6,
+        "rain_7d_mm": 3.5,
+        "rain_14d_mm": 28.9,
+        "temp_swing_c": 0.74,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 78,
-        "waterborne": 25
+        "mosquito": 76,
+        "waterborne": 17
       },
       "components": {
         "mosquito": {
-          "temp": 0.96,
-          "rain_lagged": 0.543,
-          "humidity": 0.808
+          "temp": 0.957,
+          "rain_lagged": 0.482,
+          "humidity": 0.812
         },
         "waterborne": {
-          "rain_recent": 0.143,
-          "rain_lagged": 0.408
+          "rain_recent": 0.044,
+          "rain_lagged": 0.361
         }
       }
     },
@@ -3143,27 +3143,27 @@
       "lon": 75.7804,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.5,
-        "humidity_pct": 85.4,
-        "rain_7d_mm": 85.4,
-        "rain_14d_mm": 385.8,
-        "temp_swing_c": 0.35,
+        "n_days": 24,
+        "temp_mean_c": 27.4,
+        "humidity_pct": 85.3,
+        "rain_7d_mm": 64.7,
+        "rain_14d_mm": 331.4,
+        "temp_swing_c": 0.34,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 98,
-        "waterborne": 100
+        "mosquito": 97,
+        "waterborne": 89
       },
       "components": {
         "mosquito": {
-          "temp": 0.987,
+          "temp": 0.985,
           "rain_lagged": 1.0,
-          "humidity": 0.908
+          "humidity": 0.906
         },
         "waterborne": {
-          "rain_recent": 1.0,
+          "rain_recent": 0.809,
           "rain_lagged": 1.0
         }
       }
@@ -3176,28 +3176,28 @@
       "lon": 78.0373,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.2,
-        "humidity_pct": 59.1,
+        "n_days": 24,
+        "temp_mean_c": 31.1,
+        "humidity_pct": 59.3,
         "rain_7d_mm": 34.5,
-        "rain_14d_mm": 71.3,
-        "temp_swing_c": 0.8,
+        "rain_14d_mm": 62.8,
+        "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 86,
-        "waterborne": 62
+        "mosquito": 87,
+        "waterborne": 57
       },
       "components": {
         "mosquito": {
-          "temp": 0.971,
+          "temp": 0.974,
           "rain_lagged": 1.0,
-          "humidity": 0.382
+          "humidity": 0.386
         },
         "waterborne": {
           "rain_recent": 0.431,
-          "rain_lagged": 0.891
+          "rain_lagged": 0.785
         }
       }
     },
@@ -3209,28 +3209,28 @@
       "lon": 86.1511,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.0,
-        "humidity_pct": 48.6,
-        "rain_7d_mm": 22.4,
-        "rain_14d_mm": 41.5,
-        "temp_swing_c": 0.81,
+        "humidity_pct": 48.1,
+        "rain_7d_mm": 26.8,
+        "rain_14d_mm": 45.8,
+        "temp_swing_c": 0.86,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 66,
-        "waterborne": 38
+        "mosquito": 68,
+        "waterborne": 43
       },
       "components": {
         "mosquito": {
           "temp": 0.852,
-          "rain_lagged": 0.692,
-          "humidity": 0.172
+          "rain_lagged": 0.763,
+          "humidity": 0.162
         },
         "waterborne": {
-          "rain_recent": 0.28,
-          "rain_lagged": 0.519
+          "rain_recent": 0.335,
+          "rain_lagged": 0.573
         }
       }
     },
@@ -3242,28 +3242,28 @@
       "lon": 76.9214,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 28.7,
-        "humidity_pct": 68.9,
-        "rain_7d_mm": 31.4,
-        "rain_14d_mm": 56.3,
-        "temp_swing_c": 0.81,
+        "humidity_pct": 69.2,
+        "rain_7d_mm": 29.1,
+        "rain_14d_mm": 51.0,
+        "temp_swing_c": 0.8,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 89,
-        "waterborne": 52
+        "mosquito": 86,
+        "waterborne": 47
       },
       "components": {
         "mosquito": {
           "temp": 0.999,
-          "rain_lagged": 0.938,
-          "humidity": 0.578
+          "rain_lagged": 0.85,
+          "humidity": 0.584
         },
         "waterborne": {
-          "rain_recent": 0.392,
-          "rain_lagged": 0.704
+          "rain_recent": 0.364,
+          "rain_lagged": 0.637
         }
       }
     },
@@ -3275,12 +3275,12 @@
       "lon": 76.3869,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.2,
-        "humidity_pct": 24.9,
-        "rain_7d_mm": 24.2,
-        "rain_14d_mm": 35.0,
-        "temp_swing_c": 1.09,
+        "n_days": 24,
+        "temp_mean_c": 36.1,
+        "humidity_pct": 25.1,
+        "rain_7d_mm": 24.3,
+        "rain_14d_mm": 35.1,
+        "temp_swing_c": 1.12,
         "has_temp": true,
         "has_precip": true
       },
@@ -3290,13 +3290,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.693,
-          "rain_lagged": 0.583,
+          "temp": 0.702,
+          "rain_lagged": 0.585,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.302,
-          "rain_lagged": 0.438
+          "rain_recent": 0.304,
+          "rain_lagged": 0.439
         }
       }
     },
@@ -3308,12 +3308,12 @@
       "lon": 91.2868,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.9,
-        "humidity_pct": 65.6,
-        "rain_7d_mm": 128.9,
-        "rain_14d_mm": 154.1,
-        "temp_swing_c": 0.48,
+        "n_days": 24,
+        "temp_mean_c": 31.8,
+        "humidity_pct": 66.1,
+        "rain_7d_mm": 105.1,
+        "rain_14d_mm": 161.2,
+        "temp_swing_c": 0.47,
         "has_temp": true,
         "has_precip": true
       },
@@ -3323,9 +3323,9 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.95,
+          "temp": 0.954,
           "rain_lagged": 1.0,
-          "humidity": 0.512
+          "humidity": 0.522
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -3341,28 +3341,28 @@
       "lon": 86.9842,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 35.3,
-        "humidity_pct": 44.9,
-        "rain_7d_mm": 33.2,
-        "rain_14d_mm": 73.7,
-        "temp_swing_c": 0.85,
+        "humidity_pct": 44.5,
+        "rain_7d_mm": 24.7,
+        "rain_14d_mm": 73.8,
+        "temp_swing_c": 0.92,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 71,
-        "waterborne": 62
+        "waterborne": 55
       },
       "components": {
         "mosquito": {
           "temp": 0.765,
           "rain_lagged": 1.0,
-          "humidity": 0.098
+          "humidity": 0.09
         },
         "waterborne": {
-          "rain_recent": 0.415,
-          "rain_lagged": 0.921
+          "rain_recent": 0.309,
+          "rain_lagged": 0.922
         }
       }
     },
@@ -3374,28 +3374,28 @@
       "lon": 77.7085,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 35.8,
-        "humidity_pct": 27.6,
-        "rain_7d_mm": 47.3,
-        "rain_14d_mm": 49.8,
-        "temp_swing_c": 1.13,
+        "humidity_pct": 27.7,
+        "rain_7d_mm": 47.4,
+        "rain_14d_mm": 50.1,
+        "temp_swing_c": 1.14,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 62,
-        "waterborne": 60
+        "waterborne": 61
       },
       "components": {
         "mosquito": {
           "temp": 0.726,
-          "rain_lagged": 0.83,
+          "rain_lagged": 0.835,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.591,
-          "rain_lagged": 0.622
+          "rain_recent": 0.593,
+          "rain_lagged": 0.626
         }
       }
     },
@@ -3407,28 +3407,28 @@
       "lon": 76.5604,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.3,
         "humidity_pct": 48.6,
-        "rain_7d_mm": 10.5,
-        "rain_14d_mm": 26.3,
-        "temp_swing_c": 0.79,
+        "rain_7d_mm": 8.6,
+        "rain_14d_mm": 20.2,
+        "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 61,
-        "waterborne": 21
+        "mosquito": 57,
+        "waterborne": 17
       },
       "components": {
         "mosquito": {
           "temp": 0.936,
-          "rain_lagged": 0.438,
+          "rain_lagged": 0.337,
           "humidity": 0.172
         },
         "waterborne": {
-          "rain_recent": 0.131,
-          "rain_lagged": 0.329
+          "rain_recent": 0.107,
+          "rain_lagged": 0.253
         }
       }
     },
@@ -3440,12 +3440,12 @@
       "lon": 74.7749,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.9,
-        "humidity_pct": 47.7,
+        "n_days": 24,
+        "temp_mean_c": 33.8,
+        "humidity_pct": 48.0,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 0.7,
-        "temp_swing_c": 0.45,
+        "rain_14d_mm": 0.4,
+        "temp_swing_c": 0.48,
         "has_temp": true,
         "has_precip": true
       },
@@ -3455,13 +3455,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.858,
-          "rain_lagged": 0.012,
-          "humidity": 0.154
+          "temp": 0.864,
+          "rain_lagged": 0.007,
+          "humidity": 0.16
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.009
+          "rain_lagged": 0.005
         }
       }
     },
@@ -3473,28 +3473,28 @@
       "lon": 76.6066,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.3,
-        "humidity_pct": 29.1,
-        "rain_7d_mm": 18.3,
-        "rain_14d_mm": 23.0,
-        "temp_swing_c": 1.14,
+        "humidity_pct": 29.3,
+        "rain_7d_mm": 24.8,
+        "rain_14d_mm": 30.5,
+        "temp_swing_c": 1.17,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 44,
-        "waterborne": 25
+        "mosquito": 49,
+        "waterborne": 34
       },
       "components": {
         "mosquito": {
           "temp": 0.685,
-          "rain_lagged": 0.383,
+          "rain_lagged": 0.508,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.229,
-          "rain_lagged": 0.287
+          "rain_recent": 0.31,
+          "rain_lagged": 0.381
         }
       }
     },
@@ -3506,28 +3506,28 @@
       "lon": 82.7501,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.6,
-        "humidity_pct": 27.9,
-        "rain_7d_mm": 17.2,
-        "rain_14d_mm": 32.7,
-        "temp_swing_c": 0.69,
+        "humidity_pct": 28.2,
+        "rain_7d_mm": 6.7,
+        "rain_14d_mm": 26.5,
+        "temp_swing_c": 0.7,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 49,
-        "waterborne": 29
+        "mosquito": 45,
+        "waterborne": 18
       },
       "components": {
         "mosquito": {
           "temp": 0.658,
-          "rain_lagged": 0.545,
+          "rain_lagged": 0.442,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.215,
-          "rain_lagged": 0.409
+          "rain_recent": 0.084,
+          "rain_lagged": 0.331
         }
       }
     },
@@ -3539,28 +3539,28 @@
       "lon": 74.6364,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.9,
-        "humidity_pct": 32.3,
-        "rain_7d_mm": 14.5,
-        "rain_14d_mm": 41.0,
+        "n_days": 24,
+        "temp_mean_c": 35.8,
+        "humidity_pct": 32.6,
+        "rain_7d_mm": 15.1,
+        "rain_14d_mm": 41.6,
         "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 56,
-        "waterborne": 31
+        "mosquito": 57,
+        "waterborne": 32
       },
       "components": {
         "mosquito": {
-          "temp": 0.718,
-          "rain_lagged": 0.683,
+          "temp": 0.726,
+          "rain_lagged": 0.693,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.181,
-          "rain_lagged": 0.512
+          "rain_recent": 0.189,
+          "rain_lagged": 0.52
         }
       }
     },
@@ -3575,12 +3575,12 @@
         "berhampur"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.9,
-        "humidity_pct": 71.2,
+        "humidity_pct": 71.1,
         "rain_7d_mm": 9.3,
         "rain_14d_mm": 12.3,
-        "temp_swing_c": 0.41,
+        "temp_swing_c": 0.4,
         "has_temp": true,
         "has_precip": true
       },
@@ -3592,7 +3592,7 @@
         "mosquito": {
           "temp": 0.95,
           "rain_lagged": 0.205,
-          "humidity": 0.624
+          "humidity": 0.622
         },
         "waterborne": {
           "rain_recent": 0.116,
@@ -3608,12 +3608,12 @@
       "lon": 85.3647,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.2,
-        "humidity_pct": 38.0,
-        "rain_7d_mm": 7.4,
-        "rain_14d_mm": 28.7,
-        "temp_swing_c": 0.86,
+        "n_days": 24,
+        "temp_mean_c": 36.3,
+        "humidity_pct": 37.7,
+        "rain_7d_mm": 7.5,
+        "rain_14d_mm": 28.8,
+        "temp_swing_c": 0.88,
         "has_temp": true,
         "has_precip": true
       },
@@ -3623,13 +3623,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.693,
-          "rain_lagged": 0.478,
+          "temp": 0.685,
+          "rain_lagged": 0.48,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.092,
-          "rain_lagged": 0.359
+          "rain_recent": 0.094,
+          "rain_lagged": 0.36
         }
       }
     },
@@ -3641,12 +3641,12 @@
       "lon": 77.6737,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.1,
-        "humidity_pct": 29.4,
-        "rain_7d_mm": 15.8,
-        "rain_14d_mm": 23.6,
-        "temp_swing_c": 1.17,
+        "humidity_pct": 29.5,
+        "rain_7d_mm": 15.5,
+        "rain_14d_mm": 23.8,
+        "temp_swing_c": 1.19,
         "has_temp": true,
         "has_precip": true
       },
@@ -3657,12 +3657,12 @@
       "components": {
         "mosquito": {
           "temp": 0.612,
-          "rain_lagged": 0.393,
+          "rain_lagged": 0.397,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.198,
-          "rain_lagged": 0.295
+          "rain_recent": 0.194,
+          "rain_lagged": 0.297
         }
       }
     },
@@ -3674,11 +3674,11 @@
       "lon": 76.6141,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 26.2,
-        "humidity_pct": 90.0,
-        "rain_7d_mm": 106.6,
-        "rain_14d_mm": 242.9,
+        "humidity_pct": 89.8,
+        "rain_7d_mm": 86.4,
+        "rain_14d_mm": 235.7,
         "temp_swing_c": 0.27,
         "has_temp": true,
         "has_precip": true
@@ -3691,7 +3691,7 @@
         "mosquito": {
           "temp": 0.954,
           "rain_lagged": 1.0,
-          "humidity": 1.0
+          "humidity": 0.996
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -3707,28 +3707,28 @@
       "lon": 82.1409,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.9,
-        "humidity_pct": 26.0,
-        "rain_7d_mm": 13.2,
-        "rain_14d_mm": 29.5,
+        "n_days": 24,
+        "temp_mean_c": 37.8,
+        "humidity_pct": 26.3,
+        "rain_7d_mm": 8.8,
+        "rain_14d_mm": 21.4,
         "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 41,
-        "waterborne": 25
+        "mosquito": 37,
+        "waterborne": 17
       },
       "components": {
         "mosquito": {
-          "temp": 0.531,
-          "rain_lagged": 0.492,
+          "temp": 0.542,
+          "rain_lagged": 0.357,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.165,
-          "rain_lagged": 0.369
+          "rain_recent": 0.11,
+          "rain_lagged": 0.267
         }
       }
     },
@@ -3740,12 +3740,12 @@
       "lon": 79.9119,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.2,
         "humidity_pct": 24.9,
         "rain_7d_mm": 29.6,
         "rain_14d_mm": 32.0,
-        "temp_swing_c": 0.91,
+        "temp_swing_c": 0.89,
         "has_temp": true,
         "has_precip": true
       },
@@ -3773,27 +3773,27 @@
       "lon": 76.2144,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.3,
-        "humidity_pct": 87.6,
-        "rain_7d_mm": 68.8,
-        "rain_14d_mm": 269.3,
+        "n_days": 24,
+        "temp_mean_c": 27.2,
+        "humidity_pct": 87.4,
+        "rain_7d_mm": 58.2,
+        "rain_14d_mm": 233.2,
         "temp_swing_c": 0.33,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 98,
-        "waterborne": 92
+        "waterborne": 84
       },
       "components": {
         "mosquito": {
-          "temp": 0.983,
+          "temp": 0.981,
           "rain_lagged": 1.0,
-          "humidity": 0.952
+          "humidity": 0.948
         },
         "waterborne": {
-          "rain_recent": 0.86,
+          "rain_recent": 0.728,
           "rain_lagged": 1.0
         }
       }
@@ -3806,28 +3806,28 @@
       "lon": 76.6346,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.7,
-        "humidity_pct": 30.0,
-        "rain_7d_mm": 22.5,
-        "rain_14d_mm": 50.3,
-        "temp_swing_c": 1.11,
+        "humidity_pct": 30.3,
+        "rain_7d_mm": 24.9,
+        "rain_14d_mm": 53.3,
+        "temp_swing_c": 1.1,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 59,
-        "waterborne": 42
+        "mosquito": 60,
+        "waterborne": 45
       },
       "components": {
         "mosquito": {
           "temp": 0.649,
-          "rain_lagged": 0.838,
+          "rain_lagged": 0.888,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.281,
-          "rain_lagged": 0.629
+          "rain_recent": 0.311,
+          "rain_lagged": 0.666
         }
       }
     },
@@ -3839,28 +3839,28 @@
       "lon": 82.2475,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.7,
-        "humidity_pct": 74.2,
-        "rain_7d_mm": 24.8,
-        "rain_14d_mm": 42.8,
-        "temp_swing_c": 0.59,
+        "humidity_pct": 74.1,
+        "rain_7d_mm": 23.2,
+        "rain_14d_mm": 34.6,
+        "temp_swing_c": 0.57,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 82,
-        "waterborne": 40
+        "mosquito": 77,
+        "waterborne": 35
       },
       "components": {
         "mosquito": {
           "temp": 0.957,
-          "rain_lagged": 0.713,
-          "humidity": 0.684
+          "rain_lagged": 0.577,
+          "humidity": 0.682
         },
         "waterborne": {
-          "rain_recent": 0.31,
-          "rain_lagged": 0.535
+          "rain_recent": 0.29,
+          "rain_lagged": 0.432
         }
       }
     },
@@ -3872,28 +3872,28 @@
       "lon": 78.0941,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.8,
-        "humidity_pct": 43.8,
-        "rain_7d_mm": 15.9,
-        "rain_14d_mm": 20.2,
-        "temp_swing_c": 0.61,
+        "n_days": 24,
+        "temp_mean_c": 33.7,
+        "humidity_pct": 44.0,
+        "rain_7d_mm": 14.4,
+        "rain_14d_mm": 20.1,
+        "temp_swing_c": 0.6,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 52,
-        "waterborne": 22
+        "waterborne": 21
       },
       "components": {
         "mosquito": {
-          "temp": 0.864,
-          "rain_lagged": 0.337,
-          "humidity": 0.076
+          "temp": 0.869,
+          "rain_lagged": 0.335,
+          "humidity": 0.08
         },
         "waterborne": {
-          "rain_recent": 0.199,
-          "rain_lagged": 0.253
+          "rain_recent": 0.18,
+          "rain_lagged": 0.251
         }
       }
     },
@@ -3905,28 +3905,28 @@
       "lon": 76.9635,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.2,
-        "humidity_pct": 27.7,
-        "rain_7d_mm": 22.1,
-        "rain_14d_mm": 24.1,
-        "temp_swing_c": 1.1,
+        "humidity_pct": 27.9,
+        "rain_7d_mm": 27.9,
+        "rain_14d_mm": 30.4,
+        "temp_swing_c": 1.13,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 45,
-        "waterborne": 29
+        "mosquito": 49,
+        "waterborne": 36
       },
       "components": {
         "mosquito": {
           "temp": 0.693,
-          "rain_lagged": 0.402,
+          "rain_lagged": 0.507,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.276,
-          "rain_lagged": 0.301
+          "rain_recent": 0.349,
+          "rain_lagged": 0.38
         }
       }
     },
@@ -3938,12 +3938,12 @@
       "lon": 85.8918,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.2,
-        "humidity_pct": 38.0,
-        "rain_7d_mm": 16.9,
-        "rain_14d_mm": 37.3,
-        "temp_swing_c": 0.86,
+        "n_days": 24,
+        "temp_mean_c": 36.3,
+        "humidity_pct": 37.7,
+        "rain_7d_mm": 16.8,
+        "rain_14d_mm": 37.4,
+        "temp_swing_c": 0.88,
         "has_temp": true,
         "has_precip": true
       },
@@ -3953,13 +3953,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.693,
-          "rain_lagged": 0.622,
+          "temp": 0.685,
+          "rain_lagged": 0.623,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.211,
-          "rain_lagged": 0.466
+          "rain_recent": 0.21,
+          "rain_lagged": 0.467
         }
       }
     },
@@ -3974,12 +3974,12 @@
         "trivandrum"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 27.3,
-        "humidity_pct": 86.5,
-        "rain_7d_mm": 106.6,
-        "rain_14d_mm": 242.9,
-        "temp_swing_c": 0.26,
+        "humidity_pct": 86.3,
+        "rain_7d_mm": 86.4,
+        "rain_14d_mm": 235.7,
+        "temp_swing_c": 0.29,
         "has_temp": true,
         "has_precip": true
       },
@@ -3991,7 +3991,7 @@
         "mosquito": {
           "temp": 0.983,
           "rain_lagged": 1.0,
-          "humidity": 0.93
+          "humidity": 0.926
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -4007,12 +4007,12 @@
       "lon": 72.6369,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.1,
-        "humidity_pct": 43.3,
+        "humidity_pct": 43.6,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.1,
-        "temp_swing_c": 0.46,
+        "temp_swing_c": 0.49,
         "has_temp": true,
         "has_precip": true
       },
@@ -4024,7 +4024,7 @@
         "mosquito": {
           "temp": 0.702,
           "rain_lagged": 0.002,
-          "humidity": 0.066
+          "humidity": 0.072
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -4040,27 +4040,27 @@
       "lon": 73.8278,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.9,
-        "humidity_pct": 77.7,
-        "rain_7d_mm": 72.2,
-        "rain_14d_mm": 208.3,
-        "temp_swing_c": 0.35,
+        "humidity_pct": 77.8,
+        "rain_7d_mm": 45.9,
+        "rain_14d_mm": 201.0,
+        "temp_swing_c": 0.34,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 95,
-        "waterborne": 94
+        "waterborne": 74
       },
       "components": {
         "mosquito": {
           "temp": 0.995,
           "rain_lagged": 1.0,
-          "humidity": 0.754
+          "humidity": 0.756
         },
         "waterborne": {
-          "rain_recent": 0.903,
+          "rain_recent": 0.574,
           "rain_lagged": 1.0
         }
       }
@@ -4076,28 +4076,28 @@
         "pondicherry"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 30.5,
-        "humidity_pct": 73.5,
-        "rain_7d_mm": 10.8,
-        "rain_14d_mm": 11.1,
-        "temp_swing_c": 0.3,
+        "humidity_pct": 73.7,
+        "rain_7d_mm": 11.8,
+        "rain_14d_mm": 12.1,
+        "temp_swing_c": 0.31,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 64,
-        "waterborne": 14
+        "mosquito": 65,
+        "waterborne": 15
       },
       "components": {
         "mosquito": {
           "temp": 0.987,
-          "rain_lagged": 0.185,
-          "humidity": 0.67
+          "rain_lagged": 0.202,
+          "humidity": 0.674
         },
         "waterborne": {
-          "rain_recent": 0.135,
-          "rain_lagged": 0.139
+          "rain_recent": 0.148,
+          "rain_lagged": 0.151
         }
       }
     },
@@ -4109,11 +4109,11 @@
       "lon": 92.7265,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.5,
-        "humidity_pct": 80.9,
-        "rain_7d_mm": 254.0,
-        "rain_14d_mm": 601.7,
+        "humidity_pct": 80.8,
+        "rain_7d_mm": 226.1,
+        "rain_14d_mm": 534.0,
         "temp_swing_c": 0.2,
         "has_temp": true,
         "has_precip": true
@@ -4126,7 +4126,7 @@
         "mosquito": {
           "temp": 0.999,
           "rain_lagged": 1.0,
-          "humidity": 0.818
+          "humidity": 0.816
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -4142,28 +4142,28 @@
       "lon": 72.8328,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.0,
         "humidity_pct": 63.1,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 1.9,
-        "temp_swing_c": 0.23,
+        "rain_14d_mm": 0.1,
+        "temp_swing_c": 0.22,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 53,
-        "waterborne": 1
+        "mosquito": 52,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
           "temp": 0.947,
-          "rain_lagged": 0.032,
+          "rain_lagged": 0.002,
           "humidity": 0.462
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.024
+          "rain_lagged": 0.001
         }
       }
     },
@@ -4175,28 +4175,28 @@
       "lon": 73.014,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.0,
         "humidity_pct": 63.1,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 15.2,
-        "temp_swing_c": 0.23,
+        "rain_14d_mm": 0.0,
+        "temp_swing_c": 0.22,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 61,
-        "waterborne": 8
+        "mosquito": 52,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
           "temp": 0.947,
-          "rain_lagged": 0.253,
+          "rain_lagged": 0.0,
           "humidity": 0.462
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.19
+          "rain_lagged": 0.0
         }
       }
     },
@@ -4208,28 +4208,28 @@
       "lon": 74.5815,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 28.4,
-        "humidity_pct": 70.9,
-        "rain_7d_mm": 1.9,
-        "rain_14d_mm": 78.7,
-        "temp_swing_c": 0.72,
+        "n_days": 24,
+        "temp_mean_c": 28.3,
+        "humidity_pct": 71.1,
+        "rain_7d_mm": 0.0,
+        "rain_14d_mm": 77.2,
+        "temp_swing_c": 0.69,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 92,
-        "waterborne": 41
+        "waterborne": 39
       },
       "components": {
         "mosquito": {
-          "temp": 0.998,
+          "temp": 0.997,
           "rain_lagged": 1.0,
-          "humidity": 0.618
+          "humidity": 0.622
         },
         "waterborne": {
-          "rain_recent": 0.024,
-          "rain_lagged": 0.984
+          "rain_recent": 0.0,
+          "rain_lagged": 0.965
         }
       }
     },
@@ -4241,24 +4241,24 @@
       "lon": 75.5626,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.3,
-        "humidity_pct": 44.8,
+        "n_days": 24,
+        "temp_mean_c": 34.2,
+        "humidity_pct": 45.2,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 1.5,
-        "temp_swing_c": 0.56,
+        "temp_swing_c": 0.59,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 40,
+        "mosquito": 41,
         "waterborne": 1
       },
       "components": {
         "mosquito": {
-          "temp": 0.834,
+          "temp": 0.84,
           "rain_lagged": 0.025,
-          "humidity": 0.096
+          "humidity": 0.104
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -4274,28 +4274,28 @@
       "lon": 74.748,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.8,
+        "n_days": 24,
+        "temp_mean_c": 31.7,
         "humidity_pct": 52.0,
         "rain_7d_mm": 0.0,
-        "rain_14d_mm": 10.5,
-        "temp_swing_c": 0.5,
+        "rain_14d_mm": 8.9,
+        "temp_swing_c": 0.49,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 54,
-        "waterborne": 5
+        "mosquito": 53,
+        "waterborne": 4
       },
       "components": {
         "mosquito": {
-          "temp": 0.954,
-          "rain_lagged": 0.175,
+          "temp": 0.957,
+          "rain_lagged": 0.148,
           "humidity": 0.24
         },
         "waterborne": {
           "rain_recent": 0.0,
-          "rain_lagged": 0.131
+          "rain_lagged": 0.111
         }
       }
     },
@@ -4307,28 +4307,28 @@
       "lon": 79.2961,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.4,
-        "humidity_pct": 32.5,
+        "n_days": 24,
+        "temp_mean_c": 37.3,
+        "humidity_pct": 32.9,
         "rain_7d_mm": 17.4,
-        "rain_14d_mm": 28.6,
-        "temp_swing_c": 0.61,
+        "rain_14d_mm": 24.9,
+        "temp_swing_c": 0.6,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 43,
-        "waterborne": 27
+        "mosquito": 41,
+        "waterborne": 26
       },
       "components": {
         "mosquito": {
-          "temp": 0.582,
-          "rain_lagged": 0.477,
+          "temp": 0.592,
+          "rain_lagged": 0.415,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.217,
-          "rain_lagged": 0.358
+          "rain_lagged": 0.311
         }
       }
     },
@@ -4340,28 +4340,28 @@
       "lon": 76.76,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.6,
-        "humidity_pct": 40.3,
+        "n_days": 24,
+        "temp_mean_c": 34.5,
+        "humidity_pct": 40.5,
         "rain_7d_mm": 26.1,
-        "rain_14d_mm": 42.1,
-        "temp_swing_c": 0.61,
+        "rain_14d_mm": 42.0,
+        "temp_swing_c": 0.62,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 61,
+        "mosquito": 62,
         "waterborne": 41
       },
       "components": {
         "mosquito": {
-          "temp": 0.814,
-          "rain_lagged": 0.702,
-          "humidity": 0.006
+          "temp": 0.821,
+          "rain_lagged": 0.7,
+          "humidity": 0.01
         },
         "waterborne": {
           "rain_recent": 0.326,
-          "rain_lagged": 0.526
+          "rain_lagged": 0.525
         }
       }
     },
@@ -4373,28 +4373,28 @@
       "lon": 73.9933,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.1,
-        "humidity_pct": 70.7,
-        "rain_7d_mm": 12.8,
-        "rain_14d_mm": 41.3,
-        "temp_swing_c": 0.54,
+        "humidity_pct": 70.8,
+        "rain_7d_mm": 0.1,
+        "rain_14d_mm": 40.9,
+        "temp_swing_c": 0.52,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 81,
-        "waterborne": 30
+        "waterborne": 21
       },
       "components": {
         "mosquito": {
           "temp": 1.0,
-          "rain_lagged": 0.688,
-          "humidity": 0.614
+          "rain_lagged": 0.682,
+          "humidity": 0.616
         },
         "waterborne": {
-          "rain_recent": 0.16,
-          "rain_lagged": 0.516
+          "rain_recent": 0.001,
+          "rain_lagged": 0.511
         }
       }
     },
@@ -4406,28 +4406,28 @@
       "lon": 79.025,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.7,
-        "humidity_pct": 27.1,
-        "rain_7d_mm": 54.5,
-        "rain_14d_mm": 56.7,
-        "temp_swing_c": 1.18,
+        "n_days": 24,
+        "temp_mean_c": 35.6,
+        "humidity_pct": 27.2,
+        "rain_7d_mm": 54.8,
+        "rain_14d_mm": 57.2,
+        "temp_swing_c": 1.19,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 66,
-        "waterborne": 69
+        "mosquito": 67,
+        "waterborne": 70
       },
       "components": {
         "mosquito": {
-          "temp": 0.734,
-          "rain_lagged": 0.945,
+          "temp": 0.742,
+          "rain_lagged": 0.953,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.681,
-          "rain_lagged": 0.709
+          "rain_recent": 0.685,
+          "rain_lagged": 0.715
         }
       }
     },
@@ -4439,28 +4439,28 @@
       "lon": 77.7759,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.4,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 45.9,
-        "rain_14d_mm": 48.0,
+        "humidity_pct": 29.7,
+        "rain_7d_mm": 45.1,
+        "rain_14d_mm": 49.4,
         "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 58,
-        "waterborne": 58
+        "mosquito": 59,
+        "waterborne": 59
       },
       "components": {
         "mosquito": {
           "temp": 0.676,
-          "rain_lagged": 0.8,
+          "rain_lagged": 0.823,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.574,
-          "rain_lagged": 0.6
+          "rain_recent": 0.564,
+          "rain_lagged": 0.617
         }
       }
     },
@@ -4472,28 +4472,28 @@
       "lon": 82.5645,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 38.1,
-        "humidity_pct": 24.5,
-        "rain_7d_mm": 3.8,
-        "rain_14d_mm": 5.4,
-        "temp_swing_c": 0.85,
+        "humidity_pct": 24.4,
+        "rain_7d_mm": 1.8,
+        "rain_14d_mm": 5.0,
+        "temp_swing_c": 0.81,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 3,
-        "waterborne": 6
+        "waterborne": 4
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.09,
+          "rain_lagged": 0.083,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.048,
-          "rain_lagged": 0.068
+          "rain_recent": 0.022,
+          "rain_lagged": 0.062
         }
       }
     },
@@ -4505,12 +4505,12 @@
       "lon": 79.015,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.5,
-        "humidity_pct": 27.4,
-        "rain_7d_mm": 12.8,
-        "rain_14d_mm": 12.8,
-        "temp_swing_c": 1.09,
+        "humidity_pct": 27.5,
+        "rain_7d_mm": 13.0,
+        "rain_14d_mm": 13.0,
+        "temp_swing_c": 1.07,
         "has_temp": true,
         "has_precip": true
       },
@@ -4521,12 +4521,12 @@
       "components": {
         "mosquito": {
           "temp": 0.572,
-          "rain_lagged": 0.213,
+          "rain_lagged": 0.217,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.16,
-          "rain_lagged": 0.16
+          "rain_recent": 0.163,
+          "rain_lagged": 0.163
         }
       }
     },
@@ -4538,28 +4538,28 @@
       "lon": 77.8498,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.4,
-        "humidity_pct": 28.5,
-        "rain_7d_mm": 25.5,
-        "rain_14d_mm": 28.8,
-        "temp_swing_c": 1.23,
+        "n_days": 24,
+        "temp_mean_c": 36.3,
+        "humidity_pct": 28.6,
+        "rain_7d_mm": 24.2,
+        "rain_14d_mm": 30.5,
+        "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 47,
-        "waterborne": 34
+        "mosquito": 49,
+        "waterborne": 33
       },
       "components": {
         "mosquito": {
-          "temp": 0.676,
-          "rain_lagged": 0.48,
+          "temp": 0.685,
+          "rain_lagged": 0.508,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.319,
-          "rain_lagged": 0.36
+          "rain_recent": 0.302,
+          "rain_lagged": 0.381
         }
       }
     },
@@ -4571,28 +4571,28 @@
       "lon": 78.4677,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.7,
-        "humidity_pct": 27.1,
-        "rain_7d_mm": 45.4,
-        "rain_14d_mm": 46.5,
-        "temp_swing_c": 1.18,
+        "n_days": 24,
+        "temp_mean_c": 35.6,
+        "humidity_pct": 27.2,
+        "rain_7d_mm": 44.7,
+        "rain_14d_mm": 46.8,
+        "temp_swing_c": 1.19,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 60,
+        "mosquito": 61,
         "waterborne": 57
       },
       "components": {
         "mosquito": {
-          "temp": 0.734,
-          "rain_lagged": 0.775,
+          "temp": 0.742,
+          "rain_lagged": 0.78,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.568,
-          "rain_lagged": 0.581
+          "rain_recent": 0.559,
+          "rain_lagged": 0.585
         }
       }
     },
@@ -4604,12 +4604,12 @@
       "lon": 80.1318,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.3,
         "humidity_pct": 25.5,
         "rain_7d_mm": 18.9,
         "rain_14d_mm": 19.1,
-        "temp_swing_c": 0.94,
+        "temp_swing_c": 0.92,
         "has_temp": true,
         "has_precip": true
       },
@@ -4637,28 +4637,28 @@
       "lon": 80.8138,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 38.3,
         "humidity_pct": 24.4,
-        "rain_7d_mm": 0.2,
-        "rain_14d_mm": 1.0,
+        "rain_7d_mm": 0.3,
+        "rain_14d_mm": 0.3,
         "temp_swing_c": 0.84,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 1,
-        "waterborne": 1
+        "mosquito": 0,
+        "waterborne": 0
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.017,
+          "rain_lagged": 0.005,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.003,
-          "rain_lagged": 0.013
+          "rain_recent": 0.004,
+          "rain_lagged": 0.004
         }
       }
     },
@@ -4670,9 +4670,9 @@
       "lon": 81.2337,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 38.3,
-        "humidity_pct": 23.9,
+        "humidity_pct": 24.0,
         "rain_7d_mm": 5.5,
         "rain_14d_mm": 5.6,
         "temp_swing_c": 0.81,
@@ -4703,22 +4703,22 @@
       "lon": 80.6829,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.4,
-        "humidity_pct": 25.3,
+        "n_days": 24,
+        "temp_mean_c": 37.3,
+        "humidity_pct": 25.2,
         "rain_7d_mm": 10.3,
         "rain_14d_mm": 10.7,
-        "temp_swing_c": 0.87,
+        "temp_swing_c": 0.85,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 32,
+        "mosquito": 33,
         "waterborne": 13
       },
       "components": {
         "mosquito": {
-          "temp": 0.582,
+          "temp": 0.592,
           "rain_lagged": 0.178,
           "humidity": 0.0
         },
@@ -4736,12 +4736,12 @@
       "lon": 80.4878,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.9,
-        "humidity_pct": 24.8,
+        "humidity_pct": 24.9,
         "rain_7d_mm": 8.6,
         "rain_14d_mm": 8.6,
-        "temp_swing_c": 0.84,
+        "temp_swing_c": 0.81,
         "has_temp": true,
         "has_precip": true
       },
@@ -4769,7 +4769,7 @@
       "lon": 79.1208,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.9,
         "humidity_pct": 26.2,
         "rain_7d_mm": 50.3,
@@ -4802,27 +4802,27 @@
       "lon": 85.5236,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.6,
-        "humidity_pct": 34.9,
-        "rain_7d_mm": 13.1,
+        "n_days": 24,
+        "temp_mean_c": 36.7,
+        "humidity_pct": 34.7,
+        "rain_7d_mm": 12.1,
         "rain_14d_mm": 24.2,
-        "temp_swing_c": 0.9,
+        "temp_swing_c": 0.92,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 44,
-        "waterborne": 22
+        "mosquito": 43,
+        "waterborne": 21
       },
       "components": {
         "mosquito": {
-          "temp": 0.658,
+          "temp": 0.649,
           "rain_lagged": 0.403,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.164,
+          "rain_recent": 0.151,
           "rain_lagged": 0.302
         }
       }
@@ -4835,12 +4835,12 @@
       "lon": 84.6634,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.6,
-        "humidity_pct": 30.1,
+        "humidity_pct": 29.9,
         "rain_7d_mm": 11.5,
-        "rain_14d_mm": 15.1,
-        "temp_swing_c": 1.06,
+        "rain_14d_mm": 14.9,
+        "temp_swing_c": 1.04,
         "has_temp": true,
         "has_precip": true
       },
@@ -4851,12 +4851,12 @@
       "components": {
         "mosquito": {
           "temp": 0.562,
-          "rain_lagged": 0.252,
+          "rain_lagged": 0.248,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.144,
-          "rain_lagged": 0.189
+          "rain_lagged": 0.186
         }
       }
     },
@@ -4868,27 +4868,27 @@
       "lon": 86.1272,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.1,
-        "humidity_pct": 40.4,
-        "rain_7d_mm": 24.2,
+        "humidity_pct": 40.2,
+        "rain_7d_mm": 19.7,
         "rain_14d_mm": 48.7,
-        "temp_swing_c": 0.85,
+        "temp_swing_c": 0.89,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 60,
-        "waterborne": 43
+        "waterborne": 39
       },
       "components": {
         "mosquito": {
           "temp": 0.702,
           "rain_lagged": 0.812,
-          "humidity": 0.008
+          "humidity": 0.004
         },
         "waterborne": {
-          "rain_recent": 0.302,
+          "rain_recent": 0.246,
           "rain_lagged": 0.609
         }
       }
@@ -4901,27 +4901,27 @@
       "lon": 87.4753,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.2,
-        "humidity_pct": 49.4,
-        "rain_7d_mm": 42.3,
-        "rain_14d_mm": 83.2,
-        "temp_swing_c": 0.68,
+        "n_days": 24,
+        "temp_mean_c": 34.3,
+        "humidity_pct": 49.1,
+        "rain_7d_mm": 35.6,
+        "rain_14d_mm": 84.1,
+        "temp_swing_c": 0.71,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 77,
-        "waterborne": 72
+        "mosquito": 76,
+        "waterborne": 67
       },
       "components": {
         "mosquito": {
-          "temp": 0.84,
+          "temp": 0.834,
           "rain_lagged": 1.0,
-          "humidity": 0.188
+          "humidity": 0.182
         },
         "waterborne": {
-          "rain_recent": 0.529,
+          "rain_recent": 0.445,
           "rain_lagged": 1.0
         }
       }
@@ -4934,27 +4934,27 @@
       "lon": 87.5747,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.7,
-        "humidity_pct": 49.2,
-        "rain_7d_mm": 52.1,
-        "rain_14d_mm": 98.0,
-        "temp_swing_c": 0.73,
+        "humidity_pct": 48.8,
+        "rain_7d_mm": 48.6,
+        "rain_14d_mm": 103.7,
+        "temp_swing_c": 0.77,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 75,
-        "waterborne": 79
+        "waterborne": 76
       },
       "components": {
         "mosquito": {
           "temp": 0.808,
           "rain_lagged": 1.0,
-          "humidity": 0.184
+          "humidity": 0.176
         },
         "waterborne": {
-          "rain_recent": 0.651,
+          "rain_recent": 0.608,
           "rain_lagged": 1.0
         }
       }
@@ -4967,28 +4967,28 @@
       "lon": 84.7475,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.8,
-        "humidity_pct": 34.7,
+        "humidity_pct": 34.4,
         "rain_7d_mm": 11.5,
-        "rain_14d_mm": 15.1,
+        "rain_14d_mm": 14.9,
         "temp_swing_c": 0.95,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
+        "mosquito": 37,
         "waterborne": 16
       },
       "components": {
         "mosquito": {
           "temp": 0.64,
-          "rain_lagged": 0.252,
+          "rain_lagged": 0.248,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.144,
-          "rain_lagged": 0.189
+          "rain_lagged": 0.186
         }
       }
     },
@@ -5003,27 +5003,27 @@
         "burdwan"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.4,
-        "humidity_pct": 62.4,
-        "rain_7d_mm": 36.2,
-        "rain_14d_mm": 92.1,
+        "humidity_pct": 62.5,
+        "rain_7d_mm": 44.4,
+        "rain_14d_mm": 118.3,
         "temp_swing_c": 0.45,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 84,
-        "waterborne": 67
+        "waterborne": 73
       },
       "components": {
         "mosquito": {
           "temp": 0.885,
           "rain_lagged": 1.0,
-          "humidity": 0.448
+          "humidity": 0.45
         },
         "waterborne": {
-          "rain_recent": 0.453,
+          "rain_recent": 0.555,
           "rain_lagged": 1.0
         }
       }
@@ -5036,27 +5036,27 @@
       "lon": 88.1433,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.1,
-        "humidity_pct": 53.6,
-        "rain_7d_mm": 60.0,
-        "rain_14d_mm": 103.8,
-        "temp_swing_c": 0.62,
+        "humidity_pct": 53.4,
+        "rain_7d_mm": 65.6,
+        "rain_14d_mm": 113.4,
+        "temp_swing_c": 0.63,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 79,
-        "waterborne": 85
+        "mosquito": 78,
+        "waterborne": 89
       },
       "components": {
         "mosquito": {
           "temp": 0.846,
           "rain_lagged": 1.0,
-          "humidity": 0.272
+          "humidity": 0.268
         },
         "waterborne": {
-          "rain_recent": 0.75,
+          "rain_recent": 0.82,
           "rain_lagged": 1.0
         }
       }
@@ -5072,12 +5072,12 @@
         "berhampore"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.0,
-        "humidity_pct": 56.4,
-        "rain_7d_mm": 50.1,
-        "rain_14d_mm": 103.4,
-        "temp_swing_c": 0.59,
+        "humidity_pct": 56.2,
+        "rain_7d_mm": 50.4,
+        "rain_14d_mm": 107.5,
+        "temp_swing_c": 0.6,
         "has_temp": true,
         "has_precip": true
       },
@@ -5089,10 +5089,10 @@
         "mosquito": {
           "temp": 0.852,
           "rain_lagged": 1.0,
-          "humidity": 0.328
+          "humidity": 0.324
         },
         "waterborne": {
-          "rain_recent": 0.626,
+          "rain_recent": 0.63,
           "rain_lagged": 1.0
         }
       }
@@ -5105,18 +5105,18 @@
       "lon": 87.232,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.1,
         "humidity_pct": 64.7,
-        "rain_7d_mm": 14.9,
-        "rain_14d_mm": 79.7,
-        "temp_swing_c": 0.54,
+        "rain_7d_mm": 19.2,
+        "rain_14d_mm": 83.4,
+        "temp_swing_c": 0.53,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 85,
-        "waterborne": 51
+        "waterborne": 54
       },
       "components": {
         "mosquito": {
@@ -5125,8 +5125,8 @@
           "humidity": 0.494
         },
         "waterborne": {
-          "rain_recent": 0.186,
-          "rain_lagged": 0.996
+          "rain_recent": 0.24,
+          "rain_lagged": 1.0
         }
       }
     },
@@ -5138,12 +5138,12 @@
       "lon": 88.0698,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.0,
-        "humidity_pct": 71.6,
+        "n_days": 24,
+        "temp_mean_c": 31.9,
+        "humidity_pct": 71.8,
         "rain_7d_mm": 35.4,
-        "rain_14d_mm": 69.8,
-        "temp_swing_c": 0.29,
+        "rain_14d_mm": 68.5,
+        "temp_swing_c": 0.31,
         "has_temp": true,
         "has_precip": true
       },
@@ -5153,13 +5153,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.947,
+          "temp": 0.95,
           "rain_lagged": 1.0,
-          "humidity": 0.632
+          "humidity": 0.636
         },
         "waterborne": {
           "rain_recent": 0.443,
-          "rain_lagged": 0.872
+          "rain_lagged": 0.856
         }
       }
     },
@@ -5171,28 +5171,28 @@
       "lon": 75.1399,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.2,
-        "humidity_pct": 29.6,
-        "rain_7d_mm": 44.5,
-        "rain_14d_mm": 58.9,
-        "temp_swing_c": 0.64,
+        "n_days": 24,
+        "temp_mean_c": 36.1,
+        "humidity_pct": 29.9,
+        "rain_7d_mm": 53.0,
+        "rain_14d_mm": 67.4,
+        "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 66,
-        "waterborne": 63
+        "mosquito": 67,
+        "waterborne": 73
       },
       "components": {
         "mosquito": {
-          "temp": 0.693,
-          "rain_lagged": 0.982,
+          "temp": 0.702,
+          "rain_lagged": 1.0,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.556,
-          "rain_lagged": 0.736
+          "rain_recent": 0.662,
+          "rain_lagged": 0.843
         }
       }
     },
@@ -5204,28 +5204,28 @@
       "lon": 73.88,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 38.2,
-        "humidity_pct": 24.9,
-        "rain_7d_mm": 36.1,
-        "rain_14d_mm": 36.7,
+        "n_days": 24,
+        "temp_mean_c": 38.1,
+        "humidity_pct": 25.3,
+        "rain_7d_mm": 36.7,
+        "rain_14d_mm": 37.3,
         "temp_swing_c": 1.06,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 21,
-        "waterborne": 45
+        "mosquito": 22,
+        "waterborne": 46
       },
       "components": {
         "mosquito": {
           "temp": 0.0,
-          "rain_lagged": 0.612,
+          "rain_lagged": 0.622,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.451,
-          "rain_lagged": 0.459
+          "rain_recent": 0.459,
+          "rain_lagged": 0.466
         }
       }
     },
@@ -5237,12 +5237,12 @@
       "lon": 73.3234,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.5,
-        "humidity_pct": 36.3,
-        "rain_7d_mm": 1.1,
-        "rain_14d_mm": 8.3,
-        "temp_swing_c": 0.67,
+        "n_days": 24,
+        "temp_mean_c": 36.4,
+        "humidity_pct": 36.5,
+        "rain_7d_mm": 1.5,
+        "rain_14d_mm": 8.7,
+        "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
@@ -5252,13 +5252,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.667,
-          "rain_lagged": 0.138,
+          "temp": 0.676,
+          "rain_lagged": 0.145,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.014,
-          "rain_lagged": 0.104
+          "rain_recent": 0.019,
+          "rain_lagged": 0.109
         }
       }
     },
@@ -5270,28 +5270,28 @@
       "lon": 77.4895,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.4,
-        "humidity_pct": 28.8,
-        "rain_7d_mm": 17.7,
-        "rain_14d_mm": 37.9,
-        "temp_swing_c": 1.09,
+        "humidity_pct": 28.9,
+        "rain_7d_mm": 17.8,
+        "rain_14d_mm": 38.3,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 48,
+        "mosquito": 49,
         "waterborne": 32
       },
       "components": {
         "mosquito": {
           "temp": 0.582,
-          "rain_lagged": 0.632,
+          "rain_lagged": 0.638,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.221,
-          "rain_lagged": 0.474
+          "rain_recent": 0.223,
+          "rain_lagged": 0.479
         }
       }
     },
@@ -5303,28 +5303,28 @@
       "lon": 74.3294,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.8,
-        "humidity_pct": 26.8,
-        "rain_7d_mm": 46.7,
-        "rain_14d_mm": 47.5,
-        "temp_swing_c": 1.06,
+        "n_days": 24,
+        "temp_mean_c": 37.7,
+        "humidity_pct": 27.2,
+        "rain_7d_mm": 49.1,
+        "rain_14d_mm": 50.0,
+        "temp_swing_c": 1.07,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 52,
-        "waterborne": 59
+        "mosquito": 54,
+        "waterborne": 62
       },
       "components": {
         "mosquito": {
-          "temp": 0.542,
-          "rain_lagged": 0.792,
+          "temp": 0.552,
+          "rain_lagged": 0.833,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.584,
-          "rain_lagged": 0.594
+          "rain_recent": 0.614,
+          "rain_lagged": 0.625
         }
       }
     },
@@ -5336,28 +5336,28 @@
       "lon": 78.7378,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.4,
-        "humidity_pct": 28.1,
-        "rain_7d_mm": 42.5,
-        "rain_14d_mm": 45.0,
-        "temp_swing_c": 0.65,
+        "humidity_pct": 28.2,
+        "rain_7d_mm": 48.5,
+        "rain_14d_mm": 51.7,
+        "temp_swing_c": 0.68,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 57,
-        "waterborne": 54
+        "mosquito": 61,
+        "waterborne": 62
       },
       "components": {
         "mosquito": {
           "temp": 0.676,
-          "rain_lagged": 0.75,
+          "rain_lagged": 0.862,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.531,
-          "rain_lagged": 0.562
+          "rain_recent": 0.606,
+          "rain_lagged": 0.646
         }
       }
     },
@@ -5369,28 +5369,28 @@
       "lon": 75.0367,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.6,
-        "humidity_pct": 44.5,
+        "n_days": 24,
+        "temp_mean_c": 33.5,
+        "humidity_pct": 44.9,
         "rain_7d_mm": 2.0,
-        "rain_14d_mm": 34.2,
-        "temp_swing_c": 0.55,
+        "rain_14d_mm": 33.7,
+        "temp_swing_c": 0.54,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 61,
-        "waterborne": 19
+        "waterborne": 18
       },
       "components": {
         "mosquito": {
-          "temp": 0.875,
-          "rain_lagged": 0.57,
-          "humidity": 0.09
+          "temp": 0.88,
+          "rain_lagged": 0.562,
+          "humidity": 0.098
         },
         "waterborne": {
           "rain_recent": 0.025,
-          "rain_lagged": 0.428
+          "rain_lagged": 0.421
         }
       }
     },
@@ -5402,28 +5402,28 @@
       "lon": 80.8322,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.6,
+        "n_days": 24,
+        "temp_mean_c": 37.5,
         "humidity_pct": 23.7,
-        "rain_7d_mm": 19.8,
-        "rain_14d_mm": 21.4,
+        "rain_7d_mm": 28.1,
+        "rain_14d_mm": 29.3,
         "temp_swing_c": 0.76,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
-        "waterborne": 26
+        "mosquito": 43,
+        "waterborne": 36
       },
       "components": {
         "mosquito": {
-          "temp": 0.562,
-          "rain_lagged": 0.357,
+          "temp": 0.572,
+          "rain_lagged": 0.488,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.247,
-          "rain_lagged": 0.267
+          "rain_recent": 0.351,
+          "rain_lagged": 0.366
         }
       }
     },
@@ -5435,28 +5435,28 @@
       "lon": 81.3037,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.6,
         "humidity_pct": 23.7,
-        "rain_7d_mm": 24.8,
-        "rain_14d_mm": 28.9,
-        "temp_swing_c": 0.81,
+        "rain_7d_mm": 35.2,
+        "rain_14d_mm": 39.1,
+        "temp_swing_c": 0.79,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 42,
-        "waterborne": 33
+        "mosquito": 48,
+        "waterborne": 46
       },
       "components": {
         "mosquito": {
           "temp": 0.562,
-          "rain_lagged": 0.482,
+          "rain_lagged": 0.652,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.31,
-          "rain_lagged": 0.361
+          "rain_recent": 0.44,
+          "rain_lagged": 0.489
         }
       }
     },
@@ -5468,28 +5468,28 @@
       "lon": 76.0534,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.2,
-        "humidity_pct": 40.6,
+        "n_days": 24,
+        "temp_mean_c": 34.1,
+        "humidity_pct": 40.9,
         "rain_7d_mm": 16.1,
-        "rain_14d_mm": 35.9,
+        "rain_14d_mm": 32.1,
         "temp_swing_c": 0.63,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 59,
-        "waterborne": 30
+        "mosquito": 57,
+        "waterborne": 28
       },
       "components": {
         "mosquito": {
-          "temp": 0.84,
-          "rain_lagged": 0.598,
-          "humidity": 0.012
+          "temp": 0.846,
+          "rain_lagged": 0.535,
+          "humidity": 0.018
         },
         "waterborne": {
           "rain_recent": 0.201,
-          "rain_lagged": 0.449
+          "rain_lagged": 0.401
         }
       }
     },
@@ -5501,28 +5501,28 @@
       "lon": 80.4001,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.7,
-        "humidity_pct": 26.3,
-        "rain_7d_mm": 11.0,
-        "rain_14d_mm": 15.2,
-        "temp_swing_c": 0.71,
+        "humidity_pct": 26.2,
+        "rain_7d_mm": 10.0,
+        "rain_14d_mm": 17.5,
+        "temp_swing_c": 0.68,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
+        "mosquito": 39,
         "waterborne": 16
       },
       "components": {
         "mosquito": {
           "temp": 0.649,
-          "rain_lagged": 0.253,
+          "rain_lagged": 0.292,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.138,
-          "rain_lagged": 0.19
+          "rain_recent": 0.125,
+          "rain_lagged": 0.219
         }
       }
     },
@@ -5534,28 +5534,28 @@
       "lon": 82.6753,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.8,
-        "humidity_pct": 25.1,
-        "rain_7d_mm": 11.1,
-        "rain_14d_mm": 18.0,
-        "temp_swing_c": 0.74,
+        "humidity_pct": 25.2,
+        "rain_7d_mm": 8.2,
+        "rain_14d_mm": 17.2,
+        "temp_swing_c": 0.72,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 39,
-        "waterborne": 17
+        "waterborne": 15
       },
       "components": {
         "mosquito": {
           "temp": 0.64,
-          "rain_lagged": 0.3,
+          "rain_lagged": 0.287,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.139,
-          "rain_lagged": 0.225
+          "rain_recent": 0.102,
+          "rain_lagged": 0.215
         }
       }
     },
@@ -5567,12 +5567,12 @@
       "lon": 76.3522,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.1,
-        "humidity_pct": 40.9,
+        "n_days": 24,
+        "temp_mean_c": 35.0,
+        "humidity_pct": 41.3,
         "rain_7d_mm": 1.1,
-        "rain_14d_mm": 2.1,
-        "temp_swing_c": 0.64,
+        "rain_14d_mm": 1.9,
+        "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
@@ -5582,13 +5582,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.78,
-          "rain_lagged": 0.035,
-          "humidity": 0.018
+          "temp": 0.787,
+          "rain_lagged": 0.032,
+          "humidity": 0.026
         },
         "waterborne": {
           "rain_recent": 0.014,
-          "rain_lagged": 0.026
+          "rain_lagged": 0.024
         }
       }
     },
@@ -5600,9 +5600,9 @@
       "lon": 70.4579,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.3,
-        "humidity_pct": 61.7,
+        "humidity_pct": 61.6,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.0,
         "temp_swing_c": 0.31,
@@ -5617,7 +5617,7 @@
         "mosquito": {
           "temp": 0.936,
           "rain_lagged": 0.0,
-          "humidity": 0.434
+          "humidity": 0.432
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -5633,12 +5633,12 @@
       "lon": 70.1337,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.3,
         "humidity_pct": 63.8,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.0,
-        "temp_swing_c": 0.26,
+        "temp_swing_c": 0.25,
         "has_temp": true,
         "has_precip": true
       },
@@ -5666,24 +5666,24 @@
       "lon": 72.9289,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.2,
-        "humidity_pct": 48.7,
+        "n_days": 24,
+        "temp_mean_c": 35.1,
+        "humidity_pct": 48.8,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.1,
-        "temp_swing_c": 0.39,
+        "temp_swing_c": 0.38,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
+        "mosquito": 39,
         "waterborne": 0
       },
       "components": {
         "mosquito": {
-          "temp": 0.773,
+          "temp": 0.78,
           "rain_lagged": 0.002,
-          "humidity": 0.174
+          "humidity": 0.176
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -5699,24 +5699,24 @@
       "lon": 72.8615,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.2,
-        "humidity_pct": 48.7,
+        "n_days": 24,
+        "temp_mean_c": 35.1,
+        "humidity_pct": 48.8,
         "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.1,
-        "temp_swing_c": 0.39,
+        "temp_swing_c": 0.38,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
+        "mosquito": 39,
         "waterborne": 0
       },
       "components": {
         "mosquito": {
-          "temp": 0.773,
+          "temp": 0.78,
           "rain_lagged": 0.002,
-          "humidity": 0.174
+          "humidity": 0.176
         },
         "waterborne": {
           "rain_recent": 0.0,
@@ -5732,12 +5732,12 @@
       "lon": 72.9959,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 33.5,
+        "n_days": 24,
+        "temp_mean_c": 33.4,
         "humidity_pct": 58.6,
-        "rain_7d_mm": 0.1,
+        "rain_7d_mm": 0.0,
         "rain_14d_mm": 0.1,
-        "temp_swing_c": 0.26,
+        "temp_swing_c": 0.27,
         "has_temp": true,
         "has_precip": true
       },
@@ -5747,12 +5747,12 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.88,
+          "temp": 0.885,
           "rain_lagged": 0.002,
           "humidity": 0.372
         },
         "waterborne": {
-          "rain_recent": 0.001,
+          "rain_recent": 0.0,
           "rain_lagged": 0.001
         }
       }
@@ -5765,11 +5765,11 @@
       "lon": 72.952,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.7,
+        "n_days": 24,
+        "temp_mean_c": 32.6,
         "humidity_pct": 61.7,
-        "rain_7d_mm": 0.1,
-        "rain_14d_mm": 0.4,
+        "rain_7d_mm": 0.0,
+        "rain_14d_mm": 0.1,
         "temp_swing_c": 0.23,
         "has_temp": true,
         "has_precip": true
@@ -5780,13 +5780,13 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.919,
-          "rain_lagged": 0.007,
+          "temp": 0.923,
+          "rain_lagged": 0.002,
           "humidity": 0.434
         },
         "waterborne": {
-          "rain_recent": 0.001,
-          "rain_lagged": 0.005
+          "rain_recent": 0.0,
+          "rain_lagged": 0.001
         }
       }
     },
@@ -5801,28 +5801,28 @@
         "tumkur"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 25.8,
-        "humidity_pct": 77.0,
-        "rain_7d_mm": 35.7,
-        "rain_14d_mm": 51.4,
+        "n_days": 24,
+        "temp_mean_c": 25.7,
+        "humidity_pct": 77.5,
+        "rain_7d_mm": 35.1,
+        "rain_14d_mm": 44.4,
         "temp_swing_c": 0.77,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 87,
-        "waterborne": 52
+        "mosquito": 83,
+        "waterborne": 49
       },
       "components": {
         "mosquito": {
-          "temp": 0.939,
-          "rain_lagged": 0.857,
-          "humidity": 0.74
+          "temp": 0.936,
+          "rain_lagged": 0.74,
+          "humidity": 0.75
         },
         "waterborne": {
-          "rain_recent": 0.446,
-          "rain_lagged": 0.642
+          "rain_recent": 0.439,
+          "rain_lagged": 0.555
         }
       }
     },
@@ -5837,28 +5837,28 @@
         "bijapur"
       ],
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 30.4,
+        "n_days": 24,
+        "temp_mean_c": 30.3,
         "humidity_pct": 60.5,
-        "rain_7d_mm": 15.1,
-        "rain_14d_mm": 53.8,
-        "temp_swing_c": 0.9,
+        "rain_7d_mm": 0.5,
+        "rain_14d_mm": 42.8,
+        "temp_swing_c": 0.87,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 84,
-        "waterborne": 38
+        "mosquito": 78,
+        "waterborne": 22
       },
       "components": {
         "mosquito": {
-          "temp": 0.988,
-          "rain_lagged": 0.897,
+          "temp": 0.99,
+          "rain_lagged": 0.713,
           "humidity": 0.41
         },
         "waterborne": {
-          "rain_recent": 0.189,
-          "rain_lagged": 0.672
+          "rain_recent": 0.006,
+          "rain_lagged": 0.535
         }
       }
     },
@@ -5870,28 +5870,28 @@
       "lon": 77.3463,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 31.0,
-        "humidity_pct": 59.9,
-        "rain_7d_mm": 25.6,
-        "rain_14d_mm": 36.5,
-        "temp_swing_c": 0.83,
+        "humidity_pct": 60.1,
+        "rain_7d_mm": 24.9,
+        "rain_14d_mm": 35.0,
+        "temp_swing_c": 0.79,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 73,
-        "waterborne": 37
+        "mosquito": 72,
+        "waterborne": 36
       },
       "components": {
         "mosquito": {
           "temp": 0.976,
-          "rain_lagged": 0.608,
-          "humidity": 0.398
+          "rain_lagged": 0.583,
+          "humidity": 0.402
         },
         "waterborne": {
-          "rain_recent": 0.32,
-          "rain_lagged": 0.456
+          "rain_recent": 0.311,
+          "rain_lagged": 0.438
         }
       }
     },
@@ -5903,11 +5903,11 @@
       "lon": 74.7421,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 27.0,
-        "humidity_pct": 85.5,
-        "rain_7d_mm": 132.6,
-        "rain_14d_mm": 353.6,
+        "n_days": 24,
+        "temp_mean_c": 26.9,
+        "humidity_pct": 85.7,
+        "rain_7d_mm": 111.3,
+        "rain_14d_mm": 330.6,
         "temp_swing_c": 0.31,
         "has_temp": true,
         "has_precip": true
@@ -5918,9 +5918,9 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.976,
+          "temp": 0.974,
           "rain_lagged": 1.0,
-          "humidity": 0.91
+          "humidity": 0.914
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -5936,28 +5936,28 @@
       "lon": 76.0962,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 24.1,
-        "humidity_pct": 85.6,
-        "rain_7d_mm": 14.5,
-        "rain_14d_mm": 29.6,
-        "temp_swing_c": 0.57,
+        "humidity_pct": 85.9,
+        "rain_7d_mm": 9.7,
+        "rain_14d_mm": 26.0,
+        "temp_swing_c": 0.55,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 74,
-        "waterborne": 26
+        "mosquito": 72,
+        "waterborne": 20
       },
       "components": {
         "mosquito": {
           "temp": 0.858,
-          "rain_lagged": 0.493,
-          "humidity": 0.912
+          "rain_lagged": 0.433,
+          "humidity": 0.918
         },
         "waterborne": {
-          "rain_recent": 0.181,
-          "rain_lagged": 0.37
+          "rain_recent": 0.121,
+          "rain_lagged": 0.325
         }
       }
     },
@@ -5969,12 +5969,12 @@
       "lon": 79.1325,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 30.8,
-        "humidity_pct": 63.9,
-        "rain_7d_mm": 22.7,
-        "rain_14d_mm": 24.1,
-        "temp_swing_c": 0.71,
+        "humidity_pct": 64.2,
+        "rain_7d_mm": 22.6,
+        "rain_14d_mm": 24.0,
+        "temp_swing_c": 0.69,
         "has_temp": true,
         "has_precip": true
       },
@@ -5985,12 +5985,12 @@
       "components": {
         "mosquito": {
           "temp": 0.981,
-          "rain_lagged": 0.402,
-          "humidity": 0.478
+          "rain_lagged": 0.4,
+          "humidity": 0.484
         },
         "waterborne": {
-          "rain_recent": 0.284,
-          "rain_lagged": 0.301
+          "rain_recent": 0.283,
+          "rain_lagged": 0.3
         }
       }
     },
@@ -6005,28 +6005,28 @@
         "tuticorin"
       ],
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.8,
-        "humidity_pct": 73.1,
-        "rain_7d_mm": 11.5,
-        "rain_14d_mm": 20.8,
-        "temp_swing_c": 0.23,
+        "humidity_pct": 72.8,
+        "rain_7d_mm": 12.0,
+        "rain_14d_mm": 18.6,
+        "temp_swing_c": 0.25,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 70,
-        "waterborne": 19
+        "mosquito": 69,
+        "waterborne": 18
       },
       "components": {
         "mosquito": {
           "temp": 0.996,
-          "rain_lagged": 0.347,
-          "humidity": 0.662
+          "rain_lagged": 0.31,
+          "humidity": 0.656
         },
         "waterborne": {
-          "rain_recent": 0.144,
-          "rain_lagged": 0.26
+          "rain_recent": 0.15,
+          "rain_lagged": 0.233
         }
       }
     },
@@ -6038,28 +6038,28 @@
       "lon": 77.9695,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.0,
         "humidity_pct": 72.9,
         "rain_7d_mm": 10.3,
-        "rain_14d_mm": 16.8,
+        "rain_14d_mm": 12.2,
         "temp_swing_c": 0.52,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 68,
-        "waterborne": 16
+        "mosquito": 65,
+        "waterborne": 14
       },
       "components": {
         "mosquito": {
           "temp": 1.0,
-          "rain_lagged": 0.28,
+          "rain_lagged": 0.203,
           "humidity": 0.658
         },
         "waterborne": {
           "rain_recent": 0.129,
-          "rain_lagged": 0.21
+          "rain_lagged": 0.152
         }
       }
     },
@@ -6071,28 +6071,28 @@
       "lon": 79.1378,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 30.8,
-        "humidity_pct": 68.6,
-        "rain_7d_mm": 7.2,
-        "rain_14d_mm": 7.2,
-        "temp_swing_c": 0.36,
+        "n_days": 24,
+        "temp_mean_c": 30.7,
+        "humidity_pct": 69.0,
+        "rain_7d_mm": 9.5,
+        "rain_14d_mm": 9.5,
+        "temp_swing_c": 0.37,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 60,
-        "waterborne": 9
+        "mosquito": 61,
+        "waterborne": 12
       },
       "components": {
         "mosquito": {
-          "temp": 0.981,
-          "rain_lagged": 0.12,
-          "humidity": 0.572
+          "temp": 0.983,
+          "rain_lagged": 0.158,
+          "humidity": 0.58
         },
         "waterborne": {
-          "rain_recent": 0.09,
-          "rain_lagged": 0.09
+          "rain_recent": 0.119,
+          "rain_lagged": 0.119
         }
       }
     },
@@ -6104,12 +6104,12 @@
       "lon": 77.4119,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 28.4,
-        "humidity_pct": 82.4,
-        "rain_7d_mm": 96.7,
-        "rain_14d_mm": 185.0,
-        "temp_swing_c": 0.17,
+        "n_days": 24,
+        "temp_mean_c": 28.3,
+        "humidity_pct": 82.3,
+        "rain_7d_mm": 93.7,
+        "rain_14d_mm": 175.5,
+        "temp_swing_c": 0.18,
         "has_temp": true,
         "has_precip": true
       },
@@ -6119,9 +6119,9 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.998,
+          "temp": 0.997,
           "rain_lagged": 1.0,
-          "humidity": 0.848
+          "humidity": 0.846
         },
         "waterborne": {
           "rain_recent": 1.0,
@@ -6137,10 +6137,10 @@
       "lon": 79.7036,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.6,
-        "humidity_pct": 65.9,
-        "rain_7d_mm": 8.3,
+        "n_days": 24,
+        "temp_mean_c": 31.5,
+        "humidity_pct": 66.1,
+        "rain_7d_mm": 7.9,
         "rain_14d_mm": 9.8,
         "temp_swing_c": 0.53,
         "has_temp": true,
@@ -6152,12 +6152,12 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.96,
+          "temp": 0.963,
           "rain_lagged": 0.163,
-          "humidity": 0.518
+          "humidity": 0.522
         },
         "waterborne": {
-          "rain_recent": 0.104,
+          "rain_recent": 0.099,
           "rain_lagged": 0.123
         }
       }
@@ -6170,28 +6170,28 @@
       "lon": 77.8253,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 26.9,
-        "humidity_pct": 74.4,
+        "n_days": 24,
+        "temp_mean_c": 26.8,
+        "humidity_pct": 74.8,
         "rain_7d_mm": 46.8,
-        "rain_14d_mm": 62.0,
-        "temp_swing_c": 0.91,
+        "rain_14d_mm": 53.2,
+        "temp_swing_c": 0.87,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 93,
-        "waterborne": 66
+        "mosquito": 89,
+        "waterborne": 62
       },
       "components": {
         "mosquito": {
-          "temp": 0.974,
-          "rain_lagged": 1.0,
-          "humidity": 0.688
+          "temp": 0.971,
+          "rain_lagged": 0.887,
+          "humidity": 0.696
         },
         "waterborne": {
           "rain_recent": 0.585,
-          "rain_lagged": 0.775
+          "rain_lagged": 0.665
         }
       }
     },
@@ -6203,28 +6203,28 @@
       "lon": 81.804,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.4,
         "humidity_pct": 60.6,
-        "rain_7d_mm": 30.6,
-        "rain_14d_mm": 46.8,
-        "temp_swing_c": 0.73,
+        "rain_7d_mm": 28.5,
+        "rain_14d_mm": 40.3,
+        "temp_swing_c": 0.71,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 75,
-        "waterborne": 46
+        "mosquito": 72,
+        "waterborne": 42
       },
       "components": {
         "mosquito": {
           "temp": 0.885,
-          "rain_lagged": 0.78,
+          "rain_lagged": 0.672,
           "humidity": 0.412
         },
         "waterborne": {
-          "rain_recent": 0.383,
-          "rain_lagged": 0.585
+          "rain_recent": 0.356,
+          "rain_lagged": 0.504
         }
       }
     },
@@ -6236,28 +6236,28 @@
       "lon": 78.8242,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 31.3,
-        "humidity_pct": 60.4,
-        "rain_7d_mm": 24.0,
-        "rain_14d_mm": 26.0,
-        "temp_swing_c": 0.73,
+        "n_days": 24,
+        "temp_mean_c": 31.2,
+        "humidity_pct": 60.8,
+        "rain_7d_mm": 21.4,
+        "rain_14d_mm": 24.6,
+        "temp_swing_c": 0.71,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 67,
-        "waterborne": 31
+        "mosquito": 66,
+        "waterborne": 28
       },
       "components": {
         "mosquito": {
-          "temp": 0.969,
-          "rain_lagged": 0.433,
-          "humidity": 0.408
+          "temp": 0.971,
+          "rain_lagged": 0.41,
+          "humidity": 0.416
         },
         "waterborne": {
-          "rain_recent": 0.3,
-          "rain_lagged": 0.325
+          "rain_recent": 0.267,
+          "rain_lagged": 0.307
         }
       }
     },
@@ -6269,28 +6269,28 @@
       "lon": 77.6006,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 29.1,
-        "humidity_pct": 66.5,
-        "rain_7d_mm": 65.9,
-        "rain_14d_mm": 80.3,
-        "temp_swing_c": 0.69,
+        "humidity_pct": 66.8,
+        "rain_7d_mm": 64.8,
+        "rain_14d_mm": 72.3,
+        "temp_swing_c": 0.7,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 91,
-        "waterborne": 89
+        "waterborne": 85
       },
       "components": {
         "mosquito": {
           "temp": 1.0,
           "rain_lagged": 1.0,
-          "humidity": 0.53
+          "humidity": 0.536
         },
         "waterborne": {
-          "rain_recent": 0.824,
-          "rain_lagged": 1.0
+          "rain_recent": 0.81,
+          "rain_lagged": 0.904
         }
       }
     },
@@ -6302,28 +6302,28 @@
       "lon": 81.0952,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 33.5,
         "humidity_pct": 61.0,
-        "rain_7d_mm": 46.2,
-        "rain_14d_mm": 59.7,
-        "temp_swing_c": 0.65,
+        "rain_7d_mm": 47.0,
+        "rain_14d_mm": 59.3,
+        "temp_swing_c": 0.62,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 83,
-        "waterborne": 64
+        "waterborne": 65
       },
       "components": {
         "mosquito": {
           "temp": 0.88,
-          "rain_lagged": 0.995,
+          "rain_lagged": 0.988,
           "humidity": 0.42
         },
         "waterborne": {
-          "rain_recent": 0.578,
-          "rain_lagged": 0.746
+          "rain_recent": 0.588,
+          "rain_lagged": 0.741
         }
       }
     },
@@ -6335,28 +6335,28 @@
       "lon": 80.0499,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 32.8,
+        "n_days": 24,
+        "temp_mean_c": 32.7,
         "humidity_pct": 61.7,
-        "rain_7d_mm": 37.9,
-        "rain_14d_mm": 52.9,
-        "temp_swing_c": 0.69,
+        "rain_7d_mm": 38.3,
+        "rain_14d_mm": 48.7,
+        "temp_swing_c": 0.66,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 81,
-        "waterborne": 55
+        "mosquito": 78,
+        "waterborne": 53
       },
       "components": {
         "mosquito": {
-          "temp": 0.915,
-          "rain_lagged": 0.882,
+          "temp": 0.919,
+          "rain_lagged": 0.812,
           "humidity": 0.434
         },
         "waterborne": {
-          "rain_recent": 0.474,
-          "rain_lagged": 0.661
+          "rain_recent": 0.479,
+          "rain_lagged": 0.609
         }
       }
     },
@@ -6368,22 +6368,22 @@
       "lon": 80.1514,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.7,
+        "n_days": 24,
+        "temp_mean_c": 34.6,
         "humidity_pct": 49.9,
         "rain_7d_mm": 35.3,
-        "rain_14d_mm": 91.2,
-        "temp_swing_c": 0.63,
+        "rain_14d_mm": 89.8,
+        "temp_swing_c": 0.61,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 75,
+        "mosquito": 76,
         "waterborne": 66
       },
       "components": {
         "mosquito": {
-          "temp": 0.808,
+          "temp": 0.814,
           "rain_lagged": 1.0,
           "humidity": 0.198
         },
@@ -6401,27 +6401,27 @@
       "lon": 79.1288,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 35.8,
+        "n_days": 24,
+        "temp_mean_c": 35.7,
         "humidity_pct": 39.3,
-        "rain_7d_mm": 6.8,
+        "rain_7d_mm": 4.8,
         "rain_14d_mm": 14.7,
-        "temp_swing_c": 0.57,
+        "temp_swing_c": 0.56,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 41,
-        "waterborne": 12
+        "mosquito": 42,
+        "waterborne": 11
       },
       "components": {
         "mosquito": {
-          "temp": 0.726,
+          "temp": 0.734,
           "rain_lagged": 0.245,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.085,
+          "rain_recent": 0.06,
           "rain_lagged": 0.184
         }
       }
@@ -6434,12 +6434,12 @@
       "lon": 79.474,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.3,
         "humidity_pct": 37.2,
-        "rain_7d_mm": 3.9,
-        "rain_14d_mm": 13.0,
-        "temp_swing_c": 0.7,
+        "rain_7d_mm": 3.4,
+        "rain_14d_mm": 12.9,
+        "temp_swing_c": 0.67,
         "has_temp": true,
         "has_precip": true
       },
@@ -6450,12 +6450,12 @@
       "components": {
         "mosquito": {
           "temp": 0.685,
-          "rain_lagged": 0.217,
+          "rain_lagged": 0.215,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.049,
-          "rain_lagged": 0.163
+          "rain_recent": 0.042,
+          "rain_lagged": 0.161
         }
       }
     },
@@ -6467,27 +6467,27 @@
       "lon": 75.3704,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 26.0,
+        "n_days": 24,
+        "temp_mean_c": 25.9,
         "humidity_pct": 88.6,
-        "rain_7d_mm": 133.8,
-        "rain_14d_mm": 400.5,
+        "rain_7d_mm": 71.0,
+        "rain_14d_mm": 387.4,
         "temp_swing_c": 0.38,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 97,
-        "waterborne": 100
+        "waterborne": 93
       },
       "components": {
         "mosquito": {
-          "temp": 0.947,
+          "temp": 0.943,
           "rain_lagged": 1.0,
           "humidity": 0.972
         },
         "waterborne": {
-          "rain_recent": 1.0,
+          "rain_recent": 0.887,
           "rain_lagged": 1.0
         }
       }
@@ -6500,27 +6500,27 @@
       "lon": 76.5222,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 28.4,
-        "humidity_pct": 83.5,
-        "rain_7d_mm": 75.1,
-        "rain_14d_mm": 315.0,
+        "humidity_pct": 83.3,
+        "rain_7d_mm": 67.7,
+        "rain_14d_mm": 292.7,
         "temp_swing_c": 0.23,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 97,
-        "waterborne": 96
+        "waterborne": 91
       },
       "components": {
         "mosquito": {
           "temp": 0.998,
           "rain_lagged": 1.0,
-          "humidity": 0.87
+          "humidity": 0.866
         },
         "waterborne": {
-          "rain_recent": 0.939,
+          "rain_recent": 0.846,
           "rain_lagged": 1.0
         }
       }
@@ -6533,27 +6533,27 @@
       "lon": 76.6548,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 25.1,
-        "humidity_pct": 89.4,
-        "rain_7d_mm": 34.4,
-        "rain_14d_mm": 122.9,
+        "humidity_pct": 89.3,
+        "rain_7d_mm": 29.6,
+        "rain_14d_mm": 102.1,
         "temp_swing_c": 0.4,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 96,
-        "waterborne": 66
+        "waterborne": 62
       },
       "components": {
         "mosquito": {
           "temp": 0.91,
           "rain_lagged": 1.0,
-          "humidity": 0.988
+          "humidity": 0.986
         },
         "waterborne": {
-          "rain_recent": 0.43,
+          "rain_recent": 0.37,
           "rain_lagged": 1.0
         }
       }
@@ -6566,27 +6566,27 @@
       "lon": 76.3388,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 28.4,
-        "humidity_pct": 83.5,
-        "rain_7d_mm": 77.2,
-        "rain_14d_mm": 287.4,
+        "humidity_pct": 83.3,
+        "rain_7d_mm": 65.8,
+        "rain_14d_mm": 271.3,
         "temp_swing_c": 0.23,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 97,
-        "waterborne": 98
+        "waterborne": 89
       },
       "components": {
         "mosquito": {
           "temp": 0.998,
           "rain_lagged": 1.0,
-          "humidity": 0.87
+          "humidity": 0.866
         },
         "waterborne": {
-          "rain_recent": 0.965,
+          "rain_recent": 0.823,
           "rain_lagged": 1.0
         }
       }
@@ -6599,28 +6599,28 @@
       "lon": 83.9812,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.4,
+        "n_days": 24,
+        "temp_mean_c": 36.3,
         "humidity_pct": 39.1,
-        "rain_7d_mm": 12.0,
-        "rain_14d_mm": 18.6,
-        "temp_swing_c": 0.72,
+        "rain_7d_mm": 4.1,
+        "rain_14d_mm": 18.7,
+        "temp_swing_c": 0.71,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 41,
-        "waterborne": 18
+        "mosquito": 42,
+        "waterborne": 12
       },
       "components": {
         "mosquito": {
-          "temp": 0.676,
-          "rain_lagged": 0.31,
+          "temp": 0.685,
+          "rain_lagged": 0.312,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.15,
-          "rain_lagged": 0.233
+          "rain_recent": 0.051,
+          "rain_lagged": 0.234
         }
       }
     },
@@ -6632,12 +6632,12 @@
       "lon": 85.8312,
       "climate": "tropical_wet",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.5,
         "humidity_pct": 69.5,
         "rain_7d_mm": 3.0,
         "rain_14d_mm": 18.8,
-        "temp_swing_c": 0.37,
+        "temp_swing_c": 0.36,
         "has_temp": true,
         "has_precip": true
       },
@@ -6665,28 +6665,28 @@
       "lon": 75.7217,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 37.1,
+        "n_days": 24,
+        "temp_mean_c": 37.0,
         "humidity_pct": 28.4,
-        "rain_7d_mm": 15.7,
-        "rain_14d_mm": 18.5,
-        "temp_swing_c": 1.02,
+        "rain_7d_mm": 36.2,
+        "rain_14d_mm": 41.2,
+        "temp_swing_c": 1.04,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 38,
-        "waterborne": 21
+        "mosquito": 52,
+        "waterborne": 48
       },
       "components": {
         "mosquito": {
-          "temp": 0.612,
-          "rain_lagged": 0.308,
+          "temp": 0.621,
+          "rain_lagged": 0.687,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.196,
-          "rain_lagged": 0.231
+          "rain_recent": 0.453,
+          "rain_lagged": 0.515
         }
       }
     },
@@ -6698,28 +6698,28 @@
       "lon": 76.9905,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 36.2,
         "humidity_pct": 27.9,
-        "rain_7d_mm": 23.8,
-        "rain_14d_mm": 27.1,
-        "temp_swing_c": 1.1,
+        "rain_7d_mm": 25.7,
+        "rain_14d_mm": 29.1,
+        "temp_swing_c": 1.13,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 47,
-        "waterborne": 31
+        "mosquito": 48,
+        "waterborne": 34
       },
       "components": {
         "mosquito": {
           "temp": 0.693,
-          "rain_lagged": 0.452,
+          "rain_lagged": 0.485,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.297,
-          "rain_lagged": 0.339
+          "rain_recent": 0.321,
+          "rain_lagged": 0.364
         }
       }
     },
@@ -6731,12 +6731,12 @@
       "lon": 76.7767,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.5,
+        "n_days": 24,
+        "temp_mean_c": 34.4,
         "humidity_pct": 25.2,
         "rain_7d_mm": 24.5,
         "rain_14d_mm": 32.3,
-        "temp_swing_c": 1.07,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
@@ -6746,7 +6746,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.821,
+          "temp": 0.827,
           "rain_lagged": 0.538,
           "humidity": 0.0
         },
@@ -6764,28 +6764,28 @@
       "lon": 74.9455,
       "climate": "semi_arid",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 37.4,
         "humidity_pct": 25.9,
-        "rain_7d_mm": 39.7,
-        "rain_14d_mm": 42.8,
-        "temp_swing_c": 1.1,
+        "rain_7d_mm": 41.5,
+        "rain_14d_mm": 43.9,
+        "temp_swing_c": 1.15,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 51,
-        "waterborne": 51
+        "mosquito": 52,
+        "waterborne": 53
       },
       "components": {
         "mosquito": {
           "temp": 0.582,
-          "rain_lagged": 0.713,
+          "rain_lagged": 0.732,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.496,
-          "rain_lagged": 0.535
+          "rain_recent": 0.519,
+          "rain_lagged": 0.549
         }
       }
     },
@@ -6797,12 +6797,12 @@
       "lon": 76.7179,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.5,
+        "n_days": 24,
+        "temp_mean_c": 34.4,
         "humidity_pct": 25.2,
         "rain_7d_mm": 29.0,
         "rain_14d_mm": 39.6,
-        "temp_swing_c": 1.07,
+        "temp_swing_c": 1.08,
         "has_temp": true,
         "has_precip": true
       },
@@ -6812,7 +6812,7 @@
       },
       "components": {
         "mosquito": {
-          "temp": 0.821,
+          "temp": 0.827,
           "rain_lagged": 0.66,
           "humidity": 0.0
         },
@@ -6830,12 +6830,12 @@
       "lon": 78.1642,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 32.7,
         "humidity_pct": 27.8,
         "rain_7d_mm": 25.9,
-        "rain_14d_mm": 37.9,
-        "temp_swing_c": 1.25,
+        "rain_14d_mm": 36.6,
+        "temp_swing_c": 1.24,
         "has_temp": true,
         "has_precip": true
       },
@@ -6846,12 +6846,12 @@
       "components": {
         "mosquito": {
           "temp": 0.919,
-          "rain_lagged": 0.632,
+          "rain_lagged": 0.61,
           "humidity": 0.0
         },
         "waterborne": {
           "rain_recent": 0.324,
-          "rain_lagged": 0.474
+          "rain_lagged": 0.458
         }
       }
     },
@@ -6863,27 +6863,27 @@
       "lon": 79.513,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.7,
+        "n_days": 24,
+        "temp_mean_c": 34.6,
         "humidity_pct": 27.1,
-        "rain_7d_mm": 51.3,
-        "rain_14d_mm": 81.7,
-        "temp_swing_c": 1.13,
+        "rain_7d_mm": 61.6,
+        "rain_14d_mm": 92.1,
+        "temp_swing_c": 1.12,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 71,
-        "waterborne": 78
+        "mosquito": 72,
+        "waterborne": 86
       },
       "components": {
         "mosquito": {
-          "temp": 0.808,
+          "temp": 0.814,
           "rain_lagged": 1.0,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.641,
+          "rain_recent": 0.77,
           "rain_lagged": 1.0
         }
       }
@@ -6896,27 +6896,27 @@
       "lon": 94.912,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 28.0,
+        "n_days": 24,
+        "temp_mean_c": 28.1,
         "humidity_pct": 79.2,
-        "rain_7d_mm": 57.0,
-        "rain_14d_mm": 189.5,
-        "temp_swing_c": 0.7,
+        "rain_7d_mm": 30.8,
+        "rain_14d_mm": 168.1,
+        "temp_swing_c": 0.71,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 95,
-        "waterborne": 83
+        "waterborne": 63
       },
       "components": {
         "mosquito": {
-          "temp": 0.994,
+          "temp": 0.995,
           "rain_lagged": 1.0,
           "humidity": 0.784
         },
         "waterborne": {
-          "rain_recent": 0.713,
+          "rain_recent": 0.385,
           "rain_lagged": 1.0
         }
       }
@@ -6929,28 +6929,28 @@
       "lon": 86.6965,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 34.6,
-        "humidity_pct": 47.2,
-        "rain_7d_mm": 22.6,
-        "rain_14d_mm": 50.3,
-        "temp_swing_c": 0.84,
+        "n_days": 24,
+        "temp_mean_c": 34.7,
+        "humidity_pct": 46.8,
+        "rain_7d_mm": 30.6,
+        "rain_14d_mm": 61.3,
+        "temp_swing_c": 0.92,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
-        "mosquito": 69,
-        "waterborne": 42
+        "mosquito": 74,
+        "waterborne": 54
       },
       "components": {
         "mosquito": {
-          "temp": 0.814,
-          "rain_lagged": 0.838,
-          "humidity": 0.144
+          "temp": 0.808,
+          "rain_lagged": 1.0,
+          "humidity": 0.136
         },
         "waterborne": {
-          "rain_recent": 0.283,
-          "rain_lagged": 0.629
+          "rain_recent": 0.383,
+          "rain_lagged": 0.766
         }
       }
     },
@@ -6962,12 +6962,12 @@
       "lon": 85.3637,
       "climate": "humid_subtropical",
       "weather": {
-        "n_days": 23,
+        "n_days": 24,
         "temp_mean_c": 34.3,
-        "humidity_pct": 39.7,
-        "rain_7d_mm": 56.1,
-        "rain_14d_mm": 62.1,
-        "temp_swing_c": 0.96,
+        "humidity_pct": 39.5,
+        "rain_7d_mm": 56.3,
+        "rain_14d_mm": 62.4,
+        "temp_swing_c": 0.98,
         "has_temp": true,
         "has_precip": true
       },
@@ -6982,8 +6982,8 @@
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.701,
-          "rain_lagged": 0.776
+          "rain_recent": 0.704,
+          "rain_lagged": 0.78
         }
       }
     },
@@ -6995,28 +6995,28 @@
       "lon": 83.395,
       "climate": "tropical_savanna",
       "weather": {
-        "n_days": 23,
-        "temp_mean_c": 36.8,
+        "n_days": 24,
+        "temp_mean_c": 36.7,
         "humidity_pct": 32.7,
-        "rain_7d_mm": 16.5,
-        "rain_14d_mm": 23.6,
-        "temp_swing_c": 0.88,
+        "rain_7d_mm": 5.9,
+        "rain_14d_mm": 23.3,
+        "temp_swing_c": 0.89,
         "has_temp": true,
         "has_precip": true
       },
       "families": {
         "mosquito": 43,
-        "waterborne": 24
+        "waterborne": 16
       },
       "components": {
         "mosquito": {
-          "temp": 0.64,
-          "rain_lagged": 0.393,
+          "temp": 0.649,
+          "rain_lagged": 0.388,
           "humidity": 0.0
         },
         "waterborne": {
-          "rain_recent": 0.206,
-          "rain_lagged": 0.295
+          "rain_recent": 0.074,
+          "rain_lagged": 0.291
         }
       }
     }
