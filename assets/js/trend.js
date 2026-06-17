@@ -294,8 +294,9 @@
     var toneIcon = model.tone === "below" ? (_ti + '<path d="M4 8l5 5 3-3 8 8"/><path d="M20 14v4h-4"/></svg>')
       : model.tone === "above" ? (_ti + '<path d="M4 16l5-5 3 3 8-8"/><path d="M20 10V6h-4"/></svg>')
       : (_ti + '<path d="M5 12h14"/></svg>');
-    var phrase = model.tone === "above" ? "higher than last year"
-      : model.tone === "below" ? "lower than last year" : "about the same as last year";
+    // Same-week comparison (this week vs the same week of last season), so the chip reads precisely
+    // "-21% vs the same week last year" rather than implying vs last year's peak/average.
+    var phrase = "vs the same week last year";
     var avail = model.metrics[metric].avail;
     st.geo = avail ? chartGeom(false, st.mode, model.metrics[metric]) : null;  // for the tooltip's coords
     var title = "This monsoon vs last in " + esc(model.city);
