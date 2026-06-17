@@ -137,7 +137,10 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
 - **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
   agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"
-  line and a reconciliation footer. Helper `contribs()`/`_contribs()` is byte-identical across mobile.js/desktop.js/
+  line and a reconciliation footer. (2026-06-17 readout redesign: each signal now leads with a **High/Moderate/Low
+  level pill** + a `{weight}% weight x raw {v}` derivation, NOT the old `{value} raw, {weight}%`; labels shortened to
+  Weather / Search / Lab; positivity scaled by a **per-disease reference 25/4/15/45**, not the global 35.)
+  Helper `contribs()`/`_contribs()` is byte-identical across mobile.js/desktop.js/
   build_site.py. Desktop renders compact vertical tiles in the 3-col `#s-why` grid, kept equal-height with the dial
   card (`#s-week`). The **breeding-weather card shows the real weather-score drivers** (temperature near 29C, 14-day
   lagged rain, humidity, estimated stagnation), not a static tip.

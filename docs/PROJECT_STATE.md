@@ -73,15 +73,14 @@
 >   (22:30 UTC)** so GitHub's ~5h scheduled-cron delay lands the run by ~09:00 IST. **SEARCH FIX:** `_search_blocks` now
 >   carries forward the last good value for a week beyond the latest weekly timeseries pull (was zeroing - the
 >   Ranchi/Jharkhand "Searches 0").
-> - **OPEN REFINEMENTS (user picks up NEXT SESSION - "Why this score?" UX comprehension + calibration; nothing else pending):**
->   1. Humanize the per-signal readouts (drop "raw"; "79 tests, 48% positive"; weather/search plain labels - not "66 raw, 30%").
->   2. Remove "vs a 35% reference" from the CONSUMER view (say high/moderate/low); keep the 35% anchor in methodology only.
->   3. Split the signal chip's CONTRIBUTION (+N) from its TREND arrow (currently fused -> reads as "rose by N").
->   4. Label the disease-list deltas with a timeframe ("vs last week" / "since yesterday").
->   5. Note/tooltip explaining Overall (e.g. 56) sitting below the top disease (60) = the max-dominant blend.
->   6. PER-DISEASE positivity reference: `ref_positivity_pct` is one GLOBAL 35% today, but baselines differ hugely
->      (malaria ~2% never scores high; typhoid ~28% usually does) - a per-disease anchor would calibrate better.
->   7. Accessibility verify: gray sub-text contrast, keep the red/green trend arrows shape-coded (not color-only), 44px targets.
+> - **OPEN REFINEMENTS (MOSTLY DONE 2026-06-17 PM - see the newest banner at the very top; only #4/#5/#7 remain):**
+>   1. ~~Humanize the per-signal readouts~~ DONE: High/Mod/Low level pill + `{weight}% weight x raw {v}` derivation (no "raw").
+>   2. ~~Remove "vs a 35% reference" from the CONSUMER view~~ DONE (high/moderate/low; the per-disease anchor lives in methodology).
+>   3. ~~Split the signal chip's CONTRIBUTION (+N) from its TREND arrow~~ DONE (+N top-right, trend badge moved off it).
+>   4. **STILL OPEN** - Label the disease-list deltas with a timeframe ("vs last week" / "since yesterday").
+>   5. **STILL OPEN (deferred)** - Note/tooltip explaining Overall sitting below the top disease (user: don't touch the dial).
+>   6. ~~PER-DISEASE positivity reference~~ DONE: dengue 25 / malaria 4 / chikungunya 15 / typhoid 45 (replaced the global 35).
+>   7. **STILL OPEN** - Accessibility formal verify (gray sub-text contrast; trend arrows shape-coded; 44px targets).
 >
 > **NEWEST (2026-06-16, RAIN SOURCE SWITCHED: NASA POWER -> NOAA CPC):** a 228-city benchmark vs IMD
 > gauge truth (dry + wet windows) showed NASA POWER over-reads PRE-MONSOON rainfall in the South
