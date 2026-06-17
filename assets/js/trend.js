@@ -106,8 +106,13 @@
     var labsTyFinal = labsTyOk ? labsTy
       : (labsNow != null ? Array.apply(null, { length: asOf + 1 }).map(function () { return labsNow; }) : null);
     var labsReal = labsHasLy && labsTyFinal;
+    // OVERALL is REAL when the committed archive carries a full-season last-year line (overall.ly length NW)
+    // and a this-year line at the current length; both come from build_archive's dial-consistent overall
+    // block (overall.ty[asOf] == the live dial). Else fall back to the deterministic mock (metricSeries).
+    var oReal = arch && arch.overall && arch.overall.ly && arch.overall.ly.length === NW
+      && arch.overall.ty && arch.overall.ty.length === asOf + 1;
     var metrics = {
-      overall: metricSeries(cid, "overall", blend.score, asOf),
+      overall: oReal ? realSeries(arch.overall, asOf) : metricSeries(cid, "overall", blend.score, asOf),
       weather: wReal ? realSeries(arch.weather, asOf) : (weatherNow == null ? { avail: false } : metricSeries(cid, "weather", weatherNow, asOf)),
       search: sReal ? realSeries(arch.search, asOf) : (searchNow == null ? { avail: false } : metricSeries(cid, "search", searchNow, asOf)),
       labs: labsReal ? realSeries({ ly: labsLy, ty: labsTyFinal }, asOf) : { avail: false }
@@ -126,7 +131,17 @@
     var chip = (level === "inline" && Math.abs(ov.delta) < 3) ? "~0%" : (ov.delta > 0 ? "+" : (ov.delta < 0 ? "-" : "")) + Math.abs(ov.delta) + "%";
 
     var peakBand = bandOf(ov.peak);
-    var context = "Last year peaked at " + ov.peak + " (" + peakBand + ") in late August.";
+    // Peak month: for the REAL overall line, find the actual peak week in overall.ly and name its month
+    // (1 Jun + 7*idx days); for the mock, the peak is fixed at PEAK_IDX (late August). Drop the loose
+    // "late" qualifier for the real line since the real peak can fall anywhere in the season.
+    var peakWhen = " in late August.";
+    if (oReal) {
+      var ovLy = arch.overall.ly, pIdx = 0, k;
+      for (k = 1; k < ovLy.length; k++) { if (ovLy[k] > ovLy[pIdx]) pIdx = k; }
+      var pd = new Date(Date.UTC(gy, 5, 1 + 7 * pIdx));
+      peakWhen = " in " + MONTHS[pd.getUTCMonth()] + ".";
+    }
+    var context = "Last year peaked at " + ov.peak + " (" + peakBand + ")" + peakWhen;
 
     return {
       city: city.name, cityId: cid, asOf: asOf, weeks: weeks,

@@ -953,6 +953,17 @@ def _t_metric_series(cid: str, metric: str, V: int, asOf: int) -> dict:
     return {"now": V, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": ly[TREND_PEAK], "avail": True}
 
 
+def _t_real_series(blk: dict, asOf: int) -> dict:
+    """REAL last-year + this-year series from the committed archive block ({ly, ty}); byte-mirror of
+    trend.js realSeries(). Peak is the real last-year MAX (not a seeded mock). Used by the SSR Overall
+    chart when the archive carries a real overall line."""
+    ly, ty = blk["ly"], blk["ty"]
+    a, b = ty[asOf], ly[asOf]
+    delta = _t_r((a - b) / b * 100) if b > 0 else 0
+    slope = ty[asOf] - ty[asOf - 1] if asOf >= 1 else 0
+    return {"now": a, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": max(ly), "avail": True}
+
+
 def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict | None = None) -> dict:
     cid = city["id"]
     blend = city["blend"]
@@ -972,8 +983,15 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
         labs_metric = _t_metric_series(cid, "labs", labs_now if labs_now is not None else max(labs_ly), as_of)
     else:
         labs_metric = {"avail": False}
+    # OVERALL: prefer the REAL, dial-consistent archive line (overall.ly full season + overall.ty at the
+    # current length, both from build_archive); else fall back to the deterministic mock. Mirrors trend.js.
+    overall_blk = (archive_city or {}).get("overall") if archive_city else None
+    overall_real = bool(overall_blk) and len(overall_blk.get("ly", [])) == TREND_NW \
+        and len(overall_blk.get("ty", [])) == as_of + 1
+    overall_metric = _t_real_series(overall_blk, as_of) if overall_real \
+        else _t_metric_series(cid, "overall", blend["score"], as_of)
     metrics = {
-        "overall": _t_metric_series(cid, "overall", blend["score"], as_of),
+        "overall": overall_metric,
         "weather": {"avail": False} if weather_now is None else _t_metric_series(cid, "weather", weather_now, as_of),
         "search": {"avail": False} if search_now is None else _t_metric_series(cid, "search", search_now, as_of),
         "labs": labs_metric,
@@ -993,7 +1011,14 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
         chip = "~0%"
     else:
         chip = ("+" if ov["delta"] > 0 else ("-" if ov["delta"] < 0 else "")) + str(abs(ov["delta"])) + "%"
-    context = "Last year peaked at " + str(ov["peak"]) + " (" + _t_band(ov["peak"]) + ") in late August."
+    # Peak month: for the REAL overall line, name the month of the actual peak week (1 Jun + 7*idx); for the
+    # mock the peak is fixed at TREND_PEAK (late August). Mirrors trend.js. (Drop "late" for the real line.)
+    if overall_real:
+        peak_idx = max(range(TREND_NW), key=lambda w: overall_blk["ly"][w])
+        peak_when = " in " + _MONTHS[(datetime.date(gy, 6, 1) + datetime.timedelta(days=7 * peak_idx)).month - 1] + "."
+    else:
+        peak_when = " in late August."
+    context = "Last year peaked at " + str(ov["peak"]) + " (" + _t_band(ov["peak"]) + ")" + peak_when
     return {"city": city["name"], "cityId": cid, "asOf": as_of, "metrics": metrics, "level": level,
             "dir": direction, "verdict": vtext + tail, "chip": chip, "tone": level, "context": context}
 
