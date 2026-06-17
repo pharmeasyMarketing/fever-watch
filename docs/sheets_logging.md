@@ -29,12 +29,13 @@ container-bound or standalone - change `SHEET_ID` below to retarget.
     `config/consolidation.json`; OVERALL = `ROUND(0.8*top + 0.2*mean-of-rest)` over that city's disease rows.
   - `confidence` (S) downgrades one step (High->Moderate, Moderate->Low) when the cell is `stale` (Z) -
     i.e. it used a carried-forward reading.
-  - **Labs build-up (live):** `tests_booked` (AB) + `positives` (AC) are POSTed (the raw window-summed lab
-    inputs, from the gitignored sidecar `data/positivity_detail.json` build_daily writes), and
-    `positivity_pct` (AD) is a FORMULA = `positives/tests_booked*100`. The positivity signal (O) =
-    `MIN(100, ROUND(positivity_pct/35*100))`, blank when `tests_booked < 30` (forecast-only). So the
-    sheet shows the WHOLE chain: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).
-    These columns are appended at the END so the existing A-AA letters (and all formulas) never shift.
+  - **Labs build-up (live):** only `tests_booked` (AB) + `positives` (AC) are POSTed (the raw window-summed
+    lab inputs, from the gitignored sidecar `data/positivity_detail.json` build_daily writes). Everything
+    else is a FORMULA: `positivity_pct` (AD) = `positives/tests_booked*100`; the positivity signal (O) =
+    `MIN(100, ROUND(positivity_pct/35*100))`, gated to blank when `tests_booked < 30` (forecast-only).
+    So the WHOLE chain is in-cell: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).
+    AB/AC/AD are appended at the END so the existing A-AA letters never shift; O is an existing column (15)
+    now written as a formula instead of a posted value.
 - **`daily_summary`** - date- and city-level scores, all **by formula** (auto-update as `raw_data` grows):
   avg disease score by `date x disease` (excludes OVERALL rows); a daily `avg / peak / cells`; and the
   **city headline blend** per `date x city`, read straight from the `OVERALL` rows (now exact, not the
@@ -115,7 +116,7 @@ function doPost(e) {
 //  - score (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O). OVERALL rows: 0.8*top +
 //    0.2*mean-of-rest over that run's disease rows for the city (matched on run_id B + city C).
 function _setRawFormulas(sh, start, n, rows) {
-  const fK = [], fL = [], fS = [], fT = [], fU = [], fV = [], fAD = [];
+  const fK = [], fL = [], fS = [], fT = [], fU = [], fV = [], fAD = [], fO = [];
   for (let i = 0; i < n; i++) {
     const r = start + i;
     if (rows[i][4] === 'OVERALL') {
@@ -125,7 +126,7 @@ function _setRawFormulas(sh, start, n, rows) {
       const ct = 'COUNTIFS($B:$B,$B' + r + ',$C:$C,$C' + r + ',$E:$E,"<>OVERALL")';
       fK.push(['=""']); fL.push(['=""']); fS.push(['=""']);  // no per-signal sub-scores on the blend row
       fT.push(['=IFERROR(ROUND(0.8*' + mx + '+0.2*(' + sm + '-' + mx + ')/(' + ct + '-1)),ROUND(' + mx + '))']);
-      fV.push(['="blend"']); fAD.push(['=""']);
+      fV.push(['="blend"']); fAD.push(['=""']); fO.push(['=""']);
     } else {
       // weather_score (K): family-weighted build-up over G temp_c / H humidity / I rain_7d / J rain_14d.
       fK.push(['=IF($F' + r + '="mosquito",ROUND((0.45*IF(OR($G' + r + '<=14,$G' + r + '>=38),0,MAX(0,MIN(1,1-(($G' + r + '-29)/13)^2)))+0.35*MAX(0,MIN(1,$J' + r + '/60))+0.20*MAX(0,MIN(1,($H' + r + '-40)/50)))*100),IF($F' + r + '="waterborne",ROUND((0.6*MAX(0,MIN(1,$I' + r + '/80))+0.4*MAX(0,MIN(1,$J' + r + '/80)))*100),""))']);
@@ -142,6 +143,11 @@ function _setRawFormulas(sh, start, n, rows) {
       // positivity signal (O) = MIN(100, ROUND(positivity_pct/35*100)) and is blank (forecast-only)
       // when tests_booked < 30. So the full chain is AB,AC -> AD -> O -> T (score).
       fAD.push(['=IF(OR($AB' + r + '="",$AB' + r + '=0),"",ROUND($AC' + r + '/$AB' + r + '*100,1))']);
+      // O positivity (the lab signal) = MIN(100, ROUND(positivity_pct/35*100)), gated to "" below 30
+      // tests_booked (forecast-only) - mirrors src/signals/gsheet_api._signal. Now a FORMULA (was posted),
+      // so the whole lab build-up tests_booked(AB) -> positives(AC) -> positivity_pct(AD) -> positivity(O)
+      // -> score(T) is visible in-cell.
+      fO.push(['=IF(OR($AB' + r + '="",$AB' + r + '<30),"",MIN(100,ROUND($AD' + r + '/35*100)))']);
     }
     fU.push(['=IFS($T' + r + '>=70,"HIGH",$T' + r + '>=45,"MODERATE",$T' + r + '>=25,"LOW-MODERATE",TRUE,"LOW")']);
   }
@@ -151,6 +157,7 @@ function _setRawFormulas(sh, start, n, rows) {
   sh.getRange(start, 20, n, 1).setFormulas(fT);  // T score
   sh.getRange(start, 21, n, 1).setFormulas(fU);  // U band
   sh.getRange(start, 22, n, 1).setFormulas(fV);  // V mode
+  sh.getRange(start, 15, n, 1).setFormulas(fO);  // O positivity (gated build-up from AB/AC/AD)
   sh.getRange(start, 30, n, 1).setFormulas(fAD); // AD positivity_pct (raw labs build-up)
 }
 
@@ -197,7 +204,7 @@ const DICT = [
   ['trends_score', 'FORMULA: MAX(4, MIN(100, trends_state_interest)) - the state Google Trends index for trends_keywords, floored at 4 and capped at 100.'],
   ['trends_keywords', 'The search terms (OR-joined) whose combined interest is trends_score.'],
   ['news_spike', 'TRUE if national interest spiked recently (news-driven); trends is down-weighted in forecast mode when TRUE.'],
-  ['positivity', '0-100 PharmEasy lab test-positivity trend (lagging, ground truth). Blank when there is too little lab data -> the row is forecast-only.'],
+  ['positivity', 'FORMULA: 0-100 PharmEasy lab positivity (lagging ground truth) = MIN(100, ROUND(positivity_pct(AD)/35*100)), gated to blank when tests_booked(AB) < 30 (forecast-only). Derived in-cell from the raw labs columns, not posted.'],
   ['w_weather', 'Weight (%) on weather_score in the blend (30 confirmed / 60 forecast).'],
   ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
   ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],

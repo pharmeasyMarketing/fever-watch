@@ -132,7 +132,7 @@ def push_raw(grid: dict) -> int:
                 labels.get(r["disease"], r["disease"]), r.get("family", ""),
                 temp, hum, r7, r14,                                # G-J raw weather inputs
                 "", "",                                            # K weather_score, L trends_score -> FORMULAS
-                kw, s.get("news_spike"), s.get("positivity"),      # M-O
+                kw, s.get("news_spike"), "",      # M-O (O positivity is now an in-sheet FORMULA from AB/AC/AD)
                 w.get("weather"), w.get("trends"), w.get("positivity"),  # P-R weights
                 "", "", "", "",                                    # S confidence, T score, U band, V mode -> FORMULAS
                 s.get("trends_raw"), fr.get("weather", ""), fr.get("trends", ""), r.get("stale", ""),  # W-Z posted
