@@ -4,6 +4,37 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-17 PM, PER-DISEASE POSITIVITY REFS + "Why this score?" readout redesign + analytics sign-off workbook - committed + pushed):**
+> - **Per-disease `ref_positivity_pct` = dengue 25 / malaria 4 / chikungunya 15 / typhoid 45** (the % positivity that maps to a full
+>   100 signal, from the real 2025 gated p90; replaces the single global 35). Wired through `config/signals.json`
+>   (`ref_positivity_pct_by_disease`, both providers), `gsheet_api.build_index`/`_signal`, `googlesheet._signal`,
+>   `build_archive.LAB_REF_BY_DISEASE`, `scripts/build_lab_feed_2025_historic.REF_BY_DISEASE`, `backfill_sheetlog.REF_PCT_BY_DISEASE`,
+>   and the in-sheet col-O Apps Script formula (now an `IFS` on the disease in col E, `docs/sheets_logging.md` - **RE-DEPLOY the Apps
+>   Script**). Effect: malaria can finally reach 100 (was capped ~33), typhoid 30% -> 67 (was 86, no longer over-saturating).
+>   Regenerated `data/lab_feed_2025_historic.csv`, `data/backfill/sheet/raw_data_2025.xlsx` (now with the REAL positivity build-up
+>   cols AB tests_booked / AC positives / AD positivity_pct + gated O formula, sourced from the TC feed), and the season-trend
+>   `data/archive/trend_series.json` (labs.ly recomputed per-disease, 24 cities). The LIVE `grid.json` re-derives on the next CI
+>   `build_daily` (gsheet_api). MUST also update the Word doc + "How we calculate the score" - DONE (see below).
+> - **"Why this score?" readout redesigned** (`mobile.js`/`desktop.js`/`build_site.py` `sig`/`_sig` + SIG bg/fg + `level`/`_level`):
+>   a High/Moderate/Low **level pill** on its own row + the full **`{weight}% weight x raw {v}`** derivation on its own row (NO `=`),
+>   `+N` contribution split from the dormant trend badge, reconciliation footer kept as-is. Signal labels shortened
+>   (Breeding weather -> Weather, Search interest -> Search, Lab signal -> Lab). Desktop tiles grow into the dial's slack via a
+>   CSS flex-fill (`#s-why` flex column + open-accordion/accbody fill + `.sig` justify-center) and the `.accnote` top margin -> 0;
+>   `#s-why .sig` padding tuned to `5px 12px 6px` so the tallest #s-why (mumbai, 3 confirmed tiles) stays <= the 608px dial =>
+>   **ZERO section growth** (verified by unstretched measurement: gulbarga 587 / mumbai 593 / dial 608). SSR<->JS parity OK both
+>   flows; no truncation; full "weight" word now shows on desktop AND mobile. Methodology updated (`build_site` METHOD_HTML + the
+>   mobile/desktop JS `METHOD` twins) + Word doc `Fever_Watch_Project_Document_v3.docx` (gitignored) - both carry the per-disease
+>   refs + the new readout. (Did refinements #1 humanize, #2 drop "35% reference" from consumer, #3 split +N/trend, #6 per-disease
+>   ref, + label shortening. NOT done: #4 disease-delta timeframe label, #5 Overall-vs-top-disease note (user: don't touch the dial),
+>   #7 formal a11y verify.)
+> - **Analytics sign-off workbook** `data/analytics/Fever_Watch_Score_Workbook.xlsx` (gitignored, ~42MB; reproducible builder
+>   `scripts/build_score_workbook.py`): 10 tabs - Overview, Data_Dictionary, Scores_2025 (REAL labs, full in-cell formula build-up),
+>   Scores_2026 (2026-06-01..14 backfill, **positivity MOCK** - flagged in Overview), Weather_2025/2026, Trends, Labs_2025,
+>   Labs_2026 (the **LIVE** feed pulled via `gsheet_api`, city-aggregated), Config_Refs. For the analytics team to audit the
+>   weather + search + labs -> score chain end to end. (Offer outstanding: regenerate Scores_2026 to use the real live labs.)
+> - **Live data is REAL on all 3 signals already** (`grid.json` positivity_provider=gsheet_api, 39/836 cells confirmed, the rest
+>   honestly forecast-only/capped 69); the per-disease refs + new readout take effect on the next deploy.
+>
 > **NEWEST (2026-06-17, LAB POSITIVITY IS LIVE + season-trend made REAL + scope locked to 209 - committed, pushed, verified in prod):**
 > signal-3 (PharmEasy/ThyroCare lab positivity, the proprietary ground-truth layer) is LIVE end to end; the season-trend
 > Labs + Overall lines are now REAL (were mocks); project scope is locked to the 209 lab-covered cities. Commits

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fever Watch - "Why this score?" redesign mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --pe-green:#10847E; --pe-green-dark:#0A534F; --pe-green-bright:#15ACA5; --pe-green-100:#CEEAE8;
+    --pe-blue:#3661B0; --pe-blue-100:#B5CDF7;
+    --pe-ink:#30363C; --pe-ink-2:#4F585E; --pe-muted:#6E787E; --pe-muted-2:#8897A2;
+    --pe-line:#D7DFE5; --pe-bg:#F5F8FC; --pe-bg-2:#EDF2F9; --pe-white:#fff;
+    --sig-weather:#15ACA5; --sig-search:#7C6CD6; --sig-lab:#3661B0;
+    --dis-dengue:#F1839D; --dis-malaria:#887ADE; --dis-chikungunya:#46CFE7; --dis-typhoid:#4681EF;
+    --risk-high:#E4572E; --risk-mod:#E8923A; --risk-lowmod:#C7A93C; --risk-low:#2FA66F;
+    --mod-bg:#FFF8E3; --mod-bd:#F0D27A; --mod-beacon:#F5B630;
+    --up:#E4572E; --down:#2FA66F;
+    --radius:16px; --radius-sm:12px; --radius-lg:20px; --pill:999px;
+    --shadow:0 5px 5px rgba(0,0,0,.06),0 3px 14px rgba(0,0,0,.04),0 8px 10px rgba(0,0,0,.05);
+    --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#E7EDF3;font-family:var(--font);color:var(--pe-ink);-webkit-font-smoothing:antialiased;padding:28px 18px 60px}
+  .wrap{max-width:1120px;margin:0 auto;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+
+  /* phone */
+  .phone{width:392px;flex:0 0 auto;border-radius:34px;background:#000;padding:10px;box-shadow:0 24px 60px rgba(10,40,60,.28)}
+  .screen{border-radius:26px;overflow:hidden;background:var(--pe-bg)}
+  .scroll{height:auto;overflow:visible}
+  .scroll::-webkit-scrollbar{width:0}
+  .screen{padding-bottom:18px}
+
+  /* hero */
+  .hero{background:linear-gradient(180deg,#0A534F 0%,#307471 55%,#89B8B9 100%);padding:16px 16px 64px;color:#fff;position:relative}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;font-size:12px;opacity:.92}
+  .brandrow .lk{font-weight:700;letter-spacing:.2px}
+  .loc{margin-top:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:var(--pill);
+    display:inline-flex;align-items:center;gap:7px;padding:7px 13px;font-size:13.5px;font-weight:600}
+  .loc svg{width:14px;height:14px}
+  .h1{margin:13px 2px 2px;font-size:21px;font-weight:800;letter-spacing:-.2px}
+  .updated{font-size:11.5px;opacity:.86;margin:2px 2px 0}
+
+  /* dial card */
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin:-46px 14px 0;padding:18px 16px}
+  .dialwrap{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .dial{position:relative;width:182px;height:182px}
+  .dial .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .dial .num b{font-size:46px;font-weight:800;line-height:1;color:var(--pe-ink)}
+  .dial .num .den{font-size:13px;color:var(--pe-muted);font-weight:600;margin-top:2px}
+  .dial .num .lab{font-size:11.5px;color:var(--pe-muted);margin-top:5px;letter-spacing:.3px}
+  .chip{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--mod-bg);border:1px solid var(--mod-bd);
+    color:#9a6a09;border-radius:var(--pill);padding:7px 14px;font-size:13px;font-weight:700}
+  .beacon{width:11px;height:11px;border-radius:50%;background:var(--mod-beacon);box-shadow:0 0 0 0 rgba(245,182,48,.6);animation:bp 1.3s infinite}
+  @keyframes bp{0%{box-shadow:0 0 0 0 rgba(245,182,48,.55)}70%{box-shadow:0 0 0 9px rgba(245,182,48,0)}100%{box-shadow:0 0 0 0 rgba(245,182,48,0)}}
+
+  /* overall explainer (refinement #5) */
+  .whyo{margin:14px 0 2px;width:100%}
+  .whyo button{all:unset;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--pe-green);font-size:12.5px;font-weight:700}
+  .whyo button svg{width:14px;height:14px}
+  .whyo .body{margin-top:8px;background:var(--pe-green-100);color:#0c5a55;border-radius:var(--radius-sm);
+    padding:11px 12px;font-size:12.5px;line-height:1.55}
+  .whyo .body b{font-weight:700}
+
+  /* disease legend with timeframe deltas (refinement #4) */
+  .leg{margin-top:14px;border-top:1px solid var(--pe-line);padding-top:12px;width:100%}
+  .leg .lh{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--pe-muted-2);
+    text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+  .legrow{display:flex;align-items:center;gap:9px;padding:6px 0}
+  .legdot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  .legname{flex:1;font-size:14px;color:var(--pe-ink);font-weight:500}
+  .legname b{font-weight:800}
+  .legtrend{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:var(--pill)}
+  .legtrend.up{color:#a3331c;background:#FCEBE4}
+  .legtrend.down{color:#1c6e49;background:#E4F4EC}
+  .legtrend.flat{color:#5f6a72;background:#EEF2F6}
+
+  /* WHY THIS SCORE redesign */
+  .sec{margin:16px 14px 0;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 16px}
+  .sectitle{font-size:18px;font-weight:800;margin:0;color:var(--pe-ink)}
+  .secsub{font-size:12.5px;color:var(--pe-muted);margin:4px 0 14px}
+  .secsub b{color:var(--dis-dengue);font-weight:800}
+
+  .sig{border:1px solid var(--pe-line);border-radius:var(--radius-sm);padding:12px 12px 13px;margin-bottom:11px}
+  .sig.lab{border-left:4px solid var(--sig-lab)}
+  .sig.weather{border-left:4px solid var(--sig-weather)}
+  .sig.search{border-left:4px solid var(--sig-search)}
+  .sigtop{display:flex;align-items:center;gap:8px}
+  .sigico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .sigico svg{width:15px;height:15px}
+  .signame{flex:1;font-size:14px;font-weight:700;color:var(--pe-ink)}
+  .contrib{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+  .contrib .n{font-size:16px;font-weight:800}
+  .contrib .t{font-size:9.5px;color:var(--pe-muted-2);font-weight:600;margin-top:2px;letter-spacing:.2px}
+
+  .readout{display:flex;align-items:center;gap:8px;margin:10px 0 8px}
+  .level{font-size:11.5px;font-weight:800;letter-spacing:.4px;padding:3px 10px;border-radius:var(--pill)}
+  .level.hi-lab{background:#E7EEFA;color:#22468f}
+  .level.fav{background:#DBF3EF;color:#0c5a55}
+  .level.elev{background:#ECE8FB;color:#4b3fa3}
+  .rtext{font-size:12.5px;color:var(--pe-ink-2);line-height:1.45}
+
+  .track{height:7px;background:#EEF2F6;border-radius:var(--pill);overflow:hidden;margin:2px 0 10px}
+  .fill{height:100%;border-radius:var(--pill)}
+
+  .sigfoot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .trend{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:var(--pill)}
+  .trend svg{width:12px;height:12px}
+  .trend.up{color:#a3331c;background:#FCEBE4}
+  .trend.down{color:#1c6e49;background:#E4F4EC}
+  .trend.flat{color:#5f6a72;background:#EEF2F6}
+  .weight{font-size:11px;color:var(--pe-muted-2);font-weight:600}
+
+  .what{font-size:11px;color:var(--pe-muted);line-height:1.45;margin:9px 0 0;border-top:1px dashed var(--pe-line);padding-top:8px}
+
+  .recon{margin-top:4px;background:var(--pe-bg-2);border-radius:var(--radius-sm);padding:11px 12px}
+  .recon .eq{font-size:13px;font-weight:800;color:var(--pe-ink)}
+  .recon .eq .s{font-weight:700}
+  .recon .note{font-size:11.5px;color:var(--pe-ink-2);line-height:1.5;margin-top:5px}
+
+  /* calibration callout */
+  .calib{margin:16px 14px 18px;background:#fff;border:1px solid var(--pe-line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .calib h3{margin:0 0 4px;font-size:14.5px;font-weight:800;color:var(--pe-green-dark);display:flex;align-items:center;gap:7px}
+  .calib h3 .pill{background:var(--pe-green-100);color:#0c5a55;font-size:10px;font-weight:800;border-radius:var(--pill);padding:2px 8px;letter-spacing:.3px}
+  .calib p{font-size:12px;color:var(--pe-muted);margin:0 0 11px;line-height:1.5}
+  .ba{display:flex;gap:9px;margin-bottom:11px}
+  .ba .col{flex:1;border-radius:var(--radius-sm);padding:10px 11px}
+  .ba .b4{background:#FCEFEA;border:1px solid #F4D6C8}
+  .ba .af{background:#E4F4EC;border:1px solid #BFE6CF}
+  .ba .lbl{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--pe-muted-2);margin-bottom:6px}
+  .ba .ex{font-size:12px;color:var(--pe-ink-2);margin-bottom:8px}
+  .ba .res{font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+  .ba .b4 .res{color:#a3331c}
+  .ba .af .res{color:#1c6e49}
+  .scaleline{font-size:11.5px;color:var(--pe-ink-2);background:var(--pe-bg);border-radius:var(--radius-sm);padding:9px 11px;line-height:1.5}
+  .scaleline b{color:var(--pe-ink)}
+
+  /* annotations panel */
+  .notes{flex:1 1 330px;max-width:430px;min-width:300px;padding-top:6px}
+  .notes h2{font-size:15px;font-weight:800;margin:0 0 4px;color:#1c2b33}
+  .notes .lead{font-size:12.5px;color:#4a5a63;margin:0 0 16px;line-height:1.55}
+  .nrow{display:flex;gap:11px;padding:11px 0;border-top:1px solid #cfdae3}
+  .nnum{width:24px;height:24px;border-radius:7px;background:#10847E;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .ntext{font-size:12.5px;color:#33424c;line-height:1.5}
+  .ntext b{color:#10847E;font-weight:800}
+  .legendk{margin-top:18px;background:#fff;border:1px solid #cfdae3;border-radius:14px;padding:13px 14px}
+  .legendk .kt{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8897A2;margin-bottom:9px}
+  .ki{display:flex;align-items:center;gap:9px;font-size:12px;color:#33424c;padding:4px 0}
+  .kc{width:13px;height:13px;border-radius:4px;flex:0 0 auto}
+  .tag{display:inline-block;font-size:10px;font-weight:800;color:#8a6d00;background:#FFF3CF;border:1px solid #F0D27A;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ PHONE ============ -->
+  <div class="phone"><div class="screen"><div class="scroll">
+
+    <div class="hero">
+      <div class="brandrow"><span class="lk">PharmEasy &nbsp;|&nbsp; Fever Watch</span><span>17 Jun 2026</span></div>
+      <div class="loc">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z" stroke="#fff" stroke-width="2"/><circle cx="12" cy="10" r="2.4" stroke="#fff" stroke-width="2"/></svg>
+        Pune, Maharashtra &nbsp;<span style="opacity:.8;font-weight:700">Change &#9662;</span>
+      </div>
+      <div class="h1">Dengue &amp; fever risk in Pune</div>
+      <div class="updated">Updated 17 Jun 2026. Available in select cities.</div>
+    </div>
+
+    <!-- DIAL CARD -->
+    <div class="card">
+      <div class="dialwrap">
+        <div class="dial">
+          <svg viewBox="0 0 120 120" width="182" height="182">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#EEF2F6" stroke-width="11"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--risk-mod)" stroke-width="11"
+              stroke-linecap="round" stroke-dasharray="183 327" transform="rotate(135 60 60)"/>
+          </svg>
+          <div class="num"><b>56</b><span class="den">/ 100</span><span class="lab">Overall fever risk</span></div>
+        </div>
+        <div class="chip"><span class="beacon"></span> MODERATE</div>
+
+        <!-- refinement #5: why overall < top disease -->
+        <div class="whyo">
+          <button onclick="var b=this.parentNode.querySelector('.body');b.style.display=b.style.display==='none'?'block':'none'">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 7.6v.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Why 56, not 60?
+          </button>
+          <div class="body" style="display:none">Your citywide score blends <b>all four fevers</b>, weighted toward the highest one. Dengue leads at <b>60</b>; the calmer fevers pull the overall number down to 56. We always name the lead fever so the number is never a mystery.</div>
+        </div>
+
+        <!-- refinement #4: timeframe-labelled per-disease deltas -->
+        <div class="leg">
+          <div class="lh"><span>Fever</span><span>Change since yesterday</span></div>
+          <div class="legrow"><span class="legdot" style="background:var(--dis-dengue)"></span><span class="legname">Dengue : <b>60</b></span><span class="legtrend up">&#9650; 3</span></div>
+          <div class="legrow"><span class="legdot" style="background:var(--dis-typhoid)"></span><span class="legname">Typhoid : <b>52</b></span><span class="legtrend down">&#9660; 2</span></div>
+          <div class="legrow"><span class="legdot" style="background:var(--dis-chikungunya)"></span><span class="legname">Chikungunya : <b>41</b></span><span class="legtrend flat">&ndash; 0</span></div>
+          <div class="legrow"><span class="legdot" style="background:var(--dis-malaria)"></span><span class="legname">Malaria : <b>38</b></span><span class="legtrend up">&#9650; 5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHY THIS SCORE (redesigned) -->
+    <div class="sec">
+      <h2 class="sectitle">Why this score?</h2>
+      <p class="secsub">How each signal builds <b>Dengue's 60</b> &middot; tap a fever above to switch.</p>
+
+      <!-- LAB tile -->
+      <div class="sig lab">
+        <div class="sigtop">
+          <span class="sigico" style="background:#E7EEFA">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 3h6M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3" stroke="#3661B0" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="signame">Lab confirmation</span>
+          <span class="contrib"><span class="n" style="color:var(--sig-lab)">+30</span><span class="t">TO THE SCORE</span></span>
+        </div>
+        <div class="readout"><span class="level hi-lab">HIGH</span><span class="rtext">Confirmed lab positivity for dengue is running high in Pune this week.</span></div>
+        <div class="track"><div class="fill" style="width:50%;background:var(--sig-lab)"></div></div>
+        <div class="sigfoot">
+          <span class="trend up"><svg viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M9 7h8v8" stroke="#a3331c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Rising vs yesterday</span>
+          <span class="weight">48% weight</span>
+        </div>
+        <p class="what">How often dengue tests come back positive, judged against what counts as high <i>for dengue</i>.</p>
+      </div>
+
+      <!-- WEATHER tile -->
+      <div class="sig weather">
+        <div class="sigtop">
+          <span class="sigico" style="background:#DBF3EF">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10a4 4 0 0 0 .4-7.98A5 5 0 0 0 7.6 9 3.5 3.5 0 0 0 7 18Z" stroke="#0c5a55" stroke-width="2" stroke-linejoin="round"/><path d="M9 20.5l-.6 1.5M13 20.5l-.6 1.5" stroke="#0c5a55" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="signame">Breeding weather</span>
+          <span class="contrib"><span class="n" style="color:var(--sig-weather)">+18</span><span class="t">TO THE SCORE</span></span>
+        </div>
+        <div class="readout"><span class="level fav">FAVOURABLE</span><span class="rtext">Warm and humid with recent rain - good for mosquito breeding.</span></div>
+        <div class="track"><div class="fill" style="width:30%;background:var(--sig-weather)"></div></div>
+        <div class="sigfoot">
+          <span class="trend up"><svg viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M9 7h8v8" stroke="#a3331c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Rising vs yesterday</span>
+          <span class="weight">30% weight</span>
+        </div>
+        <p class="what">How friendly recent weather is for mosquito breeding. Leads the curve by 1 to 2 weeks.</p>
+      </div>
+
+      <!-- SEARCH tile -->
+      <div class="sig search">
+        <div class="sigtop">
+          <span class="sigico" style="background:#ECE8FB">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="#4b3fa3" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="#4b3fa3" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="signame">Search interest</span>
+          <span class="contrib"><span class="n" style="color:var(--sig-search)">+12</span><span class="t">TO THE SCORE</span></span>
+        </div>
+        <div class="readout"><span class="level elev">ELEVATED</span><span class="rtext">More people near Pune are searching dengue symptoms than usual.</span></div>
+        <div class="track"><div class="fill" style="width:20%;background:var(--sig-search)"></div></div>
+        <div class="sigfoot">
+          <span class="trend down"><svg viewBox="0 0 24 24" fill="none"><path d="M7 7 17 17M17 9v8h-8" stroke="#1c6e49" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Easing vs yesterday</span>
+          <span class="weight">22% weight</span>
+        </div>
+        <p class="what">Local symptom-search attention vs this city's own normal range.</p>
+      </div>
+
+      <div class="recon">
+        <div class="eq"><span class="s" style="color:var(--sig-lab)">Lab 30</span> + <span class="s" style="color:var(--sig-weather)">Weather 18</span> + <span class="s" style="color:var(--sig-search)">Search 12</span> = 60</div>
+        <div class="note">All three signals agree - confirmed positivity, search interest and breeding weather line up, so confidence is high.</div>
+      </div>
+    </div>
+
+    <!-- CALIBRATION CALLOUT (Task 2) -->
+    <div class="calib">
+      <h3><span class="pill">NEW</span> Each fever judged on its own scale</h3>
+      <p>The lab signal now compares against a realistic "high" for <i>each</i> fever - so low-baseline fevers like malaria can finally register.</p>
+      <div class="ba">
+        <div class="col b4">
+          <div class="lbl">Before &middot; one 35% rule</div>
+          <div class="ex">Malaria at 6% positivity</div>
+          <div class="res"><span class="level" style="background:#F6DDD3;color:#a3331c">LOW</span> reads as quiet</div>
+        </div>
+        <div class="col af">
+          <div class="lbl">After &middot; per-fever scale</div>
+          <div class="ex">Malaria at 6% positivity</div>
+          <div class="res"><span class="level" style="background:#CCEBD9;color:#1c6e49">HIGH</span> flags correctly</div>
+        </div>
+      </div>
+      <div class="scaleline">A "high" week differs by fever: <b>dengue ~25%</b>, <b>typhoid ~45%</b>, <b>chikungunya ~15%</b>, <b>malaria ~4%</b>. Shown to users as High / Moderate / Low - the percentages live in "How we calculate the score".</div>
+    </div>
+
+  </div></div></div>
+
+  <!-- ============ DESIGN NOTES (not part of the UI) ============ -->
+  <div class="notes">
+    <h2>What changed &amp; why</h2>
+    <p class="lead">End-user view of the score breakdown. Each change maps to one of the seven open refinements flagged on 17 Jun. This panel is annotation only - it is not part of the screen.</p>
+
+    <div class="nrow"><div class="nnum">1</div><div class="ntext"><b>Humanised readouts.</b> Each signal now leads with a plain level (High / Favourable / Elevated) and a one-line sentence - no more "<i>48 raw, 48%</i>". <span class="tag">decision</span> lab line is qualitative + guardrail-safe; see question below.</div></div>
+    <div class="nrow"><div class="nnum">2</div><div class="ntext"><b>"35% reference" removed from the consumer view.</b> Users see High / Moderate / Low; the 35% (now per-fever) anchor moves to "How we calculate the score".</div></div>
+    <div class="nrow"><div class="nnum">3</div><div class="ntext"><b>Contribution split from trend.</b> The <b>+N "to the score"</b> badge (top-right) is now separate from the <b>Rising / Easing vs yesterday</b> chip (bottom-left), so "+30" no longer reads as "rose by 30".</div></div>
+    <div class="nrow"><div class="nnum">4</div><div class="ntext"><b>Deltas get a timeframe.</b> The disease list is headed "Change since yesterday"; the period tab swaps it to "vs last week" / "vs last month".</div></div>
+    <div class="nrow"><div class="nnum">5</div><div class="ntext"><b>"Why 56, not 60?"</b> A tap-to-open line explains the max-dominant blend (0.8 x top fever + 0.2 x the rest) right under the dial.</div></div>
+    <div class="nrow"><div class="nnum">6</div><div class="ntext"><b>Per-fever lab scale</b> (the calibration card). Malaria ~4%, chikungunya ~15%, dengue ~25%, typhoid ~45% replace the single 35% rule.</div></div>
+    <div class="nrow"><div class="nnum">7</div><div class="ntext"><b>Accessibility.</b> Trend arrows are shape-coded (&#9650;/&#9660; + words, not colour alone), level text uses 800-weight on tinted pills for contrast, tap targets &ge; 44px.</div></div>
+
+    <div class="legendk">
+      <div class="kt">Signal colours</div>
+      <div class="ki"><span class="kc" style="background:var(--sig-lab)"></span> Lab confirmation - diagnostics blue</div>
+      <div class="ki"><span class="kc" style="background:var(--sig-weather)"></span> Breeding weather - teal</div>
+      <div class="ki"><span class="kc" style="background:var(--sig-search)"></span> Search interest - violet</div>
+      <div class="kt" style="margin-top:12px">Fever identity</div>
+      <div class="ki"><span class="kc" style="background:var(--dis-dengue)"></span> Dengue &nbsp; <span class="kc" style="background:var(--dis-typhoid)"></span> Typhoid &nbsp; <span class="kc" style="background:var(--dis-chikungunya)"></span> Chikungunya &nbsp; <span class="kc" style="background:var(--dis-malaria)"></span> Malaria</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -32,7 +32,9 @@ container-bound or standalone - change `SHEET_ID` below to retarget.
   - **Labs build-up (live):** only `tests_booked` (AB) + `positives` (AC) are POSTed (the raw window-summed
     lab inputs, from the gitignored sidecar `data/positivity_detail.json` build_daily writes). Everything
     else is a FORMULA: `positivity_pct` (AD) = `positives/tests_booked*100`; the positivity signal (O) =
-    `MIN(100, ROUND(positivity_pct/35*100))`, gated to blank when `tests_booked < 30` (forecast-only).
+    `MIN(100, ROUND(positivity_pct/ref*100))`, gated to blank when `tests_booked < 30` (forecast-only).
+    `ref` is PER DISEASE (each fever has a different realistic 'high'): dengue 25, malaria 4, chikungunya 15,
+    typhoid 45 (else 35), looked up in-cell from the disease in column E.
     So the WHOLE chain is in-cell: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).
     AB/AC/AD are appended at the END so the existing A-AA letters never shift; O is an existing column (15)
     now written as a formula instead of a posted value.
@@ -140,14 +142,16 @@ function _setRawFormulas(sh, start, n, rows) {
         'IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,1.08,0.96))))']);
       fV.push(['=IF($O' + r + '="","forecast","confirmed")']);
       // AD positivity_pct: the raw labs build-up = positives(AC)/tests_booked(AB)*100. The
-      // positivity signal (O) = MIN(100, ROUND(positivity_pct/35*100)) and is blank (forecast-only)
+      // positivity signal (O) = MIN(100, ROUND(positivity_pct/ref*100)) and is blank (forecast-only)
       // when tests_booked < 30. So the full chain is AB,AC -> AD -> O -> T (score).
       fAD.push(['=IF(OR($AB' + r + '="",$AB' + r + '=0),"",ROUND($AC' + r + '/$AB' + r + '*100,1))']);
-      // O positivity (the lab signal) = MIN(100, ROUND(positivity_pct/35*100)), gated to "" below 30
-      // tests_booked (forecast-only) - mirrors src/signals/gsheet_api._signal. Now a FORMULA (was posted),
-      // so the whole lab build-up tests_booked(AB) -> positives(AC) -> positivity_pct(AD) -> positivity(O)
-      // -> score(T) is visible in-cell.
-      fO.push(['=IF(OR($AB' + r + '="",$AB' + r + '<30),"",MIN(100,ROUND($AD' + r + '/35*100)))']);
+      // O positivity (the lab signal) = MIN(100, ROUND(positivity_pct/ref*100)), gated to "" below 30
+      // tests_booked (forecast-only) - mirrors src/signals/gsheet_api._signal. ref is PER DISEASE (each
+      // fever has a different realistic 'high'): dengue 25, malaria 4, chikungunya 15, typhoid 45 (else 35),
+      // looked up from the disease label in column E. So the whole lab build-up tests_booked(AB) ->
+      // positives(AC) -> positivity_pct(AD) -> positivity(O) -> score(T) is visible in-cell.
+      const ref = 'IFS($E' + r + '="Dengue",25,$E' + r + '="Malaria",4,$E' + r + '="Chikungunya",15,$E' + r + '="Typhoid",45,TRUE,35)';
+      fO.push(['=IF(OR($AB' + r + '="",$AB' + r + '<30),"",MIN(100,ROUND($AD' + r + '/' + ref + '*100)))']);
     }
     fU.push(['=IFS($T' + r + '>=70,"HIGH",$T' + r + '>=45,"MODERATE",$T' + r + '>=25,"LOW-MODERATE",TRUE,"LOW")']);
   }
@@ -204,7 +208,7 @@ const DICT = [
   ['trends_score', 'FORMULA: MAX(4, MIN(100, trends_state_interest)) - the state Google Trends index for trends_keywords, floored at 4 and capped at 100.'],
   ['trends_keywords', 'The search terms (OR-joined) whose combined interest is trends_score.'],
   ['news_spike', 'TRUE if national interest spiked recently (news-driven); trends is down-weighted in forecast mode when TRUE.'],
-  ['positivity', 'FORMULA: 0-100 PharmEasy lab positivity (lagging ground truth) = MIN(100, ROUND(positivity_pct(AD)/35*100)), gated to blank when tests_booked(AB) < 30 (forecast-only). Derived in-cell from the raw labs columns, not posted.'],
+  ['positivity', 'FORMULA: 0-100 PharmEasy lab positivity (lagging ground truth) = MIN(100, ROUND(positivity_pct(AD)/ref*100)), gated to blank when tests_booked(AB) < 30 (forecast-only). ref is PER DISEASE (dengue 25, malaria 4, chikungunya 15, typhoid 45, else 35), looked up in-cell from the disease in column E. Derived in-cell from the raw labs columns, not posted.'],
   ['w_weather', 'Weight (%) on weather_score in the blend (30 confirmed / 60 forecast).'],
   ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
   ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],
@@ -219,7 +223,7 @@ const DICT = [
   ['weather_source', 'Provenance of the weather inputs: rainfall from NOAA CPC (gauge-based, US public domain); temperature and humidity from NASA POWER.'],
   ['tests_booked', 'Aggregate lab tests for this city/disease over the trailing window (config window_days), live PharmEasy/ThyroCare feed via the Sheets API. Raw input to positivity; logged here only (never in the public site).'],
   ['positives', 'Aggregate positive results over the same window. positivity_pct = positives / tests_booked * 100.'],
-  ['positivity_pct', 'FORMULA: positives(AC)/tests_booked(AB)*100. The positivity signal (O) = MIN(100, ROUND(positivity_pct/35*100)), blank (forecast-only) when tests_booked < 30. Completes the build-up: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).'],
+  ['positivity_pct', 'FORMULA: positives(AC)/tests_booked(AB)*100. The positivity signal (O) = MIN(100, ROUND(positivity_pct/ref*100)) with a PER-DISEASE ref (dengue 25, malaria 4, chikungunya 15, typhoid 45, else 35), blank (forecast-only) when tests_booked < 30. Completes the build-up: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).'],
 ];
 function _ensureDictionary(ss) {
   if (ss.getSheetByName('data_dictionary')) return;

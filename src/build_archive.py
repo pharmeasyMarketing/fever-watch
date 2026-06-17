@@ -63,7 +63,10 @@ OUT_PATH = os.path.join("data", "archive", "trend_series.json")
 CONSOL_PATH = os.path.join("config", "consolidation.json")
 LAB_FEED_2025_CSV = os.path.join("data", "lab_feed_2025_historic.csv")   # TC 2025 weekly feed (build_lab_feed_2025_historic.py)
 LAB_MIN_TESTS = 30        # confidence gate (matches gsheet_api default / lab_feed builder)
-LAB_REF_PCT = 35.0        # positivity reference for the 0-100 signal (matches gsheet_api default)
+LAB_REF_PCT = 35.0        # fallback positivity reference for any disease not in the per-disease map
+# Per-disease positivity reference (% positivity -> full 100 signal). MUST match
+# config/signals.json ref_positivity_pct_by_disease + scripts/build_lab_feed_2025_historic.py.
+LAB_REF_BY_DISEASE = {"dengue": 25.0, "malaria": 4.0, "chikungunya": 15.0, "typhoid": 45.0}
 
 
 def _r(x):
@@ -226,7 +229,8 @@ def _load_labs_2025_weekly(path, dids, *, min_tests=LAB_MIN_TESTS, ref_pct=LAB_R
             if tests is None:
                 continue
             cids_seen.add(cid)
-            sig[(cid, did, wk)] = _lab_signal(tests, pos, min_tests, ref_pct)  # 0-100 or None below the 30 gate
+            ref = LAB_REF_BY_DISEASE.get(did, ref_pct)  # per-disease reference, ref_pct fallback
+            sig[(cid, did, wk)] = _lab_signal(tests, pos, min_tests, ref)  # 0-100 or None below the 30 gate
     return sig, cids_seen
 
 

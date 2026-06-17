@@ -52,12 +52,14 @@ out['positives'] = out.positives.fillna(0).astype(int)
 # Computed positivity build-up (mirrors src/signals/gsheet_api._signal, the live feed) so this file shows
 # HOW the last-year positivity score is derived, end to end:
 #   positivity_pct    = positives / tests_booked * 100            (raw lab positivity rate)
-#   positivity_signal = MIN(100, ROUND(positivity_pct / 35 * 100)) (0-100 score; 35% ref = full signal),
+#   positivity_signal = MIN(100, ROUND(positivity_pct / ref * 100)) (0-100 score; ref% = full signal),
 #                       BLANK below the 30-test confidence gate -> "no data" (forecast-only downstream).
-REF_PCT, GATE = 35.0, 30
+# ref is PER DISEASE (each fever has a different realistic 'high'): MUST match config/signals.json
+# ref_positivity_pct_by_disease + src/build_archive.py LAB_REF_BY_DISEASE.
+REF_BY_DISEASE, REF_FALLBACK, GATE = {'dengue': 25.0, 'malaria': 4.0, 'chikungunya': 15.0, 'typhoid': 45.0}, 35.0, 30
 out['positivity_pct'] = (out.positives / out.tests_booked.where(out.tests_booked > 0) * 100).round(1)
 out['positivity_signal'] = out.apply(
-    lambda r: max(0, min(100, round(r.positivity_pct / REF_PCT * 100)))
+    lambda r: max(0, min(100, round(r.positivity_pct / REF_BY_DISEASE.get(r.disease, REF_FALLBACK) * 100)))
     if (r.tests_booked >= GATE and pd.notna(r.positivity_pct)) else None, axis=1)
 out['week_start'] = (SEASON_START + pd.to_timedelta((out.season_week - 1) * 7, unit='D')).dt.strftime('%Y-%m-%d')
 out = out.rename(columns={'city_id': 'city'})[['week_start', 'season_week', 'city', 'disease',

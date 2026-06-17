@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fever Watch - signal readout: current vs 3 minor-change options</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --pe-ink:#30363C; --pe-ink-2:#4F585E; --pe-muted:#6E787E; --pe-muted-2:#8897A2;
+    --pe-line:#D7DFE5; --pe-bg:#F5F8FC; --pe-bg-2:#EDF2F9; --pe-white:#fff;
+    --sig-lab:#3661B0; --sig-weather:#15ACA5; --sig-search:#7C6CD6;
+    --up:#C23B16; --upbg:#FCEBE4; --down:#1c6e49; --downbg:#E4F4EC;
+    --radius-sm:12px; --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#EEF2F7;font-family:var(--font);color:var(--pe-ink);-webkit-font-smoothing:antialiased;padding:22px 20px 60px}
+  h1{font-size:18px;margin:0 0 3px}
+  .sub{font-size:12.5px;color:var(--pe-muted);margin:0 0 20px;max-width:760px;line-height:1.5}
+  .platband{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:#10847E;display:inline-block;padding:4px 11px;border-radius:7px;margin:24px 0 12px}
+  .grid{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .variant{background:var(--pe-bg);border:1px solid var(--pe-line);border-radius:16px;padding:13px 13px 15px}
+  .vhead{display:flex;align-items:center;gap:8px;margin:0 0 11px}
+  .vtag{font-size:10px;font-weight:800;letter-spacing:.4px;color:#0c5a55;background:#CEEAE8;border-radius:6px;padding:2px 8px}
+  .vtag.cur{color:#5f6a72;background:#E3E8EE}
+  .vname{font-size:13px;font-weight:800;color:#1c2b33}
+  .vnote{font-size:11px;color:var(--pe-muted);margin:9px 2px 0;line-height:1.45}
+
+  /* faithful current .sig tile */
+  .sig{background:#fff;border:1px solid var(--pe-line);border-radius:var(--radius-sm);padding:10px 11px 11px}
+  .sig+.sig{margin-top:9px}
+  .sigtop{display:flex;align-items:center;gap:5px}
+  .sigtop .lab{flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2}
+  .sigtop .pt{font-size:15px;font-weight:800}
+  .badge{width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .badge svg{width:10px;height:10px}
+  .badge.up{background:#E4572E}.badge.down{background:#2FA66F}
+  .prov{font-size:10px;color:var(--pe-muted);margin:2px 0 5px}
+  .track{height:6px;background:#EEF2F6;border-radius:999px;overflow:hidden;margin:0}
+  .fill{height:100%;border-radius:999px}
+  .what{font-size:10px;color:var(--pe-muted);line-height:1.35;margin:6px 0 0}
+
+  /* option pieces */
+  .lvline{display:flex;align-items:center;gap:6px;margin:3px 0 6px;font-size:10.5px}
+  .lvword{font-weight:800}
+  .lvmuted{color:var(--pe-muted-2);font-weight:600}
+  .pill{font-size:10px;font-weight:800;letter-spacing:.2px;padding:2px 8px;border-radius:999px}
+  .lvrow{display:flex;justify-content:space-between;align-items:center;margin:3px 0 6px}
+  .lvrow .m{font-size:10.5px;color:var(--pe-muted);font-weight:600}
+  .lvrow .v{font-size:11.5px;font-weight:800}
+  .trend{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:7px}
+  .trend svg{width:11px;height:11px}
+  .trend.up{color:var(--up);background:var(--upbg)}
+  .trend.down{color:var(--down);background:var(--downbg)}
+
+  /* desktop tile grid (the #s-why 3-col) */
+  .deskcard{background:#fff;border:1px solid var(--pe-line);border-radius:16px;padding:13px 14px 15px;width:560px;max-width:100%}
+  .deskcard h3{font-size:14px;font-weight:800;margin:0 0 2px}
+  .deskcard .s{font-size:11px;color:var(--pe-muted);margin:0 0 11px}
+  .deskgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .deskgrid .sig+.sig{margin-top:0}
+</style>
+</head>
+<body>
+  <h1>"Why this score?" signal readout - current vs 3 minor-change options</h1>
+  <p class="sub">Same tile, same colours, same contribution bar. The only changes: the middle line is humanised (a High / Moderate / Low level instead of "83 raw, 48%"), the trend arrow is split out to its own labelled "vs yesterday" chip (so "+30" reads as a contribution, not a rise), and the lab "what" line drops the "35% reference" wording. Example: Pune, Dengue 60. Weather &amp; search get the same treatment.</p>
+
+  <span class="platband">Mobile (tiles stack full-width)</span>
+  <div class="grid" id="mobile"></div>
+
+  <span class="platband">Desktop (3 tiles side-by-side in the "Why this score?" card)</span>
+  <div class="grid" id="desktop"></div>
+
+<script>
+  var ARROW_UP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+  var ARROW_DN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg>';
+  var WARROW_UP='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+
+  var SIGS=[
+    {k:'lab',   c:'#3661B0', tint:'#E7EEFA', dk:'#22468f', label:'🧪 Lab signal',       metric:'Lab positivity', short:'Positivity', v:83, pt:30, w:48, level:'High',     trend:'up',
+       whatOld:'Lab positivity vs a 35% reference.', whatNew:'How often dengue tests come back positive, vs what is high for dengue.'},
+    {k:'weather',c:'#15ACA5',tint:'#DBF3EF', dk:'#0c5a55', label:'🌧 Breeding weather', metric:'Breeding weather', short:'Weather', v:58, pt:18, w:30, level:'Moderate', trend:'up',
+       whatOld:'How friendly recent weather is for breeding.', whatNew:'How friendly recent weather is for mosquito breeding.'},
+    {k:'search', c:'#7C6CD6',tint:'#ECE8FB', dk:'#4b3fa3', label:'🔍 Search interest',  metric:'Search interest', short:'Search', v:44, pt:12, w:22, level:'Moderate', trend:'down',
+       whatOld:"Search interest vs this city's own range.", whatNew:"Local symptom-search vs this city's own range."}
+  ];
+  function bw(s){return Math.floor(s.pt/60*100+0.5);}
+  function trendChip(s,deskShort){
+    var up=s.trend==='up';
+    var txt=up?(deskShort?'Rising':'Rising vs yesterday'):(deskShort?'Easing':'Easing vs yesterday');
+    return '<span class="trend '+(up?'up':'down')+'">'+(up?ARROW_UP:ARROW_DN)+txt+'</span>';
+  }
+  function sigTop(s){
+    return '<div class="sigtop"><span class="lab">'+s.label+'</span><span class="pt" style="color:'+s.c+'">+'+s.pt+'</span></div>';
+  }
+  // CURRENT
+  function curTile(s){
+    var badge='<span class="badge '+s.trend+'">'+(s.trend==='up'?WARROW_UP:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg>')+'</span>';
+    return '<div class="sig"><div class="sigtop"><span class="lab">'+s.label+'</span><span class="pt" style="color:'+s.c+'">+'+s.pt+'</span>'+badge+'</div>'+
+      '<div class="prov">'+s.v+' raw, '+s.w+'%</div>'+
+      '<div class="track"><div class="fill" style="width:'+bw(s)+'%;background:'+s.c+'"></div></div>'+
+      '<div class="what">'+s.whatOld+'</div></div>';
+  }
+  // OPTION 1 - plain level word
+  function opt1(s,desk){
+    return '<div class="sig">'+sigTop(s)+
+      '<div class="lvline"><span class="lvword" style="color:'+s.c+'">'+s.level+'</span><span class="lvmuted">&middot; '+s.w+'% '+(desk?'':'weight')+'</span></div>'+
+      '<div class="track"><div class="fill" style="width:'+bw(s)+'%;background:'+s.c+'"></div></div>'+
+      trendChip(s,desk)+'<div class="what">'+s.whatNew+'</div></div>';
+  }
+  // OPTION 2 - level pill
+  function opt2(s,desk){
+    return '<div class="sig">'+sigTop(s)+
+      '<div class="lvline"><span class="pill" style="background:'+s.tint+';color:'+s.dk+'">'+s.level+'</span><span class="lvmuted">'+s.w+'%'+(desk?'':' weight')+'</span></div>'+
+      '<div class="track"><div class="fill" style="width:'+bw(s)+'%;background:'+s.c+'"></div></div>'+
+      trendChip(s,desk)+'<div class="what">'+s.whatNew+'</div></div>';
+  }
+  // OPTION 3 - label -> value row
+  function opt3(s,desk){
+    return '<div class="sig">'+sigTop(s)+
+      '<div class="lvrow"><span class="m">'+(desk?s.short:s.metric)+'</span><span class="v" style="color:'+s.c+'">'+s.level+'</span></div>'+
+      '<div class="track"><div class="fill" style="width:'+bw(s)+'%;background:'+s.c+'"></div></div>'+
+      trendChip(s,desk)+'<div class="what">'+s.whatNew+'</div></div>';
+  }
+
+  var VARIANTS=[
+    {tag:'cur', name:'Current', note:'Today: "83 raw, 48%" + the +30 fused with a (dormant) trend arrow.', fn:curTile},
+    {tag:'opt', name:'Option 1 - plain level', note:'Smallest change: a level word replaces "raw, %"; trend chip below the bar.', fn:opt1},
+    {tag:'opt', name:'Option 2 - level pill', note:'A small colour-coded High/Moderate/Low pill for a faster scan.', fn:opt2},
+    {tag:'opt', name:'Option 3 - label → value', name2:'Option 3 - label to value', note:'Reads like a labelled stat: signal name on the left, level on the right.', fn:opt3}
+  ];
+
+  function mobileVariant(V){
+    var tiles=SIGS.map(function(s){return V.fn(s,false);}).join('');
+    return '<div class="variant" style="width:300px">'+
+      '<div class="vhead"><span class="vtag '+V.tag+'">'+(V.tag==='cur'?'NOW':'OPTION')+'</span><span class="vname">'+(V.name2||V.name)+'</span></div>'+
+      tiles+'<p class="vnote">'+V.note+'</p></div>';
+  }
+  function desktopVariant(V){
+    var tiles=SIGS.map(function(s){return V.fn(s,true);}).join('');
+    return '<div class="variant" style="width:592px">'+
+      '<div class="vhead"><span class="vtag '+V.tag+'">'+(V.tag==='cur'?'NOW':'OPTION')+'</span><span class="vname">'+(V.name2||V.name)+'</span></div>'+
+      '<div class="deskcard"><h3>Why this score?</h3><p class="s">How each signal builds Dengue’s 60.</p><div class="deskgrid">'+tiles+'</div></div>'+
+      '<p class="vnote">'+V.note+'</p></div>';
+  }
+  document.getElementById('mobile').innerHTML=VARIANTS.map(mobileVariant).join('');
+  document.getElementById('desktop').innerHTML=VARIANTS.map(desktopVariant).join('');
+</script>
+</body>
+</html>

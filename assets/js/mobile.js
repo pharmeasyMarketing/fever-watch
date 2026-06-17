@@ -24,11 +24,13 @@
     return '<div class="ftabs">' + out + '</div>';
   }
   var SIG = {
-    weather: { c: "#15ACA5", label: "🌧 Breeding weather", what: "How friendly recent weather is for breeding." },
-    trends: { c: "#7C6CD6", label: "🔍 Search interest", what: "Search interest vs this city's own range." },
-    positivity: { c: "#3661B0", label: "🧪 Lab signal", what: "Lab positivity vs a 35% reference." }
+    weather: { c: "#15ACA5", bg: "#DBF3EF", fg: "#0c5a55", label: "🌧 Weather", what: "How friendly recent weather is for breeding." },
+    trends: { c: "#7C6CD6", bg: "#ECE8FB", fg: "#4b3fa3", label: "🔍 Search", what: "Search interest vs this city's own range." },
+    positivity: { c: "#3661B0", bg: "#E7EEFA", fg: "#22468f", label: "🧪 Lab", what: "Lab positivity vs this fever's own baseline." }
   };
   var SHORT = { positivity: "Lab", weather: "Weather", trends: "Search" };
+  // 0-100 sub-score -> plain level word (the consumer reads High/Moderate/Low, not the raw number).
+  function level(v) { return v >= 67 ? "High" : v >= 34 ? "Moderate" : "Low"; }
   var _IC = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   var IC_SHIELD = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M12 3.2 5.5 6v5.2c0 4 2.7 7.2 6.5 8.6 3.8-1.4 6.5-4.6 6.5-8.6V6L12 3.2Z"/><path d="m9.3 11.7 1.9 1.9 3.5-3.8"/></svg>';
   var IC_VACC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="m17 4 3 3M18.5 5.5 8 16l-3.2 1.2L6 14 16.5 3.5M12.5 7l2 2M9.5 10l2 2"/></svg>';
@@ -307,10 +309,11 @@
         '<div style="font-size:10px;color:var(--pe-muted);margin-top:5px">No confirmed lab data yet, conditions-only forecast.</div></div>';
     }
     var bw = Math.floor(pt / cell.score * 100 + 0.5);
-    return '<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta.label + '</span><span style="font-size:15px;font-weight:800;color:' + meta.c + '">+' + pt + '</span>' + sigBadge((cell.sig_delta || {})[k]) + '</div>' +
-      '<div style="font-size:10px;color:var(--pe-muted);margin:2px 0 5px">' + v + ' raw, ' + cell.weights[k] + '%</div>' +
+    return '<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta.label + '</span><span style="font-size:15px;font-weight:800;color:' + meta.c + '">+' + pt + '</span></div>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin:5px 0 2px"><span style="font-size:9.5px;font-weight:800;letter-spacing:.3px;line-height:1.3;padding:1px 7px;border-radius:999px;background:' + meta.bg + ';color:' + meta.fg + '">' + level(v) + '</span>' + sigBadge((cell.sig_delta || {})[k]) + '</div>' +
+      '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + cell.weights[k] + '% weight × raw ' + v + '</div>' +
       '<div class="track" style="height:6px"><div class="fill" style="width:' + bw + '%;background:' + meta.c + '"></div></div>' +
-      '<div style="font-size:10px;color:var(--pe-muted);line-height:1.35;margin-top:6px">' + meta.what + '</div></div>';
+      '<div style="font-size:10px;color:var(--pe-muted);line-height:1.4;margin-top:6px">' + meta.what + '</div></div>';
   }
 
   function actionsCard(c) {
@@ -560,9 +563,10 @@
     '<h3>2. Three independent signals</h3><ul>' +
     '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
     '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone (news-driven).</li>' +
-    '<li><b>PharmEasy lab signal</b> (lagging, ground truth): aggregate, de-identified test-positivity trend.</li></ul>' +
+    '<li><b>PharmEasy lab signal</b> (lagging, ground truth): aggregate, de-identified test-positivity trend, scaled against a <b>per-disease baseline</b> (a "high" positivity differs sharply by fever: a full signal is reached near <code>25%</code> for dengue, <code>4%</code> for malaria, <code>15%</code> for chikungunya and <code>45%</code> for typhoid), held back until enough tests confirm the read.</li></ul>' +
     '<h3>3. Confirmation-weighted ensemble</h3>' +
     '<p>Not a flat average. With lab data present it dominates (weights ~<code>30 / 22 / 48</code> weather / search / positivity) and agreement across all three raises confidence. Without it, a capped <code>forecast-only</code> mode (max 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a max-dominant blend (<code>0.8 &times; the top disease + 0.2 &times; the mean of the rest</code>) with the driver disease named.</p>' +
+    '<p>In the breakdown each signal shows a plain <b>High / Moderate / Low</b> level with its weight and 0 to 100 score; the three contributions add up exactly to the score.</p>' +
     '<h3>Data sources</h3><ul><li>Rainfall: NOAA CPC (US public domain)</li><li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li><li>Search: Google Trends</li><li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>' +
     '<h3>Selected research</h3>' +
     '<p class="cite">Ginsberg et al. Detecting influenza epidemics using search engine query data. <i>Nature</i>, 2009.</p>' +

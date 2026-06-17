@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fever Watch - Option 2 (revised): level pill + weight x raw = contribution</title>
+<style>
+  :root{
+    --pe-ink:#30363C; --pe-muted:#6E787E; --pe-muted-2:#8897A2; --pe-line:#D7DFE5;
+    --pe-bg:#F5F8FC; --pe-bg-2:#EDF2F9;
+    --up:#C23B16; --upbg:#FCEBE4; --down:#1c6e49; --downbg:#E4F4EC;
+    --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#EEF2F7;font-family:var(--font);color:var(--pe-ink);-webkit-font-smoothing:antialiased;padding:20px}
+  .platband{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:#10847E;display:inline-block;padding:4px 11px;border-radius:7px;margin:0 0 12px}
+  .row{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
+
+  .card{background:#fff;border:1px solid var(--pe-line);border-radius:16px;box-shadow:0 5px 18px rgba(20,50,70,.07)}
+  .card h3{font-size:17px;font-weight:800;margin:0;color:var(--pe-ink)}
+  .card .s{font-size:12px;color:var(--pe-muted);margin:4px 0 13px}
+  .mcard{width:330px;padding:16px}
+  .dcard{width:600px;padding:18px}
+
+  .sig{background:#fff;border:1px solid var(--pe-line);border-radius:12px;padding:11px 12px 12px}
+  .sigtop{display:flex;align-items:center;gap:6px}
+  .sigtop .lab{flex:1;font-size:12px;font-weight:700;color:var(--pe-ink);line-height:1.2}
+  .sigtop .pt{font-size:16px;font-weight:800}
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.2px;padding:2px 9px;border-radius:999px;margin:8px 0 6px}
+  .math{font-size:10.5px;color:var(--pe-muted);margin:0 0 7px}
+  .math b{color:#3a444b;font-weight:700}
+  .track{height:6px;background:#EEF2F6;border-radius:999px;overflow:hidden}
+  .fill{height:100%;border-radius:999px}
+  .trend{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:8px}
+  .trend svg{width:11px;height:11px}
+  .trend.up{color:var(--up);background:var(--upbg)}
+  .trend.down{color:var(--down);background:var(--downbg)}
+  .what{font-size:10px;color:var(--pe-muted);line-height:1.4;margin:7px 0 0}
+
+  /* mobile: tiles stack */
+  .mcard .sig+.sig{margin-top:10px}
+  /* desktop: 3 columns */
+  .dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .dgrid .math{font-size:9.5px;line-height:1.35}
+
+  /* reconciliation footer - kept AS-IS from the current product */
+  .recon{margin-top:12px;background:var(--pe-bg-2);border-radius:12px;padding:12px 13px}
+  .recon .eq{font-size:13.5px;font-weight:800;color:var(--pe-ink);margin:0 0 5px}
+  .recon .note{font-size:12px;color:#3f474d;line-height:1.5;margin:0}
+
+  .cap{font-size:11px;color:var(--pe-muted);margin:9px 2px 0;max-width:600px;line-height:1.5}
+</style>
+</head>
+<body>
+  <div class="row">
+    <div>
+      <span class="platband">Mobile</span>
+      <div class="card mcard">
+        <h3>Why this score?</h3>
+        <p class="s">How each signal builds Dengue&rsquo;s 60.</p>
+
+        <div class="sig">
+          <div class="sigtop"><span class="lab">&#129514; Lab signal</span><span class="pt" style="color:#3661B0">+36</span></div>
+          <span class="pill" style="background:#E7EEFA;color:#22468f">High</span>
+          <div class="math"><b>48% weight</b> &times; Raw score <b>75</b> = <b>36</b></div>
+          <div class="track"><div class="fill" style="width:60%;background:#3661B0"></div></div>
+          <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg> Rising vs yesterday</span>
+          <div class="what">How often dengue tests come back positive, vs what is high for dengue.</div>
+        </div>
+
+        <div class="sig">
+          <div class="sigtop"><span class="lab">&#127783; Breeding weather</span><span class="pt" style="color:#15ACA5">+19</span></div>
+          <span class="pill" style="background:#DBF3EF;color:#0c5a55">Moderate</span>
+          <div class="math"><b>30% weight</b> &times; Raw score <b>63</b> = <b>19</b></div>
+          <div class="track"><div class="fill" style="width:32%;background:#15ACA5"></div></div>
+          <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg> Rising vs yesterday</span>
+          <div class="what">How friendly recent weather is for mosquito breeding.</div>
+        </div>
+
+        <div class="sig">
+          <div class="sigtop"><span class="lab">&#128269; Search interest</span><span class="pt" style="color:#7C6CD6">+5</span></div>
+          <span class="pill" style="background:#ECE8FB;color:#4b3fa3">Low</span>
+          <div class="math"><b>22% weight</b> &times; Raw score <b>23</b> = <b>5</b></div>
+          <div class="track"><div class="fill" style="width:8%;background:#7C6CD6"></div></div>
+          <span class="trend down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg> Easing vs yesterday</span>
+          <div class="what">Local symptom-search vs this city&rsquo;s own range.</div>
+        </div>
+
+        <div class="recon">
+          <div class="eq">Lab 36 + Weather 19 + Search 5 = 60</div>
+          <p class="note">Signals diverge, so confirmed positivity leads the score and weather and search count for less.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <span class="platband">Desktop</span>
+      <div class="card dcard">
+        <h3>Why this score?</h3>
+        <p class="s">How each signal builds Dengue&rsquo;s 60.</p>
+        <div class="dgrid">
+
+          <div class="sig">
+            <div class="sigtop"><span class="lab">&#129514; Lab signal</span><span class="pt" style="color:#3661B0">+36</span></div>
+            <span class="pill" style="background:#E7EEFA;color:#22468f">High</span>
+            <div class="math"><b>48% weight</b> &times; Raw <b>75</b> = <b>36</b></div>
+            <div class="track"><div class="fill" style="width:60%;background:#3661B0"></div></div>
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg> Rising</span>
+            <div class="what">How often dengue tests come back positive, vs what is high for dengue.</div>
+          </div>
+
+          <div class="sig">
+            <div class="sigtop"><span class="lab">&#127783; Breeding weather</span><span class="pt" style="color:#15ACA5">+19</span></div>
+            <span class="pill" style="background:#DBF3EF;color:#0c5a55">Moderate</span>
+            <div class="math"><b>30% weight</b> &times; Raw <b>63</b> = <b>19</b></div>
+            <div class="track"><div class="fill" style="width:32%;background:#15ACA5"></div></div>
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg> Rising</span>
+            <div class="what">How friendly recent weather is for mosquito breeding.</div>
+          </div>
+
+          <div class="sig">
+            <div class="sigtop"><span class="lab">&#128269; Search interest</span><span class="pt" style="color:#7C6CD6">+5</span></div>
+            <span class="pill" style="background:#ECE8FB;color:#4b3fa3">Low</span>
+            <div class="math"><b>22% weight</b> &times; Raw <b>23</b> = <b>5</b></div>
+            <div class="track"><div class="fill" style="width:8%;background:#7C6CD6"></div></div>
+            <span class="trend down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 9v8h-8"/></svg> Easing</span>
+            <div class="what">Local symptom-search vs this city&rsquo;s own range.</div>
+          </div>
+
+        </div>
+        <div class="recon">
+          <div class="eq">Lab 36 + Weather 19 + Search 5 = 60</div>
+          <p class="note">Signals diverge, so confirmed positivity leads the score and weather and search count for less.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="cap">Option 2 (revised). Each tile now shows the full build-up: the High / Moderate / Low pill, then <b>weight &times; raw score = contribution</b>, then the contribution bar and the split-out "vs yesterday" trend chip. The additive footer (Lab + Weather + Search = score, plus the engine note) is kept exactly as today. Example: Pune, Dengue 60, signals-diverge case. Contributions use largest-remainder rounding so they sum to the score exactly (so a line can round, e.g. 30% &times; 63 = 18.9 shown as 19).</p>
+</body>
+</html>

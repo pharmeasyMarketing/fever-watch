@@ -27,6 +27,9 @@ class GoogleSheetPositivityProvider(PositivityProvider):
         self.csv_url = (cfg.get("csv_url") or "").strip()
         self.min_tests = int(cfg.get("min_tests", 30))
         self.ref_pct = float(cfg.get("ref_positivity_pct", 35.0))
+        # Per-disease reference positivity (each fever scored against its own 'high'); ref_pct fallback.
+        self.ref_by_disease = {str(k).lower(): float(v)
+                               for k, v in (cfg.get("ref_positivity_pct_by_disease") or {}).items()}
         if not self.csv_url:
             raise ValueError("googlesheet positivity provider needs config.csv_url")
         self._index: dict = {}
@@ -62,9 +65,11 @@ class GoogleSheetPositivityProvider(PositivityProvider):
         # sparse coverage -> treat as no data (forecast-only downstream)
         if tests is not None and tests < self.min_tests:
             return None
-        if self.ref_pct <= 0:
+        disease = (row.get("disease") or "").strip().lower()
+        ref = self.ref_by_disease.get(disease, self.ref_pct)  # per-disease ref, ref_pct fallback
+        if ref <= 0:
             return None
-        return max(0, min(100, round(pct / self.ref_pct * 100)))
+        return max(0, min(100, round(pct / ref * 100)))
 
     def fetch(self, city: dict, disease: dict) -> Optional[int]:
         return self._index.get((city["id"].lower(), disease["id"].lower()))

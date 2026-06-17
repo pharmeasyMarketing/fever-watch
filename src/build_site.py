@@ -85,12 +85,16 @@ METHOD_HTML = (
     "<li><strong>Google Search Interest</strong> (coincident): symptom-search attention, smoothed and "
     "down-weighted when it spikes alone.</li>"
     "<li><strong>PharmEasy lab signal</strong> (lagging, ground truth): aggregate, de-identified "
-    "test-positivity trend.</li></ul>"
+    "test-positivity trend, scaled against a <strong>per-disease baseline</strong> because a 'high' positivity "
+    "differs sharply by fever (a full signal is reached around 25% positivity for dengue, 4% for malaria, "
+    "15% for chikungunya and 45% for typhoid), and held back until enough tests confirm the read.</li></ul>"
     "<h3>3. Confirmation-weighted ensemble</h3>"
     "<p>Not a flat average. With lab data present it dominates (weights about 30 / 22 / 48 weather / search / "
     "positivity) and agreement across all three raises confidence. Without it, a capped forecast-only mode "
     "(maximum 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a "
     "max-dominant blend (0.8 times the top disease plus 0.2 times the mean of the rest) with the driver disease named.</p>"
+    "<p>In the breakdown each signal is shown as a plain <strong>High / Moderate / Low</strong> level with its "
+    "weight and underlying 0 to 100 score, and the three contributions add up exactly to the displayed score.</p>"
     "<h3>Data sources</h3><ul>"
     "<li>Rainfall: NOAA CPC (US public domain)</li>"
     "<li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li>"
@@ -741,11 +745,16 @@ SIGNAME = {"weather": "Breeding weather", "trends": "Google Search Interest", "p
 # Per-signal breakdown metadata, byte-identical to the SIG map in assets/js/desktop.js (and mobile.js).
 # The emoji bytes in the labels are intentional and must stay UTF-8-exact (the JS twin emits them raw).
 SIG = {
-    "weather": {"c": "#15ACA5", "label": "\U0001F327 Breeding weather", "what": "How friendly recent weather is for breeding."},
-    "trends": {"c": "#7C6CD6", "label": "\U0001F50D Search interest", "what": "Search interest vs this city's own range."},
-    "positivity": {"c": "#3661B0", "label": "\U0001F9EA Lab signal", "what": "Lab positivity vs a 35% reference."},
+    "weather": {"c": "#15ACA5", "bg": "#DBF3EF", "fg": "#0c5a55", "label": "\U0001F327 Weather", "what": "How friendly recent weather is for breeding."},
+    "trends": {"c": "#7C6CD6", "bg": "#ECE8FB", "fg": "#4b3fa3", "label": "\U0001F50D Search", "what": "Search interest vs this city's own range."},
+    "positivity": {"c": "#3661B0", "bg": "#E7EEFA", "fg": "#22468f", "label": "\U0001F9EA Lab", "what": "Lab positivity vs this fever's own baseline."},
 }
 SHORT = {"positivity": "Lab", "weather": "Weather", "trends": "Search"}
+
+
+def _level(v):
+    """0-100 sub-score -> plain level word; SSR twin of mobile.js/desktop.js level()."""
+    return "High" if v >= 67 else ("Moderate" if v >= 34 else "Low")
 
 
 def _beacon(band: str) -> str:
@@ -809,17 +818,20 @@ def _contribs(cell: dict) -> dict:
 
 def _sig(meta: dict, cell: dict, k: str, pt) -> str:
     """One signal row, byte-identical to desktop.js sig(meta, cell, k, pt). Bar length = the signal's
-    CONTRIBUTION points; raw value + weight kept as small provenance text. meta.label carries the UTF-8
-    emoji RAW (no esc), matching the JS. Absent (forecast) lab -> muted no-data tile, no bar."""
+    CONTRIBUTION points; the readout line shows a plain High/Moderate/Low level pill + the
+    weight x raw-score derivation (the +N contribution stays top-right, split from the trend badge).
+    meta.label carries the UTF-8 emoji RAW (no esc), matching the JS. Absent (forecast) lab -> muted
+    no-data tile, no bar."""
     v = cell.get("signals", {}).get(k)
     if v is None:
         return ('<div class="sig"><div style="font-size:11.5px;font-weight:700;line-height:1.2;color:var(--pe-ink)">' + meta["label"] + '</div>'
                 '<div style="font-size:10px;color:var(--pe-muted);margin-top:5px">No confirmed lab data yet, conditions-only forecast.</div></div>')
     bw = math.floor(pt / cell["score"] * 100 + 0.5)
-    return ('<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta["label"] + '</span><span style="font-size:15px;font-weight:800;color:' + meta["c"] + '">+' + str(pt) + '</span>' + _sig_badge((cell.get("sig_delta") or {}).get(k)) + '</div>'
-            '<div style="font-size:10px;color:var(--pe-muted);margin:2px 0 5px">' + str(v) + ' raw, ' + str(cell["weights"][k]) + '%</div>'
+    return ('<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta["label"] + '</span><span style="font-size:15px;font-weight:800;color:' + meta["c"] + '">+' + str(pt) + '</span></div>'
+            '<div style="display:flex;align-items:center;gap:6px;margin:5px 0 2px"><span style="font-size:9.5px;font-weight:800;letter-spacing:.3px;line-height:1.3;padding:1px 7px;border-radius:999px;background:' + meta["bg"] + ';color:' + meta["fg"] + '">' + _level(v) + '</span>' + _sig_badge((cell.get("sig_delta") or {}).get(k)) + '</div>'
+            '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + str(cell["weights"][k]) + '% weight × raw ' + str(v) + '</div>'
             '<div class="track" style="height:6px"><div class="fill" style="width:' + str(bw) + '%;background:' + meta["c"] + '"></div></div>'
-            '<div style="font-size:10px;color:var(--pe-muted);line-height:1.35;margin-top:6px">' + meta["what"] + '</div></div>')
+            '<div style="font-size:10px;color:var(--pe-muted);line-height:1.4;margin-top:6px">' + meta["what"] + '</div></div>')
 
 
 def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
