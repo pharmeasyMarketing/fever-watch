@@ -24,8 +24,8 @@ different point in the illness pipeline:
 | Signal | Source | Role | Status |
 |---|---|---|---|
 | Weather / breeding | **NOAA CPC** rain + **NASA POWER** temp/humidity (public domain, no key) | Leading (conditions ahead) | live |
-| Search interest | Google Trends (SerpApi / pytrends) | Coincident (public concern) | mock first |
-| Lab positivity | PharmEasy internal labs | Lagging, the ground truth | mock first |
+| Search interest | Google Trends (SerpApi / pytrends) | Coincident (public concern) | live (SerpApi -> cached) |
+| Lab positivity | PharmEasy / ThyroCare labs | Lagging, the ground truth | **LIVE** (gsheet_api + service account, 2026-06-17) |
 
 Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
 - positivity present, it dominates (~30/22/48 weather/trends/positivity); agreement across all three
@@ -106,7 +106,7 @@ python src/build_trends.py       # WEEKLY: SerpApi -> data/trends.json (needs SE
 python src/consolidate.py        # smoke-test the ensemble engine
 python -m http.server 8137       # preview prototypes/mobile.html , prototypes/desktop.html
 ```
-Going live = flip providers in `config/signals.json` (mock -> googlesheet / cached). Full status + SSG spec: `docs/PROJECT_STATE.md`.
+Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 2026 DoD data(TC Data)" sheet tab via the Google Sheets API + a service account (`daily.yml` sets `POSITIVITY_PROVIDER=gsheet_api`; secret `GOOGLE_SHEETS_SA_JSON`; local key `secrets/gsheets_sa.json`). The committed `config/signals.json` default stays `mock` so local builds without the key still work. Full status + SSG spec + open refinements: `docs/PROJECT_STATE.md` (2026-06-17 banner).
 
 ## Data cadence (LOCKED)
 
@@ -132,7 +132,7 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 - Separate **mobile** and **desktop** flows (not responsive), PharmEasy-styled (Inter, Porcelain Green, gold accent,
   diagnostics blue for the lab signal). Working clickable prototypes in `prototypes/` (`mobile.html`, `desktop.html`,
   `tokens.css`). Co-branded nav lockup at `assets/img/fever-watch-lockup-white.svg`.
-- **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **Top ~230 cities (228 live).**
+- **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **209 lab-covered cities (228 -> 209 scope locked 2026-06-17; the 19 with no lab data dropped via `gen_cities.py` DROP_NO_LAB_DATA).**
 - Headline = **max-dominant blend** (`0.8 x top disease + 0.2 x mean of rest`) with the driver disease named.
 - **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
@@ -145,12 +145,13 @@ Going live = flip providers in `config/signals.json` (mock -> googlesheet / cach
 ## Open decisions / TODO
 
 - [x] v1 diseases: dengue, malaria, chikungunya, typhoid. (Viral fever removed 2026-06-09: no lab-positivity test exists for it, so it could never get the ground-truth signal; see PROJECT_STATE.)
-- [x] UX: dual mobile/desktop flows, city-first, top ~230 (228 live), `/fever-watch/{city}` URLs (prototypes approved-in-progress).
+- [x] UX: dual mobile/desktop flows, city-first, 209 lab-covered cities (locked 2026-06-17), `/fever-watch/{city}` URLs (prototypes approved-in-progress).
 - [x] Data cadence: weather daily, trends weekly (SerpApi x5), lab Google Sheet daily (see above).
 - [x] Top ~230 city config built (`scripts/gen_cities.py` -> `config/cities.json`, 228 cities); coords need a QA pass before launch.
 - [x] Signal providers built + wired via `config/signals.json`: SerpApi weekly (`build_trends.py` -> `trends.json`, read by `cached`); Google Sheet daily (`googlesheet`, tested). Flip `mock` -> real in `signals.json`.
 - [x] IP-geolocation source: BigDataCloud `reverse-geocode-client` (keyless, client-side, commercial-OK; client-side-only constraint) + freeipapi.com fallback. Front-end impl pending.
-- [ ] Provide the PharmEasy lab Google Sheet published-CSV URL -> set positivity.googlesheet.csv_url + provider `googlesheet`.
+- [x] **Lab positivity LIVE (2026-06-17):** reads the private "Year 2026 DoD data(TC Data)" tab via the Google Sheets API + a service account (`src/signals/gsheet_api.py`, provider `gsheet_api`, secret `GOOGLE_SHEETS_SA_JSON`; `daily.yml` sets `POSITIVITY_PROVIDER=gsheet_api`). City map in `data/citymap/` (resolver `src/citymap.py`); 2025 historic = `data/lab_feed_2025_historic.csv` (from `TC Fever Watch Data 2025.xlsx`); season-trend Labs + Overall now REAL. Full detail: PROJECT_STATE 2026-06-17 banner.
+- [ ] **"Why this score?" UX + calibration refinements (next session, user-flagged 2026-06-17):** humanize the per-signal readouts (drop "raw" + the "35% reference" from the consumer view -> high/mod/low); split contribution (+N) from the trend arrow in the signal chips; label disease deltas with a timeframe; per-disease `ref_positivity_pct` (global 35% under-scores low-baseline diseases like malaria ~2%); a11y verify. See PROJECT_STATE 2026-06-17 "OPEN REFINEMENTS".
 - [x] Add the 5 SerpApi keys as Actions secrets -> DONE (5/5 verified in CI; `trends.provider=cached`; pulled by `daily.yml`).
 - [ ] Repo name + Pages + production reverse-proxy route (mirror Mosquito Watch).
 - [x] Self-host Inter -> DONE (latin woff2 + `@font-face`, replacing the Google Fonts CDN). [ ] Final brand sign-off on the co-branded lockup still pending.

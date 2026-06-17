@@ -4,6 +4,54 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-17, LAB POSITIVITY IS LIVE + season-trend made REAL + scope locked to 209 - committed, pushed, verified in prod):**
+> signal-3 (PharmEasy/ThyroCare lab positivity, the proprietary ground-truth layer) is LIVE end to end; the season-trend
+> Labs + Overall lines are now REAL (were mocks); project scope is locked to the 209 lab-covered cities. Commits
+> `6632419`..`7ef48e4`, all pushed + deployed; verified on https://pharmeasymarketing.github.io/fever-watch/.
+> - **LIVE LAB FEED (signal 3):** new `src/signals/gsheet_api.py` reads the PRIVATE Google Sheet tab
+>   **"Year 2026 DoD data(TC Data)"** via the **Google Sheets API + a service account** (NOT publish-to-web). Auth =
+>   `GOOGLE_SHEETS_SA_JSON` Actions secret (set) / local `secrets/gsheets_sa.json` (gitignored). `daily.yml` grid step runs
+>   `POSITIVITY_PROVIDER=gsheet_api` (committed config default stays `mock` so local builds without the key still work).
+>   Column adapter handles verbose+standard headers and DD-MM-YYYY / YYYY-MM-DD; trailing `window_days` (=14) sum, 30-test
+>   gate, ref 35% -> 0-100 signal (`_signal`). Only the DERIVED 0-100 signal reaches the PUBLIC grid.json; RAW counts never
+>   leave the private sheet. Verified live: 209 cities, ~39 confirmed-positivity cells; e.g. Delhi typhoid 85 -> score ~60.
+> - **CITY MAP (`data/citymap/`):** the lab feed's free-text city strings (702 in 2025) map to config ids via a reusable
+>   resolver `src/citymap.py` (EXACT case-insensitive match ONLY - no suffix-strip, so no cross-state collisions like
+>   AURANGABAD(BH)) using committed counts-free `city_alias_map.csv` (raw->config_id) + `manual_aliases.csv` (satellite
+>   folds: KALYAN/DOMBIVLI->thane; MIRA/BHAYANDAR/VASAI/VIRAR/NALASOPARA->mumbai). Built by a 2-gazetteer
+>   (GeoNames+Wikidata) reconcile + adversarial-verify workflow. Unmapped live strings log to `unmapped_live.csv` for review.
+> - **SCOPE LOCKED to 209 cities:** `scripts/gen_cities.py` `DROP_NO_LAB_DATA` drops the 19 config cities with no lab data
+>   (228 -> 209); `config/cities.json` regenerated; `build_archive` prunes the archive to config on every write.
+> - **HISTORIC 2025 audited + transformed:** `TC Fever Watch Data 2025.xlsx` (gitignored) ->
+>   `scripts/build_lab_feed_2025_historic.py` -> `data/lab_feed_2025_historic.csv` (gitignored; now carries the FULL
+>   positivity build-up: tests_booked -> positives -> positivity_pct -> positivity_signal[gated 30, ref 35]). This TC 2025
+>   data (NOT the sheet's sparse "Last Year DoD data(PE Data)" PE tab) is the source for the last-year labs line.
+> - **SEASON-TREND now REAL (replaced the deterministic mock for Labs + Overall):** `src/build_archive.py --history`
+>   (local one-off; reads the gitignored backfills + the TC csv) writes COUNTS-FREE `labs.ly` (24 cities have a real
+>   last-year line) and a real, **dial-consistent** `overall{ly,ty}` per city (per-disease consolidate -> 0.8*top +
+>   0.2*mean-rest headline; `overall.ty[current]` == the live dial, verified 0 mismatches/209). `--daily` upserts labs.ty +
+>   overall.ty from grid.json. `trend.js` + `build_site.py` consume the real overall/labs (mock fallback retained for
+>   cities without history). The YoY verdict chip now reads **"-N% vs the same week last year"** (was "lower/higher than
+>   last year") - the delta is THIS week vs the SAME week of last season, not vs last year's peak.
+> - **LOGGER (`docs/sheets_logging.md` Code.gs + `src/sheetlog.py`):** the full lab build-up is in-cell. tests_booked(AB)
+>   + positives(AC) are POSTED; positivity_pct(AD) AND positivity(O) are now FORMULAS; O = MIN(100,ROUND(AD/35*100)) gated
+>   to "" below 30 tests. Chain: AB,AC -> AD -> O -> score(T). The user has REDEPLOYED the Apps Script (the new O formula
+>   shows on rows posted after the next run).
+> - **CACHE-BUST:** grid.json + trend_series.json fetch URLs carry `?v=<grid.generated_at>` (build_site) so a daily data
+>   refresh busts the browser cache (only og/share images were versioned before). **CRON rescheduled to 04:00 IST
+>   (22:30 UTC)** so GitHub's ~5h scheduled-cron delay lands the run by ~09:00 IST. **SEARCH FIX:** `_search_blocks` now
+>   carries forward the last good value for a week beyond the latest weekly timeseries pull (was zeroing - the
+>   Ranchi/Jharkhand "Searches 0").
+> - **OPEN REFINEMENTS (user picks up NEXT SESSION - "Why this score?" UX comprehension + calibration; nothing else pending):**
+>   1. Humanize the per-signal readouts (drop "raw"; "79 tests, 48% positive"; weather/search plain labels - not "66 raw, 30%").
+>   2. Remove "vs a 35% reference" from the CONSUMER view (say high/moderate/low); keep the 35% anchor in methodology only.
+>   3. Split the signal chip's CONTRIBUTION (+N) from its TREND arrow (currently fused -> reads as "rose by N").
+>   4. Label the disease-list deltas with a timeframe ("vs last week" / "since yesterday").
+>   5. Note/tooltip explaining Overall (e.g. 56) sitting below the top disease (60) = the max-dominant blend.
+>   6. PER-DISEASE positivity reference: `ref_positivity_pct` is one GLOBAL 35% today, but baselines differ hugely
+>      (malaria ~2% never scores high; typhoid ~28% usually does) - a per-disease anchor would calibrate better.
+>   7. Accessibility verify: gray sub-text contrast, keep the red/green trend arrows shape-coded (not color-only), 44px targets.
+>
 > **NEWEST (2026-06-16, RAIN SOURCE SWITCHED: NASA POWER -> NOAA CPC):** a 228-city benchmark vs IMD
 > gauge truth (dry + wet windows) showed NASA POWER over-reads PRE-MONSOON rainfall in the South
 > peninsula (inflating the breeding + typhoid score in the high-dengue belt; Bengaluru live 14d 194mm
