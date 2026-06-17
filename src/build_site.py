@@ -1247,7 +1247,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
                 "periods": periods,
                 "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"])}
-        fw = {"city": city["id"], "gridUrl": rel + "data/grid.json", "archiveUrl": rel + "data/archive/trend_series.json",
+        dv = og_version(generated_at)  # data version (grid.generated_at digits) -> cache-bust the data fetches
+        fw = {"city": city["id"], "gridUrl": rel + "data/grid.json?v=" + dv, "archiveUrl": rel + "data/archive/trend_series.json?v=" + dv,
               "base": rel, "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
@@ -1257,7 +1258,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         canonical = cfg["base_url"]
         faq = faq_items_landing()
         fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer, faq)
-        fw = {"gridUrl": "data/grid.json", "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
+        fw = {"gridUrl": "data/grid.json?v=" + og_version(generated_at), "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
         og_url = cfg["base_url"] + cfg.get("og_image", "")
         og_alt = cfg.get("og_image_alt", "")
     # Cache-bust the per-city OG card on the social meta so platforms re-fetch the preview when

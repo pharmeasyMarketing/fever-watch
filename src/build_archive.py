@@ -110,6 +110,19 @@ def _parse_tseries(trends_diseases, dids):
     return tseries
 
 
+def _prune_to_config(arch):
+    """Drop archive city blocks not in config/cities.json (the locked 209-city scope), so the committed
+    archive stays exactly the live city set. Returns how many were dropped. Cities removed from config
+    (e.g. the 19 with no lab data) never render a page, so their stale blocks are pure bloat."""
+    c = _load(os.path.join("config", "cities.json"))
+    ids = {x["id"] for x in (c["cities"] if isinstance(c, dict) and "cities" in c else c)}
+    cities = arch.get("cities", {})
+    drop = [k for k in cities if k not in ids]
+    for k in drop:
+        del cities[k]
+    return len(drop)
+
+
 def _search_blocks(tseries, dids, cities, as_of, nw=NW):
     """Per-city search {ly, ty} = mean over the diseases of the city's STATE weekly interest, with BOTH years
     read from the SAME timeseries (one Google normalisation). A null/empty state falls back to that disease's
@@ -121,26 +134,30 @@ def _search_blocks(tseries, dids, cities, as_of, nw=NW):
         if key not in natmean_cache:
             vals = [_nearest(s, target) for s in tseries[did].values()]
             vals = [v for v in vals if v is not None]
-            natmean_cache[key] = (sum(vals) / len(vals)) if vals else 0.0
+            # None (not 0) when NO state has a point within tolerance of this week - i.e. the week is
+            # beyond the latest timeseries pull (between weekly refreshes). Lets carry_forward inherit the
+            # last good value instead of collapsing the current week to a misleading 0.
+            natmean_cache[key] = (sum(vals) / len(vals)) if vals else None
         return natmean_cache[key]
 
     def search_metric(year, w, state):
         target = _week_date(year, w)
-        per_disease = []
+        vals = []
         for did in dids:
             s = tseries[did].get(state)
             v = _nearest(s, target) if s else None
             if v is None:
                 v = national_mean(did, target)
-            per_disease.append(v)
-        return _r(sum(per_disease) / float(len(per_disease)))
+            if v is not None:
+                vals.append(v)
+        return _r(sum(vals) / float(len(vals))) if vals else None  # None = no data this week -> carried forward
 
     blocks, weak = {}, 0
     for c in cities:
         cid, state = c["id"], c.get("state", "")
         blocks[cid] = {
-            "ly": [search_metric(LY_YEAR, w, state) for w in range(nw)],
-            "ty": [search_metric(TY_YEAR, w, state) for w in range(as_of + 1)],
+            "ly": carry_forward([search_metric(LY_YEAR, w, state) for w in range(nw)]),
+            "ty": carry_forward([search_metric(TY_YEAR, w, state) for w in range(as_of + 1)]),
         }
         if state not in tseries[dids[0]] and state not in tseries[dids[-1]]:
             weak += 1
@@ -336,6 +353,7 @@ def build_history():
         if any(v for v in ly):
             labs_nonzero += 1
 
+    _prune_to_config(arch)
     write_json_atomic(OUT_PATH, arch, indent=None)
     size = os.path.getsize(OUT_PATH)
     print("build_history: merged real labs.ly + overall{ly,ty} into %s for %d config cities "
@@ -493,6 +511,7 @@ def update_daily():
 
     arch["generated_at"] = generated_at
     arch["asOf"] = as_of
+    _prune_to_config(arch)
     write_json_atomic(OUT_PATH, arch, indent=None)
     print("update_daily: extended %d cities to as-of week %d (ty len %d) from data/grid.json (%s)."
           % (updated, as_of, as_of + 1, generated_at[:10]))
@@ -557,6 +576,7 @@ def refresh_search():
 
     arch["generated_at"] = generated_at
     arch["asOf"] = as_of
+    _prune_to_config(arch)
     write_json_atomic(OUT_PATH, arch, indent=None)
     print("refresh_search: recomputed EXACT search for %d cities to as-of week %d (ty len %d); "
           "%d preserved (state had no series this run)." % (updated, as_of, as_of + 1, preserved))
