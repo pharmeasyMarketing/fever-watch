@@ -12,6 +12,13 @@
 window.FeverWatchShare = (function () {
   "use strict";
   var base = (window.FW && window.FW.base) || "";
+  // Resolve the site root to an ABSOLUTE url ONCE, at load. The baked share card lives at
+  // {root}assets/img/share/{city}.jpg; selecting a city pushState's the URL to /{city}/, so a
+  // RELATIVE "assets/..." would then resolve under the city dir (/{city}/assets/...) and 404.
+  // Pinning the root at load (when base still matches the document path) keeps it correct after nav.
+  var ROOT = (function () {
+    try { return new URL(base || ".", location.href).href; } catch (e) { return base; }
+  })();
 
   /* compact digits of an ISO timestamp - mirrors build_site.py og_version() */
   function ver(iso) {
@@ -20,7 +27,7 @@ window.FeverWatchShare = (function () {
 
   function imageUrl(cityId, generatedAt) {
     var v = ver(generatedAt);
-    return base + "assets/img/share/" + cityId + ".jpg" + (v ? "?v=" + v : "");
+    return ROOT + "assets/img/share/" + cityId + ".jpg" + (v ? "?v=" + v : "");
   }
 
   var _cache = {};   // url -> Promise<Blob>
