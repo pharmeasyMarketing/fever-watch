@@ -141,12 +141,17 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   `tokens.css`). Co-branded nav lockup at `assets/img/fever-watch-lockup-white.svg`.
 - **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **209 lab-covered cities (228 -> 209 scope locked 2026-06-17; the 19 with no lab data dropped via `gen_cities.py` DROP_NO_LAB_DATA).**
 - Headline = **max-dominant blend** (`0.8 x top disease + 0.2 x mean of rest`) with the driver disease named.
-- **Season-trend ("This monsoon vs last year") first paint is REAL, not mock.** The per-city `FW.seed` inlines
-  that city's archive slice (same shape as `data/archive/trend_series.json`), so `trend.js` renders the real
-  last-year + this-year lines instantly. While a not-yet-loaded city's archive is still fetching (e.g. an
-  in-page city switch) a HEIGHT-MATCHED skeleton shows (CLS 0); the deterministic mock is now ONLY a graceful
-  fallback if the archive fetch definitively fails (grid + archive are fetched in parallel, archive retried).
-  Keep the `trend.js` series math byte-identical to `build_site.py` `_trend_series`.
+- **Season-trend ("This monsoon vs last year") is ALWAYS REAL - there is NO mock anywhere in the project**
+  (removed 2026-06-18; all three signals are live). Every page (incl. the **landing**, which inlines the default
+  city's `seed`+`archive` slice + `archiveUrl`, same as a city page) renders the real last-year+this-year lines
+  from `data/archive/trend_series.json`. Fallbacks, in order, are honest - never fabricated: real -> a
+  HEIGHT-MATCHED skeleton while a not-yet-loaded city's archive is fetching (CLS 0) -> per-metric "coming soon"
+  for a metric with no data (e.g. Labs for the 185/209 cities with no 2025 history) -> a whole-card "coming
+  soon" only if a city has no real `overall` line (unreachable: `build_site.py` ASSERTS every city has one and
+  aborts the build otherwise, so a stale archive can never ship a blank/mock trend). The real-vs-available gate
+  is lenient on the this-year length (a short `ty` charts as a real partial). Keep `trend.js` `build()`/`forCity()`/
+  `realSeries()` byte-identical to `build_site.py` `_trend_series()`/`_t_real_series()` (verified by a JS<->Python
+  parity check; the SSR<->JS above-fold twin by `scripts/parity_check.js`).
 - **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
   agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"

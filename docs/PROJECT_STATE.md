@@ -4,6 +4,37 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-18 EOD, ALL MOCK season-trend DATA REMOVED - the home was still serving a mock chart; now there is no mock anywhere):**
+> A deep-dive (home + 10 cities, cache/cookie matrix, full code audit, adversarial design review) found the
+> **home page consistently served a MOCK season-trend** while the 10 city pages were already real. Root cause: the
+> landing `window.FW` had NO `archiveUrl` and NO `seed`, so the archive never loaded and `trend.js` fell into the
+> deterministic mock. Since all three signals are live, the mock is no longer needed - it is now **deleted from the
+> whole project** and replaced with honest states. Verified end to end; committed + pushed.
+> - **Deleted the mock** from both byte-identical twins: `trend.js` (`metricSeries`/`lyPeak`/`SHAPE`/`LY_MIN`/`LY_MAX`/
+>   `PEAK_IDX`/`hashStr`) and `build_site.py` (`_t_metric_series`/`_t_lypeak`/`_t_hash`/`TREND_SHAPE`/`TREND_PEAK`/
+>   `TREND_LY_*`). Every metric is now real-or-`{avail:false}`; NO fabricated series can be produced.
+> - **Fallback ladder (all honest):** real archive series -> HEIGHT-MATCHED skeleton while a city's slice is still
+>   loading (CLS 0, kept) -> per-metric "coming soon" for a metric with no data (Labs for the 185/209 cities with no
+>   2025 history - scoped PER-METRIC so the card is never blanked) -> whole-card "coming soon" only if a city has no
+>   real `overall` line. The `_archiveFailed -> carry mock` path is gone; on archive-fetch failure the current city
+>   stays real via the seed slice and any other city shows a skeleton (never mock).
+> - **LANDING fix:** `page()` now inlines the DEFAULT city's (`bengaluru`, matching `pickDefaultCity`) `seed` +
+>   `seed.archive` slice + `archiveUrl`, mirroring city pages, so the home first-paints REAL. `FW.city` is left unset
+>   so `maybeGeo()`'s IP redirect still runs on the landing.
+> - **Resilience:** the real-vs-available gate is now LENIENT on the this-year length (`1 <= len(ty) <= asOf+1`);
+>   `_t_real_series`/`realSeries` clamp to the last real point (`cur = min(asOf, len(ty)-1)`) and the chart dot sits at
+>   the series end, so a short `ty` (e.g. a week-boundary day before the daily archive cron extends it) renders a real
+>   PARTIAL line instead of blank or mock. A **build-time ASSERT** (`build_site.py` `main()`) aborts the build if any
+>   city lacks a real `overall` line (ly==22, 1<=ty<=asOf+1), so a stale/malformed archive can never deploy a blank
+>   trend - the previous good build stays live instead.
+> - **Verified:** home `/` REAL ("peaked at 88 in Jun", not the mock "89 ... late August"); labs-coming-soon city
+>   (kanpur) shows real Overall/Weather/Searches + grayed "coming soon" Labs, card not blank; archive-fetch failure ->
+>   skeleton, `mock:false` in every case; **JS<->Python trend parity EXACT** across 4 cities (`forCity()`==`_trend_series()`);
+>   `scripts/parity_check.js` OK both flows; build assert passes 209/209; zero "late August"/mock strings in `dist/`;
+>   no console errors. (`dist/` is gitignored - CI rebuilds + deploys on push to master. NOTE: GitHub Pages edge-caches
+>   the HTML ~10 min and the `FW` seed lives in the HTML, not the `?v=`-busted JS, so the home may serve the old mock
+>   HTML until the edge refreshes; a hard refresh confirms sooner.)
+>
 > **NEWEST (2026-06-18 PM, COLD-LOAD season-trend "mock graphs first" fix + Labs tab/label alignment + Monsoon-precautions CTA + Google Tag Manager - committed + pushed):**
 > - **Cold-load mock-trend bug FIXED.** On a cold load the "This monsoon vs last year" chart (and the desktop
 >   "Signals at a glance" sparkline shapes) rendered the deterministic MOCK series and only flipped to REAL after
