@@ -4,6 +4,44 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-18 PM, COLD-LOAD season-trend "mock graphs first" fix + Labs tab/label alignment + Monsoon-precautions CTA + Google Tag Manager - committed + pushed):**
+> - **Cold-load mock-trend bug FIXED.** On a cold load the "This monsoon vs last year" chart (and the desktop
+>   "Signals at a glance" sparkline shapes) rendered the deterministic MOCK series and only flipped to REAL after
+>   the full `trend_series.json` fetch landed (so users saw mock first, real after a reload/browse). Root cause:
+>   the instant-first-paint `FW.seed` carried no archive, so `trend.js` `forCity()` fell back to `metricSeries()`
+>   (mock) until the async fetch re-booted. Three-part fix, all verified locally:
+>   1. **Seed inlines THIS city's real archive slice** (`build_site.py` `page()`: `seed["archive"] = {"cities":
+>      {id: archive_city}}`, ~0.4KB raw / ~+240B gzipped per page) so the FIRST paint is REAL - no mock phase.
+>   2. **Height-matched loading skeleton** (`trend.js` `seasonAxis`/`buildSkeleton`/`skeletonCard` + `tokens.css`
+>      `.fwtrend-skel*`) shown when a city's archive is not yet present (e.g. switching to a non-seed city before
+>      the full archive lands) INSTEAD of the mock; CLS-0 verified (skeleton == real card height: mobile 590=590,
+>      desktop 628=628, incl. the smalls row). The deterministic mock is now reachable ONLY as a graceful fallback
+>      if the archive fetch definitively FAILS (so nothing hangs forever).
+>   3. **Parallel fetch + retry** (`mobile.js`/`desktop.js`): grid + archive fetched concurrently (archive no
+>      longer chained behind the ~950KB grid); `loadArchive(3)` retries + `console.warn`s on final failure;
+>      `_archiveFull`/`_archiveFailed` flags drive the skeleton-vs-real-vs-mock gate in `trend.js`; on archive
+>      failure the seed slice is carried forward so the CURRENT city never regresses to mock.
+> - **Five UI / analytics changes:**
+>   1. **Season-trend Labs tab:** dropped the "soon" word, kept the tab grayed (`.soon`) + non-clickable; tightened
+>      the MOBILE tab side-padding (14->10px, mobile flow only) so the four tabs (Overall/Weather/Searches/Labs)
+>      stay on ONE row (was wrapping "Labs" to a 2nd line at ~375px). `trend.js` `tabsHtml` + `build_site.py`
+>      `_trend_html` + `tokens.css` media query.
+>   2. **Desktop small-multiples** ("Signals at a glance"): no-data mini now reads "No confirmed lab data yet"
+>      (was "soon"); `.fwtrend-smini` is now a top-aligned flex column so the Labs label lines up with
+>      Weather/Searches (was ~19px low because the stretched `<button>` centered its shorter content).
+>      `trend.js` `smallsHtml` + `tokens.css`.
+>   3. **Desktop "Why this score?"** breakdown: `.sig` tiles -> `justify-content: flex-start` (was `center`) so the
+>      short no-data Lab tile's label lines up with Weather/Search (was ~29px low). `desktop.css` only (DOM-measured
+>      label tops now [548,548,548]).
+>   4. **"Monsoon precautions" CTA** now links to
+>      `https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch` (was `#`). `ACTIONS` in
+>      `mobile.js`/`desktop.js`/`build_site.py`.
+>   5. **Google Tag Manager `GTM-W5PR55Z`** added site-wide: loader `<script>` high in `<head>` + the `<noscript>`
+>      iframe right after `<body>` in the shared `PAGE` template (`build_site.py`); ships on every city + landing
+>      page (verified `dataLayer` init + `gtm.js` request firing, 2 ID occurrences/page, no leftover `{{` braces).
+> - Verified: both flows `parity_check` OK; DOM-measured alignment (sig + smalls labels equal); mobile tab row no
+>   longer wraps; CLS-0 skeleton; GTM live. `dist/` is gitignored (CI rebuilds). Asset hash bumps so caches bust.
+>
 > **NEWEST (2026-06-18, "Updated {date}" timezone fix - all displayed dates now IST - committed + pushed):**
 > The "Updated {date}" note (and the FAQ date, the share/OG card "This week, {date}", and the sitemap `<lastmod>`)
 > was showing the **UTC calendar date** of `grid.generated_at`, so a cron build at 23:59 UTC rendered "17 Jun" to

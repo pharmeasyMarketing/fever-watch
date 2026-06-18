@@ -53,6 +53,9 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   it was the offline validation truth only.
 - **Hosting:** GitHub Pages (public repo) + Actions cron. Production = a subpath on the pharmeasy.in
   apex via reverse-proxy, mirroring Mosquito Watch. `base_url` lives only in `config/site.json`.
+- **Analytics:** Google Tag Manager container `GTM-W5PR55Z` is injected site-wide from the shared `PAGE`
+  template in `src/build_site.py` (loader `<script>` high in `<head>` + the `<noscript>` iframe right after
+  `<body>`), so every city + landing page carries it. Add tags/pixels in GTM, not in the page source.
 
 ## Disease model (`config/diseases.json` + `config/scoring.json`)
 
@@ -138,6 +141,12 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   `tokens.css`). Co-branded nav lockup at `assets/img/fever-watch-lockup-white.svg`.
 - **City-first**: one page per city at `/fever-watch/{city}` (SSG, data baked in, share-link target). **209 lab-covered cities (228 -> 209 scope locked 2026-06-17; the 19 with no lab data dropped via `gen_cities.py` DROP_NO_LAB_DATA).**
 - Headline = **max-dominant blend** (`0.8 x top disease + 0.2 x mean of rest`) with the driver disease named.
+- **Season-trend ("This monsoon vs last year") first paint is REAL, not mock.** The per-city `FW.seed` inlines
+  that city's archive slice (same shape as `data/archive/trend_series.json`), so `trend.js` renders the real
+  last-year + this-year lines instantly. While a not-yet-loaded city's archive is still fetching (e.g. an
+  in-page city switch) a HEIGHT-MATCHED skeleton shows (CLS 0); the deterministic mock is now ONLY a graceful
+  fallback if the archive fetch definitively fails (grid + archive are fetched in parallel, archive retried).
+  Keep the `trend.js` series math byte-identical to `build_site.py` `_trend_series`.
 - **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
   agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"
