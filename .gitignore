@@ -46,6 +46,14 @@ dist/
 assets/img/og/
 assets/img/share/
 
+# Local scratch / one-off analysis artifacts at the repo root (not part of the build).
+# _labs_2026_live_tmp.json is a raw live-lab dump - PROPRIETARY, must never be committed.
+/_labs_2026_live_tmp.json
+/Rainfall_ind2025_rfp25.grd
+/crawl_fever-watch_homepage.html
+/nasa_vs_era5_rainfall_benchmark_2026-06-15.csv
+*.grd
+
 # OS / editor
 .DS_Store
 Thumbs.db
