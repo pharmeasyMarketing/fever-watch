@@ -40,7 +40,7 @@
   var IC_THERMO = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M14 14.5V5.5a2 2 0 0 0-4 0v9a3.5 3.5 0 1 0 4 0Z"/><path d="M12 9.5v5"/></svg>';
   var IC_DOC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="M6 4v4.5a4 4 0 0 0 8 0V4M10 18.2a4.4 4.4 0 0 0 8.8 0v-2"/><circle cx="18.8" cy="13.5" r="2.2"/></svg>';
   var ACTIONS = [
-    { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "#" },
+    { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch" },
     { ic: IC_VACC, t: "Vaccination: does it work?", s: "What helps, what does not", href: "#" },
     { ic: IC_THERMO, t: "Fever? Follow our framework", s: "When to test, when to wait", href: "#" },
     { ic: IC_DOC, t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
@@ -630,12 +630,28 @@
 
   // All render() dependencies (FAQ, METHOD, ...) are now defined. Boot: seed first (instant first
   // paint from the inlined city data), then the full grid in the background for the leaderboard.
-  function loadArchive() {
+  function loadArchive(tries) {
     if (!FW.archiveUrl) return Promise.resolve(null);
-    return fetch(FW.archiveUrl, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    return fetch(FW.archiveUrl, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).catch(function (e) {
+      if (tries > 1) return new Promise(function (res) { setTimeout(res, 500); }).then(function () { return loadArchive(tries - 1); });
+      console.warn("archive load failed (season-trend falls back):", e && e.message); return null;
+    });
   }
   if (FW.seed) { try { boot(FW.seed); idleWarm(); } catch (e) { console.error("seed boot failed:", e); } }
-  loadGrid(4).then(function (j) {
-    return loadArchive().then(function (a) { if (a) j.archive = a; boot(j); maybeGeo(); idleWarm(); });
+  // Kick off BOTH fetches immediately: the small (~82KB) archive no longer waits behind the ~950KB grid,
+  // so the real season-trend lands as soon as possible. We still boot once both settle so the leaderboard
+  // and trend hydrate together. _archiveFull / _archiveFailed tell trend.js whether the archive has settled
+  // (so it can show a skeleton while loading, then real, or a graceful mock if it definitively fails); on
+  // failure we carry the seed's inlined slice forward so the CURRENT city stays real, never regressing.
+  var pGrid = loadGrid(4), pArchive = loadArchive(3);
+  pGrid.then(function (j) {
+    return pArchive.then(function (a) {
+      if (a) { j.archive = a; j._archiveFull = true; }
+      else { j._archiveFailed = true; if (FW.seed && FW.seed.archive) j.archive = FW.seed.archive; }
+      boot(j); maybeGeo(); idleWarm();
+    });
   }).catch(function (e) { console.error("grid load/boot failed:", e); if (!DATA) app.innerHTML = '<div class="shell"><div class="card">Could not load data: ' + e.message + '</div></div>'; });
 })();

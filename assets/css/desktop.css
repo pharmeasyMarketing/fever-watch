@@ -102,7 +102,10 @@
   #s-why > .card { display: flex; flex-direction: column; }
   #s-why .acc.open { flex: 1 1 auto; display: flex; flex-direction: column; }
   #s-why .acc.open .accbody { flex: 1 1 auto; grid-template-rows: 1fr auto; }
-  #s-why .acc.open .accbody .sig { display: flex; flex-direction: column; justify-content: center; }
+  /* Top-align each tile's content so all three signal labels (incl. the short no-data Lab tile) line up;
+     any stretch slack falls uniformly at the bottom. (Was justify-content:center, which dropped the Lab
+     label below Weather/Search because its content is shorter.) */
+  #s-why .acc.open .accbody .sig { display: flex; flex-direction: column; justify-content: flex-start; }
   /* Narrow desktop: collapse the 3-col shell to a single column (CSS-only; no DOM change). The 3-col
      signal row + compact sub-card styling above still apply (the rail is now full width, so it is roomy). */
   @media (max-width: 1100px) {

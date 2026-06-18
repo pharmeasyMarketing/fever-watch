@@ -152,10 +152,32 @@
     };
   }
 
+  // Season axis (current "you-are-here" week + the 22 week labels), computed exactly as build() does so the
+  // loading skeleton lines up week-for-week with the real chart it stands in for. JS-only (no SSR twin).
+  function seasonAxis(generatedAt) {
+    var ga = generatedAt || "";
+    var _gi = new Date(new Date(ga).getTime() + 19800000);  // +5:30 IST, matching build()
+    var gy = _gi.getUTCFullYear() || 2026, gm = _gi.getUTCMonth() + 1 || 6, gd = _gi.getUTCDate() || 1;
+    var asOf = clamp(Math.floor((Date.UTC(gy, gm - 1, gd) - Date.UTC(gy, 5, 1)) / 604800000), 0, NW - 1);
+    var weeks = [], wd, i;
+    for (i = 0; i < NW; i++) { wd = new Date(Date.UTC(gy, 5, 1 + 7 * i)); weeks.push(wd.getUTCDate() + " " + MONTHS[wd.getUTCMonth()]); }
+    return { asOf: asOf, weeks: weeks };
+  }
+  // A minimal model flagged loading:true; mount() delegates to skeletonCard() for it.
+  function buildSkeleton(city, generatedAt) {
+    var ax = seasonAxis(generatedAt);
+    return { loading: true, city: city.name, cityId: city.id, asOf: ax.asOf, weeks: ax.weeks };
+  }
+
   function forCity(city, DATA) {
     var cid = city.id;
     var cells = DATA.grid.filter(function (g) { return g.city === cid; });
     var arch = (DATA.archive && DATA.archive.cities) ? DATA.archive.cities[cid] : null;
+    // While the full archive is still loading and this city's real slice is not yet present (the seed inlines
+    // only the CURRENT city's slice), show a height-matched skeleton instead of the deterministic mock. Once
+    // the archive has settled - loaded full (_archiveFull) or definitively failed (_archiveFailed) - fall
+    // through to the real series (arch present) or the mock fallback (arch absent) so nothing hangs forever.
+    if (!arch && !(DATA._archiveFull || DATA._archiveFailed)) return buildSkeleton(city, DATA.generated_at);
     return build(city, cells, DATA.generated_at, arch);
   }
 
@@ -265,7 +287,7 @@
     return TABS.map(function (t) {
       var avail = model.metrics[t[0]].avail, on = t[0] === metric;
       return '<button class="fwtrend-tab' + (on ? " on" : "") + (avail ? "" : " soon") + '" data-tact="metric" data-metric="' + t[0] + '"'
-        + (on ? ' aria-current="true"' : "") + '>' + t[1] + (avail ? "" : ' <i>soon</i>') + '</button>';
+        + (on ? ' aria-current="true"' : "") + '>' + t[1] + '</button>';
     }).join("");
   }
 
@@ -279,7 +301,7 @@
     var cells = keys.map(function (k) {
       var m = model.metrics[k], on = k === metric, lbl = k === "search" ? "Searches" : (k === "labs" ? "Labs" : "Weather");
       var inner = (m && m.avail) ? chartSVG(model, k, true, mode)
-        : '<div class="fwtrend-smini-soon">soon</div>';
+        : '<div class="fwtrend-smini-soon">No confirmed lab data yet</div>';
       var tag = (m && m.avail) ? '<b style="color:' + SIGCOL[k] + '">' + m.now + '</b>' : "";
       return '<button class="fwtrend-smini' + (on ? " on" : "") + '" data-tact="small" data-metric="' + k + '">'
         + '<span class="t">' + lbl + ' ' + tag + '</span>' + inner + '</button>';
@@ -336,11 +358,65 @@
       + lead + '<div class="fwtrend-body">' + body + '</div></div>';
   }
 
+  // --- loading skeleton (JS-only) ---------------------------------------------------------------
+  // Height-matched stand-in shown while the archive slice for a city is still loading. It mirrors
+  // renderCard's exact box model - same head, lead, tabs, an empty SVG with the IDENTICAL viewBox (so the
+  // chart area is pixel-for-pixel the same height), the same static months/axis/legend/sources rows, and
+  // shimmer bars only for the data-dependent text. Swapping skeleton -> real on this same DOM shape is a
+  // zero-layout-shift transition (CLS 0). There is NO SSR twin: the server always bakes the real chart
+  // (the archive is present at build time), so this state only appears on a client-side city switch before
+  // the full archive lands, or as a brief flash on a slow first load.
+  function skelChart(mode) {
+    var H = mode === "desktop" ? 92 : 150, W = 340, PADL = 26, PADR = 12, PADT = 6, PADB = 4;
+    var plotW = W - PADL - PADR, plotH = H - PADT - PADB, midY = PADT + plotH * 0.5;
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="fwtrend-svg fwtrend-skelsvg" role="img" aria-label="Loading this city’s season trend" aria-busy="true">'
+      + '<rect x="' + PADL + '" y="' + f1(PADT) + '" width="' + plotW + '" height="' + f1(plotH) + '" rx="8" fill="#eef1f5"/>'
+      + '<path d="M' + PADL + ' ' + f1(PADT + plotH * 0.72) + ' Q' + f1(W * 0.42) + ' ' + f1(PADT + plotH * 0.32) + ' ' + (W - PADR) + ' ' + f1(midY) + '" fill="none" stroke="#dde3ea" stroke-width="3" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+  function skelTabs() {
+    return TABS.map(function (t, i) { return '<button class="fwtrend-tab' + (i === 0 ? " on" : "") + '" type="button" disabled>' + t[1] + '</button>'; }).join("");
+  }
+  function skelSmalls() {
+    // Each mini reuses the real sparkline's exact element + geometry (a <button class="fwtrend-smini"> with a
+    // viewBox 340x120 mini SVG), so the desktop smalls row is the same height as the real one (CLS 0).
+    var cells = ["Weather", "Searches", "Labs"].map(function (lbl) {
+      return '<button class="fwtrend-smini" type="button" disabled><span class="t">' + lbl + '</span>'
+        + '<svg viewBox="0 0 340 120" class="fwtrend-svg mini fwtrend-skelsvg" aria-hidden="true"><rect x="12" y="6" width="316" height="110" rx="6" fill="#eef1f5"/></svg></button>';
+    }).join("");
+    return '<div class="fwtrend-smalls" aria-hidden="true"><div class="fwtrend-smalls-h">Signals at a glance</div><div class="fwtrend-smalls-row">' + cells + '</div></div>';
+  }
+  function skeletonCard(model, st) {
+    var sb = function (w) { return '<span class="fwtrend-skelbar" style="width:' + w + '"></span>'; };
+    var monthsRow = '<div class="fwtrend-months">' + MONTHS_ROW.map(function (mn) { return '<span>' + mn + '</span>'; }).join("") + '</div>';
+    var body =
+      '<div class="fwtrend-tabs" role="tablist">' + skelTabs() + '</div>'
+      + '<div class="fwtrend-chartwrap">' + skelChart(st.mode) + '</div>'
+      + monthsRow
+      + '<p class="fwtrend-axiscap">Vertical scale starts at 0; higher means greater risk.</p>'
+      + '<div class="fwtrend-legend"><span><i class="ly"></i>Last year</span>'
+      + '<span><i class="ty" style="background:#cfd8e3"></i>This year</span>'
+      + '<span class="here"><i class="dot" style="background:#cfd8e3"></i>You are here</span></div>'
+      + '<p class="fwtrend-caption">' + sb("58%") + '</p>'
+      + (st.mode === "desktop" ? skelSmalls() : "")
+      + '<p class="fwtrend-sources">Sources: NOAA CPC, NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>';
+    var lead =
+      '<div class="fwtrend-pill inline"><span class="fwtrend-vicon fwtrend-skelvicon"></span>' + sb("130px") + '</div>'
+      + '<p class="fwtrend-context">' + sb("70%") + '</p>';
+    var toggle = '<button class="fwtrend-toggle" type="button" disabled><span class="t">Hide</span><span class="chev" aria-hidden="true"></span></button>';
+    return '<div class="card fwtrend open fwtrend--skel" data-metric="overall" aria-busy="true">'
+      + '<div class="fwtrend-head"><div>'
+      + '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(model.city) + '</h2></div>' + toggle + '</div>'
+      + lead + '<div class="fwtrend-body">' + body + '</div></div>';
+  }
+
   // --- tooltip ----------------------------------------------------------------------------------
   function wireTip(host, getState) {
     function hide() { var tip = host.querySelector(".fwtrend-tip"); if (tip) tip.hidden = true; }
     function at(e) {
-      var st = getState(), model = st.model, metric = model.metrics[st.metric].avail ? st.metric : "overall";
+      var st = getState(), model = st.model;
+      if (!model || model.loading || !model.metrics) return hide();
+      var metric = model.metrics[st.metric].avail ? st.metric : "overall";
       if (!model.metrics[metric].avail || !st.geo) return hide();
       var g = st.geo, xy = geomXY(g), X = xy.X, Y = xy.Y;
       var svg = host.querySelector(".fwtrend-chartwrap .fwtrend-svg"), wrap = host.querySelector(".fwtrend-chartwrap"), tip = host.querySelector(".fwtrend-tip");
@@ -372,12 +448,13 @@
   function mount(host, city, DATA, opts) {
     if (!host || !window || !DATA) return;
     var st = { metric: "overall", expanded: true, mode: (opts && opts.mode) || "mobile", model: forCity(city, DATA) };
-    function paint() { host.innerHTML = renderCard(st.model, st); }
+    function paint() { host.innerHTML = st.model.loading ? skeletonCard(st.model, st) : renderCard(st.model, st); }
     paint();
     if (!host._fwTrendWired) {
       host._fwTrendWired = true;
       host.addEventListener("click", function (e) {
         var t = e.target.closest ? e.target.closest("[data-tact]") : null; if (!t) return;
+        if (st.model.loading) return;  // skeleton has no interactive controls
         var act = t.getAttribute("data-tact");
         if (act === "metric" || act === "small") { if (!st.model.metrics[t.getAttribute("data-metric")].avail) return; st.metric = t.getAttribute("data-metric"); if (act === "metric") st.expanded = true; paint(); }
         else if (act === "toggle") { st.expanded = !st.expanded; paint(); }

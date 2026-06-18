@@ -109,7 +109,7 @@ METHOD_HTML = (
 
 CONSULT_HREF = "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch"
 ACTIONS = [
-    ("Monsoon precautions", "Cut breeding sites and bites", ""),
+    ("Monsoon precautions", "Cut breeding sites and bites", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch"),
     ("Vaccination: does it work?", "What helps, what does not", ""),
     ("Fever? Follow our framework", "When to test, when to wait", ""),
     ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
@@ -148,6 +148,9 @@ PAGE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);}})(window,document,'script','dataLayer','GTM-W5PR55Z');</script>
+<!-- End Google Tag Manager -->
 {head}
 {jsonld}
 <link rel="preload" href="{rel}assets/fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -159,6 +162,9 @@ PAGE = """<!DOCTYPE html>
 <link rel="stylesheet" href="{rel}assets/css/desktop.css?v={av}" media="(min-width: 820px) and (pointer: fine)">
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W5PR55Z" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 {nav}
 {ticker}
 <div id="fw-app">{fallback}</div>
@@ -1144,7 +1150,7 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, a
         avail = model["metrics"][k].get("avail")
         tabs += ('<button class="fwtrend-tab' + (" on" if on else "") + ("" if avail else " soon")
                  + '" data-tact="metric" data-metric="' + k + '"' + (' aria-current="true"' if on else "")
-                 + '>' + lbl + ("" if avail else ' <i>soon</i>') + '</button>')
+                 + '>' + lbl + '</button>')
     months = '<div class="fwtrend-months">' + "".join('<span>' + m + '</span>' for m in TREND_MONTHS) + '</div>'
     # Title + Hide toggle INSIDE the card (matches the mobile twin + the desktop JS branch); the flow JS
     # re-renders this. Below the fold, so no parity impact (the trend host is a JS-only section).
@@ -1268,6 +1274,13 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
                 "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
                 "periods": periods,
                 "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"])}
+        # Inline THIS city's real season-trend slice (last-year + this-year series) into the seed so the
+        # instant first paint renders the REAL "this monsoon vs last year" chart immediately, instead of the
+        # deterministic mock the JS would otherwise show until the full trend_series.json fetch lands (the
+        # cold-load "mock graphs first" bug). Shape matches DATA.archive (cities keyed by id), so trend.js
+        # forCity() reads it identically whether it came from the seed or the fetched archive. ~0.4KB/page.
+        if archive_city:
+            seed["archive"] = {"cities": {city["id"]: archive_city}}
         dv = og_version(generated_at)  # data version (grid.generated_at digits) -> cache-bust the data fetches
         fw = {"city": city["id"], "gridUrl": rel + "data/grid.json?v=" + dv, "archiveUrl": rel + "data/archive/trend_series.json?v=" + dv,
               "base": rel, "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
