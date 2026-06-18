@@ -54,6 +54,28 @@ assets/img/share/
 /nasa_vs_era5_rainfall_benchmark_2026-06-15.csv
 *.grd
 
+# Local dev / analysis tooling - kept OUT of this public repo: it embeds proprietary lab counts
+# and/or IMD non-commercial-licensed benchmark data (consistent with the data/citymap and
+# data/benchmark ignores above). Lives only locally; back it up in a PRIVATE repo if wanted.
+/scripts/citymap/
+/scripts/agreement_gate_demo.py
+/scripts/benchmark_2025_wet.py
+/scripts/benchmark_chirps_cpc_228.py
+/scripts/benchmark_weather_providers.py
+/scripts/calibrate_sample_metros.py
+/scripts/fill_blank_states.py
+/scripts/gen_rain_doc.js
+/scripts/imd_dsp_probe.py
+/scripts/imd_metros_daily_csv.py
+/scripts/imd_metros_table.py
+/scripts/imd_vs_nasa_228.py
+/scripts/probe_chirps_cpc.py
+/scripts/production_window_table.py
+/scripts/resolve_wikidata.py
+/scripts/surgical_fix.py
+/scripts/top20_all_sources.py
+/prototypes/method-section-mock.html
+
 # OS / editor
 .DS_Store
 Thumbs.db
