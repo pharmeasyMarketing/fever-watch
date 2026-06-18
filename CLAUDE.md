@@ -93,6 +93,10 @@ but is now unused):
 - **No em dashes, en dashes, or middot separators** in any copy (meta, FAQ, JSON-LD strings, UI text,
   engine notes). Use an ASCII hyphen.
 - `base_url` lives only in `config/site.json`; keep all in-page asset paths relative.
+- **All user-facing dates are IST.** `grid.generated_at` is minted in UTC; the display formatters shift **+5:30**
+  before extracting the date (`fmtDate()` in mobile.js/desktop.js/faq.js, `_fmt_date_js()`/`iso_date()` in build_site.py,
+  `fmt_date()` in build_share_cards.py, the trend `asOf`). So a 23:59-UTC build shows the India date. Keep the JS
+  `fmtDate()` and the SSR `_fmt_date_js()` byte-identical, and never display a raw UTC timestamp to users.
 - Internal docs / spreadsheets (`*.xlsx`) are gitignored; never commit them to a public repo.
 - Re-check copy with compliance / counsel before any public launch.
 

@@ -192,7 +192,12 @@ def load_json(path: str) -> dict:
 
 
 def iso_date(iso) -> str:
-    return (iso or "")[:10]
+    """IST (UTC+5:30) calendar date of the build, YYYY-MM-DD - the sitemap <lastmod>. Shifts the UTC
+    generated_at +5:30 so the lastmod matches the India date shown on the page."""
+    try:
+        return (datetime.datetime.fromisoformat((iso or "").replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d")
+    except Exception:
+        return (iso or "")[:10]
 
 
 def og_version(iso) -> str:
@@ -561,10 +566,12 @@ def _num(x: float) -> str:
 
 
 def _fmt_date_js(generated_at: str) -> str:
-    """Match the flow's fmtDate(): '<UTC day> <Mon> <year>' (e.g. 7 Jun 2026)."""
-    iso = generated_at or ""
+    """Match the flow's fmtDate(): the IST (UTC+5:30) day/month/year of generated_at, e.g. '18 Jun 2026'.
+    generated_at is minted in UTC; we shift +5:30 so India sees its own calendar date (a 23:59 UTC build
+    is already the next day in IST). Byte-identical to fmtDate() in mobile.js/desktop.js/faq.js."""
     try:
-        return "%d %s %d" % (int(iso[8:10]), _MONTHS[int(iso[5:7]) - 1], int(iso[0:4]))
+        d = datetime.datetime.fromisoformat((generated_at or "").replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+        return "%d %s %d" % (d.day, _MONTHS[d.month - 1], d.year)
     except Exception:
         return ""
 
@@ -980,9 +987,11 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
     cid = city["id"]
     blend = city["blend"]
     ga = generated_at or ""
-    gy = int(ga[0:4]) if ga[0:4].isdigit() else 2026
-    gm = int(ga[5:7]) if ga[5:7].isdigit() else 6
-    gd = int(ga[8:10]) if ga[8:10].isdigit() else 1
+    try:  # IST (UTC+5:30) date parts, matching trend.js build(); keeps the "you are here" week in sync with the India date
+        _gi = datetime.datetime.fromisoformat(ga.replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+        gy, gm, gd = _gi.year, _gi.month, _gi.day
+    except Exception:
+        gy, gm, gd = 2026, 6, 1
     as_of = _t_clamp((datetime.date(gy, gm, gd) - datetime.date(gy, 6, 1)).days // 7, 0, TREND_NW - 1)
     weather_now, search_now, labs_now = _t_mean(cells, "weather"), _t_mean(cells, "trends"), _t_mean(cells, "positivity")
     # LABS avail mirrors trend.js build(): real when the committed archive carries a full-season last-year

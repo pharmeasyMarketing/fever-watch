@@ -11,7 +11,7 @@
   };
   var ORD = { 1: "biggest", 2: "second-biggest", 3: "third-biggest", 4: "fourth-biggest", 5: "smallest" };
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  function fmtDate(iso) { if (!iso) return ""; var d = new Date(iso); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  function fmtDate(iso) { if (!iso) return ""; var d = new Date(new Date(iso).getTime() + 19800000); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }  // +19800000ms = IST (UTC+5:30): generated_at is UTC, show the India calendar date
   function rnd(x) { return Math.round(x || 0); }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 

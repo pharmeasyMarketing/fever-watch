@@ -78,7 +78,8 @@
   function build(city, cells, generatedAt, arch) {
     var cid = city.id, blend = city.blend;
     var ga = generatedAt || "";
-    var gy = +ga.slice(0, 4) || 2026, gm = +ga.slice(5, 7) || 6, gd = +ga.slice(8, 10) || 1;
+    var _gi = new Date(new Date(ga).getTime() + 19800000);  // +5:30 IST: keep the "you are here" season-week on the India date
+    var gy = _gi.getUTCFullYear() || 2026, gm = _gi.getUTCMonth() + 1 || 6, gd = _gi.getUTCDate() || 1;
     var asOf = clamp(Math.floor((Date.UTC(gy, gm - 1, gd) - Date.UTC(gy, 5, 1)) / 604800000), 0, NW - 1);
 
     var weeks = [], wd, i;

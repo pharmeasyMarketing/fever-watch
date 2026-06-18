@@ -81,9 +81,10 @@ def _load(path):
 
 def _as_of(generated_at):
     ga = generated_at or ""
-    try:
-        gy, gm, gd = int(ga[0:4]), int(ga[5:7]), int(ga[8:10])
-    except ValueError:
+    try:  # IST (UTC+5:30) date parts, matching trend.js + build_site as_of so the archive ty length stays in sync
+        _gi = datetime.datetime.fromisoformat(ga.replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+        gy, gm, gd = _gi.year, _gi.month, _gi.day
+    except Exception:
         gy, gm, gd = TY_YEAR, 6, 1
     days = (datetime.date(gy, gm, gd) - datetime.date(gy, 6, 1)).days
     return max(0, min(days // 7, NW - 1))

@@ -25,7 +25,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -556,8 +556,9 @@ def rasterize(svg, out_jpg, target_size, resvg, tmp_png):
 
 
 def fmt_date(iso):
+    # generated_at is UTC; shift +5:30 so the share card shows the India calendar date (matches the page).
     try:
-        d = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        d = datetime.fromisoformat(iso.replace("Z", "+00:00")) + timedelta(hours=5, minutes=30)
         return "%d %s %d" % (d.day, d.strftime("%b"), d.year)
     except (ValueError, AttributeError):
         return ""

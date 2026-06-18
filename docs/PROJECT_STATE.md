@@ -4,6 +4,17 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-18, "Updated {date}" timezone fix - all displayed dates now IST - committed + pushed):**
+> The "Updated {date}" note (and the FAQ date, the share/OG card "This week, {date}", and the sitemap `<lastmod>`)
+> was showing the **UTC calendar date** of `grid.generated_at`, so a cron build at 23:59 UTC rendered "17 Jun" to
+> IST users even though it is already 18 Jun in India. Fixed with a consistent **+5:30 IST shift** before extracting
+> the date parts, in the shared formatters: `fmtDate()` (mobile.js / desktop.js / faq.js), `_fmt_date_js()`
+> (build_site.py, kept byte-identical to the JS), `iso_date()` (sitemap), `fmt_date()` (build_share_cards.py), and the
+> season-trend `asOf` (trend.js + build_site `_trend_series` + build_archive `_as_of`). `generated_at` is still minted
+> in UTC and the raw data fields (`generated_at`, `trends_as_of`) stay UTC - only the DISPLAY converts to IST.
+> Verified: built page shows "Updated 18 Jun 2026", FAQ + sitemap `lastmod` 2026-06-18 match, SSR<->JS parity OK, and
+> `asOf` is unchanged (still 2 - Jun 17 UTC and Jun 18 IST are the same season-week, so no archive rebuild was needed).
+>
 > **NEWEST (2026-06-17 PM, PER-DISEASE POSITIVITY REFS + "Why this score?" readout redesign + analytics sign-off workbook - committed + pushed):**
 > - **Per-disease `ref_positivity_pct` = dengue 25 / malaria 4 / chikungunya 15 / typhoid 45** (the % positivity that maps to a full
 >   100 signal, from the real 2025 gated p90; replaces the single global 35). Wired through `config/signals.json`
