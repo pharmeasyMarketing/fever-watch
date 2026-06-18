@@ -919,13 +919,11 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, 
 
 
 # --- "This monsoon vs last year" trend module (static SSR; mirrors assets/js/trend.js) -----------
-# The series math below is intentionally identical to assets/js/trend.js metricSeries()/build(). Edit
-# BOTH and keep them in sync. Here we bake only the static "Overall" chart + verdict for crawlers and
-# no-JS; the JS widget owns the interactive flows (tabs, tooltip, collapse, desktop small-multiples).
-TREND_SHAPE = [0.60, 0.63, 0.66, 0.69, 0.73, 0.77, 0.81, 0.85, 0.89, 0.92, 0.95, 0.97, 0.99, 1.00,
-               0.96, 0.91, 0.86, 0.81, 0.78, 0.75, 0.73, 0.71]
-TREND_NW = len(TREND_SHAPE)
-TREND_PEAK = 13
+# The series math below is intentionally identical to assets/js/trend.js realSeries()/build(). Edit BOTH
+# and keep them in sync. ALL trend data is REAL (from data/archive/trend_series.json); there is NO mock - a
+# metric with no usable real data bakes an honest "coming soon" empty state. Here we bake only the static
+# "Overall" chart + verdict for crawlers and no-JS; the JS widget owns the interactive flows.
+TREND_NW = 22  # weeks in the season (1 Jun .. 30 Oct)
 TREND_MONTHS = ["Jun", "Jul", "Aug", "Sep", "Oct"]  # equidistant HTML axis labels (mirrors trend.js MONTHS_ROW)
 TREND_ZONES = [(70, 100, "#E4572E"), (45, 69, "#E8923A"), (25, 44, "#C7A93C"), (0, 24, "#2FA66F")]
 _TW, _TH, _TPADL, _TPADR, _TPADT, _TPADB = 340, 110, 26, 12, 6, 4  # compact; left gutter for y-axis; HTML month labels; y zooms (see _trend_chart_static)
@@ -939,24 +937,6 @@ def _t_clamp(v, lo, hi):
     return lo if v < lo else (hi if v > hi else v)
 
 
-def _t_hash(s: str) -> int:
-    h = 5381
-    for ch in s:
-        h = (h * 33 + ord(ch)) & 0xFFFFFFFF
-    return h
-
-
-# Last-year is a STABLE per-city, per-metric mock peak seeded ONLY from the city id (never from this
-# year's score or the current week), so "last year peaked at X" never drifts; this year's real score
-# floats against it. Band 64-95 = a plausible HIGH last-monsoon peak, tuned so most cities read calmly
-# "below/around last year" with a modest "above" tail (all 3 verdicts kept). Mirrors trend.js lyPeak.
-TREND_LY_MIN, TREND_LY_MAX = 64, 95
-
-
-def _t_lypeak(cid: str, metric: str) -> int:
-    return TREND_LY_MIN + _t_hash(cid + ":" + metric + ":lypeak") % (TREND_LY_MAX - TREND_LY_MIN + 1)
-
-
 def _t_band(score: int) -> str:
     return "HIGH" if score >= 70 else "MODERATE" if score >= 45 else "LOW-MODERATE" if score >= 25 else "LOW"
 
@@ -967,25 +947,16 @@ def _t_mean(cells: list, key: str):
     return _t_r(sum(vals) / len(vals)) if vals else None
 
 
-def _t_metric_series(cid: str, metric: str, V: int, asOf: int) -> dict:
-    denom = TREND_SHAPE[asOf]
-    ty = [_t_clamp(_t_r(V * TREND_SHAPE[w] / denom), 0, 100) for w in range(asOf + 1)]
-    p_ly = _t_lypeak(cid, metric)  # fixed last-year peak (independent of V and asOf)
-    ly = [_t_clamp(_t_r(p_ly * TREND_SHAPE[w]), 0, 100) for w in range(TREND_NW)]
-    a, b = ty[asOf], ly[asOf]
-    delta = _t_r((a - b) / b * 100) if b > 0 else 0
-    slope = ty[asOf] - ty[asOf - 1] if asOf >= 1 else 0
-    return {"now": V, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": ly[TREND_PEAK], "avail": True}
-
-
 def _t_real_series(blk: dict, asOf: int) -> dict:
-    """REAL last-year + this-year series from the committed archive block ({ly, ty}); byte-mirror of
-    trend.js realSeries(). Peak is the real last-year MAX (not a seeded mock). Used by the SSR Overall
-    chart when the archive carries a real overall line."""
+    """REAL last-year + this-year series from the committed archive block ({ly, ty}); mirror of trend.js
+    realSeries(). Peak is the real last-year MAX. The this-year line may trail the current week by one (if the
+    daily archive cron has not extended it yet); we chart up to the last real point (cur) so a short ty degrades
+    to a real partial line, never a fabricated one."""
     ly, ty = blk["ly"], blk["ty"]
-    a, b = ty[asOf], ly[asOf]
+    cur = asOf if asOf < len(ty) - 1 else len(ty) - 1
+    a, b = ty[cur], ly[cur]
     delta = _t_r((a - b) / b * 100) if b > 0 else 0
-    slope = ty[asOf] - ty[asOf - 1] if asOf >= 1 else 0
+    slope = ty[cur] - ty[cur - 1] if cur >= 1 else 0
     return {"now": a, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": max(ly), "avail": True}
 
 
@@ -999,30 +970,43 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
     except Exception:
         gy, gm, gd = 2026, 6, 1
     as_of = _t_clamp((datetime.date(gy, gm, gd) - datetime.date(gy, 6, 1)).days // 7, 0, TREND_NW - 1)
-    weather_now, search_now, labs_now = _t_mean(cells, "weather"), _t_mean(cells, "trends"), _t_mean(cells, "positivity")
-    # LABS avail mirrors trend.js build(): real when the committed archive carries a full-season last-year
-    # line that is not all-zero (an all-zero / missing labs.ly = no 2025 lab history -> "coming soon"). The
-    # SSR only BAKES the Overall chart, so for labs we just need the tab's avail flag to match what the JS
-    # will hydrate; the deterministic _t_metric_series stands in for the (JS-replaced) baked series value.
-    labs_ly = (archive_city or {}).get("labs", {}).get("ly") if archive_city else None
-    labs_real = bool(labs_ly) and len(labs_ly) == TREND_NW and any(v > 0 for v in labs_ly)
-    if labs_real:
-        labs_metric = _t_metric_series(cid, "labs", labs_now if labs_now is not None else max(labs_ly), as_of)
-    else:
-        labs_metric = {"avail": False}
-    # OVERALL: prefer the REAL, dial-consistent archive line (overall.ly full season + overall.ty at the
-    # current length, both from build_archive); else fall back to the deterministic mock. Mirrors trend.js.
+    labs_now = _t_mean(cells, "positivity")
+    # ALL series are REAL (from the committed archive). A metric with no usable real data -> {"avail": False}
+    # (honest "coming soon"); there is NO synthetic fallback. The gate is LENIENT on the this-year length (ty
+    # may trail asOf by a week before the daily cron extends it; _t_real_series charts up to the last real
+    # point), and the last-year line (ly) must be the full 22-week season. Mirrors trend.js build().
+    def _lenty(b):
+        return bool(b) and bool(b.get("ty")) and 1 <= len(b["ty"]) <= as_of + 1
+    weather_blk = (archive_city or {}).get("weather") if archive_city else None
+    search_blk = (archive_city or {}).get("search") if archive_city else None
     overall_blk = (archive_city or {}).get("overall") if archive_city else None
-    overall_real = bool(overall_blk) and len(overall_blk.get("ly", [])) == TREND_NW \
-        and len(overall_blk.get("ty", [])) == as_of + 1
-    overall_metric = _t_real_series(overall_blk, as_of) if overall_real \
-        else _t_metric_series(cid, "overall", blend["score"], as_of)
+    w_real = bool(weather_blk) and len(weather_blk.get("ly", [])) == TREND_NW and _lenty(weather_blk)
+    s_real = bool(search_blk) and len(search_blk.get("ly", [])) == TREND_NW and _lenty(search_blk)
+    o_real = bool(overall_blk) and len(overall_blk.get("ly", [])) == TREND_NW and _lenty(overall_blk)
+    # Labs: real when the archive's last-year line is full-season and not all-zero; this-year carries the live
+    # mean flat across the weeks if its archive ty is short/missing (real-derived, never synthetic).
+    labs_blk = (archive_city or {}).get("labs") if archive_city else None
+    labs_ly = labs_blk.get("ly") if labs_blk else None
+    labs_has_ly = bool(labs_ly) and len(labs_ly) == TREND_NW and any(v > 0 for v in labs_ly)
+    labs_ty = labs_blk.get("ty") if (labs_blk and labs_blk.get("ty")) else []
+    labs_ty_ok = bool(labs_ty) and 1 <= len(labs_ty) <= as_of + 1 and all(v is not None for v in labs_ty)
+    if labs_ty_ok:
+        labs_ty_final = labs_ty
+    elif labs_now is not None:
+        labs_ty_final = [labs_now] * (as_of + 1)
+    else:
+        labs_ty_final = None
+    labs_real = labs_has_ly and labs_ty_final is not None
     metrics = {
-        "overall": overall_metric,
-        "weather": {"avail": False} if weather_now is None else _t_metric_series(cid, "weather", weather_now, as_of),
-        "search": {"avail": False} if search_now is None else _t_metric_series(cid, "search", search_now, as_of),
-        "labs": labs_metric,
+        "overall": _t_real_series(overall_blk, as_of) if o_real else {"avail": False},
+        "weather": _t_real_series(weather_blk, as_of) if w_real else {"avail": False},
+        "search": _t_real_series(search_blk, as_of) if s_real else {"avail": False},
+        "labs": _t_real_series({"ly": labs_ly, "ty": labs_ty_final}, as_of) if labs_real else {"avail": False},
     }
+    # No real Overall line -> the whole widget is "unavailable" (honest empty state, never fabricated). In
+    # production this is unreachable: the build asserts every city has a real overall line before writing pages.
+    if not metrics["overall"].get("avail"):
+        return {"city": city["name"], "cityId": cid, "asOf": as_of, "metrics": metrics, "unavailable": True}
     ov = metrics["overall"]
     level = "below" if ov["delta"] <= -6 else ("above" if ov["delta"] >= 6 else "inline")
     direction = "rising" if ov["slope"] >= 2 else ("falling" if ov["slope"] <= -2 else "steady")
@@ -1038,13 +1022,9 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
         chip = "~0%"
     else:
         chip = ("+" if ov["delta"] > 0 else ("-" if ov["delta"] < 0 else "")) + str(abs(ov["delta"])) + "%"
-    # Peak month: for the REAL overall line, name the month of the actual peak week (1 Jun + 7*idx); for the
-    # mock the peak is fixed at TREND_PEAK (late August). Mirrors trend.js. (Drop "late" for the real line.)
-    if overall_real:
-        peak_idx = max(range(TREND_NW), key=lambda w: overall_blk["ly"][w])
-        peak_when = " in " + _MONTHS[(datetime.date(gy, 6, 1) + datetime.timedelta(days=7 * peak_idx)).month - 1] + "."
-    else:
-        peak_when = " in late August."
+    # Peak month: name the month of the actual peak week in the REAL overall.ly (1 Jun + 7*idx).
+    peak_idx = max(range(TREND_NW), key=lambda w: overall_blk["ly"][w])
+    peak_when = " in " + _MONTHS[(datetime.date(gy, 6, 1) + datetime.timedelta(days=7 * peak_idx)).month - 1] + "."
     context = "Last year peaked at " + str(ov["peak"]) + " (" + _t_band(ov["peak"]) + ")" + peak_when
     return {"city": city["name"], "cityId": cid, "asOf": as_of, "metrics": metrics, "level": level,
             "dir": direction, "verdict": vtext + tail, "chip": chip, "tone": level, "context": context}
@@ -1107,7 +1087,7 @@ def _trend_chart_static(model: dict) -> str:
     ty = m["series"]
     ty_line = ('<path d="' + _t_linepath(ty, ymax) + '" fill="none" stroke="' + col
                + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>') if len(ty) > 1 else ""
-    dot = ('<circle cx="' + str(_tf(_tX(model["asOf"]))) + '" cy="' + str(_tf(_tY(ty[-1], ymax)))
+    dot = ('<circle cx="' + str(_tf(_tX(len(ty) - 1))) + '" cy="' + str(_tf(_tY(ty[-1], ymax)))
            + '" r="4.2" fill="' + col + '" stroke="#fff" stroke-width="2.2"/>')
     # Y-axis ticks (0 / mid / top) in the left gutter + faint gridlines; mirrors trend.js chartSVG.
     fs = 8.5
@@ -1121,7 +1101,7 @@ def _trend_chart_static(model: dict) -> str:
                   + '" text-anchor="end" font-size="' + str(fs) + '" font-weight="600" fill="#9aa6b1">' + str(tv) + '</text>')
     # Spaced data labels: you-are-here (this year, in colour) + a few last-year reference points.
     nv = ty[-1]
-    labels = ('<text x="' + str(_tf(_tX(model["asOf"]))) + '" y="' + str(_tf(max(fs + 2, _tY(nv, ymax) - 7)))
+    labels = ('<text x="' + str(_tf(_tX(len(ty) - 1))) + '" y="' + str(_tf(max(fs + 2, _tY(nv, ymax) - 7)))
               + '" text-anchor="middle" font-size="' + str(fs + 0.5) + '" font-weight="800" fill="' + col + '">' + str(nv) + '</text>')
     for lx in (6, 13, 19):
         if abs(lx - model["asOf"]) < 2:
@@ -1141,6 +1121,17 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, a
     cid = city["id"]
     cells = [cells_by[(cid, d["id"])] for d in diseases if (cid, d["id"]) in cells_by]
     model = _trend_series(city, cells, generated_at, archive_city)
+    # No real Overall line -> honest "coming soon" empty state (mirrors trend.js unavailableCard). Unreachable
+    # in production: page() asserts every city has a real overall line before any page is written.
+    if model.get("unavailable"):
+        return ('<section id="s-trend" class="fwtrend-host">'
+                '<div class="card fwtrend open" data-metric="overall">'
+                '<div class="fwtrend-head"><div>'
+                '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(city["name"]) + '</h2></div>'
+                '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
+                '<span class="chev" aria-hidden="true"></span></button></div>'
+                '<div class="fwtrend-soon"><span class="i">📈</span><b>Season trend coming soon</b>'
+                '<p>We will chart this year versus last year for ' + esc(city["name"]) + ' here as soon as the data is available.</p></div></div></section>')
     col = RISK[_t_band(model["metrics"]["overall"]["now"])]
     tone = model["tone"]
     tone_icon = {"below": "▼", "above": "▲", "inline": "≈"}[tone]
@@ -1292,7 +1283,31 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         canonical = cfg["base_url"]
         faq = faq_items_landing()
         fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer, faq)
-        fw = {"gridUrl": "data/grid.json?v=" + og_version(generated_at), "base": "", "logo": "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av}
+        dv = og_version(generated_at)
+        fw = {"gridUrl": "data/grid.json?v=" + dv, "base": "", "logo": "assets/img/pe_logo-white.svg",
+              "canonicalBase": cfg["base_url"], "ver": av}
+        # The landing JS renders the DEFAULT city's full dashboard (incl. the season-trend) - the same flow as a
+        # city page - so it needs the archive exactly like a city page; without it the home trend has no real
+        # data. Inline the default city's seed + its real archive slice (matching pickDefaultCity(): bengaluru if
+        # present, else the first city) + archiveUrl, mirroring the city branch, so the home first-paints REAL
+        # from the seed (never mock) and only upgrades the leaderboard from the fetch. We deliberately do NOT set
+        # fw["city"] (that would disable maybeGeo()'s IP redirect, which is gated on !FW.city on the landing).
+        _clist = grid["cities"]
+        _def = next((c for c in _clist if c["id"] == "bengaluru"), _clist[0]) if _clist else None
+        if _def:
+            periods = grid.get("periods", ["today"])
+            _dcells = [cells_by[(_def["id"], d["id"])] for d in diseases if (_def["id"], d["id"]) in cells_by]
+            _ranked = sorted(_clist, key=lambda c: c["blend"]["score"], reverse=True)
+            _drank = next((i + 1 for i, c in enumerate(_ranked) if c["id"] == _def["id"]), len(_clist))
+            seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
+                    "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
+                    "periods": periods,
+                    "cities": [_def], "grid": _dcells, "rank": _drank, "ncities": len(_clist)}
+            _darch = ((archive or {}).get("cities", {}) or {}).get(_def["id"])
+            if _darch:
+                seed["archive"] = {"cities": {_def["id"]: _darch}}
+            fw["archiveUrl"] = "data/archive/trend_series.json?v=" + dv
+            fw["seed"] = seed
         og_url = cfg["base_url"] + cfg.get("og_image", "")
         og_alt = cfg.get("og_image_alt", "")
     # Cache-bust the per-city OG card on the social meta so platforms re-fetch the preview when
@@ -1391,6 +1406,26 @@ def main() -> int:
         # Load once so the SSR labs-tab avail flag (and the no-JS first paint) matches what trend.js will
         # hydrate from the committed archive (real labs line for cities with 2025 history, "coming soon" else).
         archive = load_json(arch_path)
+
+    # Guardrail (no mock, no blank): every city's season-trend needs a REAL overall archive line, else the
+    # widget falls to the "coming soon" empty state. The lenient ty gate already charts a short this-year line
+    # as a real partial, so this only fires on a genuinely malformed/missing overall (ly not 22 weeks, or an
+    # empty ty). Abort the build then - the previous good deploy stays live - rather than ship a blank trend.
+    if archive is not None:
+        _ga = grid.get("generated_at", "")
+        try:
+            _gi = datetime.datetime.fromisoformat(_ga.replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+            _as_of = _t_clamp((datetime.date(_gi.year, _gi.month, _gi.day) - datetime.date(_gi.year, 6, 1)).days // 7, 0, TREND_NW - 1)
+        except Exception:
+            _as_of = 0
+        _acities = archive.get("cities") or {}
+        _bad = [c["id"] for c in cities
+                if not (len(((_acities.get(c["id"]) or {}).get("overall") or {}).get("ly") or []) == TREND_NW
+                        and 1 <= len(((_acities.get(c["id"]) or {}).get("overall") or {}).get("ty") or []) <= _as_of + 1)]
+        if _bad:
+            raise SystemExit("ABORT build_site: season-trend archive is missing a REAL overall line for %d/%d "
+                             "cities (e.g. %s) at as_of=%d. Run build_archive.py first; refusing to ship a blank "
+                             "trend." % (len(_bad), len(cities), ", ".join(_bad[:8]), _as_of))
 
     # landing
     av = asset_version()

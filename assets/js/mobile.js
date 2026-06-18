@@ -591,15 +591,15 @@
   }
   if (FW.seed) { try { boot(FW.seed); idleWarm(); } catch (e) { console.error("seed boot failed:", e); } }
   // Kick off BOTH fetches immediately: the small (~82KB) archive no longer waits behind the ~950KB grid,
-  // so the real season-trend lands as soon as possible. We still boot once both settle so the leaderboard
-  // and trend hydrate together. _archiveFull / _archiveFailed tell trend.js whether the archive has settled
-  // (so it can show a skeleton while loading, then real, or a graceful mock if it definitively fails); on
-  // failure we carry the seed's inlined slice forward so the CURRENT city stays real, never regressing.
+  // so the real season-trend lands as soon as possible. We boot once both settle so the leaderboard and the
+  // full-archive trend hydrate together. There is NO mock: when the archive loads, every city renders real;
+  // if the archive fetch hard-fails we carry the seed's inlined slice forward so the CURRENT city stays real,
+  // and trend.js shows a skeleton (never a fabricated chart) for any city whose slice is not present.
   var pGrid = loadGrid(4), pArchive = loadArchive(3);
   pGrid.then(function (j) {
     return pArchive.then(function (a) {
-      if (a) { j.archive = a; j._archiveFull = true; }
-      else { j._archiveFailed = true; if (FW.seed && FW.seed.archive) j.archive = FW.seed.archive; }
+      if (a) j.archive = a;
+      else if (FW.seed && FW.seed.archive) j.archive = FW.seed.archive;
       boot(j); maybeGeo(); idleWarm();
     });
   }).catch(function (e) { console.error("grid load/boot failed:", e); if (!DATA) app.innerHTML = '<div class="wrap"><div class="card">Could not load data: ' + e.message + '</div></div>'; });

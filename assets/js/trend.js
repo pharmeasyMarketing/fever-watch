@@ -1,70 +1,46 @@
 /* Fever Watch - "This monsoon vs last year" season-trend module (shared client widget).
    Mirrors the faq.js pattern: a self-contained, per-city component that RECOMPUTES from the loaded
-   grid on every city switch (no full reload). The series is a deterministic MOCK derived from the
-   city's real current scores (blend + signal sub-scores) until a real data/history.json lands
-   (format: docs/lab_feed_historic_format.md). The build_site.py helpers _trend_* mirror the same
-   series math + bake a static "Overall" SVG into every page for crawlers / no-JS; this module owns
-   the interactive flows (tabs, tooltip, collapse, desktop small-multiples). Loaded on every page so
-   both mobile.js and desktop.js can call window.FeverWatchTrend.mount(host, city, DATA, {mode}).
+   grid on every city switch (no full reload). ALL series are REAL, read from the committed archive
+   (data/archive/trend_series.json) via realSeries(). There is NO synthetic/mock fallback: a metric with
+   no real data shows an honest "coming soon" empty state, and a city whose archive slice has not loaded
+   yet shows a height-matched skeleton. The build_site.py helpers _trend_* mirror the same series math +
+   bake a static "Overall" SVG into every page for crawlers / no-JS; this module owns the interactive
+   flows (tabs, tooltip, collapse, desktop small-multiples). Loaded on every page so both mobile.js and
+   desktop.js can call window.FeverWatchTrend.mount(host, city, DATA, {mode}).
 
-   IMPORTANT: the series math here (SHAPE / hashStr / lyFactor / r) is intentionally kept identical
-   to src/build_site.py _trend_series(). Edit BOTH and keep them in sync. */
+   IMPORTANT: the real-vs-available gate + realSeries() math here are intentionally kept identical to
+   src/build_site.py _trend_series()/_t_real_series(). Edit BOTH and keep them in sync. */
 (function () {
   "use strict";
 
-  // --- shared deterministic series math (keep identical to build_site.py _trend_series) ----------
-  // A 22-week seasonal risk curve (1 Jun -> 30 Oct, weekly), normalised so the late-Aug peak = 1.00.
-  // It shapes BOTH series: this-year is scaled so it ends at the city's real current score; last-year is
-  // scaled to a fixed per-city seeded peak (see lyPeak). Compressed trough-to-peak range (June ~0.60 of
-  // peak) keeps the early-season curves in a realistic 0-100 band.
-  var SHAPE = [0.60, 0.63, 0.66, 0.69, 0.73, 0.77, 0.81, 0.85, 0.89, 0.92, 0.95, 0.97, 0.99, 1.00,
-               0.96, 0.91, 0.86, 0.81, 0.78, 0.75, 0.73, 0.71];
-  var NW = SHAPE.length;                       // 22
-  var PEAK_IDX = 13;                           // late August
+  // --- shared series math (keep byte-identical to build_site.py _trend_*) ------------------------
+  // The season is 22 weekly points (1 Jun -> 30 Oct). ALL trend data is REAL, read from the committed
+  // archive (data/archive/trend_series.json) via realSeries(). There is NO synthetic/mock fallback: a
+  // metric with no usable real data renders an honest "coming soon" empty state, and a city whose archive
+  // slice has not loaded yet shows a height-matched skeleton. (Deterministic mock removed 2026-06-18 -
+  // all three signals are live; keep this file's series math identical to build_site.py _trend_series.)
+  var NW = 22;                                            // weeks in the season (1 Jun .. 30 Oct)
   var MONTHS_ROW = ["Jun", "Jul", "Aug", "Sep", "Oct"];   // equidistant HTML axis labels (not SVG text)
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   function r(x) { return Math.floor((x || 0) + 0.5); }           // round-half-up (matches Python floor(x+0.5))
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
-  function hashStr(s) { var h = 5381, i; for (i = 0; i < s.length; i++) { h = (h * 33 + s.charCodeAt(i)) >>> 0; } return h; }
-  // Last-year is a STABLE per-city, per-metric mock: a fixed seasonal peak seeded ONLY from the city id
-  // (never from this year's score or the current week), so "last year peaked at X" never drifts. This
-  // year's REAL score floats against it. Band 64-95 = a plausible HIGH last-monsoon peak; tuned so most
-  // cities read "tracking below/around last year" (calm) with a modest "above" tail, all 3 verdicts kept.
-  // (Replaced by a real data/history.json lookup later; format docs/lab_feed_historic_format.md.)
-  var LY_MIN = 64, LY_MAX = 95;
-  function lyPeak(cityId, metric) { return LY_MIN + hashStr(cityId + ":" + metric + ":lypeak") % (LY_MAX - LY_MIN + 1); }
   function bandOf(score) { return score >= 70 ? "HIGH" : score >= 45 ? "MODERATE" : score >= 25 ? "LOW-MODERATE" : "LOW"; }
 
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var SIGCOL = { weather: "#15ACA5", search: "#7C6CD6", labs: "#3661B0" };
   var ZONES = [[70, 100, "#E4572E"], [45, 69, "#E8923A"], [25, 44, "#C7A93C"], [0, 24, "#2FA66F"]];
 
-  // Build one metric's two series from a single current value V (0-100) at the current week `asOf`.
-  // thisYear is partial (rises along SHAPE to exactly V at asOf); lastYear is the full 22-week season,
-  // scaled to the city's FIXED seeded peak so it never moves with V or the week.
-  function metricSeries(cityId, metric, V, asOf) {
-    var denom = SHAPE[asOf], ty = [], ly = [], w;
-    for (w = 0; w <= asOf; w++) ty.push(clamp(r(V * SHAPE[w] / denom), 0, 100));
-    var P = lyPeak(cityId, metric);                       // fixed last-year peak (independent of V and asOf)
-    for (w = 0; w < NW; w++) ly.push(clamp(r(P * SHAPE[w]), 0, 100));
-    var a = ty[asOf], b = ly[asOf];
-    var delta = b > 0 ? r((a - b) / b * 100) : 0;
-    var slope = asOf >= 1 ? ty[asOf] - ty[asOf - 1] : 0;
-    var peak = ly[PEAK_IDX];
-    return { now: V, series: ty, last: ly, delta: delta, slope: slope, peak: peak, avail: true };
-  }
-
-  // REAL last-year + this-year series from the committed archive (data/archive/trend_series.json), used
-  // for the WEATHER and SEARCH tabs when DATA.archive is present. Same return shape as metricSeries so
-  // everything downstream (chart, caption, tooltip) is unchanged; peak is the real last-year MAX (not a
-  // seeded mock). JS-ONLY by design: the SSR (build_site.py) bakes only the Overall chart, which stays on
-  // the mock, so Overall + Labs keep the deterministic mock until real lab-positivity history lands.
+  // REAL last-year + this-year series from the committed archive (data/archive/trend_series.json). peak is
+  // the real last-year MAX. The this-year line (ty) may trail the current week by one (if the daily archive
+  // cron has not extended it yet); we chart up to the last real point (cur = min(asOf, ty.length-1)) so a
+  // short ty degrades to a real partial line - never a fabricated one. Mirrors build_site.py _t_real_series.
   function realSeries(blk, asOf) {
     var ly = blk.ly, ty = blk.ty;
-    var a = ty[asOf], b = ly[asOf];
+    var cur = asOf < ty.length - 1 ? asOf : ty.length - 1;   // last real this-year index actually present
+    var a = ty[cur], b = ly[cur];
     var delta = b > 0 ? r((a - b) / b * 100) : 0;
-    var slope = asOf >= 1 ? ty[asOf] - ty[asOf - 1] : 0;
+    var slope = cur >= 1 ? ty[cur] - ty[cur - 1] : 0;
     return { now: a, series: ty, last: ly, delta: delta, slope: slope, peak: Math.max.apply(null, ly), avail: true };
   }
 
@@ -85,40 +61,38 @@
     var weeks = [], wd, i;
     for (i = 0; i < NW; i++) { wd = new Date(Date.UTC(gy, 5, 1 + 7 * i)); weeks.push(wd.getUTCDate() + " " + MONTHS[wd.getUTCMonth()]); }
 
-    var weatherNow = meanSignal(cells, "weather");
-    var searchNow = meanSignal(cells, "trends");
     var labsNow = meanSignal(cells, "positivity");
 
-    // Use REAL archive series for weather + search + labs when present (both years share one normalisation);
-    // else fall back to the deterministic mock. Overall stays on the mock (see realSeries note).
-    var wReal = arch && arch.weather && arch.weather.ly && arch.weather.ly.length === NW && arch.weather.ty && arch.weather.ty.length === asOf + 1;
-    var sReal = arch && arch.search && arch.search.ly && arch.search.ly.length === NW && arch.search.ty && arch.search.ty.length === asOf + 1;
-    // Labs is REAL when the committed archive carries a full-season last-year line that is not all-zero
-    // (an all-zero / missing labs.ly means no 2025 lab history for this city -> "coming soon" empty state),
-    // and the this-year line is at the current length. labs.ty seeds from the grid (signals.positivity);
-    // if it is short (no live positivity yet) we still chart last-year and fill ty from the live mean.
+    // ALL series are REAL (from the committed archive; both years share one normalisation). A metric with no
+    // usable real data -> { avail: false } (honest "coming soon"); there is NO synthetic fallback. The gate is
+    // LENIENT on the this-year length (ty may trail asOf by a week before the daily archive cron extends it;
+    // realSeries() charts up to the last real point). The last-year line (ly) must be the full 22-week season.
+    var wReal = arch && arch.weather && arch.weather.ly && arch.weather.ly.length === NW && arch.weather.ty && arch.weather.ty.length >= 1 && arch.weather.ty.length <= asOf + 1;
+    var sReal = arch && arch.search && arch.search.ly && arch.search.ly.length === NW && arch.search.ty && arch.search.ty.length >= 1 && arch.search.ty.length <= asOf + 1;
+    // Labs is REAL when the archive carries a full-season last-year line that is not all-zero (all-zero/missing
+    // = no 2025 lab history for this city -> "coming soon"). labs.ty seeds from the grid (signals.positivity);
+    // if it is short/missing we carry the live labs MEAN flat across the weeks (real-derived, not synthetic).
     var labsLy = arch && arch.labs && arch.labs.ly;
     var labsHasLy = labsLy && labsLy.length === NW && labsLy.some(function (v) { return v > 0; });
     var labsTy = arch && arch.labs && arch.labs.ty ? arch.labs.ty : [];
-    var labsTyOk = labsTy.length === asOf + 1 && labsTy.every(function (v) { return v != null; });
-    // Labs this-year: prefer the committed grid-seeded ty; if it is short/missing (archive not yet extended
-    // by the daily cron), fall back to the live labs mean carried flat across the weeks, matching the grid
-    // seed in build_archive (a single daily snapshot -> the same value each week, current week overwritten daily).
+    var labsTyOk = labsTy.length >= 1 && labsTy.length <= asOf + 1 && labsTy.every(function (v) { return v != null; });
     var labsTyFinal = labsTyOk ? labsTy
       : (labsNow != null ? Array.apply(null, { length: asOf + 1 }).map(function () { return labsNow; }) : null);
     var labsReal = labsHasLy && labsTyFinal;
-    // OVERALL is REAL when the committed archive carries a full-season last-year line (overall.ly length NW)
-    // and a this-year line at the current length; both come from build_archive's dial-consistent overall
-    // block (overall.ty[asOf] == the live dial). Else fall back to the deterministic mock (metricSeries).
     var oReal = arch && arch.overall && arch.overall.ly && arch.overall.ly.length === NW
-      && arch.overall.ty && arch.overall.ty.length === asOf + 1;
+      && arch.overall.ty && arch.overall.ty.length >= 1 && arch.overall.ty.length <= asOf + 1;
     var metrics = {
-      overall: oReal ? realSeries(arch.overall, asOf) : metricSeries(cid, "overall", blend.score, asOf),
-      weather: wReal ? realSeries(arch.weather, asOf) : (weatherNow == null ? { avail: false } : metricSeries(cid, "weather", weatherNow, asOf)),
-      search: sReal ? realSeries(arch.search, asOf) : (searchNow == null ? { avail: false } : metricSeries(cid, "search", searchNow, asOf)),
+      overall: oReal ? realSeries(arch.overall, asOf) : { avail: false },
+      weather: wReal ? realSeries(arch.weather, asOf) : { avail: false },
+      search: sReal ? realSeries(arch.search, asOf) : { avail: false },
       labs: labsReal ? realSeries({ ly: labsLy, ty: labsTyFinal }, asOf) : { avail: false }
     };
 
+    // No real Overall line -> the whole widget is unavailable (an honest empty state, never a fabricated chart).
+    // In production this is unreachable: build_site.py asserts every city has a real overall line at build time.
+    if (!metrics.overall.avail) {
+      return { city: city.name, cityId: cid, asOf: asOf, weeks: weeks, metrics: metrics, unavailable: true, band: blend.band };
+    }
     var ov = metrics.overall;
     var level = ov.delta <= -6 ? "below" : (ov.delta >= 6 ? "above" : "inline");
     var dir = ov.slope >= 2 ? "rising" : (ov.slope <= -2 ? "falling" : "steady");
@@ -132,16 +106,11 @@
     var chip = (level === "inline" && Math.abs(ov.delta) < 3) ? "~0%" : (ov.delta > 0 ? "+" : (ov.delta < 0 ? "-" : "")) + Math.abs(ov.delta) + "%";
 
     var peakBand = bandOf(ov.peak);
-    // Peak month: for the REAL overall line, find the actual peak week in overall.ly and name its month
-    // (1 Jun + 7*idx days); for the mock, the peak is fixed at PEAK_IDX (late August). Drop the loose
-    // "late" qualifier for the real line since the real peak can fall anywhere in the season.
-    var peakWhen = " in late August.";
-    if (oReal) {
-      var ovLy = arch.overall.ly, pIdx = 0, k;
-      for (k = 1; k < ovLy.length; k++) { if (ovLy[k] > ovLy[pIdx]) pIdx = k; }
-      var pd = new Date(Date.UTC(gy, 5, 1 + 7 * pIdx));
-      peakWhen = " in " + MONTHS[pd.getUTCMonth()] + ".";
-    }
+    // Peak month: find the actual peak week in the REAL overall.ly and name its month (1 Jun + 7*idx days).
+    var ovLy = arch.overall.ly, pIdx = 0, k;
+    for (k = 1; k < ovLy.length; k++) { if (ovLy[k] > ovLy[pIdx]) pIdx = k; }
+    var pd = new Date(Date.UTC(gy, 5, 1 + 7 * pIdx));
+    var peakWhen = " in " + MONTHS[pd.getUTCMonth()] + ".";
     var context = "Last year peaked at " + ov.peak + " (" + peakBand + ")" + peakWhen;
 
     return {
@@ -173,11 +142,12 @@
     var cid = city.id;
     var cells = DATA.grid.filter(function (g) { return g.city === cid; });
     var arch = (DATA.archive && DATA.archive.cities) ? DATA.archive.cities[cid] : null;
-    // While the full archive is still loading and this city's real slice is not yet present (the seed inlines
-    // only the CURRENT city's slice), show a height-matched skeleton instead of the deterministic mock. Once
-    // the archive has settled - loaded full (_archiveFull) or definitively failed (_archiveFailed) - fall
-    // through to the real series (arch present) or the mock fallback (arch absent) so nothing hangs forever.
-    if (!arch && !(DATA._archiveFull || DATA._archiveFailed)) return buildSkeleton(city, DATA.generated_at);
+    // No mock, ever. If this city's real archive slice is not present yet, show a height-matched skeleton
+    // (the seed inlines the CURRENT city's slice, so its first paint is real; other cities skeleton only
+    // until the full archive lands, then re-render real). If the archive fetch hard-fails, the current city
+    // stays real via the seed slice carried into DATA.archive; any other city keeps the skeleton (honest
+    // "loading", never a fabricated chart). build() itself renders per-metric "coming soon" for absent data.
+    if (!arch) return buildSkeleton(city, DATA.generated_at);
     return build(city, cells, DATA.generated_at, arch);
   }
 
@@ -250,7 +220,7 @@
     var lyStroke = '<path d="' + lyLine + '" fill="none" stroke="#aab6c6" stroke-width="' + (mini ? 1.3 : 1.6) + '" stroke-linejoin="round"/>';
     // this-year bold line + you-are-here dot
     var ty = m.series, tyLine = ty.length > 1 ? '<path d="' + lp(ty) + '" fill="none" stroke="' + col + '" stroke-width="' + (mini ? 2 : 2.6) + '" stroke-linecap="round" stroke-linejoin="round"/>' : "";
-    var dot = '<circle cx="' + f1(X(model.asOf)) + '" cy="' + f1(Y(ty[ty.length - 1])) + '" r="' + (mini ? 3 : 4.2) + '" fill="' + col + '" stroke="#fff" stroke-width="' + (mini ? 1.5 : 2.2) + '"/>';
+    var dot = '<circle cx="' + f1(X(ty.length - 1)) + '" cy="' + f1(Y(ty[ty.length - 1])) + '" r="' + (mini ? 3 : 4.2) + '" fill="' + col + '" stroke="#fff" stroke-width="' + (mini ? 1.5 : 2.2) + '"/>';
     // Y-axis: 0 / mid / top ticks (the top zooms with the data) in the left gutter + faint gridlines, so
     // the vertical scale is readable. SVG font scales with width, so size it per mode. Skipped on the mini
     // sparklines. Mirrored byte-for-feel in build_site.py _trend_chart_static.
@@ -264,7 +234,7 @@
       }
       // Spaced data labels: the you-are-here value (this year, in colour) + a few last-year reference points.
       var nv = ty[ty.length - 1];
-      labels += '<text x="' + f1(X(model.asOf)) + '" y="' + f1(Math.max(fs + 2, Y(nv) - 7)) + '" text-anchor="middle" font-size="' + (fs + 0.5) + '" font-weight="800" fill="' + col + '">' + nv + '</text>';
+      labels += '<text x="' + f1(X(ty.length - 1)) + '" y="' + f1(Math.max(fs + 2, Y(nv) - 7)) + '" text-anchor="middle" font-size="' + (fs + 0.5) + '" font-weight="800" fill="' + col + '">' + nv + '</text>';
       var lbi = [6, 13, 19], li2;
       for (li2 = 0; li2 < lbi.length; li2++) {
         var lx = lbi[li2]; if (Math.abs(lx - model.asOf) < 2) continue;
@@ -309,7 +279,19 @@
     return '<div class="fwtrend-smalls" aria-hidden="true"><div class="fwtrend-smalls-h">Signals at a glance</div><div class="fwtrend-smalls-row">' + cells + '</div></div>';
   }
 
+  // Honest empty state when a city has NO real overall line. Unreachable in production (build_site.py asserts
+  // every city has a real overall series at build time); kept as a last-resort guard so a data gap can never
+  // surface a fabricated chart - it shows a "coming soon" message instead.
+  function unavailableCard(model) {
+    return '<div class="card fwtrend open" data-metric="overall">'
+      + '<div class="fwtrend-head"><div><h2 class="fwtrend-title">This monsoon vs last in ' + esc(model.city) + '</h2></div>'
+      + '<button class="fwtrend-toggle" type="button" disabled><span class="t">Hide</span><span class="chev" aria-hidden="true"></span></button></div>'
+      + '<div class="fwtrend-soon"><span class="i">📈</span><b>Season trend coming soon</b>'
+      + '<p>We will chart this year versus last year for ' + esc(model.city) + ' here as soon as the data is available.</p></div></div>';
+  }
+
   function renderCard(model, st) {
+    if (model.unavailable) return unavailableCard(model);
     var metric = model.metrics[st.metric].avail ? st.metric : "overall";
     var col = metricCol(model, metric);
     // Trend-line icon (up for "above", down for "below", flat for "inline"), white on the tone circle.
@@ -415,7 +397,7 @@
     function hide() { var tip = host.querySelector(".fwtrend-tip"); if (tip) tip.hidden = true; }
     function at(e) {
       var st = getState(), model = st.model;
-      if (!model || model.loading || !model.metrics) return hide();
+      if (!model || model.loading || model.unavailable || !model.metrics) return hide();
       var metric = model.metrics[st.metric].avail ? st.metric : "overall";
       if (!model.metrics[metric].avail || !st.geo) return hide();
       var g = st.geo, xy = geomXY(g), X = xy.X, Y = xy.Y;
@@ -425,7 +407,7 @@
       if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom + 2) { hide(); return; }
       var stepPx = (g.W - g.PADL - g.PADR) / (NW - 1) * (rect.width / g.W);
       var i = clamp(Math.round((e.clientX - rect.left - g.PADL * rect.width / g.W) / stepPx), 0, NW - 1);
-      var m = model.metrics[metric], ly = m.last[i], tyHas = i <= model.asOf, ty = tyHas ? m.series[i] : null;
+      var m = model.metrics[metric], ly = m.last[i], tyHas = i < m.series.length, ty = tyHas ? m.series[i] : null;
       var col = metricCol(model, metric);
       var wrapRect = wrap.getBoundingClientRect();
       var xPx = X(i) * (rect.width / g.W) + (rect.left - wrapRect.left);
@@ -454,7 +436,7 @@
       host._fwTrendWired = true;
       host.addEventListener("click", function (e) {
         var t = e.target.closest ? e.target.closest("[data-tact]") : null; if (!t) return;
-        if (st.model.loading) return;  // skeleton has no interactive controls
+        if (st.model.loading || st.model.unavailable) return;  // skeleton / empty state has no interactive controls
         var act = t.getAttribute("data-tact");
         if (act === "metric" || act === "small") { if (!st.model.metrics[t.getAttribute("data-metric")].avail) return; st.metric = t.getAttribute("data-metric"); if (act === "metric") st.expanded = true; paint(); }
         else if (act === "toggle") { st.expanded = !st.expanded; paint(); }
