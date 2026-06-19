@@ -75,6 +75,11 @@ assets/img/share/
 /scripts/surgical_fix.py
 /scripts/top20_all_sources.py
 /prototypes/method-section-mock.html
+/prototypes/method-section-*.html
+/prototypes/method-options.html
+
+# local page-audit scratch (not for the public repo)
+/_audit_*
 
 # OS / editor
 .DS_Store

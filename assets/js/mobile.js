@@ -123,6 +123,24 @@
   function cityObj(id) { return DATA.cities.filter(function (c) { return c.id === id; })[0]; }
   function diseaseObj(id) { return DATA.diseases.filter(function (d) { return d.id === id; })[0]; }
   function cellFor(city, dis) { return DATA.grid.filter(function (r) { return r.city === city && r.disease === dis; })[0]; }
+  // Methodology worked-example picks (edge case b): the driver disease + one of the OPPOSITE mode
+  // (confirmed vs forecast) if the city has one, else just the driver.
+  function methodPicks(c) {
+    var cells = DATA.diseases.map(function (d) { return { cell: cellFor(c.id, d.id), disease: d.label }; }).filter(function (x) { return x.cell; });
+    if (!cells.length) return [];
+    cells.sort(function (a, b) { return b.cell.score - a.cell.score; });
+    var driver = cells[0], dConf = driver.cell.mode === "confirmed", opp = null;
+    for (var i = 1; i < cells.length; i++) { if ((cells[i].cell.mode === "confirmed") !== dConf) { opp = cells[i]; break; } }
+    return opp ? [driver, opp] : [driver];
+  }
+  // The "see the parts add up" examples are DYNAMIC (real numbers for the loaded city). The sheet body
+  // is filled once, but the city can change between opens, so recompute the examples on every open.
+  function fillMethodExamples() {
+    var mb = document.getElementById("methbody"); if (!mb || !window.FeverWatchMethod) return;
+    var holder = mb.querySelector("[data-mthd-examples]"); if (!holder) return;
+    var c = cityObj(state.cityId); if (!c) return;
+    holder.innerHTML = window.FeverWatchMethod.examplesHtml(methodPicks(c), c.name, false);
+  }
   function fmtDate(iso) { if (!iso) return ""; var d = new Date(new Date(iso).getTime() + 19800000); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }  // +19800000ms = IST (UTC+5:30): generated_at is UTC, show the India calendar date
   function orderedDiseases(c) { return DATA.diseases.slice().sort(function (a, b) { return cellFor(c.id, b.id).score - cellFor(c.id, a.id).score; }); }
   function leaderRow(ci) { if (state.leader === "overall") return { score: ci.blend.score, band: ci.blend.band }; var cell = cellFor(ci.id, state.leader); return { score: cell.score, band: cell.band }; }
@@ -270,7 +288,7 @@
         '<span class="dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span><span class="sc">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
-    return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see how each signal builds the score.</p>' + accs + '</div>';
+    return '<div class="card"><h2 class="sectiontitle">Why this score?</h2><p class="sectionsub">Tap a disease to see how each signal builds the score. <button class="knowmore" data-act="openMethod">Know more</button></p>' + accs + '</div>';
   }
 
   // Per-signal day-over-day badge (red up = rising / green down = easing vs yesterday). Empty unless a
@@ -519,7 +537,7 @@
     else if (a === "expand") { var id = el.getAttribute("data-id"); state.expanded = state.expanded === id ? null : id; render(); }
     else if (a === "leader") { state.leader = el.getAttribute("data-id"); state.lbPage = 0; render(); document.getElementById("others").scrollIntoView({ behavior: "smooth" }); }
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
-    else if (a === "openMethod") { var mb = document.getElementById("methbody"); if (mb && !mb.dataset.filled) { mb.innerHTML = METHOD + '<p class="dashnote">' + DASHNOTE + '</p>'; mb.dataset.filled = "1"; } openSheet("methodsheet"); }
+    else if (a === "openMethod") { var mb = document.getElementById("methbody"); if (mb && !mb.dataset.filled) { mb.innerHTML = METHOD + '<p class="dashnote">' + DASHNOTE + '</p>'; mb.dataset.filled = "1"; if (window.FeverWatchMethod) window.FeverWatchMethod.wire(mb); } fillMethodExamples(); openSheet("methodsheet"); }
     else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
     else if (a === "shareWA") doShare("wa");
     else if (a === "shareDL") doShare("dl");
@@ -554,28 +572,85 @@
     ["Which cities are covered?", "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search to see the read for your city."]
   ];
 
+  // "How we calculate the score" methodology widget (mobile layout). Behaviour (popovers / accordion /
+  // score-builder + dial) lives in assets/js/method.js; FeverWatchMethod.wire() is called in openMethod after
+  // this is injected. All hooks are namespaced (data-mpop / data-mtog / data-macc / data-mmode / data-mdial-*)
+  // and classes are .mthd-* so nothing collides with the page's disease-breakdown accordion. Ported from
+  // prototypes/method-section-final.html (mobile frame). The desktop twin is the same content in desktop.js.
+  var mthWx = '<svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .3-8A5.5 5.5 0 0 0 6.6 9 3.5 3.5 0 0 0 7 18z" fill="currentColor"/></svg>',
+      mthSr = '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2.2"/><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      mthLb = '<svg viewBox="0 0 24 24"><path d="M10 3h4v5l4 8a2 2 0 0 1-1.8 3H7.8A2 2 0 0 1 6 16l4-8V3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+      mthSrc = '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M19 13v6H5V5h6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      mthDrop = '<svg viewBox="0 0 24 24"><path d="M12 2s7 8 7 13a7 7 0 0 1-14 0c0-5 7-13 7-13z" fill="currentColor"/></svg>';
+
   var METHOD =
-    '<p>Every score is a transparent weighted formula, not a black box. It is built in three layers.</p>' +
-    '<h3>1. Per-disease environmental score (0 to 100)</h3>' +
-    '<p>From trailing daily weather, shaped by disease family:</p><ul>' +
-    '<li><b>Mosquito-borne</b> (dengue, malaria, chikungunya): a unimodal temperature response peaking near <code>29&deg;C</code> (Aedes and Anopheles breed fastest at 25 to 30&deg;C, activity falls below ~18&deg;C and above ~35&deg;C), times lagged rainfall over the past ~14 days (standing-water sites emerge 1 to 2 weeks after rain), times relative humidity (above ~60% extends mosquito lifespan). Weights ~0.45 / 0.35 / 0.20.</li>' +
-    '<li><b>Waterborne</b> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a contamination and runoff proxy; temperature secondary.</li></ul>' +
-    '<h3>2. Three independent signals</h3><ul>' +
-    '<li><b>Breeding weather</b> (leading, ~weeks ahead): the environmental score above.</li>' +
-    '<li><b>Google Search Interest</b> (coincident): symptom-search attention, smoothed; down-weighted when it spikes alone (news-driven).</li>' +
-    '<li><b>PharmEasy lab signal</b> (lagging, ground truth): aggregate, de-identified test-positivity trend, scaled against a <b>per-disease baseline</b> (a "high" positivity differs sharply by fever: a full signal is reached near <code>25%</code> for dengue, <code>4%</code> for malaria, <code>15%</code> for chikungunya and <code>45%</code> for typhoid), held back until enough tests confirm the read.</li></ul>' +
-    '<h3>3. Confirmation-weighted ensemble</h3>' +
-    '<p>Not a flat average. With lab data present it dominates (weights ~<code>30 / 22 / 48</code> weather / search / positivity) and agreement across all three raises confidence. Without it, a capped <code>forecast-only</code> mode (max 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a max-dominant blend (<code>0.8 &times; the top disease + 0.2 &times; the mean of the rest</code>) with the driver disease named.</p>' +
-    '<p>In the breakdown each signal shows a plain <b>High / Moderate / Low</b> level with its weight and 0 to 100 score; the three contributions add up exactly to the score.</p>' +
-    '<h3>Data sources</h3><ul><li>Rainfall: NOAA CPC (US public domain)</li><li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li><li>Search: Google Trends</li><li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>' +
-    '<h3>Selected research</h3>' +
-    '<p class="cite">Ginsberg et al. Detecting influenza epidemics using search engine query data. <i>Nature</i>, 2009.</p>' +
-    '<p class="cite">Mordecai et al. Thermal biology of mosquito-borne disease. <i>Ecology Letters</i>, 2019 (peak transmission ~29&deg;C).</p>' +
-    '<p class="cite">Liu-Helmersson et al. Vectorial capacity of Aedes aegypti: effects of temperature and implications for dengue. <i>PLOS ONE</i>, 2014.</p>' +
-    '<p class="cite">Brady et al. Modelling adult Aedes survival at different temperatures. <i>Parasites &amp; Vectors</i>, 2013.</p>' +
-    '<p class="cite">Naish et al. Climate change and dengue: a systematic review. <i>BMC Infectious Diseases</i>, 2014.</p>' +
-    '<p class="cite">IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</p>' +
-    '<p style="margin-top:12px;color:var(--pe-muted-2)">A risk indicator, not a diagnosis or a case count.</p>';
+    '<div class="mthd">' +
+      '<p class="mthd-lead">One score from 0 to 100 per city and fever. A risk indicator, not a diagnosis or a case count.</p>' +
+      '<div class="mthd-intro">We read <b>3 signals</b>, score each <b>0 to 100 first</b>, then blend them into one number.' +
+        '<div class="mthd-step3">' +
+          '<span class="s" style="flex:1 1 30%"><span class="ic" style="color:var(--sig-weather)">' + mthWx + '</span>Weather</span>' +
+          '<span class="s" style="flex:1 1 30%"><span class="ic" style="color:var(--sig-search)">' + mthSr + '</span>Searches</span>' +
+          '<span class="s" style="flex:1 1 30%"><span class="ic" style="color:var(--sig-lab)">' + mthLb + '</span>Lab</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mthd-acc" data-macc>' +
+        '<div class="mthd-accitem" data-sig="weather">' +
+          '<button class="mthd-acchead" data-mtog>' +
+            '<span class="badge">' + mthWx + '</span>' +
+            '<span class="tt"><span class="nm">Weather <span class="role">leading</span></span><span class="ds">Good breeding weather?</span></span>' +
+            '<span style="text-align:right"><span class="wt">30%</span></span><span class="chev"></span>' +
+          '</button>' +
+          '<div class="mthd-accbody">' +
+            '<p class="bnote">For mosquito fevers the weather score mixes three things. Weights are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Weather weights" data-body="The 45 / 35 / 20 split is our own calibration, not a published constant.">our assumption</span>.</p>' +
+            '<div class="mthd-wbar temp"><div class="top"><span class="nm">Temperature</span><span class="pct">45%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:45%"></div></div><div class="mk"><span class="sub" style="font-size:12px;color:var(--pe-muted)">fastest near 26-29C</span><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Temperature drives transmission" data-body="Transmission is fastest around 26 to 29C and slows when colder or hotter. It carries the most weight because it speeds up both the mosquito and the virus." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
+            '<div class="mthd-wbar rain"><div class="top"><span class="nm">Rain</span><span class="pct">35%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:35%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain makes breeding sites" data-body="Puddles take about 1 to 3 weeks to become biting mosquitoes." data-href="https://www.nature.com/articles/srep35028">' + mthSrc + 'Source</span><span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="14-day window" data-href="https://www.nature.com/articles/srep35028" data-body="The 14-day look-back and the cap (more rain stops adding risk past a point) are our calibration, informed by how long breeding takes after rain.">our assumption</span></div></div>' +
+            '<div class="mthd-wbar hum"><div class="top"><span class="nm">Humidity</span><span class="pct">20%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:20%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Humidity aids survival" data-body="Higher humidity lets adult mosquitoes live longer, so they have more time to bite." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
+            '<div class="mthd-typnote"><div class="h">' + mthDrop + 'Typhoid: rain only</div>Typhoid is waterborne, so it uses <b>recent plus lagged rain only</b>, often within days. Temperature is minor. Windows are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Typhoid rain windows" data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/" data-body="Which rain windows feed the typhoid proxy is our calibration, informed by research linking heavy rain to typhoid.">our assumption</span>. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain and typhoid" data-body="Typhoid spreads through water dirtied by heavy rain, often within days." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/">' + mthSrc + 'Source</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mthd-accitem" data-sig="search">' +
+          '<button class="mthd-acchead" data-mtog>' +
+            '<span class="badge">' + mthSr + '</span>' +
+            '<span class="tt"><span class="nm">Searches <span class="role">coincident</span></span><span class="ds">Who&#39;s searching nearby</span></span>' +
+            '<span style="text-align:right"><span class="wt">22%</span></span><span class="chev"></span>' +
+          '</button>' +
+          '<div class="mthd-accbody">' +
+            '<p class="bnote">How often people near you search that fever&#39;s symptoms, against your <b>city&#39;s own typical range</b>. It reflects public concern.</p>' +
+            '<p class="bnote">We trust it less when it spikes on news alone, which is why it is only 1 of 3 signals. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Search tracks outbreaks" data-body="Search tracks real outbreaks, with the caveat that it can mislead on a news spike. That is why we never use search alone." data-href="https://www.nature.com/articles/nature07634">' + mthSrc + 'Source</span></p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mthd-accitem" data-sig="lab">' +
+          '<button class="mthd-acchead" data-mtog>' +
+            '<span class="badge">' + mthLb + '</span>' +
+            '<span class="tt"><span class="nm">Lab <span class="role">ground truth</span></span><span class="ds">Tests coming back positive</span></span>' +
+            '<span style="text-align:right"><span class="wt">48%</span></span><span class="chev"></span>' +
+          '</button>' +
+          '<div class="mthd-accbody">' +
+            '<p class="bnote">From <b>PharmEasy Labs and its Partner Affiliates</b>, always aggregate and de-identified. Of local tests for that fever, what share are <b>positive</b>. Needs a minimum number of tests (a gate).</p>' +
+            '<p class="bnote" style="margin-bottom:6px">The positivity that maps to 100 <b>differs by disease</b>:</p>' +
+            '<div class="mthd-labchips">' +
+              '<span class="chip"><span class="cdot" style="background:var(--dis-dengue)"></span>Dengue <b>25%</b></span>' +
+              '<span class="chip"><span class="cdot" style="background:var(--dis-chikungunya)"></span>Chikungunya <b>15%</b></span>' +
+              '<span class="chip"><span class="cdot" style="background:var(--dis-malaria)"></span>Malaria <b>4%</b></span>' +
+              '<span class="chip"><span class="cdot" style="background:var(--dis-typhoid)"></span>Typhoid <b>45%</b></span>' +
+            '</div>' +
+            '<p class="bnote" style="margin:12px 0 0">Each fever has its own baseline, so one shared cutoff would mislead. These are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="From our 2025 data" data-href="https://emergency.unhcr.org/emergency-assistance/health-and-nutrition/disease-surveillance-thresholds" data-body="The 25 / 15 / 4 / 45 thresholds are our benchmark, near the 90th percentile of last season&#39;s positivity per disease in our 2025 lab data, and follow the agency practice of a per-disease baseline.">our assumption</span> and match agency practice. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Surveillance thresholds" data-body="Surveillance sets a per-disease threshold against each disease&#39;s own baseline." data-href="https://emergency.unhcr.org/emergency-assistance/health-and-nutrition/disease-surveillance-thresholds">' + mthSrc + 'Thresholds</span> <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Test positivity" data-body="Test positivity is a standard public-health measure of how active a disease is." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6609187/">' + mthSrc + 'Positivity</span></p>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mthd-exblock" data-mthd-examples></div>' +
+      '<div class="mthd-card" style="padding:14px 15px;margin-top:14px">' +
+        '<p class="mthd-ch" style="margin:0 0 10px">What the colour means</p>' +
+        '<div class="mthd-bandstrip">' +
+          '<span class="seg" style="background:var(--risk-low)"><span class="bn">Low</span><span class="br">0-24</span></span>' +
+          '<span class="seg lowmod" style="background:var(--risk-lowmod)"><span class="bn">Low-mod</span><span class="br">25-44</span></span>' +
+          '<span class="seg" style="background:var(--risk-mod)"><span class="bn">Moderate</span><span class="br">45-69</span></span>' +
+          '<span class="seg" style="background:var(--risk-high)"><span class="bn">High</span><span class="br">70-100</span></span>' +
+        '</div>' +
+        '<p class="mthd-foot" style="margin:0">Forecast-only reads are capped at 69, so they can never reach red.</p>' +
+      '</div>' +
+      '<p class="mthd-foot"><span class="one">A risk indicator, not a diagnosis or a case count.</span>Sources: rainfall NOAA CPC; temperature and humidity NASA POWER; search Google Trends; positivity PharmEasy Labs and its Partner Affiliates (aggregate, de-identified).</p>' +
+    '</div>';
 
   // All render() dependencies (FAQ, METHOD, ...) are now defined. Boot: seed first (instant first
   // paint from the inlined city data), then the full grid in the background for the leaderboard.

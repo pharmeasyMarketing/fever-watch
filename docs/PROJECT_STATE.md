@@ -4,6 +4,49 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-19, "How we calculate the score" methodology REDESIGN - PRODUCTION PORT + review revisions DONE, committed + pushed):**
+> The consumer methodology explainer was redesigned (old `prototypes/method-section-mock.html` was "still confusing"),
+> ported to production, then revised across two user review rounds. It is LIVE in the "How we calculate the score"
+> methodsheet (mobile) / section (desktop). Interactivity lives in a new shared module `assets/js/method.js`
+> (popovers + signal accordions + the dynamic worked examples); markup is the `METHOD` constant in `mobile.js`
+> (mobile layout) + `desktop.js` (single-column layout) - the SSR `METHOD_HTML` in `build_site.py` stays a
+> CRAWLABLE TEXT fallback (it sits inside `#fw-app`, which the JS replaces on hydration; an interactive accordion
+> there would hide the search/lab copy from crawlers). All widget CSS is namespaced `.mthd-*` in `tokens.css`
+> (every class, to dodge the bare-global `.card`/`.fill`/`.track` and the disease-breakdown `.acc`/`.acchead`).
+> `method.js` is loaded in the PAGE `<script>` block + added to the `asset_version()` cache-bust hash. Source of
+> truth = `prototypes/method-section-final.html`.
+> - **Direction B layout:** intro (3-signal chips) -> three drill-down signal accordions (Weather two-family
+>   45/35/20 mosquito + rain-only typhoid; Search; Lab) -> dynamic worked example(s) -> score bands -> footer.
+> - **Markers:** "our assumption" = a dotted-underline glossary term (no pill). Its popover reads "Our assumption"
+>   for pure judgement, or "Our assumption, informed by research" + a "Read the research" link where a citation
+>   genuinely applies (14-day window srep35028, typhoid windows PMC8832923, per-disease thresholds UNHCR). Separate
+>   green "Source" chips carry the published-science links. NO "not a cited fact" phrasing. `method.js` `openPop`
+>   switches the title on the presence of `data-href` on a `data-mpop="set"` marker.
+> - **Lab thresholds** render as colour chips (Dengue 25% / Chikungunya 15% / Malaria 4% / Typhoid 45%), not bars.
+> - **Score builder DROPPED**; the two worked examples are now DYNAMIC from the loaded city's real grid cells via
+>   `FeverWatchMethod.examplesHtml(picks, city, isDesktop)`, which mirrors `consolidate.py` EXACTLY (confirmed:
+>   base = .30w+.22s+.48lab, spread<22 -> x1.08 cap 100 else x0.96; forecast: .60w+.40s capped 69) and apportions
+>   the per-signal pieces by largest-remainder so they SUM EXACTLY (the old hand-authored "25+16+38=80" mismatch
+>   is gone). FIXED the forecast weights that the prototype had wrong: 60/40, NOT 58/42. Edge case: driver disease
+>   + one of the OPPOSITE mode if the city has one, else just the driver (16 cities are mixed-mode, 191 all-forecast,
+>   the rest all-confirmed - so MOST pages show one example). Mobile re-fills on each `openMethod`; desktop re-fills
+>   in `render()` (tracks the selected city). Verified live: Mumbai -> Malaria 63 = grid; Delhi -> Chikungunya
+>   forecast (72 capped to 69) + Typhoid with-lab (57 x0.96 -> 54), all matching the grid.
+> - **Other review fixes:** removed the duplicate eyebrow/title inside the widget (the sheet/section header already
+>   says it) + the "Source/Our setting" legend row + "Live (plausible numbers)" labels + the footer "Open any score
+>   ... never a mystery number" line. **Lab attribution: NO "ThyroCare" or "PharmEasy diagnostics" in any user-facing
+>   copy** - always "PharmEasy Labs and its Partner Affiliates" (both flows + `METHOD_HTML`; only internal docstrings
+>   in `citymap.py`/`gsheet_api.py` still name the providers). Added a second **"Know more"** link (opens the
+>   methodology, like the dial card's) after the "Why this score?" subtitle - in `mobile.js`, `desktop.js` AND the
+>   desktop SSR twin `build_site.py` `_why_section_d` (it is above-fold; parity stays byte-identical).
+> - **Dormant (harmless):** the old score-builder/dial CSS (`.mthd-builder`/`.mthd-dial`/`.mthd-thr`/`.mthd-deskgrid`/
+>   `.mthd-modetog`/`.mthd-ledger`/`.mthd-capnote`) + the `method.js` `setDial`/mode-toggle code are now unused but
+>   left in place (so the builder is trivial to re-enable). Can be pruned later.
+> - **Verified:** `node --check` clean on all three JS; full SSG builds 210 pages; `scripts/parity_check.js` PARITY
+>   OK both flows (the method section is below-fold except the parity-twinned "Why this score?" Know-more); browser-
+>   verified every interaction + the dynamic example math against the grid. Committed + pushed to master (CI deploys).
+> Full detail in memory `method-section-redesign.md`.
+>
 > **NEWEST (2026-06-18 EOD, ALL MOCK season-trend DATA REMOVED - the home was still serving a mock chart; now there is no mock anywhere):**
 > A deep-dive (home + 10 cities, cache/cookie matrix, full code audit, adversarial design review) found the
 > **home page consistently served a MOCK season-trend** while the 10 city pages were already real. Root cause: the

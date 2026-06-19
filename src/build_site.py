@@ -90,16 +90,20 @@ METHOD_HTML = (
     "15% for chikungunya and 45% for typhoid), and held back until enough tests confirm the read.</li></ul>"
     "<h3>3. Confirmation-weighted ensemble</h3>"
     "<p>Not a flat average. With lab data present it dominates (weights about 30 / 22 / 48 weather / search / "
-    "positivity) and agreement across all three raises confidence. Without it, a capped forecast-only mode "
+    "positivity); when all three signals agree we nudge the score up by about 8%, and when they disagree we ease "
+    "off by about 4% and lean on the lab. Without lab data, a capped forecast-only mode "
     "(maximum 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a "
     "max-dominant blend (0.8 times the top disease plus 0.2 times the mean of the rest) with the driver disease named.</p>"
     "<p>In the breakdown each signal is shown as a plain <strong>High / Moderate / Low</strong> level with its "
     "weight and underlying 0 to 100 score, and the three contributions add up exactly to the displayed score.</p>"
+    "<h3>Score bands</h3>"
+    "<p>Low (0 to 24), Low-moderate (25 to 44), Moderate (45 to 69) and High (70 to 100). A forecast-only "
+    "read is capped at 69, so it can never reach the red High band.</p>"
     "<h3>Data sources</h3><ul>"
     "<li>Rainfall: NOAA CPC (US public domain)</li>"
     "<li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li>"
     "<li>Search: Google Trends</li>"
-    "<li>Positivity: PharmEasy diagnostics (aggregate, de-identified)</li></ul>"
+    "<li>Positivity: PharmEasy Labs and its Partner Affiliates (aggregate, de-identified)</li></ul>"
     "<h3>Selected research</h3><ul>"
     "<li>Mordecai et al. Thermal biology of mosquito-borne disease. Ecology Letters, 2019.</li>"
     "<li>Liu-Helmersson et al. Vectorial capacity of Aedes aegypti and temperature. PLOS ONE, 2014.</li>"
@@ -172,6 +176,7 @@ PAGE = """<!DOCTYPE html>
 <script>window.FW = {fw};</script>
 <script src="{rel}assets/js/faq.js?v={av}" defer></script>
 <script src="{rel}assets/js/trend.js?v={av}" defer></script>
+<script src="{rel}assets/js/method.js?v={av}" defer></script>
 <script src="{rel}assets/js/fw-loader.js?v={av}" defer></script>
 <script src="{rel}assets/js/geo.js?v={av}" defer></script>
 <script src="{rel}assets/js/share.js?v={av}" defer></script>
@@ -220,7 +225,7 @@ def asset_version() -> str:
     h = hashlib.md5()
     for rel in ("prototypes/tokens.css", "assets/css/mobile.css", "assets/css/desktop.css",
                 "assets/js/geo.js", "assets/js/share.js", "assets/js/faq.js", "assets/js/trend.js",
-                "assets/js/fw-loader.js", "assets/js/mobile.js", "assets/js/desktop.js"):
+                "assets/js/method.js", "assets/js/fw-loader.js", "assets/js/mobile.js", "assets/js/desktop.js"):
         try:
             with open(os.path.join(ROOT, rel), "rb") as fh:
                 h.update(fh.read())
@@ -876,7 +881,7 @@ def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
                  '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
                  '<span class="chev">▾</span></button>' + body + '</div>')
     return ('<div class="card whycard"><h2 class="sechead">Why this score?</h2>'
-            '<p class="secsub">Tap a disease to see how each signal builds the score.</p>' + accs + '</div>')
+            '<p class="secsub">Tap a disease to see how each signal builds the score. <button class="knowmore" data-act="openMethod">Know more</button></p>' + accs + '</div>')
 
 
 def _why_section_d(city: dict, diseases: list, cells_by: dict) -> str:
