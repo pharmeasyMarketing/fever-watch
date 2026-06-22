@@ -114,8 +114,8 @@ METHOD_HTML = (
 CONSULT_HREF = "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch"
 ACTIONS = [
     ("Monsoon precautions", "Cut breeding sites and bites", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch"),
-    ("Vaccination: does it work?", "What helps, what does not", ""),
-    ("Fever? Follow our framework", "When to test, when to wait", ""),
+    ("Vaccination: does it work?", "What helps, what does not", "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch"),
+    ("Fever? Follow our framework", "When to test, when to wait", "https://pharmeasy.in/blog/fever-high-temperature-causes-stages-treatments-and-red-flags/?src=feverwatch"),
     ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
 ]
 CTA_LABEL, CTA_HREF = "Book a fever panel test", "https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch"
