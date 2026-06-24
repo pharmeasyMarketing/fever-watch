@@ -4,7 +4,38 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-24, MEDICAL-REVIEW UX OVERHAUL - committed + pushed to master; verified via the parity gate +
+> **NEWEST (2026-06-24 PM, ⓘ-TOOLTIP PERSISTENCE + PEEK-ON-SCROLL + CRAWLER DATE CONSISTENCY - local, NOT yet
+> committed):** Three user-requested fixes, all verified in the live preview.
+> 1. **ⓘ tooltips no longer auto-dismiss on a timer.** The 2.5s auto-close was removed from the `dialInfo` onClick
+>    branch in `mobile.js` + `desktop.js`. An explicit tap now keeps the tooltip (dial band-chip + the per-signal
+>    breakdown popovers - same handler) open until the user (a) taps the ⓘ again, (b) taps anything else (the
+>    outside-close on the first line of `onClick`), or (c) **scrolls** (`onTipScroll` on a passive `window` "scroll").
+>    Verified BOTH flows: stays open >3s, closes on scroll / outside-tap / second-tap; only-one-open holds.
+> 1b. **Auto-peek now fires WHEN THE SECTION IS SCROLLED INTO VIEW (not blindly at load).** DESKTOP: the dial is in
+>    the 2nd fold, so its peek now triggers on scroll-into-view. MOBILE: keeps the dial's after-load peek (first fold)
+>    AND adds a peek for the **top disease's first "Why this score?" tooltip** (`.acc.open .dialinfo`) on
+>    scroll-into-view (to hint those per-signal info popovers exist). Implemented as a `window`-scroll
+>    `getBoundingClientRect` "fully in view" check (`maybeScrollPeek`/`onTipScroll`), re-querying the target by
+>    SELECTOR each render - deliberately NOT IntersectionObserver, because IO observes a node the seed->data
+>    re-render DETACHES (peek would never fire in prod) and IO/rAF are throttled in hidden/background tabs. A peek is
+>    immune to the scroll-close (tracked by `_peekEl`) so a scroll-into-view peek is not flashed away by the same
+>    scroll; it self-closes ~1.7s. `firePeek`/`maybeScrollPeek`/`onTipScroll`/`positionCaret` are byte-identical
+>    across the twins; only `peekDialInfo` differs by flow. Verified: desktop dial peeks on scroll-in + survives
+>    continued scroll + self-closes; mobile breakdown tooltip peeks on scroll-in + survives + self-closes + tap
+>    persists + scroll-closes. (Live browser auto-verification of the scroll/peek had to dispatch synthetic `scroll`
+>    events because the headless preview tab is `document.hidden`, which pauses the frame loop that delivers real
+>    scroll events / IO / rAF; the handler logic is exercised identically.) parity gate OK; `node --check` clean.
+> 2. **Crawler-visible dates now all express the same IST calendar date.** A 5-agent audit confirmed the visible
+>    "Updated" text, sitemap `<lastmod>`, and FAQ dates were already IST, but the three JSON-LD `dateModified` fields
+>    (WebPage/Dataset/WebApplication) emitted the **raw UTC** `generated_at` - a calendar date ONE DAY BEHIND on every
+>    22:30-UTC cron build (e.g. page said 24 Jun, JSON-LD said 23 Jun). FIX: new `iso_datetime_ist()` helper in
+>    `build_site.py`; `jsonld()` shifts `generated_at` +5:30 once at the top so all three nodes emit e.g.
+>    `2026-06-24T05:08:42+05:30`. Now JSON-LD dateModified == sitemap lastmod (`2026-06-24`) == visible "Updated 24 Jun
+>    2026" == FAQ "from 24 Jun 2026". (Left as-is by design: the og:image `?v=` token keeps raw-UTC digits - a
+>    cache-bust key, not a semantic date, and it feeds the shared data/share-card cache-bust system; the inlined
+>    `FW.seed.generated_at`/`trends_as_of` stay raw UTC and are converted to IST client-side by `fmtDate()`.)
+>
+> **(2026-06-24, MEDICAL-REVIEW UX OVERHAUL - committed + pushed to master; verified via the parity gate +
 > DOM/geometry, headless-preview screenshots blocked by a flaky `grid.json` fetch):** A doctors' medical review (7
 > points) drove a wide front-end pass. A 7-point feasibility workflow mapped them; these shipped (committed 2026-06-24):
 > - **"breeding" removed across all user-facing copy** -> "Weather conditions" (signal name; the weather-card title
@@ -21,7 +52,9 @@
 > - **Dial / first-fold comprehension:** (1) a plain-language **meaning line** under the band chip - `BAND_MEAN` per
 >   band + "<driver> is the main fever to watch in <city> this week"; (2) an **ⓘ tooltip** on the band chip explaining
 >   the headline = ~80% the top fever + ~20% the rest, plus a Low->High **bands legend**. It tap-toggles
->   (`data-act="dialInfo"`), **auto-peeks ~1.7s once on load**, **auto-closes 2.5s** after a tap, closes on
+>   (`data-act="dialInfo"`), **auto-peeks ~1.7s as a hint** (desktop: on scroll-into-view since the dial is 2nd-fold;
+>   mobile: shortly after load); an EXPLICIT tap then keeps it open until tapped again / outside-tap / **scroll**
+>   (no timed auto-close as of 2026-06-24 PM; see the 2026-06-24 PM banner + `onTipScroll`/`maybeScrollPeek`), closes on
 >   outside-tap, and **only one `.dialinfo.open` at a time** (the onClick outside-close closes every open tooltip not
 >   containing the click). A `.tipcaret` is JS-positioned to point at the ⓘ (`positionCaret`). (3) dial centre
 >   `Overall fever risk` -> **`Overall fever risk score`** (em narrowed + number shrunk so the longer label stays
@@ -45,8 +78,10 @@
 >   grid.json.
 > - **Shared dial-tooltip primitives** are byte-identical across `mobile.js`/`desktop.js`/`build_site.py` (parity gate
 >   `scripts/parity_check.js` stayed OK throughout): the `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/
->   `.tipcaret` markup; `BAND_MEAN`, `TIPINFO` maps; the `dialInfo` onClick branch (toggle + `positionCaret` + 2.5s
->   auto-close), the outside-close (only-one-open), `peekDialInfo`, `positionCaret`. ONE handler drives both the dial
+>   `.tipcaret` markup; `BAND_MEAN`, `TIPINFO` maps; the `dialInfo` onClick branch (toggle + `positionCaret`, no
+>   timed auto-close), the outside-close (only-one-open), `positionCaret`, `firePeek`, `maybeScrollPeek`, and
+>   `onTipScroll` (the `window`-scroll handler: peek-on-scroll-into-view + close user-opened tooltips; `peekDialInfo`
+>   differs by flow). ONE handler drives both the dial
 >   tooltip and the per-signal breakdown popovers.
 > - **STILL OPEN from the review (NOT done):** #6 "this vs last monsoon ~0%" - DIAGNOSED (a single-week endpoint
 >   comparison, NOT universal: only ~40/209 cities read ~0%, Bengaluru is -37%; root = it compares ONE week, should

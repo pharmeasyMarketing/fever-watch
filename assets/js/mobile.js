@@ -75,6 +75,7 @@
     if (!booted) {
       booted = true;
       document.addEventListener("click", onClick);
+      window.addEventListener("scroll", onTipScroll, { passive: true });
       var cs = document.getElementById("citysearch"); if (cs) cs.addEventListener("input", renderCityList);
     }
     renderCityList(); render(); buildTicker(); buildShareFooter();
@@ -235,21 +236,45 @@
     document.body.classList.add("fw-hydrated");
     peekDialInfo();
   }
-  // Auto-peek the dial info tooltip once on load (a brief hint that tappable info exists), then hide.
-  var _peeked = false, _dialTimer = null;
+  // Peek info tooltips briefly as a hint that they hold tappable info. _peekEl marks the transient peek
+  // so the scroll-close leaves it alone; _scrollPeekDone / _loadPeekArmed make each peek fire once.
+  var _dialTimer = null, _peekEl = null, _loadPeekArmed = false, _scrollPeekDone = false, _scrollPeekSel = "";
   function positionCaret(di) {
     var b = di.querySelector(".dialinfo-btn"), t = di.querySelector(".dialtip"), c = di.querySelector(".tipcaret");
     if (!b || !t || !c) return;
     var br = b.getBoundingClientRect(), tr = t.getBoundingClientRect();
     c.style.left = Math.max(12, Math.min(tr.width - 12, (br.left + br.width / 2) - tr.left)) + "px";
   }
+  // MOBILE: peek the dial shortly after load (it is in the first fold); also peek the top disease's first
+  // "Why this score?" tooltip once it scrolls into view, hinting these per-signal info popovers exist.
+  // Re-runs each render and re-queries live nodes, so the seed -> data re-render is covered.
   function peekDialInfo() {
-    if (_peeked) return; _peeked = true;
-    setTimeout(function () {
-      var di = document.querySelector(".dialinfo"); if (!di) return;
-      di.classList.add("open"); positionCaret(di);
-      setTimeout(function () { di.classList.remove("open"); }, 1700);
-    }, 650);
+    _scrollPeekSel = ".acc.open .dialinfo";
+    maybeScrollPeek();
+    if (!_loadPeekArmed) { _loadPeekArmed = true; _dialTimer = setTimeout(function () { firePeek(document.querySelector(".dialinfo")); }, 650); }
+  }
+  // A peek auto-opens a tooltip, stays immune to the scroll-close (via _peekEl), self-closes ~1.7s later.
+  function firePeek(di) {
+    if (!di) return;
+    if (_dialTimer) { clearTimeout(_dialTimer); _dialTimer = null; }
+    if (_peekEl && _peekEl !== di) _peekEl.classList.remove("open");
+    _peekEl = di;
+    di.classList.add("open"); positionCaret(di);
+    _dialTimer = setTimeout(function () { if (_peekEl === di) { di.classList.remove("open"); _peekEl = null; } }, 1700);
+  }
+  // Fire the scroll-triggered peek once its target is fully scrolled into view (re-queried live each call).
+  function maybeScrollPeek() {
+    if (_scrollPeekDone || !_scrollPeekSel) return;
+    var di = document.querySelector(_scrollPeekSel); if (!di) return;
+    var r = di.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
+    if (r.height > 0 && r.top >= 0 && r.bottom <= vh) { _scrollPeekDone = true; firePeek(di); }
+  }
+  // Window scroll: fire a pending scroll-peek when its target is in view, then close user-opened tooltips
+  // (the transient peek _peekEl is left to self-close so a scroll-into-view peek is not flashed away).
+  function onTipScroll() {
+    maybeScrollPeek();
+    var op = document.querySelectorAll(".dialinfo.open");
+    for (var i = 0; i < op.length; i++) { if (op[i] !== _peekEl) op[i].classList.remove("open"); }
   }
 
   // The "this monsoon vs last year" widget owns its own subtree (tabs/tooltip/collapse); recompute it
@@ -571,7 +596,7 @@
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "openMethod") { var mb = document.getElementById("methbody"); if (mb && !mb.dataset.filled) { mb.innerHTML = METHOD + '<p class="dashnote">' + DASHNOTE + '</p>'; mb.dataset.filled = "1"; if (window.FeverWatchMethod) window.FeverWatchMethod.wire(mb); } fillMethodExamples(); openSheet("methodsheet"); }
     else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
-    else if (a === "dialInfo") { var di = el.closest(".dialinfo"); if (di) { var op = di.classList.toggle("open"); if (_dialTimer) clearTimeout(_dialTimer); if (op) { positionCaret(di); _dialTimer = setTimeout(function () { di.classList.remove("open"); }, 2500); } } }    else if (a === "shareWA") doShare("wa");
+    else if (a === "dialInfo") { var di = el.closest(".dialinfo"); if (di) { if (_dialTimer) { clearTimeout(_dialTimer); _dialTimer = null; } _peekEl = null; var op = di.classList.toggle("open"); if (op) positionCaret(di); } }    else if (a === "shareWA") doShare("wa");
     else if (a === "shareDL") doShare("dl");
     else if (a === "shareCopy") doShare("copy");
   }

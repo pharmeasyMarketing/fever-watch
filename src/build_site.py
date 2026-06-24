@@ -211,6 +211,18 @@ def iso_date(iso) -> str:
         return (iso or "")[:10]
 
 
+def iso_datetime_ist(iso) -> str:
+    """IST (UTC+5:30) ISO-8601 timestamp of the build, e.g. '2026-06-24T05:08:42+05:30' - the JSON-LD
+    dateModified. Shifts the UTC generated_at +5:30 so its calendar date matches the IST sitemap
+    <lastmod> (iso_date) and the visible 'Updated' text (_fmt_date_js); a 22:30-UTC cron build is
+    already the next day in IST, so without this the structured-data date trails the page by one day."""
+    try:
+        d = datetime.datetime.fromisoformat((iso or "").replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+        return d.strftime("%Y-%m-%dT%H:%M:%S+05:30")
+    except Exception:
+        return iso or ""
+
+
 def og_version(iso) -> str:
     """Compact digits of generated_at (YYYYMMDDHHMMSS) used as an og:image cache-bust,
     so social platforms fetch a fresh preview whenever the scores are recomputed."""
@@ -396,6 +408,10 @@ def head_meta(cfg: dict, env: str, title: str, desc: str, canonical: str, rel: s
 
 def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_url: str, faq: list) -> str:
     base = cfg["base_url"]
+    # dateModified must express the IST calendar date - the same one the sitemap <lastmod> and the
+    # visible "Updated" text show. generated_at is minted in UTC, so shift it +5:30 once here so all
+    # three @graph nodes below inherit the India date (otherwise a 22:30-UTC build reads a day behind).
+    generated_at = iso_datetime_ist(generated_at)
     pub = cfg["publisher"]
     lang = cfg.get("language", "en-IN")
     org = {"@type": "Organization", "@id": base + "#organization", "name": pub["name"],

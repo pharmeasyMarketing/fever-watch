@@ -169,12 +169,19 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   "breeding" -> "Weather conditions" everywhere user-facing (mosquito kept where it is the mechanism; the Rainfall tile
   names typhoid too); stagnation tile removed (producer kept); precautions section -> `What you can do`; the dial
   gained a plain-language **meaning line** (`BAND_MEAN` per band + the driver fever) + an **ⓘ tooltip** on the band
-  chip (tap-toggle, JS-positioned caret, bands legend + the 80/20 headline derivation, auto-peek once on load, 2.5s
-  auto-close, **only one tooltip open at a time**); `Overall fever risk` -> `Overall fever risk score`; period tabs
+  chip (tap-toggle, JS-positioned caret, bands legend + the 80/20 headline derivation; **auto-peek ~1.7s as a hint**;
+  an EXPLICIT tap then keeps it open until the user taps it again, taps outside, or **scrolls** - no timed auto-close
+  as of 2026-06-24; **only one tooltip open at a time**); `Overall fever risk` -> `Overall fever risk score`; period tabs
   reduced to **Today only** (week/month were dead placeholders); legend vs-yesterday delta triangles hidden;
-  per-disease legend scores show `/100`. Shared primitives `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/
-  `.tipcaret` + `BAND_MEAN`/`TIPINFO` maps + the `dialInfo` onClick branch + `positionCaret` are byte-identical across
-  the 3 twins (parity-gated); `.dialtip` anchors to its positioned parent (`.bandchip` for the dial, `.sig` for the
+  per-disease legend scores show `/100`. **Auto-peek triggers (2026-06-24 PM):** mobile peeks the dial shortly after
+  load (first fold) PLUS the top disease's first "Why this score?" tooltip (`.acc.open .dialinfo`) on scroll-into-view;
+  desktop peeks the dial on scroll-into-view (it is in the 2nd fold). The scroll-into-view check is a `window`-scroll
+  `getBoundingClientRect` test (`maybeScrollPeek`/`onTipScroll`), NOT IntersectionObserver - IO would observe a node
+  the seed->data re-render detaches (and is throttled in hidden tabs); the selector is re-queried live each render.
+  A peek is immune to the scroll-close (tracked by `_peekEl`) and self-closes ~1.7s. Shared primitives
+  `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/`.tipcaret` + `BAND_MEAN`/`TIPINFO` maps + the
+  `dialInfo` onClick branch + `positionCaret` + `firePeek` + `maybeScrollPeek` + `onTipScroll` are byte-identical
+  across the JS twins (`peekDialInfo` differs by flow); `.dialtip` anchors to its positioned parent (`.bandchip` for the dial, `.sig` for the
   breakdown), opens above, `white-space:normal`.
 
 ## Open decisions / TODO
