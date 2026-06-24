@@ -168,7 +168,9 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
 - **2026-06-24 medical-review UX overhaul (committed + pushed to master; full detail in PROJECT_STATE):**
   "breeding" -> "Weather conditions" everywhere user-facing (mosquito kept where it is the mechanism; the Rainfall tile
   names typhoid too); stagnation tile removed (producer kept); precautions section -> `What you can do`; the dial
-  gained a plain-language **meaning line** (`BAND_MEAN` per band + the driver fever) + an **ⓘ tooltip** on the band
+  gained a plain-language **meaning line** (2026-06-24 PM copy: `Right now {city}'s overall read is {score}/100, {band
+  phrase + driver}. A daily snapshot of conditions, not who's actually sick.` - `BAND_MEAN` is now a per-band PHRASE
+  with a `{d}` driver token, e.g. `moderate, {d} leading` / `low, {d} highest`) + an **ⓘ tooltip** on the band
   chip (tap-toggle, JS-positioned caret, bands legend + the 80/20 headline derivation; **auto-peek ~1.7s as a hint**;
   an EXPLICIT tap then keeps it open until the user taps it again, taps outside, or **scrolls** - no timed auto-close
   as of 2026-06-24; **only one tooltip open at a time**); `Overall fever risk` -> `Overall fever risk score`; period tabs

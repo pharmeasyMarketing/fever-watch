@@ -4,8 +4,20 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-24 PM, ⓘ-TOOLTIP PERSISTENCE + PEEK-ON-SCROLL + CRAWLER DATE CONSISTENCY - local, NOT yet
-> committed):** Three user-requested fixes, all verified in the live preview.
+> **NEWEST (2026-06-24 PM, DIAL MEANING-LINE COPY shortened per team feedback - local, NOT yet committed):** The
+> dial-card meaning line was rewritten (team feedback: the old "Risk is noticeably raised. Take precautions and watch
+> for fever. <Driver> is the main fever to watch in <city> this week." was too long). New copy (<=20 words, "Set E"):
+> **`Right now <city>'s overall read is <score>/100, <band phrase>. A daily snapshot of conditions, not who's actually
+> sick.`** where the band phrase is `low, <driver> highest` / `slightly raised, <driver> leading` / `moderate,
+> <driver> leading` / `high, driven by <driver>`. `BAND_MEAN` changed from a full sentence to a per-band PHRASE with a
+> `{d}` driver placeholder; the `mean` line composes city + overall score + phrase + the fixed snapshot/heads-up
+> framing. Edited byte-identically in all 3 twins (`mobile.js`/`desktop.js`/`build_site.py`); parity gate OK; verified
+> all 4 bands render correctly across the 210 built pages (e.g. Jaipur 47 moderate, Ranchi 79 high, Arrah 23 low, Agra
+> 44 slightly raised). The score/driver are intentionally restated in prose even though the ring + legend already show
+> them (team preference, "close to the original example").
+>
+> **(2026-06-24 PM, ⓘ-TOOLTIP PERSISTENCE + PEEK-ON-SCROLL + CRAWLER DATE CONSISTENCY - committed 226754a):** Three
+> user-requested fixes, all verified in the live preview.
 > 1. **ⓘ tooltips no longer auto-dismiss on a timer.** The 2.5s auto-close was removed from the `dialInfo` onClick
 >    branch in `mobile.js` + `desktop.js`. An explicit tap now keeps the tooltip (dial band-chip + the per-signal
 >    breakdown popovers - same handler) open until the user (a) taps the ⓘ again, (b) taps anything else (the
@@ -49,8 +61,10 @@
 > - **Precautions section renamed** `Take the right precautions` -> **`What you can do`** (mobile actionsCard, desktop
 >   doSection, build_site SEO `do_sec`, + the desktop Quick Links TOC). (The 4 precaution links were already verified
 >   live + carrying `?src=feverwatch`.)
-> - **Dial / first-fold comprehension:** (1) a plain-language **meaning line** under the band chip - `BAND_MEAN` per
->   band + "<driver> is the main fever to watch in <city> this week"; (2) an **ⓘ tooltip** on the band chip explaining
+> - **Dial / first-fold comprehension:** (1) a plain-language **meaning line** under the band chip - copy revised
+>   2026-06-24 PM (team feedback, see top banner) to `Right now <city>'s overall read is <score>/100, <band phrase +
+>   driver>. A daily snapshot of conditions, not who's actually sick.` (`BAND_MEAN` is now a per-band PHRASE with a
+>   `{d}` driver token); (2) an **ⓘ tooltip** on the band chip explaining
 >   the headline = ~80% the top fever + ~20% the rest, plus a Low->High **bands legend**. It tap-toggles
 >   (`data-act="dialInfo"`), **auto-peeks ~1.7s as a hint** (desktop: on scroll-into-view since the dial is 2nd-fold;
 >   mobile: shortly after load); an EXPLICIT tap then keeps it open until tapped again / outside-tap / **scroll**

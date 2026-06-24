@@ -283,11 +283,12 @@
     if (window.FeverWatchTrend) window.FeverWatchTrend.mount(document.getElementById("s-trend"), c, DATA, { mode: "mobile" });
   }
 
+  // Band phrase with a {d} driver placeholder; composed into the dialmean read-out below.
   var BAND_MEAN = {
-    "HIGH": "Risk is high right now. Be alert and act early if fever appears.",
-    "MODERATE": "Risk is noticeably raised. Take precautions and watch for fever.",
-    "LOW-MODERATE": "Risk is slightly raised. A few simple precautions help.",
-    "LOW": "Risk is low right now. Routine care is enough."
+    "HIGH": "high, driven by {d}",
+    "MODERATE": "moderate, {d} leading",
+    "LOW-MODERATE": "slightly raised, {d} leading",
+    "LOW": "low, {d} highest"
   };
   function riskCard(c, b) {
     var ordered = orderedDiseases(c);
@@ -306,7 +307,7 @@
     var chip = '<div class="bandchip" style="background:' + cbg + ';border-color:' + cbd + '">' +
       '<span class="beacon" style="--c:' + cbc + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>' +
       (BAND_TITLE[band] || band) + ' fever risk in ' + esc(c.name) + ' ' + info + '</div>';
-    var mean = '<p class="dialmean">' + (BAND_MEAN[band] || "") + ' ' + dlabel + ' is the main fever to watch in ' + esc(c.name) + ' this week.</p>';
+    var mean = '<p class="dialmean">Right now ' + esc(c.name) + '\'s overall read is ' + b.score + '/100, ' + (BAND_MEAN[band] || "").replace("{d}", dlabel) + '. A daily snapshot of conditions, not who\'s actually sick.</p>';
     return '<div class="card riskcard">' + periodTabs(DATA.periods) + '<div class="rtop">' + ring(segs, b.score, 120) + '<div class="leg">' + leg + '</div></div>' + chip + mean +
       '<div class="rfoot"><span class="note">Scores calculated from weather conditions, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>' +
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';

@@ -609,11 +609,12 @@ def _fmt_date_js(generated_at: str) -> str:
 # above the fold for at least one flow, so hydration must be a no-op repaint (CLS 0) - edit ALL twins
 # together (build_site.py + mobile.js + desktop.js).
 BAND_TITLE = {"HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low"}
+# Band phrase with a {d} driver placeholder; composed into the dialmean read-out (mirror the JS twins).
 BAND_MEAN = {
-    "HIGH": "Risk is high right now. Be alert and act early if fever appears.",
-    "MODERATE": "Risk is noticeably raised. Take precautions and watch for fever.",
-    "LOW-MODERATE": "Risk is slightly raised. A few simple precautions help.",
-    "LOW": "Risk is low right now. Routine care is enough.",
+    "HIGH": "high, driven by {d}",
+    "MODERATE": "moderate, {d} leading",
+    "LOW-MODERATE": "slightly raised, {d} leading",
+    "LOW": "low, {d} highest",
 }
 
 # Per-disease IDENTITY colours (NOT the severity ramp) - used for the dial segments, the legend dots and
@@ -739,7 +740,8 @@ def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str
     info = ('<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>'
             '<span class="dialtip"><span class="tiprow">Led by <b>' + dlabel + ' (' + str(dscore) + ')</b>, the highest-risk fever here - about <b>80%</b> of the number, plus <b>20%</b> from the other three.</span>'
             '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>')
-    mean = '<p class="dialmean">' + BAND_MEAN.get(b["band"], "") + ' ' + dlabel + ' is the main fever to watch in ' + esc(city["name"]) + ' this week.</p>'
+    mean = ('<p class="dialmean">Right now ' + esc(city["name"]) + "'s overall read is " + str(b["score"]) + '/100, '
+            + BAND_MEAN.get(b["band"], "").replace("{d}", dlabel) + ". A daily snapshot of conditions, not who's actually sick.</p>")
     return ('<div class="card riskcard">' + _period_tabs(periods) + '<div class="rtop">'
             + _ring_svg(segs, b["score"], 120) + _legend_rows(city, diseases, cells_by) + '</div>'
             + _band_chip(city, info) + mean
