@@ -41,13 +41,13 @@ FAQ_ITEMS = [
     ("What is Fever Watch?",
      "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, "
      "chikungunya and typhoid), shown as one decomposable score per city and disease. "
-     "It blends breeding weather, public search interest and PharmEasy lab positivity."),
+     "It blends weather conditions, public search interest and PharmEasy lab positivity."),
     ("Is this a diagnosis or medical advice?",
      "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases "
      "or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."),
     ("How is the score calculated?",
      "It is a transparent weighted blend of three signals at different points in the illness pipeline: "
-     "breeding weather (leading), search interest (coincident) and lab positivity (lagging ground "
+     "weather conditions (leading), search interest (coincident) and lab positivity (lagging ground "
      "truth). When lab data is present it leads the score, and the breakdown is always shown."),
     ("What does forecast-only mean?",
      "Where there is not enough lab data for a city and disease yet, the score is a conditions-based "
@@ -75,13 +75,13 @@ METHOD_HTML = (
     "<h3>1. Per-disease environmental score (0 to 100)</h3>"
     "<p>From trailing daily weather, shaped by disease family:</p><ul>"
     "<li><strong>Mosquito-borne</strong> (dengue, malaria, chikungunya): a unimodal temperature response "
-    "peaking near 29C (Aedes and Anopheles breed fastest at 25 to 30C; activity falls below about 18C and "
+    "peaking near 29C (Aedes and Anopheles multiply fastest at 25 to 30C; activity falls below about 18C and "
     "above about 35C), times lagged rainfall over the past 14 days (standing-water sites emerge 1 to 2 weeks "
     "after rain), times relative humidity (above about 60% extends mosquito lifespan).</li>"
     "<li><strong>Waterborne</strong> (typhoid): recent (7-day) plus accumulated (14-day) rainfall as a "
     "contamination and runoff proxy; temperature secondary.</li></ul>"
     "<h3>2. Three independent signals</h3><ul>"
-    "<li><strong>Breeding weather</strong> (leading, weeks ahead): the environmental score above.</li>"
+    "<li><strong>Weather conditions</strong> (leading, weeks ahead): the environmental score above.</li>"
     "<li><strong>Google Search Interest</strong> (coincident): symptom-search attention, smoothed and "
     "down-weighted when it spikes alone.</li>"
     "<li><strong>PharmEasy lab signal</strong> (lagging, ground truth): aggregate, de-identified "
@@ -113,7 +113,7 @@ METHOD_HTML = (
 
 CONSULT_HREF = "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch"
 ACTIONS = [
-    ("Monsoon precautions", "Cut breeding sites and bites", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch"),
+    ("Monsoon precautions", "Cut mosquito sites and bites", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch"),
     ("Vaccination: does it work?", "What helps, what does not", "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch"),
     ("Fever? Follow our framework", "When to test, when to wait", "https://pharmeasy.in/blog/fever-high-temperature-causes-stages-treatments-and-red-flags/?src=feverwatch"),
     ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
@@ -422,7 +422,7 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "@type": "Dataset", "@id": url + "#dataset",
             "name": "Fever Watch risk scores for " + city["name"],
             "description": "A daily, decomposable monsoon-fever risk score (0 to 100) per disease for "
-                           + city["name"] + ", India, blended from breeding weather, search interest and "
+                           + city["name"] + ", India, blended from weather conditions, search interest and "
                            "lab positivity. A risk indicator, not case counts.",
             "url": url, "inLanguage": lang, "isAccessibleForFree": True,
             "creator": {"@id": base + "#organization"}, "publisher": {"@id": base + "#organization"},
@@ -450,7 +450,7 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
 
 # --- baked full content (crawler / no-JS; hidden for JS users, which hydrate over it) ---------
 
-SIG_COLS = [("weather", "Breeding weather"), ("trends", "Search interest"), ("positivity", "Lab positivity")]
+SIG_COLS = [("weather", "Weather conditions"), ("trends", "Search interest"), ("positivity", "Lab positivity")]
 
 
 CLIMATE_PHRASE = {
@@ -498,7 +498,7 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
     weights_clause = ("When lab data is in, it leads - the mix is roughly 30/22/48 across weather, search and labs, with a small confidence bump when all three agree"
                       if any_conf
                       else "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40), capped at 69 so it can't hit HIGH until the labs back it up")
-    season_clause = ("that's firmly in breeding-friendly territory" if dw >= 60 else ("that's middling - not nothing, not alarming" if dw >= 25 else "that's on the quiet side for now"))
+    season_clause = ("that's firmly in risk-raising territory" if dw >= 60 else ("that's middling - not nothing, not alarming" if dw >= 25 else "that's on the quiet side for now"))
     band_open = {
         "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly this week - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
         "MODERATE": "A MODERATE reading (" + bs + "/100) means things in " + nm + " are a touch elevated but mixed - not a red alert, just a nudge to take the usual precautions.",
@@ -512,15 +512,15 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
         ("How worried should I be about monsoon fevers in " + nm + " right now?",
          "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the four fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
         ("Is dengue something to watch in " + nm + " this week?",
-         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from breeding weather, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
+         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from weather conditions, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
         ("Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
          "This week it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."),
         ("How is " + nm + "'s weather affecting the mosquito-fever risk?",
-         nm + " has a " + clim + " climate, and this week it's averaging about " + temp + "C with " + hum + "% humidity and roughly " + rain14 + " mm of rain over the last fortnight. Mosquitoes like Aedes and Anopheles breed fastest near 29C and love the standing water that shows up a week or two after rain, so warm, wet spells push our breeding-weather signal up and drier or cooler ones pull it back down. (Worth flagging: that's outdoor weather, not body-temperature fever.)"),
+         nm + " has a " + clim + " climate, and this week it's averaging about " + temp + "C with " + hum + "% humidity and roughly " + rain14 + " mm of rain over the last fortnight. Mosquitoes like Aedes and Anopheles multiply fastest near 29C and use the standing water that shows up a week or two after rain, so warm, wet spells push our weather signal up and drier or cooler ones pull it back down. (Worth flagging: that's outdoor weather, not body-temperature fever.)"),
         ("Where does the " + nm + " score actually come from?",
-         "Three signals, blended: breeding weather (from NASA's open POWER data), how much people are searching for these illnesses, and PharmEasy's lab positivity. " + weights_clause + ". We always show the breakdown - it's never a mystery number. For reference, the bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."),
+         "Three signals, blended: weather conditions (from NASA's open POWER data), how much people are searching for these illnesses, and PharmEasy's lab positivity. " + weights_clause + ". We always show the breakdown - it's never a mystery number. For reference, the bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."),
         ("Is it dengue season in " + nm + " yet?",
-         "Monsoon fevers follow the rain more than the calendar. This week " + nm + "'s breeding-weather signal for the mosquito-borne ones is " + den_w + "/100, with about " + rain14 + " mm of rain over the past fortnight feeding standing water - " + season_clause + ". So rather than guessing by the month, just check back here; it updates daily, and you'll see conditions climb or ease in real time."),
+         "Monsoon fevers follow the rain more than the calendar. This week " + nm + "'s weather signal for the mosquito-borne ones is " + den_w + "/100, with about " + rain14 + " mm of rain over the past fortnight leaving standing water - " + season_clause + ". So rather than guessing by the month, just check back here; it updates daily, and you'll see conditions climb or ease in real time."),
         ("Is " + nm + " better or worse off than other Indian cities right now?",
          "Out of the " + str(ncit) + " cities we cover, " + nm + " ranks #" + str(rank) + " this week on the overall score (" + bs + "/100, " + bb + "), which puts it in " + tert + " nationally. That ordering shifts through the season, though, because every city is rescored each day from its own weather, searches and lab signals."),
         ("What does a " + bb + " reading actually mean for " + nm + "?",
@@ -593,6 +593,12 @@ def _fmt_date_js(generated_at: str) -> str:
 # above the fold for at least one flow, so hydration must be a no-op repaint (CLS 0) - edit ALL twins
 # together (build_site.py + mobile.js + desktop.js).
 BAND_TITLE = {"HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low"}
+BAND_MEAN = {
+    "HIGH": "Risk is high right now. Be alert and act early if fever appears.",
+    "MODERATE": "Risk is noticeably raised. Take precautions and watch for fever.",
+    "LOW-MODERATE": "Risk is slightly raised. A few simple precautions help.",
+    "LOW": "Risk is low right now. Routine care is enough.",
+}
 
 # Per-disease IDENTITY colours (NOT the severity ramp) - used for the dial segments, the legend dots and
 # the breakdown dots so the risk card reads consistently (Figma node 49-1303, measured from the render).
@@ -609,7 +615,6 @@ LOC_PIN = ('<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-
 _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
 WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>'
 WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>'
-WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>'
 WX_TEMP = _WX_A + '<path d="M14 14.3V5.5a2 2 0 0 0-4 0v8.8a3.4 3.4 0 1 0 4 0Z"/><path d="M12 9.5v4.8"/></svg>'
 
 # Period tabs above the dial. Only granularities present in grid["periods"] render (the data layer gates
@@ -621,7 +626,7 @@ def _period_tabs(periods: list) -> str:
     avail = set(periods or ["today"])
     out = ""
     for key, label in _PERIOD_LABELS:
-        if key not in avail:
+        if key != "today" or key not in avail:
             continue
         out += '<button class="ftab' + (" on" if key == "today" else "") + '" type="button">' + label + '</button>'
     return '<div class="ftabs">' + out + '</div>'
@@ -677,7 +682,7 @@ def _ring_svg(segs: list, score: int, size: int = 120) -> str:
             '<svg width="' + str(size) + '" height="' + str(size) + '" viewBox="0 0 ' + str(size) + ' ' + str(size) + '">'
             + track_c + segs_html +
             '</svg><div class="num"><div class="numtop"><b>' + str(score) + '</b><span>/ 100</span></div>'
-            '<em>Overall fever risk</em></div></div>')
+            '<em>Overall fever risk score</em></div></div>')
 
 
 def _legend_rows(city: dict, diseases: list, cells_by: dict) -> str:
@@ -689,12 +694,11 @@ def _legend_rows(city: dict, diseases: list, cells_by: dict) -> str:
     for d in ordered:
         cell = cells_by[(cid, d["id"])]; col = DISEASE.get(d["id"], "#888")
         rows += ('<div class="legrow"><span class="legdot" style="background:' + col + '"></span>'
-                 '<span class="legname">' + esc(d["label"]) + ' : <b>' + str(cell["score"]) + '</b></span>'
-                 + _delta_arrow(cell.get("delta_1d")) + '</div>')
+                 '<span class="legname">' + esc(d["label"]) + ' : <b>' + str(cell["score"]) + '</b><span class="legmax">/100</span></span></div>')
     return '<div class="leg">' + rows + '</div>'
 
 
-def _band_chip(city: dict) -> str:
+def _band_chip(city: dict, info: str = "") -> str:
     # MODERATE uses the Figma gold; other bands keep the locked risk ramp. Beacon colour follows suit.
     band = city["blend"]["band"]
     if band == "MODERATE":
@@ -703,46 +707,51 @@ def _band_chip(city: dict) -> str:
         bg, bd, bc = RISK_SOFT.get(band, "#eee"), RISK.get(band, "#888"), RISK.get(band, "#888")
     beacon = ('<span class="beacon" style="--c:' + bc + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>')
     return ('<div class="bandchip" style="background:' + bg + ';border-color:' + bd + '">'
-            + beacon + BAND_TITLE.get(band, band) + ' fever risk in ' + esc(city["name"]) + '</div>')
+            + beacon + BAND_TITLE.get(band, band) + ' fever risk in ' + esc(city["name"]) + ' ' + info + '</div>')
 
 
 def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str:
     """The mobile .card risk card, byte-identical to mobile.js riskCard(): period tabs, the segmented dial
     + per-disease legend, the band chip with the animated beacon, then a caption with Know-more + Share."""
     cid = city["id"]
+    b = city["blend"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
     segs = [(cells_by[(cid, d["id"])]["score"], DISEASE.get(d["id"], "#888")) for d in ordered]
+    drv = next((d for d in diseases if d["id"] == b["driver"]), diseases[0])
+    dlabel = esc(drv["label"])
+    dscore = cells_by[(cid, b["driver"])]["score"]
+    info = ('<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>'
+            '<span class="dialtip"><span class="tiprow">Led by <b>' + dlabel + ' (' + str(dscore) + ')</b>, the highest-risk fever here - about <b>80%</b> of the number, plus <b>20%</b> from the other three.</span>'
+            '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>')
+    mean = '<p class="dialmean">' + BAND_MEAN.get(b["band"], "") + ' ' + dlabel + ' is the main fever to watch in ' + esc(city["name"]) + ' this week.</p>'
     return ('<div class="card riskcard">' + _period_tabs(periods) + '<div class="rtop">'
-            + _ring_svg(segs, city["blend"]["score"], 120) + _legend_rows(city, diseases, cells_by) + '</div>'
-            + _band_chip(city)
-            + '<div class="rfoot"><span class="note">Scores calculated from breeding weather, Google search '
+            + _ring_svg(segs, b["score"], 120) + _legend_rows(city, diseases, cells_by) + '</div>'
+            + _band_chip(city, info) + mean
+            + '<div class="rfoot"><span class="note">Scores calculated from weather conditions, Google search '
             'interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>'
             '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>')
 
 
 def _weather_card(city: dict) -> str:
-    """Breeding-weather conditions this week: the live inputs that drive the mosquito weather sub-score -
+    """Weather conditions this week: the live inputs that drive the mosquito weather sub-score -
     temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
-    humidity - plus an ESTIMATED stagnation index (labelled as such), each as an outline icon +
-    "Label . value" + a short line. Mirrors mobile.js weatherCard(). Above the fold, so byte-identical
-    to the JS twin."""
+    humidity, each as an outline icon + "Label . value" + a short line. Mirrors mobile.js weatherCard().
+    Above the fold, so byte-identical to the JS twin."""
     w = city.get("weather") or {}
     temp, r14 = w.get("temp_mean_c"), w.get("rain_14d_mm")
     hum = w.get("humidity_pct")
-    stag = (w.get("stagnation") or {}).get("level")
     cards = [
-        (WX_TEMP, "Temperature", ("n/a" if temp is None else str(_t_r(temp)) + "°C"), "Breeding is fastest near 29°C, so more mosquitoes emerge."),
-        (WX_RAIN, "Rainfall", ("n/a" if r14 is None else str(_t_r(r14)) + "mm"), "Last 2-week total; lagged water fuels breeding now."),
-        (WX_HUM, "Humidity", ("n/a" if hum is None else str(_t_r(hum)) + "%"), "Mosquitoes survive longer and breed more."),
-        (WX_STAG, "Stagnation", (stag.lower() if stag else "n/a"), "Still water breeds mosquitoes (estimated)."),
+        (WX_TEMP, "Temperature", ("n/a" if temp is None else str(_t_r(temp)) + "°C"), "Warmth near 29°C speeds up mosquito-borne fevers."),
+        (WX_RAIN, "Rainfall", ("n/a" if r14 is None else str(_t_r(r14)) + "mm"), "Last 2-week total; leftover rainwater raises mosquito and typhoid risk."),
+        (WX_HUM, "Humidity", ("n/a" if hum is None else str(_t_r(hum)) + "%"), "Mosquitoes survive longer in humid air."),
     ]
     cells = ""
     for ic, label, val, sub in cards:
         cells += ('<div class="wxcard"><div class="wxtop">' + ic + '<span class="wxhead">' + esc(label)
                   + '<span class="wxsep"></span><b>' + esc(val) + '</b></span></div>'
                   '<div class="wxsub">' + esc(sub) + '</div></div>')
-    return ('<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions this week</h2>'
-            '<p class="sectionsub">What weather means for mosquito breeding.</p>'
+    return ('<div class="card wxsec"><h2 class="sectiontitle">Weather conditions this week</h2>'
+            '<p class="sectionsub">What the weather means for fever risk this week.</p>'
             '<div class="wxgrid">' + cells + '</div></div>')
 
 
@@ -750,7 +759,7 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, perio
     nm = esc(city["name"])
     return ('<div class="fw-pre fw-pre-m">'
             '<div class="hero"><h1>Live monsoon-fever risk for ' + nm + ' in <em>one score</em>.</h1>'
-            '<p>Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google search interest and PharmEasy lab signals.</p></div>'
+            '<p>Dengue, malaria, chikungunya and typhoid, blended from weather conditions, Google search interest and PharmEasy lab signals.</p></div>'
             '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
             '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
             '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>'
@@ -758,12 +767,12 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, perio
 
 
 SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
-SIGNAME = {"weather": "Breeding weather", "trends": "Google Search Interest", "positivity": "PharmEasy labs"}
+SIGNAME = {"weather": "Weather conditions", "trends": "Google Search Interest", "positivity": "PharmEasy labs"}
 
 # Per-signal breakdown metadata, byte-identical to the SIG map in assets/js/desktop.js (and mobile.js).
 # The emoji bytes in the labels are intentional and must stay UTF-8-exact (the JS twin emits them raw).
 SIG = {
-    "weather": {"c": "#15ACA5", "bg": "#DBF3EF", "fg": "#0c5a55", "label": "\U0001F327 Weather", "what": "How friendly recent weather is for breeding."},
+    "weather": {"c": "#15ACA5", "bg": "#DBF3EF", "fg": "#0c5a55", "label": "\U0001F327 Weather", "what": "How much recent weather raises fever risk."},
     "trends": {"c": "#7C6CD6", "bg": "#ECE8FB", "fg": "#4b3fa3", "label": "\U0001F50D Search", "what": "Search interest vs this city's own range."},
     "positivity": {"c": "#3661B0", "bg": "#E7EEFA", "fg": "#22468f", "label": "\U0001F9EA Lab", "what": "Lab positivity vs this fever's own baseline."},
 }
@@ -791,7 +800,7 @@ def _search_hero_d(city: dict, generated_at: str) -> str:
     nm = esc(city["name"])
     return ('<section class="srch"><div class="srchin">'
             '<h1>Live monsoon-fever risk for ' + nm + ' in <em>one score</em>.</h1>'
-            '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>'
+            '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from weather conditions, Google Search interest and PharmEasy lab signals.</p>'
             '<div class="locwrap"><button class="loccard" data-act="combo">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
             '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
             '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
@@ -834,6 +843,13 @@ def _contribs(cell: dict) -> dict:
     return pts
 
 
+TIPINFO = {
+    "weather": "How favourable recent weather is for these fevers, on a 0-100 scale.",
+    "trends": "How much people nearby are searching these symptoms vs the city norm, 0-100.",
+    "positivity": "Share of local tests positive, scaled to a per-fever baseline (dengue 25, malaria 4, chikungunya 15, typhoid 45 = a full 100).",
+}
+
+
 def _sig(meta: dict, cell: dict, k: str, pt) -> str:
     """One signal row, byte-identical to desktop.js sig(meta, cell, k, pt). Bar length = the signal's
     CONTRIBUTION points; the readout line shows a plain High/Moderate/Low level pill + the
@@ -847,7 +863,7 @@ def _sig(meta: dict, cell: dict, k: str, pt) -> str:
     bw = math.floor(pt / cell["score"] * 100 + 0.5)
     return ('<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta["label"] + '</span><span style="font-size:15px;font-weight:800;color:' + meta["c"] + '">+' + str(pt) + '</span></div>'
             '<div style="display:flex;align-items:center;gap:6px;margin:5px 0 2px"><span style="font-size:9.5px;font-weight:800;letter-spacing:.3px;line-height:1.3;padding:1px 7px;border-radius:999px;background:' + meta["bg"] + ';color:' + meta["fg"] + '">' + _level(v) + '</span>' + _sig_badge((cell.get("sig_delta") or {}).get(k)) + '</div>'
-            '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + str(cell["weights"][k]) + '% weight × raw ' + str(v) + '</div>'
+            '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap">' + str(cell["weights"][k]) + '% weight × ' + str(v) + '/100 <span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this number means">i</button><span class="dialtip">' + TIPINFO[k] + '<span class="tipcaret"></span></span></span></div>'
             '<div class="track" style="height:6px"><div class="fill" style="width:' + str(bw) + '%;background:' + meta["c"] + '"></div></div>'
             '<div style="font-size:10px;color:var(--pe-muted);line-height:1.4;margin-top:6px">' + meta["what"] + '</div></div>')
 
@@ -914,7 +930,7 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, 
     # and s-reads renders below but is intentionally NOT a TOC target).
     toc = ('<aside class="toc"><h2>Quick Links</h2>'
            '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a>'
-           '<a href="#s-weather">Breeding weather conditions this week</a><a href="#s-do">Take the right precautions</a>'
+           '<a href="#s-weather">Weather conditions this week</a><a href="#s-do">What you can do</a>'
            '<a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a>'
            '<a href="#s-faq">Common questions</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)
@@ -1044,9 +1060,9 @@ def _trend_caption(model: dict, metric: str) -> str:
         return {"rising": "Risk is climbing as the monsoon builds.", "falling": "Risk is easing as rainfall tapers.",
                 "steady": "Risk is holding close to last year."}[model["dir"]]
     if metric == "weather":
-        return {"below": "Breeding conditions are running below last year.",
-                "above": "Breeding conditions are running hotter than last year.",
-                "inline": "Breeding conditions are tracking last year."}[lvl]
+        return {"below": "Weather conditions are running below last year.",
+                "above": "Weather conditions are running hotter than last year.",
+                "inline": "Weather conditions are tracking last year."}[lvl]
     if metric == "search":
         return {"below": "Public concern is below last year's level.",
                 "above": "Public concern is above last year's level.",
@@ -1205,7 +1221,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         ('<li><a href="' + esc(h) + '"><strong>' + esc(t) + '</strong> - ' + esc(s) + '</a></li>')
         if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
         for t, s, h in ACTIONS)
-    do_sec = ('<section><h2>So, what should I do?</h2><ul class="fw-actions">' + acts + '</ul>'
+    do_sec = ('<section><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
               '<p><a class="fw-cta" href="' + esc(CTA_HREF) + '">' + esc(CTA_LABEL) + '</a></p></section>')
 
     other_sec = ('<section><h2>What is happening in other cities?</h2>'
@@ -1250,7 +1266,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     if city:
         title = city["name"] + " monsoon fever risk this week | Dengue, malaria, typhoid | Fever Watch"
         desc = ("This week's dengue, malaria, chikungunya and typhoid risk for " + city["name"]
-                + ", " + city["state"] + ": one decomposable score from breeding weather, search interest "
+                + ", " + city["state"] + ": one decomposable score from weather conditions, search interest "
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
         faq = faq_items(city, diseases, cells_by, grid["cities"], generated_at)

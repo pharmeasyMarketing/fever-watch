@@ -35,7 +35,7 @@
 
   /* risk card */
   .rtop { display: flex; gap: 14px; align-items: center; }
-  .rfoot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .rfoot { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--pe-bg-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .rfoot .note { font-size: 10.5px; color: var(--pe-muted-2); line-height: 1.45; }
   .sharebtn { border: none; background: var(--pe-green); color: #fff; font-weight: 800; font-size: 13.5px; padding: 11px 16px; border-radius: 12px; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 6px 18px rgba(16,132,126,.28); }
 
@@ -51,7 +51,11 @@
   .acc.open .acchead .chev { transform: rotate(180deg); }
   .accbody { padding: 6px 14px 16px; background: var(--pe-bg); display: none; }
   .acc.open .accbody { display: block; }
-  .sig { margin: 13px 0; }
+  /* let the open accordion overflow so a per-signal popover is not clipped; re-round head/body corners */
+  .acc.open { overflow: visible; }
+  .acc.open .acchead { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+  .acc.open .accbody { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+  .sig { margin: 13px 0; position: relative; }
   .sig .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .sig .lbl { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--pe-ink); }
   .sig .v { font-size: 13.5px; font-weight: 800; color: var(--pe-ink); white-space: nowrap; }
@@ -222,31 +226,53 @@
   .ringwrap { position: relative; flex-shrink: 0; }
   .ringwrap .num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .ringwrap .numtop { display: flex; align-items: baseline; gap: 2px; }
-  .ringwrap .num b { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.5px; color: var(--pe-ink); }
+  .ringwrap .num b { font-size: 27px; font-weight: 800; line-height: 1; letter-spacing: -.5px; color: var(--pe-ink); }
   .ringwrap .num span { font-size: 11px; color: var(--pe-muted-2); }
-  .ringwrap .num em { font-size: 9px; font-style: normal; color: var(--pe-muted-2); line-height: 1.15; max-width: 64px; text-align: center; margin-top: 3px; }
+  .ringwrap .num em { font-size: 8px; font-style: normal; color: var(--pe-muted-2); line-height: 1.15; max-width: 60px; text-align: center; margin-top: 3px; }
   .leg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .legrow { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
   .legdot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
   .legname { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--pe-ink); }
   .legname b { font-weight: 800; font-size: 15.5px; }
+  .legmax { font-size: 11px; font-weight: 600; color: var(--pe-muted-2); margin-left: 1px; }
   .legtrend { font-size: 10.5px; font-weight: 800; flex-shrink: 0; }
   .legtrend.up { color: var(--risk-high); }
   .legtrend.down { color: var(--risk-low); }
   .bandchip { display: block; font-size: 13.5px; font-weight: 700; padding: 11px 14px; border-radius: 12px; margin-top: 16px; line-height: 1.3; color: var(--pe-ink); border: 1.5px solid; }
   .knowmore { font: inherit; border: none; background: none; padding: 0; color: var(--pe-green); font-weight: 700; cursor: pointer; text-decoration: underline; }
+  /* per-signal ⓘ in "Why this score?": ⓘ adopts the small info-button look */
+  .sig .dialinfo-btn { width: 14px; height: 14px; font-size: 9.5px; vertical-align: baseline; }
 
-  /* --- redesign: breeding weather conditions cards (icon + "Label . value" + a short line) --- */
+  /* dial: plain-language meaning line + "how this one number is set" tooltip */
+  .dialmean { margin: 14px 0 0; font-size: 13px; color: var(--pe-ink-2); line-height: 1.5; }
+  .bandchip { position: relative; }   /* anchors .dialtip to the full chip width so it never overflows the screen */
+  .dialinfo { display: inline-flex; vertical-align: middle; }
+  .dialinfo-btn { width: 16px; height: 16px; padding: 0; border-radius: 50%; border: 1.4px solid currentColor; background: none; color: inherit; font: italic 700 11px/1 Georgia, "Times New Roman", serif; cursor: pointer; opacity: .7; display: inline-flex; align-items: center; justify-content: center; }
+  .dialinfo-btn:hover, .dialinfo-btn:focus { opacity: 1; }
+  .dialtip { position: absolute; left: 8px; right: 8px; bottom: calc(100% + 9px); background: #1f2937; color: #fff; font-size: 11.5px; font-weight: 500; line-height: 1.45; text-align: left; white-space: normal; padding: 11px 13px; border-radius: 10px; box-shadow: 0 10px 26px rgba(0,0,0,.3); opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity .16s, transform .16s; z-index: 40; pointer-events: none; }
+  .dialinfo.open .dialtip { opacity: 1; visibility: visible; transform: translateY(0); }
+  .dialtip .tiprow { display: block; }
+  .dialtip b { font-weight: 800; color: #fff; }
+  .tipbands { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.16); }
+  .tb { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; color: #e5e7eb; }
+  .tb i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .tipcaret { position: absolute; top: 100%; left: 50%; width: 0; height: 0; border: 7px solid transparent; border-top-color: #1f2937; transform: translateX(-50%); pointer-events: none; }
+
+  /* --- redesign: weather conditions cards (icon + "Label . value" + a short line); 3 cards = 2 + 1 full-width --- */
   .wxgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
   .wxcard { border: 1px solid var(--pe-line); border-radius: 14px; padding: 14px; background: #fff; }
-  .wxtop { display: flex; align-items: flex-start; gap: 8px; }
-  .wxic { width: 19px; height: 19px; color: var(--pe-muted); flex-shrink: 0; display: block; }
-  .wxhead { font-size: 14px; color: var(--pe-ink); line-height: 1.35; }
-  .wxhead b { font-weight: 800; }
-  .wxsep { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--pe-ink); vertical-align: middle; margin: 0 6px; }
-  .wxsub { font-size: 12px; color: var(--pe-muted); line-height: 1.45; margin-top: 9px; }
+  .wxtop { display: flex; align-items: center; gap: 9px; }
+  .wxic { width: 20px; height: 20px; color: var(--pe-muted); flex-shrink: 0; display: block; }
+  .wxhead { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; font-size: 12.5px; font-weight: 600; color: var(--pe-muted); }
+  .wxhead b { font-weight: 800; font-size: 17px; line-height: 1.15; color: var(--pe-ink); }
+  .wxsep { display: none; }
+  .wxsub { font-size: 12px; color: var(--pe-muted); line-height: 1.45; margin-top: 10px; }
+  /* 3 cards: Temperature + Rainfall stacked tiles on top; Humidity full-width HORIZONTAL below (icon+value left, line right) */
+  .wxgrid .wxcard:nth-child(3) { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; }
+  .wxgrid .wxcard:nth-child(3) .wxtop { flex-shrink: 0; }
+  .wxgrid .wxcard:nth-child(3) .wxsub { margin-top: 0; flex: 1; }
 
-  /* Precaution card titles in brand teal (Figma "Take the right precautions") */
+  /* Precaution card titles in brand teal (Figma "What you can do") */
   .actcard .tx b { color: var(--pe-green-dark); }
 
   /* server-rendered above-fold: show the mobile designed card, hide the desktop shell pre */

@@ -8,30 +8,35 @@
   var DISEASE = { dengue: "#F1839D", malaria: "#887ADE", chikungunya: "#46CFE7", typhoid: "#4681EF" };
   // Red map-pin ("location drop") icon - byte-identical to LOC_PIN in build_site.py (above the fold).
   var LOC_PIN = '<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path fill="#F0493F" d="M12 2.2c-3.9 0-7 3.1-7 7 0 5 7 12.6 7 12.6s7-7.6 7-12.6c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9.2" r="2.6" fill="#fff"/></svg>';
-  // Breeding-weather outline icons - byte-identical to WX_* in build_site.py (above the fold).
+  // Weather-card outline icons - byte-identical to WX_* in build_site.py (above the fold).
   var _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">';
   var WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>';
   var WX_RAIN = _WX_A + '<path d="M7.6 14.4a3.5 3.5 0 0 1 .3-7 4.6 4.6 0 0 1 8.8 1.3 3.2 3.2 0 0 1 .2 5.4"/><path d="M8.4 17.4 7.5 20M12 17.4 11.1 20M15.6 17.4 14.7 20"/></svg>';
-  var WX_STAG = _WX_A + '<path d="M3 7.6q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 12q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/><path d="M3 16.4q2.25-2.4 4.5 0t4.5 0 4.5 0 4.5 0"/></svg>';
   var WX_TEMP = _WX_A + '<path d="M14 14.3V5.5a2 2 0 0 0-4 0v8.8a3.4 3.4 0 1 0 4 0Z"/><path d="M12 9.5v4.8"/></svg>';
   var BEACON_DUR = { "HIGH": "0.85s", "MODERATE": "1.3s", "LOW-MODERATE": "1.9s", "LOW": "2.8s" };
   function beacon(band) { return '<span class="beacon" style="--c:' + (RISK[band] || "#888") + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>'; }
   var PERIOD_LABELS = [["today", "Today"], ["week", "This week"], ["month", "This month"]];
   function periodTabs(periods) {
     var avail = {}; (periods || ["today"]).forEach(function (p) { avail[p] = 1; });
-    var out = PERIOD_LABELS.filter(function (t) { return avail[t[0]]; }).map(function (t) {
+    var out = PERIOD_LABELS.filter(function (t) { return t[0] === "today" && avail[t[0]]; }).map(function (t) {
       return '<button class="ftab' + (t[0] === "today" ? " on" : "") + '" type="button">' + t[1] + '</button>';
     }).join("");
     return '<div class="ftabs">' + out + '</div>';
   }
   var SIGCOL = { weather: [21, 172, 165], trends: [124, 108, 214], positivity: [54, 97, 176] };
-  var SIGNAME = { weather: "Breeding weather", trends: "Google Search Interest", positivity: "PharmEasy labs" };
+  var SIGNAME = { weather: "Weather conditions", trends: "Google Search Interest", positivity: "PharmEasy labs" };
   var SIG = {
-    weather: { c: "#15ACA5", bg: "#DBF3EF", fg: "#0c5a55", label: "🌧 Weather", what: "How friendly recent weather is for breeding." },
+    weather: { c: "#15ACA5", bg: "#DBF3EF", fg: "#0c5a55", label: "🌧 Weather", what: "How much recent weather raises fever risk." },
     trends: { c: "#7C6CD6", bg: "#ECE8FB", fg: "#4b3fa3", label: "🔍 Search", what: "Search interest vs this city's own range." },
     positivity: { c: "#3661B0", bg: "#E7EEFA", fg: "#22468f", label: "🧪 Lab", what: "Lab positivity vs this fever's own baseline." }
   };
   var SHORT = { positivity: "Lab", weather: "Weather", trends: "Search" };
+  // Per-signal "what is this 0-100 number" popover text (byte-identical to build_site.py TIPINFO).
+  var TIPINFO = {
+    weather: "How favourable recent weather is for these fevers, on a 0-100 scale.",
+    trends: "How much people nearby are searching these symptoms vs the city norm, 0-100.",
+    positivity: "Share of local tests positive, scaled to a per-fever baseline (dengue 25, malaria 4, chikungunya 15, typhoid 45 = a full 100)."
+  };
   // 0-100 sub-score -> plain level word (the consumer reads High/Moderate/Low, not the raw number).
   function level(v) { return v >= 67 ? "High" : v >= 34 ? "Moderate" : "Low"; }
   var _IC = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
@@ -40,7 +45,7 @@
   var IC_THERMO = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M14 14.5V5.5a2 2 0 0 0-4 0v9a3.5 3.5 0 1 0 4 0Z"/><path d="M12 9.5v5"/></svg>';
   var IC_DOC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="M6 4v4.5a4 4 0 0 0 8 0V4M10 18.2a4.4 4.4 0 0 0 8.8 0v-2"/><circle cx="18.8" cy="13.5" r="2.2"/></svg>';
   var ACTIONS = [
-    { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut breeding sites and bites", href: "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch" },
+    { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut mosquito sites and bites", href: "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch" },
     { ic: IC_VACC, t: "Vaccination: does it work?", s: "What helps, what does not", href: "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch" },
     { ic: IC_THERMO, t: "Fever? Follow our framework", s: "When to test, when to wait", href: "https://pharmeasy.in/blog/fever-high-temperature-causes-stages-treatments-and-red-flags/?src=feverwatch" },
     { ic: IC_DOC, t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
@@ -237,7 +242,7 @@
     // '<div class="main">'.
     app.innerHTML = searchHero(c) +
       '<div class="shell"><aside class="toc"><h2>Quick Links</h2>' +
-        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Breeding weather conditions this week</a><a href="#s-do">Take the right precautions</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
+        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Weather conditions this week</a><a href="#s-do">What you can do</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
       '</aside>' + weekSectionD(c, b) + whySection(c) + '<div class="main">' + weatherSection(c) +
         doSection(c) +
         '<section id="s-trend" class="fwtrend-host"></section>' + methodSection() + otherSection(c) +
@@ -249,6 +254,23 @@
     wireScrollSpy();
     updateDock();
     document.body.classList.add("fw-hydrated");
+    peekDialInfo();
+  }
+  // Auto-peek the dial info tooltip once on load (a brief hint that tappable info exists), then hide.
+  var _peeked = false, _dialTimer = null;
+  function positionCaret(di) {
+    var b = di.querySelector(".dialinfo-btn"), t = di.querySelector(".dialtip"), c = di.querySelector(".tipcaret");
+    if (!b || !t || !c) return;
+    var br = b.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    c.style.left = Math.max(12, Math.min(tr.width - 12, (br.left + br.width / 2) - tr.left)) + "px";
+  }
+  function peekDialInfo() {
+    if (_peeked) return; _peeked = true;
+    setTimeout(function () {
+      var di = document.querySelector(".dialinfo"); if (!di) return;
+      di.classList.add("open"); positionCaret(di);
+      setTimeout(function () { di.classList.remove("open"); }, 1700);
+    }, 650);
   }
 
   // The "this monsoon vs last year" widget owns its own subtree (tabs / tooltip / collapse / desktop
@@ -260,7 +282,7 @@
   function searchHero(c) {
     return '<section class="srch"><div class="srchin">' +
       '<h1>Live monsoon-fever risk for ' + esc(c.name) + ' in <em>one score</em>.</h1>' +
-      '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from breeding weather, Google Search interest and PharmEasy lab signals.</p>' +
+      '<p class="subtitle">Dengue, malaria, chikungunya and typhoid, blended from weather conditions, Google Search interest and PharmEasy lab signals.</p>' +
       '<div class="locwrap"><button class="loccard" data-act="combo">' + LOC_PIN + '<span class="locname">' + esc(c.name) + '</span>' +
         '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>' +
         '<div class="combopanel' + (state.comboOpen ? ' open' : '') + '"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>' +
@@ -275,43 +297,53 @@
     return '<section id="s-week">' + riskCard(c, b) + '</section>';
   }
 
+  var BAND_MEAN = {
+    "HIGH": "Risk is high right now. Be alert and act early if fever appears.",
+    "MODERATE": "Risk is noticeably raised. Take precautions and watch for fever.",
+    "LOW-MODERATE": "Risk is slightly raised. A few simple precautions help.",
+    "LOW": "Risk is low right now. Routine care is enough."
+  };
   function riskCard(c, b) {
     var ordered = orderedDiseases(c);
     var segs = ordered.map(function (d) { return [cellFor(c.id, d.id).score, DISEASE[d.id] || "#888"]; });
     var leg = ordered.map(function (d) {
       var cell = cellFor(c.id, d.id), cc = DISEASE[d.id] || "#888";
       return '<div class="legrow"><span class="legdot" style="background:' + cc + '"></span>' +
-        '<span class="legname">' + esc(d.label) + ' : <b>' + cell.score + '</b></span>' + deltaArrow(cell.delta_1d) + '</div>';
+        '<span class="legname">' + esc(d.label) + ' : <b>' + cell.score + '</b><span class="legmax">/100</span></span></div>';
     }).join("");
     var band = b.band, cbg = "#FFF8E3", cbd = "#F0D27A", cbc = "#F5B630";  // MODERATE = gold; others = ramp
     if (band !== "MODERATE") { cbg = RISK_SOFT[band]; cbd = RISK[band]; cbc = RISK[band]; }
+    var dlabel = esc((diseaseObj(b.driver) || {}).label || ""), dscore = cellFor(c.id, b.driver).score;
+    var info = '<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>' +
+      '<span class="dialtip"><span class="tiprow">Led by <b>' + dlabel + ' (' + dscore + ')</b>, the highest-risk fever here - about <b>80%</b> of the number, plus <b>20%</b> from the other three.</span>' +
+      '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>';
     var chip = '<div class="bandchip" style="background:' + cbg + ';border-color:' + cbd + '">' +
       '<span class="beacon" style="--c:' + cbc + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>' +
-      (BAND_TITLE[band] || band) + ' fever risk in ' + esc(c.name) + '</div>';
-    return '<div class="card riskcard">' + periodTabs(DATA.periods) + '<div class="rtop">' + ring(segs, b.score, 120) + '<div class="leg">' + leg + '</div></div>' + chip +
-      '<div class="rfoot"><span class="note">Scores calculated from breeding weather, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>' +
+      (BAND_TITLE[band] || band) + ' fever risk in ' + esc(c.name) + ' ' + info + '</div>';
+    var mean = '<p class="dialmean">' + (BAND_MEAN[band] || "") + ' ' + dlabel + ' is the main fever to watch in ' + esc(c.name) + ' this week.</p>';
+    return '<div class="card riskcard">' + periodTabs(DATA.periods) + '<div class="rtop">' + ring(segs, b.score, 120) + '<div class="leg">' + leg + '</div></div>' + chip + mean +
+      '<div class="rfoot"><span class="note">Scores calculated from weather conditions, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>' +
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
   }
 
-  // Breeding weather conditions this week (ported from mobile weatherCard; the WX strings + cards are
+  // Weather conditions this week (ported from mobile weatherCard; the WX strings + cards are
   // byte-frozen with the mobile twin / build_site.py _weather_card). JS-only, below the fold on desktop.
   function weatherSection(c) {
     return '<section id="s-weather">' + weatherCard(c) + '</section>';
   }
   function weatherCard(c) {
-    var w = c.weather || {}, temp = w.temp_mean_c, r14 = w.rain_14d_mm, hum = w.humidity_pct, stag = (w.stagnation || {}).level;
+    var w = c.weather || {}, temp = w.temp_mean_c, r14 = w.rain_14d_mm, hum = w.humidity_pct;
     var cards = [
-      [WX_TEMP, "Temperature", (temp == null ? "n/a" : Math.round(temp) + "°C"), "Breeding is fastest near 29°C, so more mosquitoes emerge."],
-      [WX_RAIN, "Rainfall", (r14 == null ? "n/a" : Math.round(r14) + "mm"), "Last 2-week total; lagged water fuels breeding now."],
-      [WX_HUM, "Humidity", (hum == null ? "n/a" : Math.round(hum) + "%"), "Mosquitoes survive longer and breed more."],
-      [WX_STAG, "Stagnation", (stag ? stag.toLowerCase() : "n/a"), "Still water breeds mosquitoes (estimated)."]
+      [WX_TEMP, "Temperature", (temp == null ? "n/a" : Math.round(temp) + "°C"), "Warmth near 29°C speeds up mosquito-borne fevers."],
+      [WX_RAIN, "Rainfall", (r14 == null ? "n/a" : Math.round(r14) + "mm"), "Last 2-week total; leftover rainwater raises mosquito and typhoid risk."],
+      [WX_HUM, "Humidity", (hum == null ? "n/a" : Math.round(hum) + "%"), "Mosquitoes survive longer in humid air."]
     ];
     var cells = cards.map(function (x) {
       return '<div class="wxcard"><div class="wxtop">' + x[0] + '<span class="wxhead">' + esc(x[1]) +
         '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
     }).join("");
-    return '<div class="card wxsec"><h2 class="sectiontitle">Breeding weather conditions this week</h2>' +
-      '<p class="sectionsub">What weather means for mosquito breeding.</p>' +
+    return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions this week</h2>' +
+      '<p class="sectionsub">What the weather means for fever risk this week.</p>' +
       '<div class="wxgrid">' + cells + '</div></div>';
   }
 
@@ -374,7 +406,7 @@
     var bw = Math.floor(pt / cell.score * 100 + 0.5);
     return '<div class="sig"><div style="display:flex;align-items:center;gap:5px"><span style="flex:1;font-size:11.5px;font-weight:700;color:var(--pe-ink);line-height:1.2">' + meta.label + '</span><span style="font-size:15px;font-weight:800;color:' + meta.c + '">+' + pt + '</span></div>' +
       '<div style="display:flex;align-items:center;gap:6px;margin:5px 0 2px"><span style="font-size:9.5px;font-weight:800;letter-spacing:.3px;line-height:1.3;padding:1px 7px;border-radius:999px;background:' + meta.bg + ';color:' + meta.fg + '">' + level(v) + '</span>' + sigBadge((cell.sig_delta || {})[k]) + '</div>' +
-      '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + cell.weights[k] + '% weight × raw ' + v + '</div>' +
+      '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap">' + cell.weights[k] + '% weight × ' + v + '/100 <span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this number means">i</button><span class="dialtip">' + TIPINFO[k] + '<span class="tipcaret"></span></span></span></div>' +
       '<div class="track" style="height:6px"><div class="fill" style="width:' + bw + '%;background:' + meta.c + '"></div></div>' +
       '<div style="font-size:10px;color:var(--pe-muted);line-height:1.4;margin-top:6px">' + meta.what + '</div></div>';
   }
@@ -383,7 +415,7 @@
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
-    return '<section id="s-do"><div class="card"><h2 class="sechead">Take the right precautions</h2><p class="secsub">Practical follow-through for ' + c.name + ' this week.</p>' +
+    return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' this week.</p>' +
       '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div></section>';
   }
 
@@ -498,7 +530,7 @@
     }
     return '<div class="ringwrap" style="width:' + size + 'px;height:' + size + 'px">' +
       '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + trackC + out +
-      '</svg><div class="num"><div class="numtop"><b>' + score + '</b><span>/ 100</span></div><em>Overall fever risk</em></div></div>';
+      '</svg><div class="num"><div class="numtop"><b>' + score + '</b><span>/ 100</span></div><em>Overall fever risk score</em></div></div>';
   }
   // Day-over-day arrow (vs yesterday); empty unless a present, non-zero delta exists. Mirrors _delta_arrow().
   function deltaArrow(delta) {
@@ -560,7 +592,7 @@
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from breeding weather, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function openShare() {
     // preview = the CI-baked share card itself (assets/img/share/{city}.jpg), so what the
     // user sees is byte-identical to what gets shared - no re-drawn mock to drift.
@@ -574,6 +606,7 @@
   }
 
   function onClick(e) {
+    Array.prototype.forEach.call(document.querySelectorAll(".dialinfo.open"), function (o) { if (!o.contains(e.target)) o.classList.remove("open"); });
     if (e.target.id === "scrim") { document.getElementById("scrim").classList.remove("open"); return; }
     var jump = e.target.closest ? e.target.closest('.toc a[href^="#"]') : null;
     if (jump) { if (e.preventDefault) e.preventDefault(); var hid = jump.getAttribute("href"); var t = document.getElementById(hid.slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); try { history.pushState(null, "", hid); } catch (e2) {} var ls = document.querySelectorAll(".toc a"); for (var i = 0; i < ls.length; i++) ls[i].classList.remove("cur"); jump.classList.add("cur"); spyScroll.lock = Date.now() + 600; return; }
@@ -587,7 +620,7 @@
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "method") { state.methodOpen = !state.methodOpen; var bdy = document.getElementById("methbody"); bdy.classList.toggle("open", state.methodOpen); document.getElementById("methtog").textContent = state.methodOpen ? "Hide details ▴" : "Show details ▾"; if (state.methodOpen && window.FeverWatchMethod) window.FeverWatchMethod.wire(bdy); }
     else if (a === "expand") { state.expanded = el.getAttribute("data-id"); render(); }
-    else if (a === "openMethod") {
+    else if (a === "dialInfo") { var di = el.closest(".dialinfo"); if (di) { var op = di.classList.toggle("open"); if (_dialTimer) clearTimeout(_dialTimer); if (op) { positionCaret(di); _dialTimer = setTimeout(function () { di.classList.remove("open"); }, 2500); } } }    else if (a === "openMethod") {
       // The riskcard "Know more" opens + scrolls to the methodology section (which lives at #s-method).
       state.methodOpen = true;
       var mb = document.getElementById("methbody"); if (mb) mb.classList.add("open");
@@ -621,9 +654,9 @@
   }
 
   var FAQ = [
-    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya and typhoid), shown as one decomposable score per city and disease. It blends breeding weather, public search interest and PharmEasy lab positivity."],
+    ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya and typhoid), shown as one decomposable score per city and disease. It blends weather conditions, public search interest and PharmEasy lab positivity."],
     ["Is this a diagnosis or medical advice?", "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."],
-    ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: breeding weather (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
+    ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: weather conditions (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
     ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
     ["How often is it updated?", "Weather is refreshed daily from NOAA CPC and NASA POWER, search interest weekly, and the lab signal daily. The score for each city is recomputed every day."],
     ["Which cities are covered?", "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search to see the read for your city."]
@@ -658,13 +691,13 @@
             '<div class="mthd-accitem open" data-sig="weather">' +
               '<button class="mthd-acchead" data-mtog>' +
                 '<span class="badge">' + mthWx + '</span>' +
-                '<span class="tt"><span class="nm">Weather <span class="role">leading</span></span><span class="ds">Is it good breeding weather right now?</span></span>' +
+                '<span class="tt"><span class="nm">Weather <span class="role">leading</span></span><span class="ds">Is the weather raising risk right now?</span></span>' +
                 '<span style="text-align:right"><span class="wt">30%</span><span class="wl">in blend</span></span><span class="chev"></span>' +
               '</button>' +
               '<div class="mthd-accbody">' +
                 '<p class="bnote">For the mosquito fevers (dengue, malaria, chikungunya) the weather score mixes three things. The weights below are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Weather weights" data-body="The 45 / 35 / 20 split between temperature, rain and humidity is our own calibration, not a published constant.">our assumption</span>.</p>' +
                 '<div class="mthd-wbar temp"><div class="top"><span class="nm">Temperature</span><span class="sub">best near 26-29C</span><span class="pct">45%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:45%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Temperature drives transmission" data-body="Transmission is fastest around 26 to 29C and slows when it is colder or hotter. Temperature carries the most weight because it speeds up both the mosquito and the virus." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
-                '<div class="mthd-wbar rain"><div class="top"><span class="nm">Rain</span><span class="sub">trailing 14 days, then capped</span><span class="pct">35%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:35%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain makes breeding sites" data-body="Puddles take about 1 to 3 weeks to become biting mosquitoes, so we look back across recent rain." data-href="https://www.nature.com/articles/srep35028">' + mthSrc + 'Source</span><span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="14-day window" data-href="https://www.nature.com/articles/srep35028" data-body="The exact 14-day look-back, and capping rain past a point (beyond which more rain stops adding risk), are our calibration, informed by how long breeding takes after rain.">our assumption</span></div></div>' +
+                '<div class="mthd-wbar rain"><div class="top"><span class="nm">Rain</span><span class="sub">trailing 14 days, then capped</span><span class="pct">35%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:35%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain makes mosquito sites" data-body="Puddles take about 1 to 3 weeks to become biting mosquitoes, so we look back across recent rain." data-href="https://www.nature.com/articles/srep35028">' + mthSrc + 'Source</span><span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="14-day window" data-href="https://www.nature.com/articles/srep35028" data-body="The exact 14-day look-back, and capping rain past a point (beyond which more rain stops adding risk), are our calibration, informed by how long mosquitoes take to develop after rain.">our assumption</span></div></div>' +
                 '<div class="mthd-wbar hum"><div class="top"><span class="nm">Humidity</span><span class="sub">helps adult mosquitoes survive</span><span class="pct">20%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:20%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Humidity aids survival" data-body="Higher humidity lets adult mosquitoes live longer, so they have more time to bite." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
                 '<div class="mthd-typnote"><div class="h">' + mthDrop + 'Typhoid is different: rain only</div>Typhoid is waterborne, so its weather score uses <b>recent plus lagged rain only</b> (dirty water after heavy rain), often within days. Temperature is minor here. The rain windows are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Typhoid rain windows" data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/" data-body="Which rain windows feed the typhoid contamination proxy is our calibration, informed by research linking heavy rain to typhoid.">our assumption</span>. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain and typhoid" data-body="Typhoid spreads through water dirtied by heavy rain, often within days of the rainfall." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/">' + mthSrc + 'Source</span></div>' +
               '</div>' +
@@ -698,6 +731,10 @@
                 '<p class="bnote" style="margin:13px 0 0">Malaria is usually under a few percent and typhoid is common year-round, so one shared cutoff would make malaria always look calm and typhoid always look alarming. These numbers are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Calibrated from our 2025 data" data-href="https://emergency.unhcr.org/emergency-assistance/health-and-nutrition/disease-surveillance-thresholds" data-body="The 25 / 15 / 4 / 45 thresholds are our benchmark, set near the 90th percentile of last season&#39;s positivity per disease in PharmEasy&#39;s own 2025 lab data, following the agency practice of a per-disease baseline.">our assumption</span> (from our 2025 lab data) and match how health agencies track each disease against its own baseline. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Surveillance thresholds" data-body="Public-health surveillance sets a per-disease threshold against each disease&#39;s own baseline, rather than one shared cutoff." data-href="https://emergency.unhcr.org/emergency-assistance/health-and-nutrition/disease-surveillance-thresholds">' + mthSrc + 'Thresholds</span> <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Test positivity" data-body="Test positivity (the share of tests that come back positive) is a standard public-health measure of how active a disease is." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6609187/">' + mthSrc + 'Positivity</span></p>' +
               '</div>' +
             '</div>' +
+          '</div>' +
+          '<div class="mthd-card" style="padding:14px 16px;margin-top:2px">' +
+            '<p class="mthd-ch" style="margin:0 0 10px">Your city\'s one number</p>' +
+            '<p style="margin:0;font-size:13px;color:var(--pe-ink-2);line-height:1.55">Each fever gets its own 0 to 100 score. The headline you see is led by the highest-risk fever (its driver) at about <b>80%</b>, plus a <b>20%</b> share of the other three - so it tracks what you most need to watch without ignoring the rest.</p>' +
           '</div>' +
           '<div class="mthd-card" style="padding:14px 16px;margin-top:2px">' +
             '<p class="mthd-ch" style="margin:0 0 10px">What the colour means</p>' +

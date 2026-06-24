@@ -4,6 +4,64 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
+> **NEWEST (2026-06-24, MEDICAL-REVIEW UX OVERHAUL - committed + pushed to master; verified via the parity gate +
+> DOM/geometry, headless-preview screenshots blocked by a flaky `grid.json` fetch):** A doctors' medical review (7
+> points) drove a wide front-end pass. A 7-point feasibility workflow mapped them; these shipped (committed 2026-06-24):
+> - **"breeding" removed across all user-facing copy** -> "Weather conditions" (signal name; the weather-card title
+>   `Weather conditions this week` + sub; hero; dial footer; share text; FAQ; methodology; meta description;
+>   `grid.json` disclaimer; Dataset JSON-LD; the trend "vs last year" weather captions; method popovers). Rationale:
+>   breeding is mosquito-only and we also cover waterborne typhoid. "mosquito" KEPT where it is the genuine mechanism
+>   (temp/humidity); the Rainfall tile now names typhoid too. Code comments tidied.
+> - **Stagnation weather tile removed** from all 3 render twins. The `_stagnation()` PRODUCER in `build_daily.py` is
+>   KEPT (grid.json still carries `weather.stagnation`, just not rendered) - per user decision. Weather card = 3 tiles
+>   (Temperature / Rainfall / Humidity): **desktop 3-up; mobile 2 squares + Humidity full-width horizontal** below.
+> - **Precautions section renamed** `Take the right precautions` -> **`What you can do`** (mobile actionsCard, desktop
+>   doSection, build_site SEO `do_sec`, + the desktop Quick Links TOC). (The 4 precaution links were already verified
+>   live + carrying `?src=feverwatch`.)
+> - **Dial / first-fold comprehension:** (1) a plain-language **meaning line** under the band chip - `BAND_MEAN` per
+>   band + "<driver> is the main fever to watch in <city> this week"; (2) an **ⓘ tooltip** on the band chip explaining
+>   the headline = ~80% the top fever + ~20% the rest, plus a Low->High **bands legend**. It tap-toggles
+>   (`data-act="dialInfo"`), **auto-peeks ~1.7s once on load**, **auto-closes 2.5s** after a tap, closes on
+>   outside-tap, and **only one `.dialinfo.open` at a time** (the onClick outside-close closes every open tooltip not
+>   containing the click). A `.tipcaret` is JS-positioned to point at the ⓘ (`positionCaret`). (3) dial centre
+>   `Overall fever risk` -> **`Overall fever risk score`** (em narrowed + number shrunk so the longer label stays
+>   inside the 270deg arc - verified by corner-distance vs the safe radius). (4) **period tabs reduced to "Today"
+>   only** - "This week"/"This month" were non-functional placeholders (no per-period score, no click handler), gated
+>   on by days-of-history; `periodTabs`/`_period_tabs` now filter to today (the data layer `grid["periods"]` is
+>   untouched, so re-enabling is a one-line revert once the real multi-period feature is built). (5) **vs-yesterday
+>   delta triangles hidden** in the legend (`deltaArrow` call dropped). (6) per-disease legend scores show **`/100`**.
+> - **Desktop dial + "Why this score" EQUAL HEIGHT (replaces an earlier content-height stopgap):** equal-height was
+>   re-enabled and the DIAL sized DOWN (ring 188->150, number 52->40, `.rtop` gap removed, legend padding tight,
+>   `.rfoot` border-top removed, `.dialmean` margin 15px) so its natural height is <= the breakdown card. So the
+>   breakdown is the taller card (sits at content height, no void) and the dial stretches gracefully (`.rtop` flex:1
+>   re-centres the ring). Root cause of the original void: equal-height + top-aligned tiles grew the tiles
+>   tall-but-empty when the dial grew.
+> - **"Why this score?" "raw" clarified (Option C):** derivation line `{weight}% weight x raw {v}` -> `{weight}% weight
+>   x {v}/100`; each line carries a per-signal **ⓘ popover** (`TIPINFO[k]` = weather/search/lab text) explaining what
+>   that 0-100 number measures. The popover reuses the dial pattern (dark box + caret), anchored to the `.sig`
+>   (`position:relative`); `.acc.open` set to `overflow:visible` (head/body corners re-rounded) so the floating popover
+>   is not clipped; `.dialtip {white-space:normal}` (it lives inside the `nowrap` derivation line and must reset).
+>   NOTE: showing the real lab positivity % is NOT possible - the guardrail keeps only the derived 0-100 signal in
+>   grid.json.
+> - **Shared dial-tooltip primitives** are byte-identical across `mobile.js`/`desktop.js`/`build_site.py` (parity gate
+>   `scripts/parity_check.js` stayed OK throughout): the `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/
+>   `.tipcaret` markup; `BAND_MEAN`, `TIPINFO` maps; the `dialInfo` onClick branch (toggle + `positionCaret` + 2.5s
+>   auto-close), the outside-close (only-one-open), `peekDialInfo`, `positionCaret`. ONE handler drives both the dial
+>   tooltip and the per-signal breakdown popovers.
+> - **STILL OPEN from the review (NOT done):** #6 "this vs last monsoon ~0%" - DIAGNOSED (a single-week endpoint
+>   comparison, NOT universal: only ~40/209 cities read ~0%, Bengaluru is -37%; root = it compares ONE week, should
+>   compare season-to-date) but the fix is NOT implemented. Plus the flaky-but-non-fatal `grid.json` refetch loop in
+>   the headless preview (a seed boot exists so prod hydrates; offered to add a guard). Earlier same session: the two
+>   CTA blog links (Vaccination, Fever-framework) shipped + committed (`1b4b14f`); separate analyses (a 2025 push-
+>   notification cadence plan, a testing-repo setup doc, the one-page push-plan .docx) are gitignored deliverables.
+>
+> **(2026-06-20, EXPLORATION SESSION - national-heatmap plan + hi-fi mock (user NOT happy, exploring an alt direction), 2025/2026 data deep-dive, 6-feature roadmap. ALL local-only / gitignored; nothing committed beyond the methodology port `633fa8c`):**
+> A wide-ranging exploration on top of the committed methodology redesign. Nothing here is committed except the methodology port (`633fa8c`, next banner); the deliverables are gitignored local files.
+> - **NATIONAL INDIA HEATMAP ("the strongest viral object"):** a full implementation plan was produced (a 5-agent research workflow) AND a hi-fi interactive mock built + reviewed live in Chrome. **STATUS: the user is NOT satisfied with the mock look-and-feel and is exploring a different direction - do NOT resume the current mock approach without fresh direction.** The PLAN itself is still good reference (memory `[[national-heatmap-plan]]`): a HYBRID faint-outline + 209 city-DOT map (we hold point data, NOT polygons, so no choropleth); an inline equirectangular projection (no build toolchain), implemented as a JS<->Python twin guarded by a parity gate; a pre-projected `data/india_outline.json` shared by the client SVG AND the resvg-baked share card (one source of truth); dots sized by band (HIGH biggest + a pulsing beacon), confirmed=solid / forecast=faded. **Legal must-get-right = a compliant Survey-of-India boundary (J&K / Aksai Chin / Arunachal drawn as India); recommended source india-geodata SOI-variant (CC0); legal sign-off required, then FREEZE the outline.** Daily-baked "India's fever map this week" OG (1200x630) + WhatsApp (900x1200) via `build_share_cards.py`; lands on the landing hero (Option A clean card vs Option B hero spotlight) + a city-page variant. Mock = `prototypes/national-map-mock.html` (gitignored; builder `_build_map_mock.py` + `_map_template.html`, also gitignored). Palette PREREQUISITE: reconcile `grid.json bands[]` / tokens `--risk-*` / `build_share_cards.py BAND_COLOR` to ONE ramp before building.
+> - **2025/2026 DATA DEEP-DIVE (memory `[[data-insights-2025-2026]]`; workbook `Fever_Watch_2025_2026_Analysis.xlsx`, gitignored, 10 tabs + charts):** 2025 lab = 131,662 tests / 13.4% blended positivity; typhoid 25.2% (flat-high), dengue 11.1% (rises to 15.3% by Oct), chik 7.7% (rises late), malaria 1.9% (flat-low) - VALIDATES the per-disease refs 25/15/4/45 + the lead(weather) -> lag(labs) order. **WHY 191 cities are forecast-capped = lab-coverage geography: only 18/209 are HIGH-eligible; 191 are capped at 69 because NO positivity clears the 30-test gate (795/795 forecast cells have positivity=None). Testing is concentrated in ~18-37 metros - it is structural, not a bug.** 2026 is tracking ~8-10 pts BELOW 2025 (milder onset). **Band-transition VOLUME insight (key for alerts/news): per-disease MODERATE crossings = 10-100x the volume of rare HIGH (384 per-disease band-ups in 6 days vs 34 HIGH crossings in all of 2025) - trigger WEEKLY with hysteresis, frame as conditions/risk, NOT cases.**
+> - **6-FEATURE ROADMAP explored (memory `[[feature-roadmap-2026]]`):** (1) threshold/risk-movement alerts via CleverTap web push - HIGH only fires for ~18 cities, so reframe to tiered "risk rose to MODERATE" per-disease for volume; (2) JSON-LD - AVOID medical / SpecialAnnouncement / FAQ schema (deprecated + breaches the no-medical-schema guardrail); add Dataset + BreadcrumbList only; (3) city-vs-city compare (client-side from grid.json + a client-rendered share card); (4) the national heatmap (above); (5) news syndication = RSS + a newsroom page + an auto data-story email + a PR wire (NewsVoir ~Rs5k/release); (6) OG-image URL sheet -> `Fever_Watch_OG_Image_URLs.csv` (209 rows; pattern `{base_url}assets/img/og/{id}.jpg`; the 1200x630 OG works for Android/web-push big-image with a `?v=` cache-bust; portrait 900x1200 is for WhatsApp, NOT push).
+> - **Other local deliverables (gitignored):** `Fever_Watch_Score_Calculation_Medical_Review.docx` (1-page methodology for the medical team - all assumptions + cited sources + 2 worked examples), `prototypes/method-options.html` (the #3/#7 review mock). `.gitignore` extended to cover all the above scratch + design prototypes.
+>
 > **NEWEST (2026-06-19, "How we calculate the score" methodology REDESIGN - PRODUCTION PORT + review revisions DONE, committed + pushed):**
 > The consumer methodology explainer was redesigned (old `prototypes/method-section-mock.html` was "still confusing"),
 > ported to production, then revised across two user review rounds. It is LIVE in the "How we calculate the score"

@@ -30,7 +30,7 @@ from iohelpers import write_json_atomic  # noqa: E402
 
 ROOT = os.path.dirname(SRC_DIR)
 DISCLAIMER = (
-    "Fever Watch is a risk indicator that blends breeding weather, search interest "
+    "Fever Watch is a risk indicator that blends weather conditions, search interest "
     "and lab positivity into one decomposable score per city and disease. It is not "
     "a diagnosis, a count of actual cases or mosquitoes, or medical advice. "
     "Forecast-only locations are capped and cannot show HIGH."

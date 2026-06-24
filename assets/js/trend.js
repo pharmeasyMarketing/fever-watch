@@ -158,8 +158,8 @@
     var lvl = m.delta <= -6 ? "below" : (m.delta >= 6 ? "above" : "inline");
     if (metric === "overall") return model.dir === "rising" ? "Risk is climbing as the monsoon builds."
       : model.dir === "falling" ? "Risk is easing as rainfall tapers." : "Risk is holding close to last year.";
-    if (metric === "weather") return lvl === "below" ? "Breeding conditions are running below last year."
-      : lvl === "above" ? "Breeding conditions are running hotter than last year." : "Breeding conditions are tracking last year.";
+    if (metric === "weather") return lvl === "below" ? "Weather conditions are running below last year."
+      : lvl === "above" ? "Weather conditions are running hotter than last year." : "Weather conditions are tracking last year.";
     if (metric === "search") return lvl === "below" ? "Public concern is below last year's level."
       : lvl === "above" ? "Public concern is above last year's level." : "Public concern is tracking last year.";
     return lvl === "below" ? "Positivity is tracking below last year."

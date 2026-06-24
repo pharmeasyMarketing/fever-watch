@@ -156,12 +156,26 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
   agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"
   line and a reconciliation footer. (2026-06-17 readout redesign: each signal now leads with a **High/Moderate/Low
-  level pill** + a `{weight}% weight x raw {v}` derivation, NOT the old `{value} raw, {weight}%`; labels shortened to
-  Weather / Search / Lab; positivity scaled by a **per-disease reference 25/4/15/45**, not the global 35.)
-  Helper `contribs()`/`_contribs()` is byte-identical across mobile.js/desktop.js/
-  build_site.py. Desktop renders compact vertical tiles in the 3-col `#s-why` grid, kept equal-height with the dial
-  card (`#s-week`). The **breeding-weather card shows the real weather-score drivers** (temperature near 29C, 14-day
-  lagged rain, humidity, estimated stagnation), not a static tip.
+  level pill** + a `{weight}% weight x {v}/100` derivation (2026-06-24: "raw" dropped for "/100", and each derivation
+  line gained a per-signal **ⓘ popover** `TIPINFO[k]` explaining the 0-100 number); labels Weather / Search / Lab;
+  positivity scaled by a **per-disease reference 25/4/15/45**, not the global 35.) Helper `contribs()`/`_contribs()`
+  byte-identical across mobile.js/desktop.js/build_site.py. Desktop renders compact vertical tiles in the 3-col
+  `#s-why` grid, **equal-height with the dial** (`#s-week`) - the dial is sized DOWN so it is the shorter card (no
+  empty void); `.acc.open` is `overflow:visible` so the per-signal popover is not clipped. The **weather card
+  (`Weather conditions this week`) shows the real weather-score drivers - 3 tiles** Temperature near 29C / 14-day
+  Rainfall / Humidity (desktop 3-up, mobile 2 + Humidity full-width); the old "estimated stagnation" tile was removed
+  2026-06-24 (producer kept in `build_daily.py`).
+- **2026-06-24 medical-review UX overhaul (committed + pushed to master; full detail in PROJECT_STATE):**
+  "breeding" -> "Weather conditions" everywhere user-facing (mosquito kept where it is the mechanism; the Rainfall tile
+  names typhoid too); stagnation tile removed (producer kept); precautions section -> `What you can do`; the dial
+  gained a plain-language **meaning line** (`BAND_MEAN` per band + the driver fever) + an **ⓘ tooltip** on the band
+  chip (tap-toggle, JS-positioned caret, bands legend + the 80/20 headline derivation, auto-peek once on load, 2.5s
+  auto-close, **only one tooltip open at a time**); `Overall fever risk` -> `Overall fever risk score`; period tabs
+  reduced to **Today only** (week/month were dead placeholders); legend vs-yesterday delta triangles hidden;
+  per-disease legend scores show `/100`. Shared primitives `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/
+  `.tipcaret` + `BAND_MEAN`/`TIPINFO` maps + the `dialInfo` onClick branch + `positionCaret` are byte-identical across
+  the 3 twins (parity-gated); `.dialtip` anchors to its positioned parent (`.bandchip` for the dial, `.sig` for the
+  breakdown), opens above, `white-space:normal`.
 
 ## Open decisions / TODO
 

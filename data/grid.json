@@ -1,7 +1,7 @@
 {
   "engine_version": "FW-ENSEMBLE-0.1.0",
   "generated_at": "2026-06-23T23:38:42+00:00",
-  "disclaimer": "Fever Watch is a risk indicator that blends breeding weather, search interest and lab positivity into one decomposable score per city and disease. It is not a diagnosis, a count of actual cases or mosquitoes, or medical advice. Forecast-only locations are capped and cannot show HIGH.",
+  "disclaimer": "Fever Watch is a risk indicator that blends weather conditions, search interest and lab positivity into one decomposable score per city and disease. It is not a diagnosis, a count of actual cases or mosquitoes, or medical advice. Forecast-only locations are capped and cannot show HIGH.",
   "weather": {
     "generated_at": "2026-06-23T23:38:15+00:00",
     "provider": "cpc",
