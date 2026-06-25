@@ -41,6 +41,12 @@
   .srch .subtitle { font-size: 14.5px; color: #d8efed; margin: 0 auto 22px; max-width: 600px; line-height: 1.55; }
   /* Updated/date note below the location pill (mirrors mobile loc-note copy). */
   .srch .loc-note { font-size: 12.5px; color: #cfe6e4; margin: 12px 0 0; text-align: center; }
+  .reviewline { text-align: center; font-size: 12.5px; color: var(--pe-muted); margin: 8px 0 0; line-height: 1.5; }
+  .reviewline .revico { color: var(--pe-green); vertical-align: -2px; margin-right: 2px; }
+  .reviewline a { color: var(--pe-green); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+  .srch .reviewline { color: #cfe6e4; }
+  .srch .reviewline .revico { color: #cfe6e4; }
+  .srch .reviewline a { color: #fff; }
   /* Centered location pill (the mobile .loccard, reused as the city picker trigger). .locwrap anchors the
      .combopanel dropdown directly under the pill. */
   .locwrap { position: relative; max-width: 420px; margin: 0 auto; }

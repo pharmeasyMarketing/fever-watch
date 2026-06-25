@@ -89,7 +89,9 @@ but is now unused):
 
 ## Guardrails (carry into every session)
 
-- Risk-indicator framing only; never diagnostic or predictive of individual illness; no medical JSON-LD.
+- Risk-indicator framing only; never diagnostic or predictive of individual illness; no medical JSON-LD. (The
+  reviewer byline added 2026-06-24 uses schema.org's GENERIC `WebPage.reviewedBy` Person entities for E-E-A-T, NOT
+  `MedicalWebPage` / medical-entity types - that is the compliant, non-medical way and stays inside this guardrail.)
 - The single score is always decomposable; forecast-only is capped and cannot show HIGH.
 - Positivity is shown as an aggregate city-level TREND only; nothing re-identifiable (selection bias).
 - Weather temperature is not body-temperature fever; keep them distinct in all copy.

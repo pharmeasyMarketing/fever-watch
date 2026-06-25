@@ -4,7 +4,22 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-24 PM, DIAL MEANING-LINE COPY shortened per team feedback - local, NOT yet committed):** The
+> **NEWEST (2026-06-24 PM, REVIEWER BYLINE + reviewedBy SCHEMA for E-E-A-T - committed + pushed to master 2026-06-25):** Added a
+> `Reviewed by Dr. Nikita Toshi and Dr. Avinav Gupta` trust strip (treatment "V2": a shield icon + always-underlined
+> links to their PharmEasy editorial-policy profiles, `target=_blank rel=noopener`) directly under the
+> `Updated <date>. Available in select cities.` line, on BOTH flows + the landing. Visible markup = a shared `REVIEWBY`
+> constant, byte-identical across `mobile.js` / `desktop.js` / `build_site.py` (parity-gated, mirroring `LOC_PIN`),
+> inserted into render() / searchHero() / `_mobile_pre` / `_search_hero_d` / `render_landing`. Per-flow CSS: mobile =
+> green links on the light hero; desktop = WHITE links + `#cfe6e4` label on the dark-green `.srch` gradient (both
+> confirmed by computed styles). JSON-LD: `reviewedBy` Person[] (name, url, jobTitle "Doctor", worksFor #organization),
+> sourced from the `REVIEWERS` list in build_site.py, on the city `WebPage` node AND the landing `WebApplication` node.
+> **COMPLIANCE: deliberately uses schema.org's generic `WebPage.reviewedBy` (editorial trust), NOT `MedicalWebPage` /
+> medical-entity types, so it respects the "no medical schema in JSON-LD" guardrail - but get a counsel nod in the
+> pre-launch compliance pass since the reviewers are doctors.** Verified: node --check, PY parse, parity OK both flows,
+> SSG 210 pages, reviewedBy parses on city + landing, byline computed colours correct. Reviewer data lives in
+> `REVIEWERS`/`REVIEWBY` in build_site.py (could move to config/site.json if the brand team wants to self-serve edits).
+>
+> **(2026-06-24 PM, DIAL MEANING-LINE COPY shortened per team feedback - committed 2a18295):** The
 > dial-card meaning line was rewritten (team feedback: the old "Risk is noticeably raised. Take precautions and watch
 > for fever. <Driver> is the main fever to watch in <city> this week." was too long). New copy (<=20 words, "Set E"):
 > **`Right now <city>'s overall read is <score>/100, <band phrase>. A daily snapshot of conditions, not who's actually

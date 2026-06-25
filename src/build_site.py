@@ -433,6 +433,8 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "inLanguage": lang, "isPartOf": {"@id": base + "#website"},
             "about": [d["label"] for d in diseases] + ["monsoon fever risk in India"],
             "primaryImageOfPage": og_url, "dateModified": generated_at,
+            "reviewedBy": [{"@type": "Person", "@id": r["url"] + "#person", "name": r["name"], "url": r["url"],
+                            "jobTitle": "Doctor", "worksFor": {"@id": base + "#organization"}} for r in REVIEWERS],
         })
         graph.append({
             "@type": "Dataset", "@id": url + "#dataset",
@@ -458,6 +460,8 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "isAccessibleForFree": True, "inLanguage": lang, "description": cfg["description"],
             "dateModified": generated_at, "isPartOf": {"@id": base + "#website"},
             "creator": {"@id": base + "#organization"}, "publisher": {"@id": base + "#organization"},
+            "reviewedBy": [{"@type": "Person", "@id": r["url"] + "#person", "name": r["name"], "url": r["url"],
+                            "jobTitle": "Doctor", "worksFor": {"@id": base + "#organization"}} for r in REVIEWERS],
         })
         graph.append(faqpage)
     body = json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False, indent=2).replace("</", "<\\/")
@@ -627,6 +631,14 @@ LOC_PIN = ('<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-
            '<path fill="#F0493F" d="M12 2.2c-3.9 0-7 3.1-7 7 0 5 7 12.6 7 12.6s7-7.6 7-12.6c0-3.9-3.1-7-7-7z"/>'
            '<circle cx="12" cy="9.2" r="2.6" fill="#fff"/></svg>')
 
+# Reviewer byline (E-E-A-T trust strip). REVIEWBY is the visible markup, byte-identical to the REVIEWBY
+# constant in mobile.js + desktop.js (above the fold, parity-gated). REVIEWERS feeds the JSON-LD reviewedBy.
+REVIEWERS = [
+    {"name": "Dr. Nikita Toshi", "url": "https://pharmeasy.in/legal/editorial-policy/dr-nikita-toshi-2"},
+    {"name": "Dr. Avinav Gupta", "url": "https://pharmeasy.in/legal/editorial-policy/dr-avinav-gupta-165"},
+]
+REVIEWBY = ('<p class="reviewline"><svg class="revico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 4v5c0 4-3 7-7 8-4-1-7-4-7-8V7l7-4z"/><path d="M9 12l2 2 4-4"/></svg> Reviewed by <a href="https://pharmeasy.in/legal/editorial-policy/dr-nikita-toshi-2" target="_blank" rel="noopener">Dr. Nikita Toshi</a> and <a href="https://pharmeasy.in/legal/editorial-policy/dr-avinav-gupta-165" target="_blank" rel="noopener">Dr. Avinav Gupta</a></p>')
+
 # Outline icons for the breeding-weather cards (droplet / rain cloud / water waves / sparkle). Kept
 # byte-identical to the WX_* strings in assets/js/mobile.js (above the fold).
 _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
@@ -780,8 +792,8 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, perio
             '<p>Dengue, malaria, chikungunya and typhoid, blended from weather conditions, Google search interest and PharmEasy lab signals.</p></div>'
             '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
             '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
-            '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>'
-            '<div class="wrap">' + _risk_card(city, diseases, cells_by, periods) + _weather_card(city) + '</div></div>')
+            '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>' + REVIEWBY
+            + '<div class="wrap">' + _risk_card(city, diseases, cells_by, periods) + _weather_card(city) + '</div></div>')
 
 
 SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
@@ -823,7 +835,7 @@ def _search_hero_d(city: dict, generated_at: str) -> str:
             '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
             '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
             '</div>'
-            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in select cities.</p></div></section>')
+            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in select cities.</p>' + REVIEWBY + '</div></section>')
 
 
 def _sig_badge(delta) -> str:
@@ -1260,7 +1272,7 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
         '<h1>Fever Watch: live monsoon-fever risk for your city, in one score.</h1>'
         '<p class="lede">' + esc(cfg["description"]) + '</p>'
         '<div class="fw-search" aria-hidden="true">Search your city</div>'
-        '<p class="microcopy">Available in select cities.</p></header>'
+        '<p class="microcopy">Available in select cities.</p>' + REVIEWBY + '</header>'
     )
     other_sec = ('<section><h2>Monsoon fever risk by city, this week</h2>'
                  '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'

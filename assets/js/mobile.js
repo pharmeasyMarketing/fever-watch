@@ -8,6 +8,8 @@
   var DISEASE = { dengue: "#F1839D", malaria: "#887ADE", chikungunya: "#46CFE7", typhoid: "#4681EF" };
   // Red map-pin ("location drop") icon - byte-identical to LOC_PIN in build_site.py (above the fold).
   var LOC_PIN = '<svg class="locpin" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path fill="#F0493F" d="M12 2.2c-3.9 0-7 3.1-7 7 0 5 7 12.6 7 12.6s7-7.6 7-12.6c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9.2" r="2.6" fill="#fff"/></svg>';
+  // Reviewer byline (E-E-A-T trust strip), byte-identical to the REVIEWBY constant in desktop.js + build_site.py.
+  var REVIEWBY = '<p class="reviewline"><svg class="revico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 4v5c0 4-3 7-7 8-4-1-7-4-7-8V7l7-4z"/><path d="M9 12l2 2 4-4"/></svg> Reviewed by <a href="https://pharmeasy.in/legal/editorial-policy/dr-nikita-toshi-2" target="_blank" rel="noopener">Dr. Nikita Toshi</a> and <a href="https://pharmeasy.in/legal/editorial-policy/dr-avinav-gupta-165" target="_blank" rel="noopener">Dr. Avinav Gupta</a></p>';
   // Weather-card outline icons - byte-identical to WX_* in build_site.py (above the fold).
   var _WX_A = '<svg class="wxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">';
   var WX_HUM = _WX_A + '<path d="M12 3.6c2.9 3.8 5.3 6.5 5.3 9.5a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.7 5.3-9.5Z"/></svg>';
@@ -226,6 +228,7 @@
       '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + esc(c.name) + '</span>' +
       '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>' +
       '<p class="searchnote loc-note">Updated ' + fmtDate(DATA.generated_at) + '. Available in select cities.</p>' +
+      REVIEWBY +
       '<div class="wrap">' +
         riskCard(c, b) + weatherCard(c) + breakdownCard(c) + actionsCard(c) + leaderboardCard(c) +
         '<section id="s-trend" class="fwtrend-host"></section>' + faqCard() + readsCard() +
