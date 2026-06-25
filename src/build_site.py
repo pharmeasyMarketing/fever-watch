@@ -361,7 +361,7 @@ def footer_html() -> str:
     return (
         '<footer class="footer"><div class="footin">' + col1 + col2 + col3 + col4 + '</div>'
         '<div class="footbar"><div class="footbarin">'
-        '<span class="footdisc">' + MEDICAL_DISCLAIMER + ' Live rainfall via NOAA CPC (public domain) and temperature/humidity via NASA POWER (public domain); Google search trends via Google Trends; aggregate lab data from PharmEasy Labs and its Partner Affiliates.</span>'
+        '<span class="footdisc">' + MEDICAL_DISCLAIMER + ' The data used to calculate the risk is derived from: live rainfall via NOAA CPC (public domain) and temperature/humidity via NASA POWER (public domain); Google search trends via Serpapi; aggregate lab data from PharmEasy Labs and its Partner Affiliates.</span>'
         '<span>&#169; 2026 PharmEasy. All Rights Reserved</span></div></div></footer>'
     )
 

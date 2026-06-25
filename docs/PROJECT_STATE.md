@@ -4,7 +4,19 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-25, TOOLTIP FIX + ANDROID PUSH IMAGES + LOGGER URL + PROD base_url):** Four-part change, all verified.
+> **NEWEST (2026-06-25 PM, LEGAL FOOTER-DISCLAIMER UPDATE):** Legal supplied an updated footer disclaimer; applied
+> VERBATIM to the shared page footer (`footer_html` `.footdisc` in `build_site.py`, ~L364). The footer is now exactly:
+> "Fever Watch is a risk indicator and not a diagnosis or representation of actual case counts. It is for
+> informational purposes only and should not constitute medical advice; please consult a doctor for any symptoms or
+> health concerns. The data used to calculate the risk is derived from: live rainfall via NOAA CPC (public domain) and
+> temperature/humidity via NASA POWER (public domain); Google search trends via Serpapi; aggregate lab data from
+> PharmEasy Labs and its Partner Affiliates." = `MEDICAL_DISCLAIMER` (the unchanged 2-sentence constant, also reused in
+> the crawler `fw-fallback` `.fw-disc`) + the new data-sources sentence. Changes vs before: added the "The data used to
+> calculate the risk is derived from:" lead-in and changed the trends attribution "Google Trends" -> **"Serpapi"**
+> (legal's wording). **This copy is legal-mandated - do not edit casually; re-confirm with counsel before changing.**
+> Verified: footer renders the exact text on city pages + landing; parity OK both flows.
+>
+> **(2026-06-25, TOOLTIP FIX + ANDROID PUSH IMAGES + LOGGER URL + PROD base_url):** Four-part change, all verified.
 > 1. **Tooltip positioning fix.** `.dialtip` (dial chip + per-signal "Why this score?" popovers, both flows) was
 >    `position:absolute` opening upward with no clamping, at z-index 40 (above the sticky header z-index 30), so on
 >    desktop it overflowed the top, overlapping the header + Quick-Links sidebar. Fix: `.dialtip` -> `position:fixed`
