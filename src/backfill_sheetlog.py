@@ -82,6 +82,7 @@ HEADER = [
     "confidence", "score", "band", "mode",
     "trends_state_interest", "weather_fresh", "trends_fresh", "stale", "weather_source",
     "tests_booked", "positives", "positivity_pct",
+    "push_image_url_prod", "push_image_url_staging",
 ]
 
 # --- per-disease positivity reference (the % positivity that maps to signal 100) ----------------
@@ -372,6 +373,7 @@ def build_grid_for_date(
                 "" if tests is None else tests,                  # AB tests_booked (real 2025 / blank)
                 "" if positives is None else positives,          # AC positives
                 "" if pos_pct is None else pos_pct,              # AD positivity_pct (LITERAL; xlsx -> formula)
+                "", "",                                          # AE/AF push image URLs (n/a for historic backfill)
             ])
 
         # OVERALL city-blend row: score = round(0.8*top + 0.2*mean-of-rest), same as build_daily.
@@ -392,6 +394,7 @@ def build_grid_for_date(
             "", "fresh", "fresh", "FALSE",                       # W blank; X/Y fresh, Z stale
             WEATHER_SOURCE,                                      # AA weather provenance
             "", "", "",                                          # AB-AD blank for the blend row
+            "", "",                                              # AE/AF push image URLs (n/a for historic backfill)
         ])
 
     return rows

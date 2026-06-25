@@ -51,8 +51,9 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   (or `WEATHER_PROVIDER=nasa-power`). Open-Meteo stays behind the same interface as a dev/forecast option
   (its free tier is non-commercial). IMD gauge data is NOT used in production (non-commercial licence);
   it was the offline validation truth only.
-- **Hosting:** GitHub Pages (public repo) + Actions cron. Production = a subpath on the pharmeasy.in
-  apex via reverse-proxy, mirroring Mosquito Watch. `base_url` lives only in `config/site.json`.
+- **Hosting:** GitHub Pages (public repo) + Actions cron. Production = `https://pharmeasy.in/fever-watch/`
+  (a subpath on the pharmeasy.in apex via reverse-proxy, mirroring Mosquito Watch). `base_url` lives only in
+  `config/site.json` (set 2026-06-25; was `/research/fever-watch-2026/`).
 - **Analytics:** Google Tag Manager container `GTM-W5PR55Z` is injected site-wide from the shared `PAGE`
   template in `src/build_site.py` (loader `<script>` high in `<head>` + the `<noscript>` iframe right after
   `<body>`), so every city + landing page carries it. Add tags/pixels in GTM, not in the page source.
@@ -184,9 +185,13 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   the seed->data re-render detaches (and is throttled in hidden tabs); the selector is re-queried live each render.
   A peek is immune to the scroll-close (tracked by `_peekEl`) and self-closes ~1.7s. Shared primitives
   `.dialinfo`/`.dialinfo-btn[data-act=dialInfo]`/`.dialtip`/`.tipcaret` + `BAND_MEAN`/`TIPINFO` maps + the
-  `dialInfo` onClick branch + `positionCaret` + `firePeek` + `maybeScrollPeek` + `onTipScroll` are byte-identical
-  across the JS twins (`peekDialInfo` differs by flow); `.dialtip` anchors to its positioned parent (`.bandchip` for the dial, `.sig` for the
-  breakdown), opens above, `white-space:normal`.
+  `dialInfo` onClick branch + `positionTip` + `firePeek` + `maybeScrollPeek` + `onTipScroll` are byte-identical
+  across the JS twins (`peekDialInfo` differs by flow). **Tooltip positioning (2026-06-25):** `.dialtip` is
+  `position:fixed` (z-index 90, above the sticky header) and JS-placed by `positionTip` (renamed from `positionCaret`),
+  mirroring `method.js` `placePop` - it sits above the ⓘ, FLIPS below (`.dialtip.below`, caret flips) when there is
+  no room above (clears the header), clamps horizontally to the viewport, and keeps the caret on the ⓘ. This fixed a
+  bug where the box overflowed the top, overlapping the header + sidebar. (CSS is not parity-gated; markup is, so the
+  fix is JS+CSS only.) Desktop hover-open was dropped (it opened an unplaced fixed box); click + peek place it.
 
 ## Open decisions / TODO
 

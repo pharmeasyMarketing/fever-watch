@@ -242,11 +242,24 @@
   // Peek info tooltips briefly as a hint that they hold tappable info. _peekEl marks the transient peek
   // so the scroll-close leaves it alone; _scrollPeekDone / _loadPeekArmed make each peek fire once.
   var _dialTimer = null, _peekEl = null, _loadPeekArmed = false, _scrollPeekDone = false, _scrollPeekSel = "";
-  function positionCaret(di) {
+  // Viewport-aware placement (mirrors method.js placePop): the .dialtip is position:fixed, so place it
+  // above the i by default, FLIP below when there is no room above (clears the sticky header), clamp
+  // horizontally to the viewport, and keep the caret pointing at the i. Replaces the old caret-only helper.
+  function positionTip(di) {
     var b = di.querySelector(".dialinfo-btn"), t = di.querySelector(".dialtip"), c = di.querySelector(".tipcaret");
     if (!b || !t || !c) return;
-    var br = b.getBoundingClientRect(), tr = t.getBoundingClientRect();
-    c.style.left = Math.max(12, Math.min(tr.width - 12, (br.left + br.width / 2) - tr.left)) + "px";
+    t.classList.remove("below");
+    var br = b.getBoundingClientRect(), tw = t.offsetWidth, th = t.offsetHeight,
+        vw = window.innerWidth || document.documentElement.clientWidth,
+        vh = window.innerHeight || document.documentElement.clientHeight,
+        cx = br.left + br.width / 2, left = cx - tw / 2, top = br.top - th - 9, below = false;
+    if (top < 8) { top = br.bottom + 9; below = true; }
+    if (below && top + th > vh - 8) top = Math.max(8, vh - th - 8);
+    if (left < 8) left = 8;
+    if (left + tw > vw - 8) left = vw - tw - 8;
+    t.style.left = left + "px"; t.style.top = top + "px";
+    t.classList.toggle("below", below);
+    c.style.left = Math.max(12, Math.min(tw - 12, cx - left)) + "px";
   }
   // MOBILE: peek the dial shortly after load (it is in the first fold); also peek the top disease's first
   // "Why this score?" tooltip once it scrolls into view, hinting these per-signal info popovers exist.
@@ -262,7 +275,7 @@
     if (_dialTimer) { clearTimeout(_dialTimer); _dialTimer = null; }
     if (_peekEl && _peekEl !== di) _peekEl.classList.remove("open");
     _peekEl = di;
-    di.classList.add("open"); positionCaret(di);
+    di.classList.add("open"); positionTip(di);
     _dialTimer = setTimeout(function () { if (_peekEl === di) { di.classList.remove("open"); _peekEl = null; } }, 1700);
   }
   // Fire the scroll-triggered peek once its target is fully scrolled into view (re-queried live each call).
@@ -600,7 +613,7 @@
     else if (a === "lbpage") { state.lbPage = parseInt(el.getAttribute("data-page"), 10) || 0; renderLeaderboard(); }
     else if (a === "openMethod") { var mb = document.getElementById("methbody"); if (mb && !mb.dataset.filled) { mb.innerHTML = METHOD + '<p class="dashnote">' + DASHNOTE + '</p>'; mb.dataset.filled = "1"; if (window.FeverWatchMethod) window.FeverWatchMethod.wire(mb); } fillMethodExamples(); openSheet("methodsheet"); }
     else if (a === "openShare") { renderShare(); openSheet("sharesheet"); }
-    else if (a === "dialInfo") { var di = el.closest(".dialinfo"); if (di) { if (_dialTimer) { clearTimeout(_dialTimer); _dialTimer = null; } _peekEl = null; var op = di.classList.toggle("open"); if (op) positionCaret(di); } }    else if (a === "shareWA") doShare("wa");
+    else if (a === "dialInfo") { var di = el.closest(".dialinfo"); if (di) { if (_dialTimer) { clearTimeout(_dialTimer); _dialTimer = null; } _peekEl = null; var op = di.classList.toggle("open"); if (op) positionTip(di); } }    else if (a === "shareWA") doShare("wa");
     else if (a === "shareDL") doShare("dl");
     else if (a === "shareCopy") doShare("copy");
   }

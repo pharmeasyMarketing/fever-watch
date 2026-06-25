@@ -529,6 +529,55 @@ def render_landscape(ctx):
     return "".join(p)
 
 
+def render_push(ctx):
+    """1024x512 (2:1) Android push-notification "big picture" card (approved 2026-06-25 mock).
+    Compact + large type so it stays legible at notification size: brand header + date, then city,
+    "<band> fever risk", a band-coloured driver pill, and a score badge on the right."""
+    card = Card(ctx)
+    W, H = 1024, 512
+    SIDE, TOPM, HDR_H = 44.0, 28.0, 70.0
+    LX = 60.0
+    p = [svg_head(W, H, 8, 12)]
+    header_bar(card, p, W, SIDE, TOPM, HDR_H, 20, 40.0, 26, 27.0, 16.0, 14.0, -0.3)
+
+    # left column: date, city eyebrow, "<band> fever risk" headline, driver pill
+    up = 19.0
+    top = TOPM + HDR_H + 44.0
+    p.append('<g fill-opacity="0.82">%s</g>' % card.text(ctx["updated"], LX, top + up * CAP, F_SEMI, up, "#ffffff"))
+    cs = 28.0
+    city_cap = top + up * CAP + 26.0
+    p.append(card.text(ctx["city"], LX, city_cap + cs * CAP, F_SEMI, cs, "#8FD6AE"))
+    head = ctx["band"].title() + " fever risk"
+    hs = 66.0 if len(head) <= 20 else 52.0
+    head_cap = city_cap + cs * CAP + 16.0
+    p.append(card.text(head, LX, head_cap + hs * CAP, F_XBOLD, hs, "#ffffff", letter=-0.01 * hs))
+    drv = ctx["topConcern"] + " leading"
+    if ctx.get("driverScore") is not None:
+        drv += "  -  " + str(ctx["driverScore"])
+    bcol = BAND_COLOR[ctx["band"]]
+    ds = 24.0
+    dtw = card.measure(drv, F_BOLD, ds)
+    dph = 14 + ds + 14
+    dpy = head_cap + hs * CAP + 28.0
+    p.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx="%.2f" fill="%s"/>'
+             % (LX, dpy, 28 + dtw + 28, dph, dph / 2, bcol))
+    p.append(card.text(drv, LX + 28, dpy + dph / 2 + ds * CAP / 2, F_BOLD, ds, "#ffffff"))
+
+    # right column: score badge (big number in a ring). Ring sits right of the headline with clearance;
+    # ss handles a 3-digit "100" inside the ring too.
+    RCX, RCY, RR = 824.0, 268.0, 112.0
+    p.append('<circle cx="%.2f" cy="%.2f" r="%.1f" fill="#ffffff" fill-opacity="0.05" '
+             'stroke="#9FE3D6" stroke-opacity="0.5" stroke-width="2"/>' % (RCX, RCY, RR))
+    ss = 124.0 if len(str(ctx["score"])) < 3 else 100.0
+    s_str = str(ctx["score"])
+    sw = card.text(s_str, 0, 0, F_XBOLD, ss, "#000", letter=-3.5, measure_only=True)
+    s_base = RCY + ss * CAP / 2 - 12
+    p.append(card.text(s_str, RCX - sw / 2, s_base, F_XBOLD, ss, "#F5C518", letter=-3.5))
+    p.append('<g fill-opacity="0.85">%s</g>' % card.text("/100", RCX, s_base + 36, F_BOLD, 30.0, "#ffffff", anchor="middle"))
+    p.append('</svg>')
+    return "".join(p)
+
+
 # ---------------------------------------------------------------- pipeline
 
 def resvg_path():
@@ -594,6 +643,7 @@ def city_ctx(city, diseases, updated_label):
         "score": score,
         "band": blend["band"],
         "topConcern": dlabel.get(blend["driver"], blend["driver"].title()),
+        "driverScore": int(round(blend["driver_score"])) if blend.get("driver_score") is not None else None,
         "prev": prev,
         "fam": fam,
         "reg_font": reg_font,
@@ -624,8 +674,10 @@ def main():
 
     og_dir = os.path.join(args.out_root, "assets", "img", "og")
     share_dir = os.path.join(args.out_root, "assets", "img", "share")
+    push_dir = os.path.join(args.out_root, "assets", "img", "push")
     os.makedirs(og_dir, exist_ok=True)
     os.makedirs(share_dir, exist_ok=True)
+    os.makedirs(push_dir, exist_ok=True)
     resvg = resvg_path()
     tmp_png = os.path.join(tempfile.gettempdir(), "fw_card_%d.png" % os.getpid())
 
@@ -639,12 +691,13 @@ def main():
             # to 900x1200 - WhatsApp recompresses past that anyway, and the modal loads faster
             rasterize(render_landscape(ctx), os.path.join(og_dir, city["id"] + ".jpg"), (1200, 630), resvg, tmp_png)
             rasterize(render_portrait(ctx), os.path.join(share_dir, city["id"] + ".jpg"), (900, 1200), resvg, tmp_png)
+            rasterize(render_push(ctx), os.path.join(push_dir, city["id"] + ".jpg"), (1024, 512), resvg, tmp_png)
             done += 1
         except Exception as exc:  # collect everything, fail loud at the end
             errors.append("%s: %s" % (city["id"], exc))
     if os.path.exists(tmp_png):
         os.remove(tmp_png)
-    print("share cards: %d cities x 2 layouts -> %s , %s" % (done, og_dir, share_dir))
+    print("share cards: %d cities x 3 layouts -> %s , %s , %s" % (done, og_dir, share_dir, push_dir))
     if errors:
         for e in errors:
             print("ERROR " + e, file=sys.stderr)

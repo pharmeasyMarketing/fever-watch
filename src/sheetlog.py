@@ -98,6 +98,24 @@ def _load_pos_detail() -> dict:
         return {}
 
 
+def _load_site() -> tuple:
+    """(production base_url, staging_url) from config/site.json, for the logged push-image URLs.
+    Best-effort: ("","") if unavailable. base_url is the production route (e.g. pharmeasy.in/fever-watch/);
+    staging_url is the github.io path. Both end with a slash (concatenated with a relative path)."""
+    try:
+        with open(os.path.join(ROOT, "config", "site.json"), "r", encoding="utf-8") as fh:
+            sj = json.load(fh)
+        return (sj.get("base_url") or "", sj.get("staging_url") or "")
+    except Exception:
+        return ("", "")
+
+
+def _og_ver(iso: str) -> str:
+    """14-digit cache-bust from generated_at (mirrors build_site.og_version) so each day's logged
+    URL points at that day's freshly-baked push image."""
+    return "".join(ch for ch in (iso or "") if ch.isdigit())[:14]
+
+
 def push_raw(grid: dict) -> int:
     """Push the day's full city x disease grid as raw INPUT columns (A-AC). The Apps Script
     derives weather_score/trends_score/confidence/score/band/mode AND positivity_pct (AD) as
@@ -105,6 +123,8 @@ def push_raw(grid: dict) -> int:
     positivity (O) to the score (T). Per city we also append one disease='OVERALL' row whose
     score formula is the headline blend over that city's disease rows (0.8*top + 0.2*mean-of-rest)."""
     date = (grid.get("generated_at") or "")[:10]
+    base_url, staging_url = _load_site()
+    ver = _og_ver(grid.get("generated_at") or "")
     labels = {d["id"]: d["label"] for d in grid.get("diseases", [])}
     terms = _load_terms()
     pos_detail = _load_pos_detail()
@@ -115,6 +135,9 @@ def push_raw(grid: dict) -> int:
     rows = []
     for c in grid.get("cities", []):
         cid = c["id"]
+        # Per-city Android push image URLs (same for all of the city's rows), prod + staging, ?v= cache-bust.
+        push_prod = (base_url + "assets/img/push/" + cid + ".jpg?v=" + ver) if base_url else ""
+        push_stg = (staging_url + "assets/img/push/" + cid + ".jpg?v=" + ver) if staging_url else ""
         cells = cells_by_city.get(cid, [])
         if not cells:
             continue
@@ -138,6 +161,7 @@ def push_raw(grid: dict) -> int:
                 s.get("trends_raw"), fr.get("weather", ""), fr.get("trends", ""), r.get("stale", ""),  # W-Z posted
                 WEATHER_SOURCE,                                    # AA weather provenance
                 det.get("tests", ""), det.get("positives", ""), "",  # AB tests_booked, AC positives, AD positivity_pct -> FORMULA
+                push_prod, push_stg,                               # AE/AF Android push image URL (prod + staging)
             ])
         # One city-overall line item: the headline blend, score derived by formula (T).
         rows.append([
@@ -148,6 +172,7 @@ def push_raw(grid: dict) -> int:
             "", "", "", "",                                        # W-Z blank
             WEATHER_SOURCE,                                        # AA weather provenance
             "", "", "",                                            # AB-AD blank for the blend row
+            push_prod, push_stg,                                   # AE/AF Android push image URL (prod + staging)
         ])
 
     sent = 0

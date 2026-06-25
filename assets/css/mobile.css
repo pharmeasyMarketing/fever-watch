@@ -252,7 +252,7 @@
   .dialinfo { display: inline-flex; vertical-align: middle; }
   .dialinfo-btn { width: 16px; height: 16px; padding: 0; border-radius: 50%; border: 1.4px solid currentColor; background: none; color: inherit; font: italic 700 11px/1 Georgia, "Times New Roman", serif; cursor: pointer; opacity: .7; display: inline-flex; align-items: center; justify-content: center; }
   .dialinfo-btn:hover, .dialinfo-btn:focus { opacity: 1; }
-  .dialtip { position: absolute; left: 8px; right: 8px; bottom: calc(100% + 9px); background: #1f2937; color: #fff; font-size: 11.5px; font-weight: 500; line-height: 1.45; text-align: left; white-space: normal; padding: 11px 13px; border-radius: 10px; box-shadow: 0 10px 26px rgba(0,0,0,.3); opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity .16s, transform .16s; z-index: 40; pointer-events: none; }
+  .dialtip { position: fixed; left: 0; top: 0; width: min(320px, calc(100vw - 16px)); max-width: 320px; background: #1f2937; color: #fff; font-size: 11.5px; font-weight: 500; line-height: 1.45; text-align: left; white-space: normal; padding: 11px 13px; border-radius: 10px; box-shadow: 0 10px 26px rgba(0,0,0,.3); opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity .16s, transform .16s; z-index: 90; pointer-events: none; }
   .dialinfo.open .dialtip { opacity: 1; visibility: visible; transform: translateY(0); }
   .dialtip .tiprow { display: block; }
   .dialtip b { font-weight: 800; color: #fff; }
@@ -260,6 +260,7 @@
   .tb { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; color: #e5e7eb; }
   .tb i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
   .tipcaret { position: absolute; top: 100%; left: 50%; width: 0; height: 0; border: 7px solid transparent; border-top-color: #1f2937; transform: translateX(-50%); pointer-events: none; }
+  .dialtip.below .tipcaret { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: #1f2937; }
 
   /* --- redesign: weather conditions cards (icon + "Label . value" + a short line); 3 cards = 2 + 1 full-width --- */
   .wxgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }

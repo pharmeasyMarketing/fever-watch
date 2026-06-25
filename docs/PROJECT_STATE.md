@@ -4,7 +4,29 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-24 PM, REVIEWER BYLINE + reviewedBy SCHEMA for E-E-A-T - committed + pushed to master 2026-06-25):** Added a
+> **NEWEST (2026-06-25, TOOLTIP FIX + ANDROID PUSH IMAGES + LOGGER URL + PROD base_url):** Four-part change, all verified.
+> 1. **Tooltip positioning fix.** `.dialtip` (dial chip + per-signal "Why this score?" popovers, both flows) was
+>    `position:absolute` opening upward with no clamping, at z-index 40 (above the sticky header z-index 30), so on
+>    desktop it overflowed the top, overlapping the header + Quick-Links sidebar. Fix: `.dialtip` -> `position:fixed`
+>    z-index 90, JS-placed by `positionTip` (renamed from `positionCaret`, byte-identical in mobile.js/desktop.js,
+>    mirrors `method.js` placePop): above the ⓘ by default, FLIPS below (`.dialtip.below`) when no room above (clears
+>    the header), clamps horizontally to the viewport, caret stays on the ⓘ. Dropped the desktop CSS `:hover`-open
+>    (it opened an unplaced fixed box). Markup unchanged -> parity OK. Verified live both flows (above / flip-below /
+>    breakdown / mobile): `position:fixed`, on-screen, caret-on-icon, no header overlap.
+> 2. **Android push image set.** New `render_push(ctx)` in `build_share_cards.py` -> a per-city **1024x512 (2:1)**
+>    big-picture card (brand header + date, city, "<band> fever risk", band-coloured driver pill, score ring),
+>    daily, alongside OG (1200x630) + WhatsApp (900x1200). Output `assets/img/push/<city>.jpg` (~35KB, gitignored,
+>    built in CI by the existing build_share_cards step - no daily.yml change). `city_ctx` gained `driverScore`.
+> 3. **Logger push URL columns.** `sheetlog.py` `push_raw` now logs 2 new `raw_data` columns (AE/AF):
+>    `push_image_url_prod` + `push_image_url_staging` (base_url / staging_url from config/site.json + `assets/img/push/
+>    <city>.jpg?v=<og_ver>`), repeated on all 5 rows per city. Mirrored in `backfill_sheetlog.py` HEADER (blank for
+>    historic) + the Apps Script `HEADERS.raw_data` + data_dictionary in `docs/sheets_logging.md`. **USER ACTION: re-
+>    deploy the Apps Script** so the live sheet gets the 2 columns.
+> 4. **Production base_url** corrected to `https://pharmeasy.in/fever-watch/` (was `/research/fever-watch-2026/`) in
+>    config/site.json; cascades to canonical/OG/JSON-LD/sitemap + the logged prod push URL. SITE_ENV=staging still
+>    overrides to github.io, so the live staging site is unchanged.
+>
+> **(2026-06-24 PM, REVIEWER BYLINE + reviewedBy SCHEMA for E-E-A-T - committed + pushed to master 2026-06-25):** Added a
 > `Reviewed by Dr. Nikita Toshi and Dr. Avinav Gupta` trust strip (treatment "V2": a shield icon + always-underlined
 > links to their PharmEasy editorial-policy profiles, `target=_blank rel=noopener`) directly under the
 > `Updated <date>. Available in select cities.` line, on BOTH flows + the landing. Visible markup = a shared `REVIEWBY`
@@ -1242,8 +1264,8 @@ index.html                              LEGACY: the early 8-city vanilla-JS port
   `daily.yml` pulls real trends daily. (Keys are shared with Mosquito Watch; combined free pool ~1,250 searches/mo.)
 - [x] ~~Create the public repo + enable GitHub Pages~~ **DONE + LIVE**: `pharmeasyMarketing/fever-watch`, Pages Source =
   GitHub Actions, `github-pages` env opened to allow `master`. Staging: https://pharmeasymarketing.github.io/fever-watch/
-  Production `base_url` still TBD (staging auto-canonicalises to the github.io URL).
-- [ ] PharmEasy infra: `/research/fever-watch-.../` reverse-proxy route + apex robots allowance.
+  Production `base_url` = `https://pharmeasy.in/fever-watch/` (set 2026-06-25, was `/research/fever-watch-2026/`; staging still auto-canonicalises to the github.io URL via SITE_ENV=staging).
+- [ ] PharmEasy infra: `/fever-watch/` reverse-proxy route + apex robots allowance.
 - [ ] Brand sign-off on the co-branded lockup; provide the exact lockup asset if the rebuilt SVG is not pixel-perfect.
 - [ ] Content team: confirm the ONE flagged local name (mira-bhayandar: shipped मीरा-भाईंदर vs alt मिरा-भाईंदर;
   `docs/local_names_review.md`). Plus a real-device WhatsApp share test of the new card (caption-drop behaviour).

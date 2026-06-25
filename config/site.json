@@ -1,7 +1,7 @@
 {
   "_comment": "Single source of truth for SEO/site identity, read by src/build_site.py at build time. base_url is the FINAL public URL. In production it will be a subpath on the pharmeasy.in apex served via reverse-proxy (NOT a DNS CNAME), mirroring Mosquito Watch. Keep all in-page asset paths relative so the same build works on the github.io staging origin and the proxied production path. To swap the URL later, edit base_url here only.",
 
-  "base_url": "https://pharmeasy.in/research/fever-watch-2026/",
+  "base_url": "https://pharmeasy.in/fever-watch/",
   "staging_url": "https://pharmeasymarketing.github.io/fever-watch/",
   "site_name": "Fever Watch",
   "brand": "PharmEasy",
