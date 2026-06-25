@@ -12,7 +12,12 @@
 >    mirrors `method.js` placePop): above the ⓘ by default, FLIPS below (`.dialtip.below`) when no room above (clears
 >    the header), clamps horizontally to the viewport, caret stays on the ⓘ. Dropped the desktop CSS `:hover`-open
 >    (it opened an unplaced fixed box). Markup unchanged -> parity OK. Verified live both flows (above / flip-below /
->    breakdown / mobile): `position:fixed`, on-screen, caret-on-icon, no header overlap.
+>    breakdown / mobile): `position:fixed`, on-screen, caret-on-icon, no header overlap. **Follow-up (same day):** the
+>    MOBILE breakdown auto-peek floated over the bottom Share dock on scroll (a fixed box does not move with the page,
+>    and the peek is immune to the scroll-close so it persisted). Now `maybeScrollPeek` fires only when the ⓘ is
+>    COMFORTABLY in view (`top>=56 && bottom<=vh-100`, clear of header + dock), `onTipScroll` keeps the open peek PINNED
+>    to its ⓘ as the page scrolls (re-runs `positionTip`) and closes it once the ⓘ scrolls off-screen, and `positionTip`
+>    flips below using the live `.fw-nav` bottom (not a flat 8px) so the box never slips under the sticky header.
 > 2. **Android push image set.** New `render_push(ctx)` in `build_share_cards.py` -> a per-city **1024x512 (2:1)**
 >    big-picture card (brand header + date, city, "<band> fever risk", band-coloured driver pill, score ring),
 >    daily, alongside OG (1200x630) + WhatsApp (900x1200). Output `assets/img/push/<city>.jpg` (~35KB, gitignored,

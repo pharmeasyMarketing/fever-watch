@@ -249,12 +249,14 @@
     var b = di.querySelector(".dialinfo-btn"), t = di.querySelector(".dialtip"), c = di.querySelector(".tipcaret");
     if (!b || !t || !c) return;
     t.classList.remove("below");
-    var br = b.getBoundingClientRect(), tw = t.offsetWidth, th = t.offsetHeight,
+    var nav = document.querySelector(".fw-nav"),
+        topSafe = (nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0) + 8,
+        br = b.getBoundingClientRect(), tw = t.offsetWidth, th = t.offsetHeight,
         vw = window.innerWidth || document.documentElement.clientWidth,
         vh = window.innerHeight || document.documentElement.clientHeight,
         cx = br.left + br.width / 2, left = cx - tw / 2, top = br.top - th - 9, below = false;
-    if (top < 8) { top = br.bottom + 9; below = true; }
-    if (below && top + th > vh - 8) top = Math.max(8, vh - th - 8);
+    if (top < topSafe) { top = br.bottom + 9; below = true; }   // flip below so the box never slips under the sticky header
+    if (below && top + th > vh - 8) top = Math.max(topSafe, vh - th - 8);
     if (left < 8) left = 8;
     if (left + tw > vw - 8) left = vw - tw - 8;
     t.style.left = left + "px"; t.style.top = top + "px";
@@ -278,19 +280,27 @@
     di.classList.add("open"); positionTip(di);
     _dialTimer = setTimeout(function () { if (_peekEl === di) { di.classList.remove("open"); _peekEl = null; } }, 1700);
   }
-  // Fire the scroll-triggered peek once its target is fully scrolled into view (re-queried live each call).
+  // Fire the scroll-triggered peek once its target is COMFORTABLY in view (re-queried live each call) -
+  // clear of the sticky header (top) and the bottom dock, so the fixed tooltip never opens over them.
   function maybeScrollPeek() {
     if (_scrollPeekDone || !_scrollPeekSel) return;
     var di = document.querySelector(_scrollPeekSel); if (!di) return;
     var r = di.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
-    if (r.height > 0 && r.top >= 0 && r.bottom <= vh) { _scrollPeekDone = true; firePeek(di); }
+    if (r.height > 0 && r.top >= 56 && r.bottom <= vh - 100) { _scrollPeekDone = true; firePeek(di); }
   }
-  // Window scroll: fire a pending scroll-peek when its target is in view, then close user-opened tooltips
-  // (the transient peek _peekEl is left to self-close so a scroll-into-view peek is not flashed away).
+  // Window scroll: fire a pending scroll-peek when its target is comfortably in view; keep the transient peek
+  // PINNED to its icon as the page scrolls (a position:fixed box would otherwise detach and float over the
+  // dock) and close it once the icon scrolls off-screen. User-opened tooltips just close on scroll.
   function onTipScroll() {
     maybeScrollPeek();
     var op = document.querySelectorAll(".dialinfo.open");
-    for (var i = 0; i < op.length; i++) { if (op[i] !== _peekEl) op[i].classList.remove("open"); }
+    for (var i = 0; i < op.length; i++) {
+      if (op[i] === _peekEl) {
+        var b = op[i].querySelector(".dialinfo-btn"), r = b && b.getBoundingClientRect(), vh = window.innerHeight || 0;
+        if (r && r.bottom > 4 && r.top < vh - 4) positionTip(op[i]);
+        else { op[i].classList.remove("open"); _peekEl = null; }
+      } else { op[i].classList.remove("open"); }
+    }
   }
 
   // The "this monsoon vs last year" widget owns its own subtree (tabs/tooltip/collapse); recompute it
