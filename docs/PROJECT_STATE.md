@@ -18,10 +18,13 @@
 >    COMFORTABLY in view (`top>=56 && bottom<=vh-100`, clear of header + dock), `onTipScroll` keeps the open peek PINNED
 >    to its ⓘ as the page scrolls (re-runs `positionTip`) and closes it once the ⓘ scrolls off-screen, and `positionTip`
 >    flips below using the live `.fw-nav` bottom (not a flat 8px) so the box never slips under the sticky header.
-> 2. **Android push image set.** New `render_push(ctx)` in `build_share_cards.py` -> a per-city **1024x512 (2:1)**
->    big-picture card (brand header + date, city, "<band> fever risk", band-coloured driver pill, score ring),
->    daily, alongside OG (1200x630) + WhatsApp (900x1200). Output `assets/img/push/<city>.jpg` (~35KB, gitignored,
->    built in CI by the existing build_share_cards step - no daily.yml change). `city_ctx` gained `driverScore`.
+> 2. **Android push image set.** Per-city **1024x512 (2:1)** big-picture = the SAME OG landscape card (gauge,
+>    regional subtitle, top-concern box, gold CTA, band pill), FIT aspect-preserved into 1024x512 by new
+>    `rasterize_push()` and centred on the OG dark-green bg - so the gauge/circles stay perfectly round (~24px dark
+>    side margins that blend into the card edge). **An earlier custom push card was replaced 2026-06-25 per team
+>    feedback to match the OG template exactly.** OG + push share one `render_landscape` render. Output
+>    `assets/img/push/<city>.jpg` (~42KB, gitignored, built in CI by the existing build_share_cards step - no
+>    daily.yml change). Verified by rendering + viewing bengaluru/agra.
 > 3. **Logger push URL columns.** `sheetlog.py` `push_raw` now logs 2 new `raw_data` columns (AE/AF):
 >    `push_image_url_prod` + `push_image_url_staging` (base_url / staging_url from config/site.json + `assets/img/push/
 >    <city>.jpg?v=<og_ver>`), repeated on all 5 rows per city. Mirrored in `backfill_sheetlog.py` HEADER (blank for
