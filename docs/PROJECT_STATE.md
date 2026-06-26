@@ -4,7 +4,47 @@
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
 >
-> **NEWEST (2026-06-25 PM, LEGAL FOOTER-DISCLAIMER UPDATE):** Legal supplied an updated footer disclaimer; applied
+> **NEWEST (2026-06-26, COPY SIMPLIFICATION + "WHY" DRIVER CHIPS + METHOD CITATIONS + MOBILE POLISH):** All
+> verified live (mobile flow + SSR/parity OK both flows); committed + pushed to master. Nothing here is mock.
+> 1. **Method-popover research citations** (the ⓘ "Source"/"assumption" links live in `mobile.js`/`desktop.js`, NOT
+>    `build_site.py` METHOD_HTML). Rain window: nature `srep35028` -> `pmc.ncbi.nlm.nih.gov/articles/PMC6518529` (both
+>    the Source and the "14-day window" assumption links). Temperature: `PMC6744319` -> `PMC6518529/#sec5` (TEMPERATURE
+>    ONLY; Humidity left on PMC6744319 per user). Search: nature `nature07634` -> TWO sources `pubmed.../30443418/` +
+>    `link.springer.com/article/10.1186/s12879-025-10801-0`. `method.js` gained a **`data-href2`** second-link slot
+>    (renders a 2nd `.mthd-pop-link`); `tokens.css` `.mthd-pop-link` -> `display:flex; width:fit-content` so two
+>    links stack.
+> 2. **Plain-language copy pass** (the 6 user-flagged sentences + neighbours). The LAB METRIC is now consistently
+>    **"share of (local) tests coming back positive" / "positive tests"** (no more "positivity"). All parity-gated
+>    3-way twins unless noted: dial 80/20 tooltip "Led by X, the highest-risk fever..." -> "{d} ({score}) is the top
+>    fever here, making up about 80% of this score. The other three add 20%."; SIG "what" micro-lines reworded ("How
+>    many local tests come back positive." / "How often people here search these symptoms."); TIPINFO ⓘ popovers
+>    reworded (positivity "...For a full 100, dengue needs 25%, malaria 4%, chikungunya 15%, typhoid 45%..."); dial
+>    MEANING line "overall read"->"overall score", "A daily snapshot of conditions, not who's actually sick"->"A daily
+>    look at local risk, not who's actually sick". ENGINE notes in `src/consolidate.py` (baked into `data/grid.json`;
+>    38 diverge + 2 agree + 796 forecast cells string-replaced in place locally, CI regenerates from consolidate.py):
+>    agree "All three signals agree - lab tests, search and weather point the same way."; diverge "Signals disagree:
+>    we trust the lab tests most, and weather and search matter less."; forecast "No confirmed test data here yet, so
+>    the score uses weather and search only, and can't reach HIGH."; news-spike "Search may be driven by news, so we
+>    trust it less." FAQ "how worried" answer (`build_site.py:533` + `faq.js:60`, feeds the JSON-LD too) aligned to
+>    "overall score" + "a daily look at local risk... not who's actually sick". The full 92-item review of the
+>    remaining Tier-B/C strings is in the gitignored `Fever_Watch_Copy_Simplification_Review.xlsx` (builder
+>    `scripts/build_copy_review_xlsx.py`).
+> 3. **"Why this score?" highest/lowest driver chip.** The breakdown now tags ONLY the top + bottom disease with a
+>    plain-language driver line as a 2nd row under the disease name (e.g. Malaria "High positive tests + strong
+>    weather.", Typhoid "Lower search despite strong weather."). New helper `whyChip(cell, kind)` (mobile.js +
+>    desktop.js) / `_why_chip` (build_site.py), BYTE-IDENTICAL (the `#s-why` breakdown is above-fold parity-gated);
+>    names the signal(s) by CONTRIBUTION order (the +N, so it cites the real lever), simplified vocab ("high positive
+>    tests"/"strong weather"/"high search interest"); returns "" (no chip) when forecast-absent, all-Low, or no score
+>    spread. Markup wraps the name in `.nmwrap` + `.whysub` (CSS in shared tokens.css). User rejected an always-visible
+>    summary-under-title as cluttered and chose the 2nd-line placement (Option 1) over inline, after several mock rounds.
+> 4. **Mobile polish.** `.acchead` `min-height:71px` (mobile.css) equalizes the four disease rows (the captioned
+>    highest/lowest rows wrap to 2 lines on the narrow mobile width; the others pad up to match). The breakdown trend
+>    triangles `.sigbadge` (BOTH "up" rising and "down" easing) are HIDDEN for now (tokens.css
+>    `.sigbadge.up, .sigbadge.down { display: none }`).
+> STALE-DOC follow-up NOT done: the methodology Word doc / compliance copy still uses the pre-simplification wording;
+> re-confirm all copy with counsel before any public launch.
+>
+> **(2026-06-25 PM, LEGAL FOOTER-DISCLAIMER UPDATE):** Legal supplied an updated footer disclaimer; applied
 > VERBATIM to the shared page footer (`footer_html` `.footdisc` in `build_site.py`, ~L364). The footer is now exactly:
 > "Fever Watch is a risk indicator and not a diagnosis or representation of actual case counts. It is for
 > informational purposes only and should not constitute medical advice; please consult a doctor for any symptoms or

@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  var pop, popx, poptitle, popbody, poplink, anchor = null, wiredDoc = false;
+  var pop, popx, poptitle, popbody, poplink, poplink2, anchor = null, wiredDoc = false;
 
   function ensurePopover() {
     if (pop) return;
@@ -23,12 +23,16 @@
       '<button class="mthd-popx" type="button" aria-label="Close">&times;</button>'
       + '<div class="mthd-pop-ttl"></div><div class="mthd-pop-body"></div>'
       + '<a class="mthd-pop-link" target="_blank" rel="nofollow noopener noreferrer" hidden>View source '
+      + '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M19 13v6H5V5h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
+      + '<a class="mthd-pop-link" target="_blank" rel="nofollow noopener noreferrer" hidden>View source '
       + '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M19 13v6H5V5h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
     document.body.appendChild(pop);
     popx = pop.querySelector(".mthd-popx");
     poptitle = pop.querySelector(".mthd-pop-ttl");
     popbody = pop.querySelector(".mthd-pop-body");
-    poplink = pop.querySelector(".mthd-pop-link");
+    var links = pop.querySelectorAll(".mthd-pop-link");
+    poplink = links[0];
+    poplink2 = links[1];
   }
 
   function placePop(el) {
@@ -68,6 +72,9 @@
     var p = document.createElement("div"); p.textContent = body; popbody.appendChild(p);
     if (href) { poplink.href = href; poplink.hidden = false; poplink.childNodes[0].nodeValue = (kind === "source" ? "View source " : "Read the research "); }
     else { poplink.hidden = true; }
+    var href2 = el.getAttribute("data-href2");
+    if (href && href2) { poplink2.href = href2; poplink2.hidden = false; poplink2.childNodes[0].nodeValue = (kind === "source" ? "View source " : "Read the research "); }
+    else { poplink2.hidden = true; }
     pop.classList.add("show");
     anchor = el;
     placePop(el);

@@ -29,15 +29,15 @@
   var SIGNAME = { weather: "Weather conditions", trends: "Google Search Interest", positivity: "PharmEasy labs" };
   var SIG = {
     weather: { c: "#15ACA5", bg: "#DBF3EF", fg: "#0c5a55", label: "🌧 Weather", what: "How much recent weather raises fever risk." },
-    trends: { c: "#7C6CD6", bg: "#ECE8FB", fg: "#4b3fa3", label: "🔍 Search", what: "Search interest vs this city's own range." },
-    positivity: { c: "#3661B0", bg: "#E7EEFA", fg: "#22468f", label: "🧪 Lab", what: "Lab positivity vs this fever's own baseline." }
+    trends: { c: "#7C6CD6", bg: "#ECE8FB", fg: "#4b3fa3", label: "🔍 Search", what: "How often people here search these symptoms." },
+    positivity: { c: "#3661B0", bg: "#E7EEFA", fg: "#22468f", label: "🧪 Lab", what: "How many local tests come back positive." }
   };
   var SHORT = { positivity: "Lab", weather: "Weather", trends: "Search" };
   // Per-signal "what is this 0-100 number" popover text (byte-identical to build_site.py TIPINFO).
   var TIPINFO = {
-    weather: "How favourable recent weather is for these fevers, on a 0-100 scale.",
-    trends: "How much people nearby are searching these symptoms vs the city norm, 0-100.",
-    positivity: "Share of local tests positive, scaled to a per-fever baseline (dengue 25, malaria 4, chikungunya 15, typhoid 45 = a full 100)."
+    weather: "How much recent weather helps these fevers spread, on a 0-100 scale.",
+    trends: "How much people near you search these symptoms, vs what's normal for your city. 0-100.",
+    positivity: "It's the share of local tests coming back positive. For a full 100, dengue needs 25%, malaria 4%, chikungunya 15%, typhoid 45% - each fever has its own level."
   };
   // 0-100 sub-score -> plain level word (the consumer reads High/Moderate/Low, not the raw number).
   function level(v) { return v >= 67 ? "High" : v >= 34 ? "Moderate" : "Low"; }
@@ -363,12 +363,12 @@
     if (band !== "MODERATE") { cbg = RISK_SOFT[band]; cbd = RISK[band]; cbc = RISK[band]; }
     var dlabel = esc((diseaseObj(b.driver) || {}).label || ""), dscore = cellFor(c.id, b.driver).score;
     var info = '<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>' +
-      '<span class="dialtip"><span class="tiprow">Led by <b>' + dlabel + ' (' + dscore + ')</b>, the highest-risk fever here - about <b>80%</b> of the number, plus <b>20%</b> from the other three.</span>' +
+      '<span class="dialtip"><span class="tiprow"><b>' + dlabel + ' (' + dscore + ')</b> is the top fever here, making up about <b>80%</b> of this score. The other three add <b>20%</b>.</span>' +
       '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>';
     var chip = '<div class="bandchip" style="background:' + cbg + ';border-color:' + cbd + '">' +
       '<span class="beacon" style="--c:' + cbc + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>' +
       (BAND_TITLE[band] || band) + ' fever risk in ' + esc(c.name) + ' ' + info + '</div>';
-    var mean = '<p class="dialmean">Right now ' + esc(c.name) + '\'s overall read is ' + b.score + '/100, ' + (BAND_MEAN[band] || "").replace("{d}", dlabel) + '. A daily snapshot of conditions, not who\'s actually sick.</p>';
+    var mean = '<p class="dialmean">Right now ' + esc(c.name) + '\'s overall score is ' + b.score + '/100, ' + (BAND_MEAN[band] || "").replace("{d}", dlabel) + '. A daily look at local risk, not who\'s actually sick.</p>';
     return '<div class="card riskcard">' + periodTabs(DATA.periods) + '<div class="rtop">' + ring(segs, b.score, 120) + '<div class="leg">' + leg + '</div></div>' + chip + mean +
       '<div class="rfoot"><span class="note">Scores calculated from weather conditions, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span>' +
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
@@ -402,14 +402,20 @@
   }
   function breakdownCard(c) {
     var ORDER = ["positivity", "weather", "trends"];
-    var accs = orderedDiseases(c).map(function (d) {
+    var ord = orderedDiseases(c);
+    var hiId = ord[0].id, loId = ord[ord.length - 1].id;
+    var spread = cellFor(c.id, hiId).score - cellFor(c.id, loId).score;
+    var accs = ord.map(function (d) {
       var cell = cellFor(c.id, d.id), open = state.expanded === d.id, pts = contribs(cell);
       var order = ORDER.slice().sort(function (a, b) { return (pts[b] - pts[a]) || (ORDER.indexOf(a) - ORDER.indexOf(b)); });
       var rows = "", sum = [];
       order.forEach(function (k) { rows += sig(SIG[k], cell, k, pts[k]); if (cell.signals[k] != null) sum.push(SHORT[k] + " " + pts[k]); });
       var body = '<div class="accbody">' + rows + '<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">' + sum.join(" + ") + " = " + cell.score + '</span>' + cell.note + '</p></div>';
+      var kind = spread > 0 && d.id === hiId ? "highest" : (spread > 0 && d.id === loId ? "lowest" : "");
+      var why = kind ? whyChip(cell, kind) : "";
+      var nameHtml = why ? '<span class="nmwrap"><span class="name">' + d.label + '</span><span class="whysub">' + why + '</span></span>' : '<span class="name">' + d.label + '</span>';
       return '<div class="acc' + (open ? ' open' : '') + '"><button class="acchead" data-act="expand" data-id="' + d.id + '">' +
-        '<span class="emoji">' + d.emoji + '</span><span class="name">' + d.label + '</span>' +
+        '<span class="emoji">' + d.emoji + '</span>' + nameHtml +
         '<span class="dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span><span class="sc">' + cell.score + '</span>' +
         '<span class="chev">▾</span></button>' + body + '</div>';
     }).join("");
@@ -441,6 +447,29 @@
       for (var i = 0; i < rem; i++) pts[ranked[i]] += 1;
     } else { pts[order[0]] = score; }
     return pts;
+  }
+  // Plain-language driver line for the highest / lowest disease chip (2nd line under the name in the
+  // breakdown header). Names signals by CONTRIBUTION order so it cites the real lever; simplified
+  // vocabulary, byte-identical to mobile.js whyChip + build_site.py _why_chip. "" => no chip.
+  function whyChip(cell, kind) {
+    var s = cell.signals, pts = contribs(cell), order = ["positivity", "weather", "trends"];
+    var pres = order.filter(function (k) { return s[k] != null; });
+    if (!pres.length) return "";
+    var UP = { weather: "strong weather", positivity: "high positive tests", trends: "high search interest" };
+    var UPM = { weather: "moderate weather", positivity: "some positive tests", trends: "some search interest" };
+    var NOUN = { weather: "weather", positivity: "positive tests", trends: "search" };
+    function up(k) { return level(s[k]) === "High" ? UP[k] : UPM[k]; }
+    function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+    if (kind === "highest") {
+      var byc = pres.slice().sort(function (a, b) { return (pts[b] - pts[a]) || (order.indexOf(a) - order.indexOf(b)); });
+      var lead = byc.filter(function (k) { return level(s[k]) !== "Low"; }).slice(0, 2);
+      if (!lead.length) return "";
+      return cap(lead.map(up).join(" + ")) + ".";
+    }
+    var byv = pres.slice().sort(function (a, b) { return (s[a] - s[b]) || (order.indexOf(a) - order.indexOf(b)); });
+    var weak = byv[0], strong = byv[byv.length - 1];
+    if (level(s[strong]) === "Low") return "";
+    return "Lower " + NOUN[weak] + " despite " + up(strong) + ".";
   }
   // One signal row: bar length = the signal's CONTRIBUTION points (so the three bars sum to the score),
   // coloured per signal; the raw value + weight stay as small provenance text. Absent (forecast) lab shows
@@ -744,8 +773,8 @@
               '</button>' +
               '<div class="mthd-accbody">' +
                 '<p class="bnote">For the mosquito fevers (dengue, malaria, chikungunya) the weather score mixes three things. The weights below are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Weather weights" data-body="The 45 / 35 / 20 split between temperature, rain and humidity is our own calibration, not a published constant.">our assumption</span>.</p>' +
-                '<div class="mthd-wbar temp"><div class="top"><span class="nm">Temperature</span><span class="sub">best near 26-29C</span><span class="pct">45%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:45%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Temperature drives transmission" data-body="Transmission is fastest around 26 to 29C and slows when it is colder or hotter. Temperature carries the most weight because it speeds up both the mosquito and the virus." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
-                '<div class="mthd-wbar rain"><div class="top"><span class="nm">Rain</span><span class="sub">trailing 14 days, then capped</span><span class="pct">35%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:35%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain makes mosquito sites" data-body="Puddles take about 1 to 3 weeks to become biting mosquitoes, so we look back across recent rain." data-href="https://www.nature.com/articles/srep35028">' + mthSrc + 'Source</span><span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="14-day window" data-href="https://www.nature.com/articles/srep35028" data-body="The exact 14-day look-back, and capping rain past a point (beyond which more rain stops adding risk), are our calibration, informed by how long mosquitoes take to develop after rain.">our assumption</span></div></div>' +
+                '<div class="mthd-wbar temp"><div class="top"><span class="nm">Temperature</span><span class="sub">best near 26-29C</span><span class="pct">45%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:45%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Temperature drives transmission" data-body="Transmission is fastest around 26 to 29C and slows when it is colder or hotter. Temperature carries the most weight because it speeds up both the mosquito and the virus." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6518529/#sec5">' + mthSrc + 'Source</span></div></div>' +
+                '<div class="mthd-wbar rain"><div class="top"><span class="nm">Rain</span><span class="sub">trailing 14 days, then capped</span><span class="pct">35%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:35%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain makes mosquito sites" data-body="Puddles take about 1 to 3 weeks to become biting mosquitoes, so we look back across recent rain." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6518529">' + mthSrc + 'Source</span><span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="14-day window" data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6518529" data-body="The exact 14-day look-back, and capping rain past a point (beyond which more rain stops adding risk), are our calibration, informed by how long mosquitoes take to develop after rain.">our assumption</span></div></div>' +
                 '<div class="mthd-wbar hum"><div class="top"><span class="nm">Humidity</span><span class="sub">helps adult mosquitoes survive</span><span class="pct">20%</span></div><div class="mthd-track"><div class="mthd-fill" style="width:20%"></div></div><div class="mk"><span class="mthd-src" tabindex="0" data-mpop="source" data-title="Humidity aids survival" data-body="Higher humidity lets adult mosquitoes live longer, so they have more time to bite." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6744319/">' + mthSrc + 'Source</span></div></div>' +
                 '<div class="mthd-typnote"><div class="h">' + mthDrop + 'Typhoid is different: rain only</div>Typhoid is waterborne, so its weather score uses <b>recent plus lagged rain only</b> (dirty water after heavy rain), often within days. Temperature is minor here. The rain windows are <span class="mthd-ourset" tabindex="0" data-mpop="set" data-title="Typhoid rain windows" data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/" data-body="Which rain windows feed the typhoid contamination proxy is our calibration, informed by research linking heavy rain to typhoid.">our assumption</span>. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Rain and typhoid" data-body="Typhoid spreads through water dirtied by heavy rain, often within days of the rainfall." data-href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8832923/">' + mthSrc + 'Source</span></div>' +
               '</div>' +
@@ -758,7 +787,7 @@
               '</button>' +
               '<div class="mthd-accbody">' +
                 '<p class="bnote">We count how often people near you search that fever&#39;s symptoms (Google Trends), measured against the <b>typical range for your own city</b> so a big city does not always look busy. It reflects public concern, alongside the weather, not after it.</p>' +
-                '<p class="bnote">We trust it less when it spikes on news alone, which is exactly why it is only 1 of 3 signals. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Search tracks outbreaks" data-body="Search interest tracks real outbreaks, with the well-known caveat that search on its own can mislead during a news spike. That caveat is why search is never used alone here." data-href="https://www.nature.com/articles/nature07634">' + mthSrc + 'Source</span></p>' +
+                '<p class="bnote">We trust it less when it spikes on news alone, which is exactly why it is only 1 of 3 signals. <span class="mthd-src" tabindex="0" data-mpop="source" data-title="Search tracks outbreaks" data-body="Search interest tracks real outbreaks, with the well-known caveat that search on its own can mislead during a news spike. That caveat is why search is never used alone here." data-href="https://pubmed.ncbi.nlm.nih.gov/30443418/" data-href2="https://link.springer.com/article/10.1186/s12879-025-10801-0">' + mthSrc + 'Source</span></p>' +
               '</div>' +
             '</div>' +
             '<div class="mthd-accitem" data-sig="lab">' +

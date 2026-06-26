@@ -55,9 +55,9 @@ def consolidate(signals: dict, cfg: dict) -> dict:
         }
         confidence = "High" if agree else "Moderate"
         note = (
-            "All three signals agree: confirmed positivity, search interest and weather line up."
+            "All three signals agree - lab tests, search and weather point the same way."
             if agree
-            else "Signals diverge, so confirmed positivity leads the score and weather and search count for less."
+            else "Signals disagree: we trust the lab tests most, and weather and search matter less."
         )
         mode = "confirmed"
     else:
@@ -71,9 +71,9 @@ def consolidate(signals: dict, cfg: dict) -> dict:
             "positivity": 0,
         }
         confidence = "Forecast only"
-        note = "No confirmed-case data here yet, so this is a conditions-based forecast and the score is capped."
+        note = "No confirmed test data here yet, so the score uses weather and search only, and can't reach HIGH."
         if news_spike:
-            note += " Search interest may be news-driven, so it is down-weighted."
+            note += " Search may be driven by news, so we trust it less."
         mode = "forecast"
 
     return {

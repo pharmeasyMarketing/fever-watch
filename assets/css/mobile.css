@@ -42,7 +42,7 @@
   /* breakdown */
   .acc { border: 1px solid var(--pe-line); border-radius: var(--radius-sm); overflow: hidden; }
   .acc + .acc { margin-top: 8px; }
-  .acchead { width: 100%; background: #fff; border: none; padding: 13px 14px; display: flex; align-items: center; gap: 11px; text-align: left; }
+  .acchead { width: 100%; min-height: 71px; background: #fff; border: none; padding: 13px 14px; display: flex; align-items: center; gap: 11px; text-align: left; }
   .acchead .emoji { font-size: 17px; }
   .acchead .name { flex: 1; font-size: 14px; font-weight: 600; }
   .acchead .dot { width: 10px; height: 10px; border-radius: 50%; }

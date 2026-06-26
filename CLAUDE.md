@@ -171,8 +171,8 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
 - **2026-06-24 medical-review UX overhaul (committed + pushed to master; full detail in PROJECT_STATE):**
   "breeding" -> "Weather conditions" everywhere user-facing (mosquito kept where it is the mechanism; the Rainfall tile
   names typhoid too); stagnation tile removed (producer kept); precautions section -> `What you can do`; the dial
-  gained a plain-language **meaning line** (2026-06-24 PM copy: `Right now {city}'s overall read is {score}/100, {band
-  phrase + driver}. A daily snapshot of conditions, not who's actually sick.` - `BAND_MEAN` is now a per-band PHRASE
+  gained a plain-language **meaning line** (copy simplified 2026-06-26: `Right now {city}'s overall score is {score}/100, {band
+  phrase + driver}. A daily look at local risk, not who's actually sick.` - `BAND_MEAN` is now a per-band PHRASE
   with a `{d}` driver token, e.g. `moderate, {d} leading` / `low, {d} highest`) + an **ⓘ tooltip** on the band
   chip (tap-toggle, JS-positioned caret, bands legend + the 80/20 headline derivation; **auto-peek ~1.7s as a hint**;
   an EXPLICIT tap then keeps it open until the user taps it again, taps outside, or **scrolls** - no timed auto-close
@@ -192,6 +192,17 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   no room above (clears the header), clamps horizontally to the viewport, and keeps the caret on the ⓘ. This fixed a
   bug where the box overflowed the top, overlapping the header + sidebar. (CSS is not parity-gated; markup is, so the
   fix is JS+CSS only.) Desktop hover-open was dropped (it opened an unplaced fixed box); click + peek place it.
+- **2026-06-26 copy simplification + "why" chips + mobile polish (full detail in PROJECT_STATE):** plain-language
+  pass on hard-to-read copy - the lab metric is now **"share of positive tests"** (not "positivity"); the dial
+  "overall read" -> "overall score" and "conditions" -> "local risk"; the dial 80/20 line, the SIG "what" lines, the
+  TIPINFO popovers, and the `consolidate.py` engine notes (agree / disagree / forecast / news-spike, baked into
+  `grid.json`) were all reworded; the FAQ "how worried" answer aligned. The **"Why this score?" breakdown now tags
+  ONLY the highest + lowest disease with a plain-language driver line** as a 2nd row under the disease name (shared
+  `whyChip`/`_why_chip`, byte-identical 3-way, names the signal by CONTRIBUTION order; "" when forecast-absent /
+  all-Low / no score spread). Mobile: `.acchead` `min-height:71px` equalizes the four disease rows; the breakdown
+  trend `.sigbadge` (up + down) is hidden for now (tokens.css). Also (2026-06-25 method citations): the popover
+  source links were swapped to PMC6518529 (rain + temperature `/#sec5`) and pubmed30443418 + springer (search,
+  via a new `method.js` `data-href2` second-link slot).
 
 ## Open decisions / TODO
 

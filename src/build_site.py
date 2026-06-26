@@ -530,7 +530,7 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
 
     return [
         ("How worried should I be about monsoon fevers in " + nm + " right now?",
-         "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the four fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
+         "Right now " + nm + "'s overall score is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily look at local risk across the four fevers we track, not who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
         ("Is dengue something to watch in " + nm + " this week?",
          "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from weather conditions, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
         ("Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
@@ -750,10 +750,10 @@ def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str
     dlabel = esc(drv["label"])
     dscore = cells_by[(cid, b["driver"])]["score"]
     info = ('<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>'
-            '<span class="dialtip"><span class="tiprow">Led by <b>' + dlabel + ' (' + str(dscore) + ')</b>, the highest-risk fever here - about <b>80%</b> of the number, plus <b>20%</b> from the other three.</span>'
+            '<span class="dialtip"><span class="tiprow"><b>' + dlabel + ' (' + str(dscore) + ')</b> is the top fever here, making up about <b>80%</b> of this score. The other three add <b>20%</b>.</span>'
             '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>')
-    mean = ('<p class="dialmean">Right now ' + esc(city["name"]) + "'s overall read is " + str(b["score"]) + '/100, '
-            + BAND_MEAN.get(b["band"], "").replace("{d}", dlabel) + ". A daily snapshot of conditions, not who's actually sick.</p>")
+    mean = ('<p class="dialmean">Right now ' + esc(city["name"]) + "'s overall score is " + str(b["score"]) + '/100, '
+            + BAND_MEAN.get(b["band"], "").replace("{d}", dlabel) + ". A daily look at local risk, not who's actually sick.</p>")
     return ('<div class="card riskcard">' + _period_tabs(periods) + '<div class="rtop">'
             + _ring_svg(segs, b["score"], 120) + _legend_rows(city, diseases, cells_by) + '</div>'
             + _band_chip(city, info) + mean
@@ -803,8 +803,8 @@ SIGNAME = {"weather": "Weather conditions", "trends": "Google Search Interest", 
 # The emoji bytes in the labels are intentional and must stay UTF-8-exact (the JS twin emits them raw).
 SIG = {
     "weather": {"c": "#15ACA5", "bg": "#DBF3EF", "fg": "#0c5a55", "label": "\U0001F327 Weather", "what": "How much recent weather raises fever risk."},
-    "trends": {"c": "#7C6CD6", "bg": "#ECE8FB", "fg": "#4b3fa3", "label": "\U0001F50D Search", "what": "Search interest vs this city's own range."},
-    "positivity": {"c": "#3661B0", "bg": "#E7EEFA", "fg": "#22468f", "label": "\U0001F9EA Lab", "what": "Lab positivity vs this fever's own baseline."},
+    "trends": {"c": "#7C6CD6", "bg": "#ECE8FB", "fg": "#4b3fa3", "label": "\U0001F50D Search", "what": "How often people here search these symptoms."},
+    "positivity": {"c": "#3661B0", "bg": "#E7EEFA", "fg": "#22468f", "label": "\U0001F9EA Lab", "what": "How many local tests come back positive."},
 }
 SHORT = {"positivity": "Lab", "weather": "Weather", "trends": "Search"}
 
@@ -873,10 +873,35 @@ def _contribs(cell: dict) -> dict:
     return pts
 
 
+def _why_chip(cell: dict, kind: str) -> str:
+    """Plain-language driver line for the highest / lowest disease chip (2nd line under the name in
+    the breakdown header). Names signals by CONTRIBUTION order; byte-identical to the flows' whyChip."""
+    s = cell.get("signals", {}); pts = _contribs(cell); order = ["positivity", "weather", "trends"]
+    pres = [k for k in order if s.get(k) is not None]
+    if not pres:
+        return ""
+    UP = {"weather": "strong weather", "positivity": "high positive tests", "trends": "high search interest"}
+    UPM = {"weather": "moderate weather", "positivity": "some positive tests", "trends": "some search interest"}
+    NOUN = {"weather": "weather", "positivity": "positive tests", "trends": "search"}
+    def up(k): return UP[k] if _level(s[k]) == "High" else UPM[k]
+    def cap(t): return t[:1].upper() + t[1:]
+    if kind == "highest":
+        byc = sorted(pres, key=lambda k: (-pts[k], order.index(k)))
+        lead = [k for k in byc if _level(s[k]) != "Low"][:2]
+        if not lead:
+            return ""
+        return cap(" + ".join(up(k) for k in lead)) + "."
+    byv = sorted(pres, key=lambda k: (s[k], order.index(k)))
+    weak = byv[0]; strong = byv[-1]
+    if _level(s[strong]) == "Low":
+        return ""
+    return "Lower " + NOUN[weak] + " despite " + up(strong) + "."
+
+
 TIPINFO = {
-    "weather": "How favourable recent weather is for these fevers, on a 0-100 scale.",
-    "trends": "How much people nearby are searching these symptoms vs the city norm, 0-100.",
-    "positivity": "Share of local tests positive, scaled to a per-fever baseline (dengue 25, malaria 4, chikungunya 15, typhoid 45 = a full 100).",
+    "weather": "How much recent weather helps these fevers spread, on a 0-100 scale.",
+    "trends": "How much people near you search these symptoms, vs what's normal for your city. 0-100.",
+    "positivity": "It's the share of local tests coming back positive. For a full 100, dengue needs 25%, malaria 4%, chikungunya 15%, typhoid 45% - each fever has its own level.",
 }
 
 
@@ -906,6 +931,8 @@ def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
     cid = city["id"]
     driver = city["blend"]["driver"]
     ordered = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    hi_id = ordered[0]["id"]; lo_id = ordered[-1]["id"]
+    spread = cells_by[(cid, hi_id)]["score"] - cells_by[(cid, lo_id)]["score"]
     ORDER = ["positivity", "weather", "trends"]
     accs = ""
     for d in ordered:
@@ -922,9 +949,12 @@ def _breakdown_card_d(city: dict, diseases: list, cells_by: dict) -> str:
         body = ('<div class="accbody">' + rows
                 + '<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">'
                 + " + ".join(sumparts) + " = " + str(cell["score"]) + '</span>' + cell["note"] + '</p></div>')
+        kind = "highest" if (spread > 0 and d["id"] == hi_id) else ("lowest" if (spread > 0 and d["id"] == lo_id) else "")
+        why = _why_chip(cell, kind) if kind else ""
+        name_html = ('<span class="nmwrap"><span class="name">' + d["label"] + '</span><span class="whysub">' + why + '</span></span>') if why else ('<span class="name">' + d["label"] + '</span>')
         accs += ('<div class="acc' + (" open" if open_ else "") + '"><button class="acchead" data-act="expand" data-id="' + d["id"] + '">'
-                 '<span class="emoji">' + d["emoji"] + '</span><span class="name">' + d["label"] + '</span>'
-                 '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
+                 '<span class="emoji">' + d["emoji"] + '</span>' + name_html
+                 + '<span class="dot" style="background:' + (DISEASE.get(d["id"], "#888")) + '"></span><span class="sc">' + str(cell["score"]) + '</span>'
                  '<span class="chev">▾</span></button>' + body + '</div>')
     return ('<div class="card whycard"><h2 class="sechead">Why this score?</h2>'
             '<p class="secsub">Tap a disease to see how each signal builds the score. <button class="knowmore" data-act="openMethod">Know more</button></p>' + accs + '</div>')

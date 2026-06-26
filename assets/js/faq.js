@@ -57,7 +57,7 @@
 
     return [
       ["How worried should I be about monsoon fevers in " + nm + " right now?",
-       "Right now " + nm + "'s overall read is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily snapshot of conditions across the four fevers we track, not a tally of who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."],
+       "Right now " + nm + "'s overall score is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily look at local risk across the four fevers we track, not who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."],
       ["Is dengue something to watch in " + nm + " this week?",
        "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + (ORD[drank] || "biggest") + " concern of the four fevers here. " + cap(den_mode) + ". Either way it's a risk signal built from weather conditions, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."],
       ["Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
