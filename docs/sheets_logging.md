@@ -85,7 +85,9 @@ const HEADERS = {
   // also gets one disease="OVERALL" row whose score formula is the headline blend over its disease rows.
   // AE/AF (push_image_url_prod, push_image_url_staging) = the per-city Android push-notification card URLs
   // (?v= cache-bust), posted as literal values, repeated on every row of the city.
-  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale','weather_source','tests_booked','positives','positivity_pct','push_image_url_prod','push_image_url_staging'],
+  // AG/AH (city_url_prod, city_url_staging) = the per-city page URLs (prod + staging origins, base + city + "/",
+  // matching the page canonical), posted as literal values, repeated on every row of the city.
+  raw_data: ['date','run_id','city','state','disease','family','temp_c','humidity_pct','rain_7d_mm','rain_14d_mm','weather_score','trends_score','trends_keywords','news_spike','positivity','w_weather','w_trends','w_positivity','confidence','score','band','mode','trends_state_interest','weather_fresh','trends_fresh','stale','weather_source','tests_booked','positives','positivity_pct','push_image_url_prod','push_image_url_staging','city_url_prod','city_url_staging'],
 };
 
 function doPost(e) {
@@ -228,6 +230,8 @@ const DICT = [
   ['positivity_pct', 'FORMULA: positives(AC)/tests_booked(AB)*100. The positivity signal (O) = MIN(100, ROUND(positivity_pct/ref*100)) with a PER-DISEASE ref (dengue 25, malaria 4, chikungunya 15, typhoid 45, else 35), blank (forecast-only) when tests_booked < 30. Completes the build-up: tests_booked, positives -> positivity_pct -> positivity (O) -> score (T).'],
   ['push_image_url_prod', 'Per-city Android push-notification big-picture image URL on the production origin (pharmeasy.in/fever-watch/assets/img/push/<city>.jpg), with a ?v= daily cache-bust. Same value on every row of the city. Posted as a literal by sheetlog.py.'],
   ['push_image_url_staging', 'The same Android push image on the github.io staging origin (with the ?v= cache-bust). Posted as a literal by sheetlog.py.'],
+  ['city_url_prod', 'Per-city page URL on the production origin (pharmeasy.in/fever-watch/<city>/), matching the page canonical. Same value on every row of the city. Posted as a literal by sheetlog.py.'],
+  ['city_url_staging', 'The same city page URL on the github.io staging origin (pharmeasymarketing.github.io/fever-watch/<city>/). Posted as a literal by sheetlog.py.'],
 ];
 function _ensureDictionary(ss) {
   if (ss.getSheetByName('data_dictionary')) return;

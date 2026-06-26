@@ -138,6 +138,9 @@ def push_raw(grid: dict) -> int:
         # Per-city Android push image URLs (same for all of the city's rows), prod + staging, ?v= cache-bust.
         push_prod = (base_url + "assets/img/push/" + cid + ".jpg?v=" + ver) if base_url else ""
         push_stg = (staging_url + "assets/img/push/" + cid + ".jpg?v=" + ver) if staging_url else ""
+        # Per-city page URLs (same for all of the city's rows), prod + staging, matching the page canonical (base + cid + "/").
+        city_url_prod = (base_url + cid + "/") if base_url else ""
+        city_url_stg = (staging_url + cid + "/") if staging_url else ""
         cells = cells_by_city.get(cid, [])
         if not cells:
             continue
@@ -162,6 +165,7 @@ def push_raw(grid: dict) -> int:
                 WEATHER_SOURCE,                                    # AA weather provenance
                 det.get("tests", ""), det.get("positives", ""), "",  # AB tests_booked, AC positives, AD positivity_pct -> FORMULA
                 push_prod, push_stg,                               # AE/AF Android push image URL (prod + staging)
+                city_url_prod, city_url_stg,                       # AG/AH city page URL (prod + staging)
             ])
         # One city-overall line item: the headline blend, score derived by formula (T).
         rows.append([
@@ -173,6 +177,7 @@ def push_raw(grid: dict) -> int:
             WEATHER_SOURCE,                                        # AA weather provenance
             "", "", "",                                            # AB-AD blank for the blend row
             push_prod, push_stg,                                   # AE/AF Android push image URL (prod + staging)
+            city_url_prod, city_url_stg,                           # AG/AH city page URL (prod + staging)
         ])
 
     sent = 0

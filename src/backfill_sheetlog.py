@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-time historical backfill generator for the Google Sheets raw_data tab.
 
-Replicates the live raw_data schema (the 26 columns A..Z) for historical dates so
+Replicates the live raw_data schema (the 34 columns A..AH) for historical dates so
 the user can import them into the Sheet. OFFLINE only: never POSTs to the webhook,
 needs no token. It is the STRICT, one-shot counterpart to the best-effort live
 logger (src/sheetlog.py).
@@ -67,7 +67,7 @@ BACKFILL_DIR = os.path.join(ROOT, "data", "backfill")
 OUT_DIR = os.path.join(BACKFILL_DIR, "sheet")
 WEATHER_SOURCE = "rain: NOAA CPC (public domain); temp/humidity: NASA POWER (public domain)"
 
-# The 30-column raw_data header, byte-identical to HEADERS.raw_data in the Apps
+# The 34-column raw_data header, byte-identical to HEADERS.raw_data in the Apps
 # Script (docs/sheets_logging.md) and the order src/sheetlog.py posts. AB/AC/AD
 # (tests_booked, positives, positivity_pct) carry the labs build-up: only tests_booked
 # + positives are values; positivity_pct (AD) and the positivity signal (O) are in-sheet
@@ -83,6 +83,7 @@ HEADER = [
     "trends_state_interest", "weather_fresh", "trends_fresh", "stale", "weather_source",
     "tests_booked", "positives", "positivity_pct",
     "push_image_url_prod", "push_image_url_staging",
+    "city_url_prod", "city_url_staging",
 ]
 
 # --- per-disease positivity reference (the % positivity that maps to signal 100) ----------------
@@ -374,6 +375,7 @@ def build_grid_for_date(
                 "" if positives is None else positives,          # AC positives
                 "" if pos_pct is None else pos_pct,              # AD positivity_pct (LITERAL; xlsx -> formula)
                 "", "",                                          # AE/AF push image URLs (n/a for historic backfill)
+                "", "",                                          # AG/AH city page URLs (n/a for historic backfill)
             ])
 
         # OVERALL city-blend row: score = round(0.8*top + 0.2*mean-of-rest), same as build_daily.
@@ -395,6 +397,7 @@ def build_grid_for_date(
             WEATHER_SOURCE,                                      # AA weather provenance
             "", "", "",                                          # AB-AD blank for the blend row
             "", "",                                              # AE/AF push image URLs (n/a for historic backfill)
+            "", "",                                              # AG/AH city page URLs (n/a for historic backfill)
         ])
 
     return rows
