@@ -2,9 +2,42 @@
 
 > Read this plus `CLAUDE.md` at the start of a new session. It captures what is built, what is
 > verified, what is mock/pending, every locked decision, and how to run everything. The SSG is
-> **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**
+> **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
+> Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-06-26, COPY SIMPLIFICATION + "WHY" DRIVER CHIPS + METHOD CITATIONS + MOBILE POLISH):** All
+> **NEWEST (2026-07-02, CYBERPANEL / OPENLITESPEED VPS PRODUCTION DEPLOY WIRED):** Production hosting moved off
+> GitHub Pages onto a **Hostinger VPS running CyberPanel / OpenLiteSpeed**, served under `/fever-watch/` and
+> reverse-proxied by the pharmeasy.in edge (public URL + `base_url` unchanged: `https://pharmeasy.in/fever-watch/`).
+> github.io is now explicitly the STAGING origin. Committed + pushed to master (`ebf83fc`).
+> 1. **New workflow `.github/workflows/deploy-cyberpanel.yml`** (originally the user's file, added via the GitHub UI
+>    as `eab2ef4`; then comment-corrected + folded into git). Builds the PRODUCTION export (`SITE_ENV=production` ->
+>    indexable robots meta + `Allow:` robots.txt + canonical from `base_url`), overrides `base_url` at build time from
+>    the `FW_PROD_BASE_URL` secret, runs the SSG (build_assets + build_share_cards + build_site), sanity-checks that
+>    `indore/index.html` carries `index,follow`, then rsyncs `dist/fever-watch/` to the host via
+>    `burnett01/rsync-deployments@7.0.2` over SSH. Triggers on `workflow_run` after each successful "Daily refresh +
+>    deploy (Fever Watch)" run (fresh grid -> fresh VPS deploy) + manual dispatch. The VPS runs NO Python/PHP; it just
+>    serves the pre-rendered static files, so the SSR<->JS parity contract still holds.
+> 2. **`daily.yml` Pages `deploy` job is now `continue-on-error: true`.** The CyberPanel workflow's `workflow_run`
+>    trigger is gated on `conclusion == success`; without this, a flaky or cancelled Pages publish would fail the run
+>    and silently skip that day's VPS deploy. The `refresh` job is deliberately NOT guarded, so a real data/build
+>    failure still (correctly) blocks production. Staging keeps refreshing daily.
+> 3. **New Actions secrets** (user added): `FW_PROD_BASE_URL` (**must be the public `https://pharmeasy.in/fever-watch/`,
+>    NOT the CyberPanel origin host**, or canonical/OG/sitemap point at the hidden origin), `DEPLOY_HOST`, `DEPLOY_USER`
+>    (the CyberPanel site Linux user that owns public_html), `DEPLOY_SSH_KEY`, `DEPLOY_PATH`, `DEPLOY_PORT`.
+> 4. **The deploy SSH key is JAILED to `/fever-watch/`**, so `DEPLOY_PATH` is set to `.` (resolves to the jail root =
+>    the fever-watch dir) and rsync `--delete` cannot escape it. This is safe ONLY because of the jail; on an
+>    unrestricted key `.` would resolve to the whole home dir and `--delete` would wipe public_html +
+>    `.ssh/authorized_keys`. The jail behaviour is not yet empirically verified.
+> OPEN / next: (a) **dry-run the first live deploy** - temporarily add `--dry-run` to the rsync `switches`, run once,
+> read the log to confirm files land in `/fever-watch/`, nothing unexpected is deleted, and rsync-over-SSH works (vs an
+> SFTP-only jail, where you would switch to the FTP/FTPS fallback) - BEFORE trusting the auto-triggered `--delete`;
+> (b) confirm the `FW_PROD_BASE_URL` value; (c) the **pharmeasy.in edge reverse-proxy rule** `/fever-watch/` -> VPS
+> origin is still PENDING (another team) - until it lands, verify at the origin host directly; (d) on a subpath,
+> `pharmeasy.in/robots.txt` (root, owned by the main site) governs crawling, not `/fever-watch/robots.txt` - coordinate
+> the sitemap reference there; (e) HARDENING: pin `burnett01/rsync-deployments` to a commit SHA (not the `@7.0.2` tag)
+> and add known_hosts host-key pinning.
+>
+> **(2026-06-26, COPY SIMPLIFICATION + "WHY" DRIVER CHIPS + METHOD CITATIONS + MOBILE POLISH):** All
 > verified live (mobile flow + SSR/parity OK both flows); committed + pushed to master. Nothing here is mock.
 > 1. **Method-popover research citations** (the ⓘ "Source"/"assumption" links live in `mobile.js`/`desktop.js`, NOT
 >    `build_site.py` METHOD_HTML). Rain window: nature `srep35028` -> `pmc.ncbi.nlm.nih.gov/articles/PMC6518529` (both

@@ -51,9 +51,18 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   (or `WEATHER_PROVIDER=nasa-power`). Open-Meteo stays behind the same interface as a dev/forecast option
   (its free tier is non-commercial). IMD gauge data is NOT used in production (non-commercial licence);
   it was the offline validation truth only.
-- **Hosting:** GitHub Pages (public repo) + Actions cron. Production = `https://pharmeasy.in/fever-watch/`
-  (a subpath on the pharmeasy.in apex via reverse-proxy, mirroring Mosquito Watch). `base_url` lives only in
-  `config/site.json` (set 2026-06-25; was `/research/fever-watch-2026/`).
+- **Hosting:** PRODUCTION deploys to a **Hostinger VPS (CyberPanel / OpenLiteSpeed)** via rsync-over-SSH from
+  `.github/workflows/deploy-cyberpanel.yml` (2026-07-02; build stays in Actions with `SITE_ENV=production`, the VPS
+  serves the pre-rendered static files, no Python/PHP). It runs on `workflow_run` after each successful `daily.yml`,
+  plus manual dispatch. **GitHub Pages (github.io) is now the STAGING origin** (`deploy.yml` on push + `daily.yml`
+  daily; `daily.yml`'s Pages `deploy` job is `continue-on-error` so a Pages hiccup cannot block the VPS deploy).
+  Public URL + `base_url` are unchanged: `https://pharmeasy.in/fever-watch/` (a subpath on the pharmeasy.in apex
+  served to the VPS origin via the edge reverse-proxy, mirroring Mosquito Watch; the edge rule is PENDING, another
+  team). `base_url` lives only in `config/site.json` (set 2026-06-25; was `/research/fever-watch-2026/`); the
+  CyberPanel workflow overrides it at build time from the `FW_PROD_BASE_URL` secret, which MUST be the public
+  pharmeasy.in URL, NOT the VPS origin host. New Actions secrets: `FW_PROD_BASE_URL`, `DEPLOY_HOST`, `DEPLOY_USER`,
+  `DEPLOY_SSH_KEY`, `DEPLOY_PATH` (the dedicated `.../public_html/fever-watch/` folder; rsync `--delete` mirrors it),
+  `DEPLOY_PORT`.
 - **Analytics:** Google Tag Manager container `GTM-W5PR55Z` is injected site-wide from the shared `PAGE`
   template in `src/build_site.py` (loader `<script>` high in `<head>` + the `<noscript>` iframe right after
   `<body>`), so every city + landing page carries it. Add tags/pixels in GTM, not in the page source.
@@ -215,6 +224,6 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
 - [x] **Lab positivity LIVE (2026-06-17):** reads the private "Year 2026 DoD data(TC Data)" tab via the Google Sheets API + a service account (`src/signals/gsheet_api.py`, provider `gsheet_api`, secret `GOOGLE_SHEETS_SA_JSON`; `daily.yml` sets `POSITIVITY_PROVIDER=gsheet_api`). City map in `data/citymap/` (resolver `src/citymap.py`); 2025 historic = `data/lab_feed_2025_historic.csv` (from `TC Fever Watch Data 2025.xlsx`); season-trend Labs + Overall now REAL. Full detail: PROJECT_STATE 2026-06-17 banner.
 - [~] **"Why this score?" UX + calibration refinements (mostly DONE 2026-06-17 PM):** DONE = humanized per-signal readouts (High/Mod/Low level pill + full `{weight}% weight x raw {v}` derivation, no "raw"/"35% reference" in the consumer view); split contribution (+N) from the trend badge; **per-disease `ref_positivity_pct` = 25/4/15/45** (dengue/malaria/chik/typhoid, replacing the global 35); shortened signal labels; methodology + Word doc updated. STILL OPEN: label disease-list deltas with a timeframe (#4); a note explaining Overall vs the top disease (#5, deferred - user said don't touch the dial); formal a11y verify (#7). See PROJECT_STATE newest banner.
 - [x] Add the 5 SerpApi keys as Actions secrets -> DONE (5/5 verified in CI; `trends.provider=cached`; pulled by `daily.yml`).
-- [ ] Repo name + Pages + production reverse-proxy route (mirror Mosquito Watch).
+- [~] Production hosting: **CyberPanel / OpenLiteSpeed VPS deploy WIRED** (2026-07-02, `deploy-cyberpanel.yml`, rsync-over-SSH, `SITE_ENV=production`; github.io demoted to staging; repo = `pharmeasyMarketing/fever-watch`). STILL OPEN: dry-run-verify the first live `--delete` deploy; confirm `FW_PROD_BASE_URL` = the public pharmeasy.in URL; the **pharmeasy.in edge reverse-proxy route** to the VPS origin (another team); HARDEN (pin `burnett01/rsync-deployments` to a SHA, add known_hosts host-key pinning).
 - [x] Self-host Inter -> DONE (latin woff2 + `@font-face`, replacing the Google Fonts CDN). [ ] Final brand sign-off on the co-branded lockup still pending.
 - [ ] Backtest the 3-signal lag on a past monsoon before any public early-warning claim.
