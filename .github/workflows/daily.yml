@@ -163,6 +163,12 @@ jobs:
   deploy:
     needs: refresh
     runs-on: ubuntu-latest
+    # Staging (GitHub Pages) is best-effort. A failed or cancelled Pages publish must NOT fail the whole
+    # workflow run. If it did, the "Deploy Fever Watch to CyberPanel (production)" workflow (which fires
+    # on this run finishing with conclusion == success) would be blocked, and that day's VPS deploy would
+    # be skipped. The VPS is the source of truth; github.io is a convenience mirror. The refresh job has
+    # no continue-on-error, so a real data or build failure still (correctly) blocks the production deploy.
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

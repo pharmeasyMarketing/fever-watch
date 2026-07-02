@@ -1,10 +1,11 @@
 name: Deploy Fever Watch to CyberPanel (production)
 
 # Builds the PRODUCTION static export (SITE_ENV=production -> indexable robots, canonical
-# at the CyberPanel origin) and rsyncs dist/fever-watch/ into public_html/fever-watch/ on
-# the CyberPanel host. The server just serves the pre-rendered SSR pages as static files;
-# it runs NO Python and NO PHP rendering. Reuses the canonical Python renderer, so the
-# server HTML stays byte-identical to the JS first paint (parity_check.js contract holds).
+# at the PUBLIC production URL from FW_PROD_BASE_URL) and rsyncs dist/fever-watch/ into
+# public_html/fever-watch/ on the CyberPanel host. The server just serves the pre-rendered
+# SSR pages as static files; it runs NO Python and NO PHP rendering. Reuses the canonical
+# Python renderer, so the server HTML stays byte-identical to the JS first paint
+# (parity_check.js contract holds).
 #
 # Trigger:
 #   - automatically after each successful "Daily refresh + deploy (Fever Watch)" run
@@ -12,12 +13,16 @@ name: Deploy Fever Watch to CyberPanel (production)
 #   - manually from the Actions tab (workflow_dispatch).
 #
 # One-time repo secrets (Settings > Secrets and variables > Actions):
-#   FW_PROD_BASE_URL  the public URL of the deployed folder, e.g. https://example.com/fever-watch/
+#   FW_PROD_BASE_URL  the PUBLIC user-facing URL as seen behind the pharmeasy.in reverse
+#                     proxy, e.g. https://pharmeasy.in/fever-watch/  -- NOT the CyberPanel
+#                     origin hostname. This value becomes every page's canonical, OG url and
+#                     sitemap entry, so it must be the URL the public actually visits.
 #   DEPLOY_HOST       server hostname or IP
 #   DEPLOY_USER       SSH user that owns public_html (CyberPanel site user)
 #   DEPLOY_SSH_KEY    private SSH key (the matching public key goes in the server user's
 #                     ~/.ssh/authorized_keys)
-#   DEPLOY_PATH       absolute remote dir, e.g. /home/example.com/public_html/fever-watch/
+#   DEPLOY_PATH       absolute remote dir, the DEDICATED fever-watch folder (never public_html
+#                     itself; --delete mirrors), e.g. /home/example.com/public_html/fever-watch/
 #   DEPLOY_PORT       SSH port (optional; CyberPanel default is 22)
 #
 # No SSH on the host? See DEPLOY-CYBERPANEL.md for the drop-in FTP/FTPS fallback step.
@@ -39,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        # No explicit ref: checks out the default branch (main) on schedule/workflow_run,
+        # No explicit ref: checks out the default branch (master) on schedule/workflow_run,
         # or the chosen branch on a manual run -> always the latest committed data.
 
       - uses: actions/setup-python@v6
@@ -49,7 +54,7 @@ jobs:
       - name: Install build deps (Pillow + share-card text shaping, pinned)
         run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0
 
-      - name: Point base_url at the CyberPanel origin
+      - name: Point base_url at the public production URL
         env:
           FW_PROD_BASE_URL: ${{ secrets.FW_PROD_BASE_URL }}
         run: |
