@@ -8,7 +8,7 @@
 > **NEWEST (2026-07-02, CYBERPANEL / OPENLITESPEED VPS PRODUCTION DEPLOY WIRED):** Production hosting moved off
 > GitHub Pages onto a **Hostinger VPS running CyberPanel / OpenLiteSpeed**, served under `/fever-watch/` and
 > reverse-proxied by the pharmeasy.in edge (public URL + `base_url` unchanged: `https://pharmeasy.in/fever-watch/`).
-> github.io is now explicitly the STAGING origin. Committed + pushed to master (`ebf83fc`).
+> github.io is now explicitly the STAGING origin. Committed + pushed to master (`ebf83fc`; dry-run test + go-live in `e1c0bf0`..`7ea79b9`). **DEPLOY VERIFIED LIVE (2026-07-02)** - see OPEN item (a).
 > 1. **New workflow `.github/workflows/deploy-cyberpanel.yml`** (originally the user's file, added via the GitHub UI
 >    as `eab2ef4`; then comment-corrected + folded into git). Builds the PRODUCTION export (`SITE_ENV=production` ->
 >    indexable robots meta + `Allow:` robots.txt + canonical from `base_url`), overrides `base_url` at build time from
@@ -27,10 +27,12 @@
 > 4. **The deploy SSH key is JAILED to `/fever-watch/`**, so `DEPLOY_PATH` is set to `.` (resolves to the jail root =
 >    the fever-watch dir) and rsync `--delete` cannot escape it. This is safe ONLY because of the jail; on an
 >    unrestricted key `.` would resolve to the whole home dir and `--delete` would wipe public_html +
->    `.ssh/authorized_keys`. The jail behaviour is not yet empirically verified.
-> OPEN / next: (a) **dry-run the first live deploy** - temporarily add `--dry-run` to the rsync `switches`, run once,
-> read the log to confirm files land in `/fever-watch/`, nothing unexpected is deleted, and rsync-over-SSH works (vs an
-> SFTP-only jail, where you would switch to the FTP/FTPS fallback) - BEFORE trusting the auto-triggered `--delete`;
+>    `.ssh/authorized_keys`. VERIFIED 2026-07-02: the live run deleted only a stray `fw_test.txt` in the target dir, proving `.` resolves to the jailed fever-watch folder and `--delete` is confined to it.
+> OPEN / next: (a) [DONE 2026-07-02] **first live deploy VERIFIED** - the real deploy (run 28591701910) sent the full
+> 59 MB site and `--delete` pruned only a stray `fw_test.txt`; a follow-up `--dry-run` (run 28597913537) connected
+> clean over SSH with nothing unexpected to delete; `--dry-run` was then removed (`7ea79b9`) so daily auto-deploys
+> write for real. One `Operation timed out` mid-test was a transient fail2ban/firewall ban that cleared (see the
+> hardening/watch note);
 > (b) confirm the `FW_PROD_BASE_URL` value; (c) the **pharmeasy.in edge reverse-proxy rule** `/fever-watch/` -> VPS
 > origin is still PENDING (another team) - until it lands, verify at the origin host directly; (d) on a subpath,
 > `pharmeasy.in/robots.txt` (root, owned by the main site) governs crawling, not `/fever-watch/robots.txt` - coordinate
