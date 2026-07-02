@@ -1,0 +1,93 @@
+name: Deploy Fever Watch to CyberPanel (production)
+
+# Builds the PRODUCTION static export (SITE_ENV=production -> indexable robots, canonical
+# at the CyberPanel origin) and rsyncs dist/fever-watch/ into public_html/fever-watch/ on
+# the CyberPanel host. The server just serves the pre-rendered SSR pages as static files;
+# it runs NO Python and NO PHP rendering. Reuses the canonical Python renderer, so the
+# server HTML stays byte-identical to the JS first paint (parity_check.js contract holds).
+#
+# Trigger:
+#   - automatically after each successful "Daily refresh + deploy (Fever Watch)" run
+#     (so a fresh grid.json -> a fresh CyberPanel deploy, with no manual upload), and
+#   - manually from the Actions tab (workflow_dispatch).
+#
+# One-time repo secrets (Settings > Secrets and variables > Actions):
+#   FW_PROD_BASE_URL  the public URL of the deployed folder, e.g. https://example.com/fever-watch/
+#   DEPLOY_HOST       server hostname or IP
+#   DEPLOY_USER       SSH user that owns public_html (CyberPanel site user)
+#   DEPLOY_SSH_KEY    private SSH key (the matching public key goes in the server user's
+#                     ~/.ssh/authorized_keys)
+#   DEPLOY_PATH       absolute remote dir, e.g. /home/example.com/public_html/fever-watch/
+#   DEPLOY_PORT       SSH port (optional; CyberPanel default is 22)
+#
+# No SSH on the host? See DEPLOY-CYBERPANEL.md for the drop-in FTP/FTPS fallback step.
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Daily refresh + deploy (Fever Watch)"]
+    types: [completed]
+
+concurrency:
+  group: cyberpanel-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Manual runs always proceed; auto runs only when the daily refresh succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        # No explicit ref: checks out the default branch (main) on schedule/workflow_run,
+        # or the chosen branch on a manual run -> always the latest committed data.
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install build deps (Pillow + share-card text shaping, pinned)
+        run: python -m pip install --upgrade pip "Pillow>=11,<13" uharfbuzz==0.55.0 fonttools==4.63.0
+
+      - name: Point base_url at the CyberPanel origin
+        env:
+          FW_PROD_BASE_URL: ${{ secrets.FW_PROD_BASE_URL }}
+        run: |
+          test -n "$FW_PROD_BASE_URL" || { echo "::error::FW_PROD_BASE_URL secret is not set"; exit 1; }
+          python - <<'PY'
+          import json, os
+          p = "config/site.json"
+          cfg = json.load(open(p, encoding="utf-8"))
+          cfg["base_url"] = os.environ["FW_PROD_BASE_URL"].rstrip("/") + "/"
+          json.dump(cfg, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+          print("base_url ->", cfg["base_url"])
+          PY
+
+      - name: Build production static site
+        env:
+          SITE_ENV: production
+        run: |
+          chmod +x tools/resvg/resvg-linux-x86_64   # vendored resvg (git may drop the x bit)
+          python src/build_assets.py        # favicons / PWA icons / default OG
+          python src/build_share_cards.py   # per-city OG + share cards
+          python src/build_site.py          # dist/fever-watch/ : 210 pages + robots/sitemap/manifest
+
+      - name: Sanity-check the production build
+        run: |
+          test -f dist/fever-watch/index.html
+          grep -q 'index,follow' dist/fever-watch/indore/index.html || { echo "::error::prod robots meta missing - is SITE_ENV=production?"; exit 1; }
+          echo "Pages: $(find dist/fever-watch -mindepth 2 -name index.html | wc -l) cities + landing"
+
+      - name: Deploy to CyberPanel via rsync over SSH
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          # -a archive, -z compress, -r recurse, --delete keeps the remote an EXACT mirror
+          # (safe: public_html/fever-watch/ is dedicated to this site). Trailing slash on
+          # path copies the CONTENTS of dist/fever-watch/ into remote_path.
+          switches: -avzr --delete --exclude='.git'
+          path: dist/fever-watch/
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+          remote_port: ${{ secrets.DEPLOY_PORT || '22' }}
