@@ -89,9 +89,7 @@ jobs:
           # -a archive, -z compress, -r recurse, --delete keeps the remote an EXACT mirror
           # (safe: public_html/fever-watch/ is dedicated to this site). Trailing slash on
           # path copies the CONTENTS of dist/fever-watch/ into remote_path.
-          # >>> TEMPORARY DRY RUN (2026-07-02): --dry-run makes rsync compute + print what it WOULD
-          # transfer/delete but write NOTHING to the server. Remove --dry-run after verifying the log.
-          switches: -avzr --dry-run --delete --exclude='.git'
+          switches: -avzr --delete --exclude='.git'
           path: dist/fever-watch/
           remote_path: ${{ secrets.DEPLOY_PATH }}
           remote_host: ${{ secrets.DEPLOY_HOST }}
