@@ -29,6 +29,12 @@ name: Deploy Fever Watch to CyberPanel (production)
 
 on:
   workflow_dispatch:
+  schedule:
+    # 00:30 UTC = 06:00 IST. Reliable daily trigger: daily.yml (the data refresh) consistently finishes
+    # by ~00:00 UTC, so by 00:30 the fresh grid.json is committed and this deploy picks it up on checkout.
+    # Kept alongside workflow_run below as a dependable backstop, because the workflow_run chain off
+    # daily.yml proved unreliable (it never fired). GitHub delays cron ~1h, so it lands ~06:30-07:30 IST.
+    - cron: "30 0 * * *"
   workflow_run:
     workflows: ["Daily refresh + deploy (Fever Watch)"]
     types: [completed]
@@ -39,8 +45,8 @@ concurrency:
 
 jobs:
   deploy:
-    # Manual runs always proceed; auto runs only when the daily refresh succeeded.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Manual + scheduled runs always proceed; the workflow_run path runs only when the daily refresh succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
