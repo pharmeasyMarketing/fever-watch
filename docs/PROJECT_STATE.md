@@ -5,7 +5,20 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-02, CYBERPANEL / OPENLITESPEED VPS PRODUCTION DEPLOY WIRED):** Production hosting moved off
+> **NEWEST (2026-07-03, VPS DEPLOY TRIGGER FIX - `workflow_run` NEVER FIRED, ADDED A DIRECT DAILY CRON):** The
+> `workflow_run` chain (CyberPanel deploy auto-runs after `daily.yml` completes) turned out to **never fire even
+> once**. The morning after go-live, `daily.yml` ran + succeeded (23:35->23:44 UTC, both jobs green) and refreshed the
+> data, but no CyberPanel deploy was triggered - every run to date was a manual `workflow_dispatch`. Config was correct
+> (exact workflow-name match, file on the default branch, `conclusion == success`), so this is `workflow_run`'s known
+> cross-workflow-chaining unreliability. FIX (`769c2ca`): added a direct **`schedule: - cron: "30 0 * * *"` (00:30 UTC
+> = 06:00 IST)** to `deploy-cyberpanel.yml` as the PRIMARY trigger - empirically `daily.yml` finishes by ~00:00 UTC
+> (its ~22:30 cron starts ~1h late every night), so the fresh `grid.json` is committed before this fires; GitHub cron
+> lag ~1h means it lands ~06:30-07:30 IST. Also updated the deploy job `if` to allow `github.event_name == 'schedule'`
+> (else the scheduled run is created but SKIPS the deploy job - the same silent no-op class as the `workflow_run` miss).
+> `workflow_run` is kept as a harmless fast-path. Verified same day: a manual run pushed the day's fresh data (16.7 MB
+> synced, `--delete` clean, no timeout). First automatic `schedule`-event run to watch: tomorrow ~00:30 UTC.
+>
+> **(2026-07-02, CYBERPANEL / OPENLITESPEED VPS PRODUCTION DEPLOY WIRED):** Production hosting moved off
 > GitHub Pages onto a **Hostinger VPS running CyberPanel / OpenLiteSpeed**, served under `/fever-watch/` and
 > reverse-proxied by the pharmeasy.in edge (public URL + `base_url` unchanged: `https://pharmeasy.in/fever-watch/`).
 > github.io is now explicitly the STAGING origin. Committed + pushed to master (`ebf83fc`; dry-run test + go-live in `e1c0bf0`..`7ea79b9`). **DEPLOY VERIFIED LIVE (2026-07-02)** - see OPEN item (a).
@@ -15,7 +28,7 @@
 >    the `FW_PROD_BASE_URL` secret, runs the SSG (build_assets + build_share_cards + build_site), sanity-checks that
 >    `indore/index.html` carries `index,follow`, then rsyncs `dist/fever-watch/` to the host via
 >    `burnett01/rsync-deployments@7.0.2` over SSH. Triggers on `workflow_run` after each successful "Daily refresh +
->    deploy (Fever Watch)" run (fresh grid -> fresh VPS deploy) + manual dispatch. The VPS runs NO Python/PHP; it just
+>    deploy (Fever Watch)" run (fresh grid -> fresh VPS deploy) + manual dispatch. [SUPERSEDED 2026-07-03: this `workflow_run` chain never fired; a 00:30 UTC daily `schedule` is now the primary trigger - see the newest banner.] The VPS runs NO Python/PHP; it just
 >    serves the pre-rendered static files, so the SSR<->JS parity contract still holds.
 > 2. **`daily.yml` Pages `deploy` job is now `continue-on-error: true`.** The CyberPanel workflow's `workflow_run`
 >    trigger is gated on `conclusion == success`; without this, a flaky or cancelled Pages publish would fail the run

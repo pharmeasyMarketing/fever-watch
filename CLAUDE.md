@@ -53,8 +53,9 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   it was the offline validation truth only.
 - **Hosting:** PRODUCTION deploys to a **Hostinger VPS (CyberPanel / OpenLiteSpeed)** via rsync-over-SSH from
   `.github/workflows/deploy-cyberpanel.yml` (2026-07-02; build stays in Actions with `SITE_ENV=production`, the VPS
-  serves the pre-rendered static files, no Python/PHP). It runs on `workflow_run` after each successful `daily.yml`,
-  plus manual dispatch. **GitHub Pages (github.io) is now the STAGING origin** (`deploy.yml` on push + `daily.yml`
+  serves the pre-rendered static files, no Python/PHP). It runs on a daily **`schedule` (00:30 UTC / 06:00 IST)** as the primary, dependable trigger, plus manual dispatch and
+  a `workflow_run` fast-path off `daily.yml` (that `workflow_run` chain proved unreliable and NEVER fired, so the
+  schedule carries the daily deploy; added 2026-07-03). **GitHub Pages (github.io) is now the STAGING origin** (`deploy.yml` on push + `daily.yml`
   daily; `daily.yml`'s Pages `deploy` job is `continue-on-error` so a Pages hiccup cannot block the VPS deploy).
   Public URL + `base_url` are unchanged: `https://pharmeasy.in/fever-watch/` (a subpath on the pharmeasy.in apex
   served to the VPS origin via the edge reverse-proxy, mirroring Mosquito Watch; the edge rule is PENDING, another
