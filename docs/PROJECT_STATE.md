@@ -5,7 +5,28 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-03, VPS DEPLOY TRIGGER FIX - `workflow_run` NEVER FIRED, ADDED A DIRECT DAILY CRON):** The
+> **NEWEST (2026-07-04, SEO: DATE-STAMPED PAGE TITLES + "TODAY" COPY SWEEP - committed + pushed `4f883db`):** Page
+> `<title>`s are now DATED and name all four diseases: city = `{City} Monsoon Fever Risk, {DD Mon YYYY} | Dengue,
+> Malaria, Chikungunya, Typhoid | Fever Watch`; landing = `Monsoon Fever Risk in India, {date} | ...`. Both build the
+> date from `_fmt_date_js(generated_at)` (IST-shifted), so it re-stamps on every daily build, matches the on-page
+> "Updated" line, and also feeds `og:title` / `twitter:title`. Rationale (from the first Search Console queries): the
+> flagship pattern is disease+city (`dengue mumbai`, `kolkata dengue`, `dengue in hyderabad`), plus year (`dengue cases
+> in kolkata 2026`), monsoon (`monsoon in ghaziabad`), and now-intent (`fever in kerala now`) - so the title leads with
+> the city + "Monsoon Fever Risk" + the live date and names all four diseases (previously only 3 were listed, and
+> "Dengue" sat in the truncated tail after the pipe). "cases" is deliberately NOT chased in the title (we report no
+> case counts; the existing "Are dengue cases actually rising?" FAQ covers that intent compliantly). Separately, EVERY
+> user-facing **"this week" was swept to "today"** (scores, rankings, section headers incl. `Weather conditions today`,
+> the other-cities leaderboard, the share cards + their `Today, {date}` stamp, the WhatsApp/share text `Today:`) or
+> **"right now"** (band readings, the weather-window FAQ sentences, question phrasings) across `build_site.py`,
+> `faq.js`, `mobile.js`, `desktop.js`, `build_share_cards.py`; the meta description now opens `Today's ...`. The inert
+> `PERIOD_LABELS` ("This week"/"This month", the dead week/month tabs) are left as-is. Verified before push: build
+> clean (210 pages); **0** user-facing "this week" in the built HTML; above-fold `parity_check` OK (mobile + desktop)
+> and a Python `faq_items` vs `faq.js build()` render-diff byte-identical across 3 cities; no em/en/middot dashes; live
+> hydrated render + console clean. STILL DEFERRED/available: the dynamic, driver-led meta description (open with the
+> actual top disease + its live number) - the piece that most directly stops Google discarding the description and
+> stitching its own snippet.
+>
+> **(2026-07-03, VPS DEPLOY TRIGGER FIX - `workflow_run` NEVER FIRED, ADDED A DIRECT DAILY CRON):** The
 > `workflow_run` chain (CyberPanel deploy auto-runs after `daily.yml` completes) turned out to **never fire even
 > once**. The morning after go-live, `daily.yml` ran + succeeded (23:35->23:44 UTC, both jobs green) and refreshed the
 > data, but no CyberPanel deploy was triggered - every run to date was a manual `workflow_dispatch`. Config was correct
@@ -1248,7 +1269,9 @@ from the original spec, which is kept below for reference):
 ### The page contract (original spec, mostly as-built above)
 
 ### The page contract (what `build_site.py` emits, what the front-end expects)
-- `<head>`: per-city `<title>`, meta description, **canonical** = `base_url + fever-watch/{city}/`, Open Graph/Twitter,
+- `<head>`: per-city `<title>` = `{City} Monsoon Fever Risk, {DD Mon YYYY} | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch`
+  (landing = `Monsoon Fever Risk in India, {date} | ...`; date re-stamped daily via `_fmt_date_js`, IST; also feeds `og:title`/`twitter:title`),
+  meta description, **canonical** = `base_url + fever-watch/{city}/`, Open Graph/Twitter,
   theme-color `#10847E`, manifest, favicons; a JSON-LD `@graph` with **WebPage + Dataset + FAQPage** (NO medical schema).
 - `<body>`:
   - A **baked, crawler-readable content block** (also the no-JS fallback): `<h1>`, the city blend (score + band + named

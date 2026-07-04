@@ -175,7 +175,7 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   byte-identical across mobile.js/desktop.js/build_site.py. Desktop renders compact vertical tiles in the 3-col
   `#s-why` grid, **equal-height with the dial** (`#s-week`) - the dial is sized DOWN so it is the shorter card (no
   empty void); `.acc.open` is `overflow:visible` so the per-signal popover is not clipped. The **weather card
-  (`Weather conditions this week`) shows the real weather-score drivers - 3 tiles** Temperature near 29C / 14-day
+  (`Weather conditions today`) shows the real weather-score drivers - 3 tiles** Temperature near 29C / 14-day
   Rainfall / Humidity (desktop 3-up, mobile 2 + Humidity full-width); the old "estimated stagnation" tile was removed
   2026-06-24 (producer kept in `build_daily.py`).
 - **2026-06-24 medical-review UX overhaul (committed + pushed to master; full detail in PROJECT_STATE):**
@@ -213,6 +213,19 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   trend `.sigbadge` (up + down) is hidden for now (tokens.css). Also (2026-06-25 method citations): the popover
   source links were swapped to PMC6518529 (rain + temperature `/#sec5`) and pubmed30443418 + springer (search,
   via a new `method.js` `data-href2` second-link slot).
+- **2026-07-04 SEO: dated page titles + "today" copy sweep (committed + pushed `4f883db`):** Page `<title>`s are now
+  DATED and name all four diseases - city = `{City} Monsoon Fever Risk, {DD Mon YYYY} | Dengue, Malaria, Chikungunya,
+  Typhoid | Fever Watch`; landing = `Monsoon Fever Risk in India, {date} | ...` (both build the date from
+  `_fmt_date_js(generated_at)`, IST, so it re-stamps every daily build and matches the on-page Updated line; also feeds
+  `og:title`/`twitter:title`). Search-Console-led: the flagship query is disease+city (`dengue mumbai`, `kolkata
+  dengue`) + year (`...2026`) + monsoon + now-intent (`...now`). Every user-facing **"this week" was swept to "today"**
+  (scores, rankings, section headers incl. `Weather conditions today`, leaderboard, share cards + the `Today, {date}`
+  card stamp, share text `Today:`) or **"right now"** (band readings, weather-window sentences, question phrasings)
+  across build_site.py + faq.js + mobile.js + desktop.js + build_share_cards.py; meta description opens `Today's ...`.
+  The inert `PERIOD_LABELS` ("This week"/"This month" on the dead week/month tabs) are untouched. "cases" is
+  deliberately NOT chased in the title (no case counts). Twins kept byte-identical (above-fold `parity_check` + a
+  `faq_items` vs `faq.js build()` render-diff both pass). STILL DEFERRED: the dynamic driver-led meta description
+  (lead with the actual top disease + its live number).
 
 ## Open decisions / TODO
 
