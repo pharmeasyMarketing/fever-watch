@@ -383,7 +383,7 @@ def render_portrait(ctx):
     p.append(icon(IC_VIRUS, 30.0, "#9FE3D6", 1.9, "none", ICON_AXIS - 15, icy - 15))
     blk = 24 * 0.72 + 12 + 36 * 0.72
     btop = icy - blk / 2
-    p.append('<g fill-opacity="0.62">%s</g>' % card.text("Top concern this week", TEXT_X, btop + 24 * 0.72, F_SEMI, 24.0, "#ffffff"))
+    p.append('<g fill-opacity="0.62">%s</g>' % card.text("Top concern today", TEXT_X, btop + 24 * 0.72, F_SEMI, 24.0, "#ffffff"))
     p.append(card.text(ctx["topConcern"], TEXT_X, btop + 24 * 0.72 + 12 + 36 * 0.78, F_XBOLD, 36.0, "#ffffff"))
     dots = []
     gright = SIDE + BODYW - 26.0
@@ -483,7 +483,7 @@ def render_landscape(ctx):
     p.append(icon(IC_VIRUS, 28.0, "#9FE3D6", 1.9, "none", ICON_AXIS - 14, icy - 14))
     blk = 18 * 0.72 + 10 + 28 * 0.72
     btop = icy - blk / 2
-    p.append('<g fill-opacity="0.62">%s</g>' % card.text("Top concern this week", TEXT_X, btop + 18 * 0.72, F_SEMI, 18.0, "#ffffff"))
+    p.append('<g fill-opacity="0.62">%s</g>' % card.text("Top concern today", TEXT_X, btop + 18 * 0.72, F_SEMI, 18.0, "#ffffff"))
     p.append(card.text(ctx["topConcern"], TEXT_X, btop + 18 * 0.72 + 10 + 28 * 0.78, F_XBOLD, 28.0, "#ffffff"))
 
     cta_y = ir_y + ir_h + 24.0
@@ -633,8 +633,8 @@ def main():
         grid = json.load(fh)
     date_str = fmt_date(grid.get("generated_at") or "")
     if not date_str:
-        raise SystemExit("FATAL: grid.json generated_at missing/unparseable - the cards would say 'This week, '")
-    updated_label = "This week, " + date_str
+        raise SystemExit("FATAL: grid.json generated_at missing/unparseable - the cards would say 'Today, '")
+    updated_label = "Today, " + date_str
     cities = grid["cities"]
     if args.only:
         keep = set(args.only.split(","))

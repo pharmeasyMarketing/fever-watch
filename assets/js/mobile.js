@@ -339,7 +339,7 @@
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
   }
 
-  // Weather conditions this week: the live inputs that drive the mosquito weather sub-score -
+  // Weather conditions today: the live inputs that drive the mosquito weather sub-score -
   // temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
   // humidity. Byte-identical to build_site.py _weather_card() (above the fold, CLS 0).
   function weatherCard(c) {
@@ -353,8 +353,8 @@
       return '<div class="wxcard"><div class="wxtop">' + x[0] + '<span class="wxhead">' + esc(x[1]) +
         '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
     }).join("");
-    return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions this week</h2>' +
-      '<p class="sectionsub">What the weather means for fever risk this week.</p>' +
+    return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions today</h2>' +
+      '<p class="sectionsub">What the weather means for fever risk today.</p>' +
       '<div class="wxgrid">' + cells + '</div></div>';
   }
 
@@ -459,7 +459,7 @@
     var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
     var chips = '<button class="chip' + (isOverall ? ' on' : '') + '" data-act="leader" data-id="overall">📊 Overall</button>' +
       DATA.diseases.map(function (d) { return '<button class="chip' + (d.id === state.leader ? ' on' : '') + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    return '<div class="card" id="others"><h2 class="sectiontitle">What is happening in other cities?</h2><p class="sectionsub">' + label + ' risk leaderboard this week.</p>' +
+    return '<div class="card" id="others"><h2 class="sectiontitle">What is happening in other cities?</h2><p class="sectionsub">' + label + ' risk leaderboard today.</p>' +
       '<div class="chips">' + chips + '</div>' +
       '<input class="citysearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" style="margin-bottom:10px" />' +
       '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div>';
@@ -576,7 +576,7 @@
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "Today: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function renderShare() {
     // preview = the CI-baked share card itself (assets/img/share/{city}.jpg), so what the
     // user sees is byte-identical to what gets shared - no re-drawn mock to drift.

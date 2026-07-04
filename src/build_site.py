@@ -520,34 +520,34 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
                       else "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40), capped at 69 so it can't hit HIGH until the labs back it up")
     season_clause = ("that's firmly in risk-raising territory" if dw >= 60 else ("that's middling - not nothing, not alarming" if dw >= 25 else "that's on the quiet side for now"))
     band_open = {
-        "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly this week - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
+        "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly right now - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
         "MODERATE": "A MODERATE reading (" + bs + "/100) means things in " + nm + " are a touch elevated but mixed - not a red alert, just a nudge to take the usual precautions.",
-        "LOW-MODERATE": "A LOW-MODERATE reading (" + bs + "/100) means " + nm + " is fairly calm this week - low pressure overall, though the monsoon can turn that around fast.",
+        "LOW-MODERATE": "A LOW-MODERATE reading (" + bs + "/100) means " + nm + " is fairly calm right now - low pressure overall, though the monsoon can turn that around fast.",
         "LOW": "A LOW reading (" + bs + "/100) means it's quiet in " + nm + " right now - conditions and signals are all on the gentle side.",
-    }.get(bb, "A " + bb + " reading (" + bs + "/100) is the headline for " + nm + " this week.")
+    }.get(bb, "A " + bb + " reading (" + bs + "/100) is the headline for " + nm + " right now.")
     cap_clause = (" And since " + nm + " is on a conditions-only forecast for now, it's capped at 69 - it won't show HIGH until lab data confirms it." if not any_conf else "")
     news_clause = (", and there's a national news spike around dengue at the moment" if news else "")
 
     return [
         ("How worried should I be about monsoon fevers in " + nm + " right now?",
          "Right now " + nm + "'s overall score is " + bs + "/100, which lands in the " + bb + " band - and " + dl + " is the main thing nudging it up (it's sitting at " + dsc + "). Think of the score as a daily look at local risk across the four fevers we track, not who's actually sick, so it's a heads-up rather than a diagnosis. We recompute it every day; this one's from " + date_str + "."),
-        ("Is dengue something to watch in " + nm + " this week?",
-         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") this week, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from weather conditions, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
+        ("Is dengue something to watch in " + nm + " right now?",
+         "Dengue's at " + den_s + "/100 in " + nm + " (" + den_b + ") today, which makes it the " + _ORD.get(drank, "biggest") + " concern of the four fevers here. " + den_mode[0].upper() + den_mode[1:] + ". Either way it's a risk signal built from weather conditions, search interest and lab data - not a count of cases or mosquitoes, and not a diagnosis."),
         ("Of all the monsoon fevers, which one should " + nm + " keep an eye on?",
-         "This week it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."),
+         "Today it's " + dl + ", at " + dsc + "/100 (" + dbd + "). Here's the full order right now, highest to lowest: " + rank_list + ". Worth checking back, though - we rerun this daily, and the ranking really does shuffle as the weather, searches and lab signals move."),
         ("How is " + nm + "'s weather affecting the mosquito-fever risk?",
-         nm + " has a " + clim + " climate, and this week it's averaging about " + temp + "C with " + hum + "% humidity and roughly " + rain14 + " mm of rain over the last fortnight. Mosquitoes like Aedes and Anopheles multiply fastest near 29C and use the standing water that shows up a week or two after rain, so warm, wet spells push our weather signal up and drier or cooler ones pull it back down. (Worth flagging: that's outdoor weather, not body-temperature fever.)"),
+         nm + " has a " + clim + " climate, and right now it's averaging about " + temp + "C with " + hum + "% humidity and roughly " + rain14 + " mm of rain over the last fortnight. Mosquitoes like Aedes and Anopheles multiply fastest near 29C and use the standing water that shows up a week or two after rain, so warm, wet spells push our weather signal up and drier or cooler ones pull it back down. (Worth flagging: that's outdoor weather, not body-temperature fever.)"),
         ("Where does the " + nm + " score actually come from?",
          "Three signals, blended: weather conditions (from NASA's open POWER data), how much people are searching for these illnesses, and PharmEasy's lab positivity. " + weights_clause + ". We always show the breakdown - it's never a mystery number. For reference, the bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."),
         ("Is it dengue season in " + nm + " yet?",
-         "Monsoon fevers follow the rain more than the calendar. This week " + nm + "'s weather signal for the mosquito-borne ones is " + den_w + "/100, with about " + rain14 + " mm of rain over the past fortnight leaving standing water - " + season_clause + ". So rather than guessing by the month, just check back here; it updates daily, and you'll see conditions climb or ease in real time."),
+         "Monsoon fevers follow the rain more than the calendar. Right now " + nm + "'s weather signal for the mosquito-borne ones is " + den_w + "/100, with about " + rain14 + " mm of rain over the past fortnight leaving standing water - " + season_clause + ". So rather than guessing by the month, just check back here; it updates daily, and you'll see conditions climb or ease in real time."),
         ("Is " + nm + " better or worse off than other Indian cities right now?",
-         "Out of the " + str(ncit) + " cities we cover, " + nm + " ranks #" + str(rank) + " this week on the overall score (" + bs + "/100, " + bb + "), which puts it in " + tert + " nationally. That ordering shifts through the season, though, because every city is rescored each day from its own weather, searches and lab signals."),
+         "Out of the " + str(ncit) + " cities we cover, " + nm + " ranks #" + str(rank) + " today on the overall score (" + bs + "/100, " + bb + "), which puts it in " + tert + " nationally. That ordering shifts through the season, though, because every city is rescored each day from its own weather, searches and lab signals."),
         ("What does a " + bb + " reading actually mean for " + nm + "?",
          band_open + " The bands run LOW, LOW-MODERATE, MODERATE, then HIGH." + cap_clause),
         ("Are dengue cases actually rising in " + nm + "?",
-         "We can't give you case counts - Fever Watch doesn't report those. What we can show is how much " + st + " is searching for dengue, which is " + den_t_s + "/100 this week" + news_clause + ". Search spikes often track public worry and can run ahead of, or alongside, an outbreak - but they aren't confirmed cases. For the confirmed side we lean on PharmEasy's aggregated, de-identified lab positivity wherever it's available."),
-        ("What should someone in " + nm + " actually do this week?",
+         "We can't give you case counts - Fever Watch doesn't report those. What we can show is how much " + st + " is searching for dengue, which is " + den_t_s + "/100 today" + news_clause + ". Search spikes often track public worry and can run ahead of, or alongside, an outbreak - but they aren't confirmed cases. For the confirmed side we lean on PharmEasy's aggregated, de-identified lab positivity wherever it's available."),
+        ("What should someone in " + nm + " actually do right now?",
          "With " + nm + " at " + bb + " (" + bs + "/100) and " + dl + " leading, the sensible basics: tip out any standing water and use repellent for the mosquito-borne ones, stick to safe drinking water to keep typhoid at bay, and don't brush off a fever that lasts more than a couple of days. If you're feeling off, a fever panel test or a quick online doctor consult on PharmEasy is an easy next step. And the usual reminder - this is a risk indicator, not medical advice, so do see a doctor if you're unwell."),
     ]
 
@@ -763,7 +763,7 @@ def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str
 
 
 def _weather_card(city: dict) -> str:
-    """Weather conditions this week: the live inputs that drive the mosquito weather sub-score -
+    """Weather conditions today: the live inputs that drive the mosquito weather sub-score -
     temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
     humidity, each as an outline icon + "Label . value" + a short line. Mirrors mobile.js weatherCard().
     Above the fold, so byte-identical to the JS twin."""
@@ -780,8 +780,8 @@ def _weather_card(city: dict) -> str:
         cells += ('<div class="wxcard"><div class="wxtop">' + ic + '<span class="wxhead">' + esc(label)
                   + '<span class="wxsep"></span><b>' + esc(val) + '</b></span></div>'
                   '<div class="wxsub">' + esc(sub) + '</div></div>')
-    return ('<div class="card wxsec"><h2 class="sectiontitle">Weather conditions this week</h2>'
-            '<p class="sectionsub">What the weather means for fever risk this week.</p>'
+    return ('<div class="card wxsec"><h2 class="sectiontitle">Weather conditions today</h2>'
+            '<p class="sectionsub">What the weather means for fever risk today.</p>'
             '<div class="wxgrid">' + cells + '</div></div>')
 
 
@@ -990,7 +990,7 @@ def _desktop_pre(city: dict, diseases: list, cells_by: dict, generated_at: str, 
     # and s-reads renders below but is intentionally NOT a TOC target).
     toc = ('<aside class="toc"><h2>Quick Links</h2>'
            '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a>'
-           '<a href="#s-weather">Weather conditions this week</a><a href="#s-do">What you can do</a>'
+           '<a href="#s-weather">Weather conditions today</a><a href="#s-do">What you can do</a>'
            '<a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a>'
            '<a href="#s-faq">Common questions</a></aside>')
     return ('<div class="fw-pre fw-pre-d">' + _search_hero_d(city, generated_at)
@@ -1285,7 +1285,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
               '<p><a class="fw-cta" href="' + esc(CTA_HREF) + '">' + esc(CTA_LABEL) + '</a></p></section>')
 
     other_sec = ('<section><h2>What is happening in other cities?</h2>'
-                 '<p>Overall monsoon-fever risk this week across ' + str(len(all_cities))
+                 '<p>Overall monsoon-fever risk today across ' + str(len(all_cities))
                  + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
 
     trend_sec = _trend_html(city, diseases, cells_by, generated_at, archive_city)
@@ -1304,7 +1304,7 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
         '<div class="fw-search" aria-hidden="true">Search your city</div>'
         '<p class="microcopy">Available in select cities.</p>' + REVIEWBY + '</header>'
     )
-    other_sec = ('<section><h2>Monsoon fever risk by city, this week</h2>'
+    other_sec = ('<section><h2>Monsoon fever risk by city, today</h2>'
                  '<p>Overall risk across ' + str(len(all_cities)) + ' cities, highest first. Open any city for its full read.</p>'
                  + _cities_table(all_cities, "") + '</section>')
     method_sec = ('<section><h2>How we calculate the score</h2>' + METHOD_HTML
@@ -1324,8 +1324,8 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     generated_at = grid.get("generated_at", "")
     disclaimer = grid.get("disclaimer", "")
     if city:
-        title = city["name"] + " monsoon fever risk this week | Dengue, malaria, typhoid | Fever Watch"
-        desc = ("This week's dengue, malaria, chikungunya and typhoid risk for " + city["name"]
+        title = city["name"] + " Monsoon Fever Risk, " + _fmt_date_js(generated_at) + " | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch"
+        desc = ("Today's dengue, malaria, chikungunya and typhoid risk for " + city["name"]
                 + ", " + city["state"] + ": one decomposable score from weather conditions, search interest "
                 "and lab positivity. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
@@ -1359,7 +1359,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
-        title = cfg["title"]
+        title = "Monsoon Fever Risk in India, " + _fmt_date_js(generated_at) + " | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch"
         desc = cfg["description"]
         canonical = cfg["base_url"]
         faq = faq_items_landing()

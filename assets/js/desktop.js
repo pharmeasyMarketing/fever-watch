@@ -244,7 +244,7 @@
     // '<div class="main">'.
     app.innerHTML = searchHero(c) +
       '<div class="shell"><aside class="toc"><h2>Quick Links</h2>' +
-        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Weather conditions this week</a><a href="#s-do">What you can do</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
+        '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Weather conditions today</a><a href="#s-do">What you can do</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
       '</aside>' + weekSectionD(c, b) + whySection(c) + '<div class="main">' + weatherSection(c) +
         doSection(c) +
         '<section id="s-trend" class="fwtrend-host"></section>' + methodSection() + otherSection(c) +
@@ -374,7 +374,7 @@
       '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>';
   }
 
-  // Weather conditions this week (ported from mobile weatherCard; the WX strings + cards are
+  // Weather conditions today (ported from mobile weatherCard; the WX strings + cards are
   // byte-frozen with the mobile twin / build_site.py _weather_card). JS-only, below the fold on desktop.
   function weatherSection(c) {
     return '<section id="s-weather">' + weatherCard(c) + '</section>';
@@ -390,8 +390,8 @@
       return '<div class="wxcard"><div class="wxtop">' + x[0] + '<span class="wxhead">' + esc(x[1]) +
         '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
     }).join("");
-    return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions this week</h2>' +
-      '<p class="sectionsub">What the weather means for fever risk this week.</p>' +
+    return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions today</h2>' +
+      '<p class="sectionsub">What the weather means for fever risk today.</p>' +
       '<div class="wxgrid">' + cells + '</div></div>';
   }
 
@@ -492,7 +492,7 @@
     var cards = ACTIONS.map(function (a) {
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
-    return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' this week.</p>' +
+    return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' today.</p>' +
       '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div></section>';
   }
 
@@ -509,7 +509,7 @@
     var label = isOverall ? "Overall" : diseaseObj(state.leader).label;
     var tabs = '<button class="lbtab' + (isOverall ? " on" : "") + '" data-act="leader" data-id="overall">📊 Overall</button>' +
       DATA.diseases.map(function (d) { return '<button class="lbtab' + (d.id === state.leader ? " on" : "") + '" data-act="leader" data-id="' + d.id + '">' + d.emoji + ' ' + d.label + '</button>'; }).join("");
-    return '<section id="s-other"><div class="card"><h2 class="sechead">What is happening in other cities?</h2><p class="secsub">' + label + ' risk leaderboard this week. Pick a disease to re-rank.</p>' +
+    return '<section id="s-other"><div class="card"><h2 class="sechead">What is happening in other cities?</h2><p class="secsub">' + label + ' risk leaderboard today. Pick a disease to re-rank.</p>' +
       '<div class="lbtabs">' + tabs + '</div>' +
       '<input class="lbsearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" />' +
       '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div></section>';
@@ -669,7 +669,7 @@
   }
 
   function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "This Week: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
+  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "Today: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
   function openShare() {
     // preview = the CI-baked share card itself (assets/img/share/{city}.jpg), so what the
     // user sees is byte-identical to what gets shared - no re-drawn mock to drift.
