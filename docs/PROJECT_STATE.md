@@ -5,7 +5,36 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-04, SEO: DATE-STAMPED PAGE TITLES + "TODAY" COPY SWEEP - committed + pushed `4f883db`):** Page
+> **NEWEST (2026-07-06, PER-CITY LOCALIZED OUTBOUND LINKS - diagnostics CTA + Medicines nav - committed + pushed):**
+> Two outbound PharmEasy links now resolve to the visitor's CITY page (local-SEO authority + relevance), each with an
+> honest generic fallback for unmatched cities:
+> 1. **"Book a fever panel test" CTA** (the in-content `What you can do` button; SSR fallback + both JS flows) ->
+>    `config/diag_links.json` maps {city_id -> local `diagnostics/health-checkup-packages/{slug}-{id}` page}. **100/209**
+>    matched (95 exact + 5 alias) from the 102-page `sitemaps/diagnostic/local-all-package.xml`; rest -> the generic
+>    packages page. Params LOCKED with marketing: `?src=feverwatch&page=2#:~:text=Fever`, SAME deeplink everywhere.
+>    Because the JS flows swap city client-side (`setCity`/`pickCity`/geo), the URL is stored as `city.diag_url` on
+>    EVERY grid city: `build_site.main()` enriches the in-memory grid and RE-SERIALIZES the served `dist/data/grid.json`
+>    (no longer a raw copy), and the inlined seed carries the current city's - so the CTA tracks the rendered city, not
+>    just the landed page. Log line: `Diagnostics CTA: 100/209 cities mapped to a local page (rest -> default).`
+> 2. **Header "Medicines" nav link** (`nav_html`, now takes a per-page `meds_href`; SSR, baked per page) ->
+>    `config/med_links.json` maps {city_id -> local `online-medicine-order/location/city/{slug}-{id}` page}. **204/209**
+>    matched (185 exact + 19 alias) from the user-provided 1322-page meds sitemap; rest + the national LANDING -> the
+>    generic medicines page. `?src=feverwatch` (the old `?src=homecard` removed from the Medicines link ONLY; Lab tests
+>    / Healthcare / Blog keep theirs). The header is STATIC per-page SSR (a crawlable per-city link = the SEO win); it
+>    does NOT re-render on client-side city switch, so it reflects the page's city.
+> Aliases are state-verified: gurugram->gurgaon, mysuru->mysore, prayagraj->allahabad, mangaluru->mangalore,
+> belagavi->belgaum (both maps), + meds-only kochi->cochin, kadapa->cuddapah, davanagere->davangere, panaji->goa,
+> sri-ganganagar->sriganganagar, tiruppur->tirupur, visakhapatnam->vishakhapatnam, vijayawada->vijaywada,
+> tiruchirappalli->tiruchi, hubballi->hubli, puducherry->pondicherry, tumakuru->tumkur, vijayapura->bijapur,
+> thoothukudi->tuticorin. **Deliberately NOT mapped: brahmapur (Odisha) -/-> berhampore-2530 (West Bengal) - a
+> cross-state trap the grep surfaced.** Meds fallbacks (genuinely absent from the 2022 sitemap): bhubaneswar, kolhapur,
+> rohtak, karimnagar, brahmapur. VERIFIED: build clean (210 pages); SSR CTA hrefs + Medicines nav hrefs correct across
+> matched/alias/fallback/landing; served grid enriched (`diag_url` x209); seed carries the current city's; live
+> first-paint JS CTA = the local page, console clean; above-fold `parity_check` OK (mobile + desktop). Maps are
+> regenerated from the sitemaps (one-off match scripts); REFRESH if the sitemaps change. Diagnostics coverage will
+> reconcile to 100 as the sitemap grows; meds `src` intentionally `feverwatch` (not `fever-watch`).
+>
+> **(2026-07-04, SEO: DATE-STAMPED PAGE TITLES + "TODAY" COPY SWEEP - committed + pushed `4f883db`):** Page
 > `<title>`s are now DATED and name all four diseases: city = `{City} Monsoon Fever Risk, {DD Mon YYYY} | Dengue,
 > Malaria, Chikungunya, Typhoid | Fever Watch`; landing = `Monsoon Fever Risk in India, {date} | ...`. Both build the
 > date from `_fmt_date_js(generated_at)` (IST-shifted), so it re-stamps on every daily build, matches the on-page

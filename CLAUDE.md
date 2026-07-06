@@ -226,6 +226,19 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   deliberately NOT chased in the title (no case counts). Twins kept byte-identical (above-fold `parity_check` + a
   `faq_items` vs `faq.js build()` render-diff both pass). STILL DEFERRED: the dynamic driver-led meta description
   (lead with the actual top disease + its live number).
+- **2026-07-06 per-city localized outbound links (committed + pushed):** Two PharmEasy links now point at the
+  visitor's CITY page for local-SEO authority, each with an honest generic fallback. (1) The **"Book a fever panel
+  test" CTA** (in-content `What you can do`, SSR fallback + both JS flows) uses `config/diag_links.json` (**100/209**
+  cities, from the diagnostics `local-all-package.xml`, 102 pages); the URL is stored as `city.diag_url` on every grid
+  city (build_site enriches the in-memory grid + re-serializes the served `dist/data/grid.json`, seed carries the
+  current city's) so the CTA tracks the CLIENT-SIDE-SWITCHED city, not just the landed page; params
+  `?src=feverwatch&page=2#:~:text=Fever` (same deeplink everywhere, locked with marketing). (2) The **header
+  "Medicines" nav link** (`nav_html`, SSR, per page) uses `config/med_links.json` (**204/209**, from the 1322-page meds
+  sitemap); `?src=feverwatch` (old `?src=homecard` dropped from Medicines ONLY - Lab tests / Healthcare / Blog keep
+  theirs); the header is static per-page SSR so it reflects the page's city and does NOT re-render on client-side
+  switch. Aliases are state-verified; **brahmapur (Odisha) is deliberately NOT mapped to berhampore-2530 (West Bengal,
+  cross-state)**. Meds fallbacks (absent from the 2022 sitemap): bhubaneswar, kolhapur, rohtak, karimnagar, brahmapur.
+  Full detail + match tables: PROJECT_STATE 2026-07-06 banner.
 
 ## Open decisions / TODO
 
