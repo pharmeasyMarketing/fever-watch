@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-05T23:37:40+00:00",
+  "updated": "2026-07-06T23:40:06+00:00",
   "days": [
     {
       "date": "2026-06-12",
@@ -130722,6 +130722,6076 @@
           "typhoid": [
             100,
             35,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-07-06",
+      "scores": {
+        "mumbai": 67,
+        "delhi": 49,
+        "bengaluru": 55,
+        "hyderabad": 52,
+        "ahmedabad": 49,
+        "chennai": 47,
+        "kolkata": 70,
+        "surat": 66,
+        "pune": 62,
+        "jaipur": 60,
+        "lucknow": 65,
+        "kanpur": 64,
+        "nagpur": 67,
+        "indore": 67,
+        "thane": 68,
+        "bhopal": 58,
+        "visakhapatnam": 67,
+        "patna": 42,
+        "vadodara": 44,
+        "ghaziabad": 40,
+        "ludhiana": 64,
+        "agra": 32,
+        "nashik": 68,
+        "faridabad": 38,
+        "meerut": 41,
+        "rajkot": 64,
+        "varanasi": 42,
+        "srinagar": 24,
+        "aurangabad": 67,
+        "dhanbad": 66,
+        "amritsar": 55,
+        "prayagraj": 50,
+        "ranchi": 77,
+        "howrah": 64,
+        "coimbatore": 51,
+        "jabalpur": 66,
+        "gwalior": 49,
+        "vijayawada": 67,
+        "jodhpur": 45,
+        "madurai": 47,
+        "raipur": 67,
+        "kota": 44,
+        "guwahati": 47,
+        "chandigarh": 51,
+        "solapur": 65,
+        "hubballi": 67,
+        "mysuru": 52,
+        "tiruchirappalli": 50,
+        "bareilly": 54,
+        "aligarh": 33,
+        "tiruppur": 47,
+        "gurugram": 37,
+        "moradabad": 54,
+        "jalandhar": 64,
+        "bhubaneswar": 65,
+        "salem": 48,
+        "warangal": 64,
+        "guntur": 66,
+        "bhiwandi": 68,
+        "saharanpur": 50,
+        "gorakhpur": 46,
+        "bikaner": 28,
+        "amravati": 66,
+        "noida": 40,
+        "jamshedpur": 67,
+        "bhilai": 67,
+        "cuttack": 67,
+        "firozabad": 32,
+        "kochi": 67,
+        "nellore": 48,
+        "dehradun": 66,
+        "durgapur": 64,
+        "asansol": 63,
+        "rourkela": 67,
+        "nanded": 66,
+        "kolhapur": 68,
+        "ajmer": 50,
+        "akola": 66,
+        "gulbarga": 58,
+        "jamnagar": 62,
+        "ujjain": 67,
+        "siliguri": 65,
+        "jhansi": 65,
+        "jammu": 59,
+        "mangaluru": 68,
+        "erode": 46,
+        "belagavi": 68,
+        "tirunelveli": 48,
+        "gaya": 39,
+        "udaipur": 64,
+        "tirupati": 52,
+        "davanagere": 65,
+        "kozhikode": 68,
+        "kurnool": 56,
+        "bokaro": 66,
+        "bellary": 56,
+        "patiala": 61,
+        "agartala": 68,
+        "bhagalpur": 50,
+        "muzaffarnagar": 43,
+        "latur": 63,
+        "dhule": 63,
+        "rohtak": 41,
+        "korba": 66,
+        "bhilwara": 55,
+        "brahmapur": 68,
+        "muzaffarpur": 47,
+        "mathura": 34,
+        "kollam": 67,
+        "bilaspur": 66,
+        "shahjahanpur": 52,
+        "thrissur": 68,
+        "alwar": 41,
+        "kakinada": 68,
+        "nizamabad": 64,
+        "panipat": 42,
+        "darbhanga": 51,
+        "thiruvananthapuram": 67,
+        "gandhinagar": 49,
+        "panaji": 67,
+        "puducherry": 61,
+        "port-blair": 68,
+        "daman": 68,
+        "silvassa": 68,
+        "sangli": 67,
+        "jalgaon": 67,
+        "ahmednagar": 66,
+        "chandrapur": 67,
+        "parbhani": 66,
+        "satara": 68,
+        "rampur": 65,
+        "hapur": 41,
+        "mirzapur": 45,
+        "etawah": 41,
+        "bulandshahr": 36,
+        "amroha": 45,
+        "hardoi": 64,
+        "fatehpur": 57,
+        "raebareli": 57,
+        "sitapur": 59,
+        "unnao": 64,
+        "budaun": 53,
+        "bihar-sharif": 41,
+        "arrah": 26,
+        "begusarai": 45,
+        "purnia": 60,
+        "katihar": 50,
+        "chhapra": 36,
+        "bardhaman": 63,
+        "malda": 58,
+        "baharampur": 50,
+        "kharagpur": 65,
+        "haldia": 66,
+        "sikar": 37,
+        "sri-ganganagar": 12,
+        "pali": 42,
+        "bharatpur": 36,
+        "hanumangarh": 26,
+        "sagar": 66,
+        "ratlam": 67,
+        "satna": 65,
+        "rewa": 49,
+        "dewas": 67,
+        "katni": 65,
+        "singrauli": 61,
+        "khandwa": 67,
+        "junagadh": 65,
+        "gandhidham": 39,
+        "anand": 46,
+        "nadiad": 46,
+        "bharuch": 61,
+        "navsari": 66,
+        "tumakuru": 53,
+        "vijayapura": 61,
+        "raichur": 54,
+        "udupi": 68,
+        "hassan": 59,
+        "vellore": 50,
+        "thoothukudi": 46,
+        "dindigul": 50,
+        "thanjavur": 55,
+        "nagercoil": 56,
+        "kanchipuram": 53,
+        "hosur": 47,
+        "rajahmundry": 68,
+        "kadapa": 50,
+        "anantapur": 47,
+        "eluru": 68,
+        "ongole": 61,
+        "khammam": 66,
+        "karimnagar": 63,
+        "ramagundam": 66,
+        "kannur": 68,
+        "kottayam": 67,
+        "palakkad": 65,
+        "alappuzha": 67,
+        "sambalpur": 67,
+        "puri": 68,
+        "hisar": 53,
+        "karnal": 47,
+        "ambala": 47,
+        "bathinda": 34,
+        "mohali": 44,
+        "haridwar": 56,
+        "haldwani": 65,
+        "dibrugarh": 67,
+        "deoghar": 67,
+        "hazaribagh": 67,
+        "raigarh": 66
+      },
+      "cells": {
+        "mumbai": {
+          "dengue": 63,
+          "malaria": 71,
+          "chikungunya": 34,
+          "typhoid": 56
+        },
+        "delhi": {
+          "dengue": 25,
+          "malaria": 31,
+          "chikungunya": 30,
+          "typhoid": 54
+        },
+        "bengaluru": {
+          "dengue": 61,
+          "malaria": 23,
+          "chikungunya": 29,
+          "typhoid": 34
+        },
+        "hyderabad": {
+          "dengue": 51,
+          "malaria": 24,
+          "chikungunya": 42,
+          "typhoid": 55
+        },
+        "ahmedabad": {
+          "dengue": 50,
+          "malaria": 50,
+          "chikungunya": 42,
+          "typhoid": 38
+        },
+        "chennai": {
+          "dengue": 49,
+          "malaria": 26,
+          "chikungunya": 46,
+          "typhoid": 40
+        },
+        "kolkata": {
+          "dengue": 42,
+          "malaria": 75,
+          "chikungunya": 55,
+          "typhoid": 49
+        },
+        "surat": {
+          "dengue": 63,
+          "malaria": 63,
+          "chikungunya": 55,
+          "typhoid": 67
+        },
+        "pune": {
+          "dengue": 65,
+          "malaria": 34,
+          "chikungunya": 57,
+          "typhoid": 61
+        },
+        "jaipur": {
+          "dengue": 50,
+          "malaria": 52,
+          "chikungunya": 44,
+          "typhoid": 63
+        },
+        "lucknow": {
+          "dengue": 40,
+          "malaria": 70,
+          "chikungunya": 37,
+          "typhoid": 65
+        },
+        "kanpur": {
+          "dengue": 44,
+          "malaria": 50,
+          "chikungunya": 38,
+          "typhoid": 69
+        },
+        "nagpur": {
+          "dengue": 68,
+          "malaria": 63,
+          "chikungunya": 51,
+          "typhoid": 69
+        },
+        "indore": {
+          "dengue": 58,
+          "malaria": 61,
+          "chikungunya": 54,
+          "typhoid": 69
+        },
+        "thane": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "bhopal": {
+          "dengue": 56,
+          "malaria": 59,
+          "chikungunya": 51,
+          "typhoid": 58
+        },
+        "visakhapatnam": {
+          "dengue": 68,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 54
+        },
+        "patna": {
+          "dengue": 26,
+          "malaria": 12,
+          "chikungunya": 9,
+          "typhoid": 48
+        },
+        "vadodara": {
+          "dengue": 46,
+          "malaria": 46,
+          "chikungunya": 38,
+          "typhoid": 22
+        },
+        "ghaziabad": {
+          "dengue": 36,
+          "malaria": 42,
+          "chikungunya": 30,
+          "typhoid": 34
+        },
+        "ludhiana": {
+          "dengue": 47,
+          "malaria": 47,
+          "chikungunya": 39,
+          "typhoid": 69
+        },
+        "agra": {
+          "dengue": 28,
+          "malaria": 34,
+          "chikungunya": 22,
+          "typhoid": 25
+        },
+        "nashik": {
+          "dengue": 69,
+          "malaria": 68,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "faridabad": {
+          "dengue": 37,
+          "malaria": 39,
+          "chikungunya": 28,
+          "typhoid": 30
+        },
+        "meerut": {
+          "dengue": 37,
+          "malaria": 43,
+          "chikungunya": 31,
+          "typhoid": 36
+        },
+        "rajkot": {
+          "dengue": 61,
+          "malaria": 61,
+          "chikungunya": 53,
+          "typhoid": 65
+        },
+        "varanasi": {
+          "dengue": 22,
+          "malaria": 27,
+          "chikungunya": 15,
+          "typhoid": 47
+        },
+        "srinagar": {
+          "dengue": 20,
+          "malaria": 25,
+          "chikungunya": 12,
+          "typhoid": 21
+        },
+        "aurangabad": {
+          "dengue": 69,
+          "malaria": 66,
+          "chikungunya": 55,
+          "typhoid": 55
+        },
+        "dhanbad": {
+          "dengue": 57,
+          "malaria": 69,
+          "chikungunya": 47,
+          "typhoid": 59
+        },
+        "amritsar": {
+          "dengue": 46,
+          "malaria": 46,
+          "chikungunya": 39,
+          "typhoid": 58
+        },
+        "prayagraj": {
+          "dengue": 24,
+          "malaria": 29,
+          "chikungunya": 17,
+          "typhoid": 57
+        },
+        "ranchi": {
+          "dengue": 29,
+          "malaria": 49,
+          "chikungunya": 50,
+          "typhoid": 86
+        },
+        "howrah": {
+          "dengue": 65,
+          "malaria": 65,
+          "chikungunya": 55,
+          "typhoid": 59
+        },
+        "coimbatore": {
+          "dengue": 55,
+          "malaria": 48,
+          "chikungunya": 42,
+          "typhoid": 16
+        },
+        "jabalpur": {
+          "dengue": 54,
+          "malaria": 57,
+          "chikungunya": 50,
+          "typhoid": 69
+        },
+        "gwalior": {
+          "dengue": 43,
+          "malaria": 46,
+          "chikungunya": 39,
+          "typhoid": 50
+        },
+        "vijayawada": {
+          "dengue": 66,
+          "malaria": 68,
+          "chikungunya": 56,
+          "typhoid": 64
+        },
+        "jodhpur": {
+          "dengue": 43,
+          "malaria": 46,
+          "chikungunya": 37,
+          "typhoid": 39
+        },
+        "madurai": {
+          "dengue": 51,
+          "malaria": 44,
+          "chikungunya": 38,
+          "typhoid": 8
+        },
+        "raipur": {
+          "dengue": 57,
+          "malaria": 65,
+          "chikungunya": 50,
+          "typhoid": 69
+        },
+        "kota": {
+          "dengue": 44,
+          "malaria": 46,
+          "chikungunya": 38,
+          "typhoid": 22
+        },
+        "guwahati": {
+          "dengue": 30,
+          "malaria": 34,
+          "chikungunya": 51,
+          "typhoid": 27
+        },
+        "chandigarh": {
+          "dengue": 54,
+          "malaria": 40,
+          "chikungunya": 37,
+          "typhoid": 43
+        },
+        "solapur": {
+          "dengue": 69,
+          "malaria": 66,
+          "chikungunya": 55,
+          "typhoid": 30
+        },
+        "hubballi": {
+          "dengue": 69,
+          "malaria": 67,
+          "chikungunya": 57,
+          "typhoid": 46
+        },
+        "mysuru": {
+          "dengue": 57,
+          "malaria": 47,
+          "chikungunya": 37,
+          "typhoid": 16
+        },
+        "tiruchirappalli": {
+          "dengue": 54,
+          "malaria": 47,
+          "chikungunya": 41,
+          "typhoid": 10
+        },
+        "bareilly": {
+          "dengue": 44,
+          "malaria": 50,
+          "chikungunya": 38,
+          "typhoid": 56
+        },
+        "aligarh": {
+          "dengue": 30,
+          "malaria": 35,
+          "chikungunya": 23,
+          "typhoid": 25
+        },
+        "tiruppur": {
+          "dengue": 51,
+          "malaria": 44,
+          "chikungunya": 38,
+          "typhoid": 8
+        },
+        "gurugram": {
+          "dengue": 36,
+          "malaria": 39,
+          "chikungunya": 27,
+          "typhoid": 30
+        },
+        "moradabad": {
+          "dengue": 48,
+          "malaria": 53,
+          "chikungunya": 41,
+          "typhoid": 56
+        },
+        "jalandhar": {
+          "dengue": 48,
+          "malaria": 48,
+          "chikungunya": 40,
+          "typhoid": 69
+        },
+        "bhubaneswar": {
+          "dengue": 60,
+          "malaria": 69,
+          "chikungunya": 54,
+          "typhoid": 39
+        },
+        "salem": {
+          "dengue": 52,
+          "malaria": 45,
+          "chikungunya": 39,
+          "typhoid": 9
+        },
+        "warangal": {
+          "dengue": 66,
+          "malaria": 62,
+          "chikungunya": 54,
+          "typhoid": 58
+        },
+        "guntur": {
+          "dengue": 66,
+          "malaria": 68,
+          "chikungunya": 56,
+          "typhoid": 52
+        },
+        "bhiwandi": {
+          "dengue": 69,
+          "malaria": 68,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "saharanpur": {
+          "dengue": 46,
+          "malaria": 51,
+          "chikungunya": 39,
+          "typhoid": 51
+        },
+        "gorakhpur": {
+          "dengue": 29,
+          "malaria": 35,
+          "chikungunya": 23,
+          "typhoid": 50
+        },
+        "bikaner": {
+          "dengue": 27,
+          "malaria": 30,
+          "chikungunya": 21,
+          "typhoid": 13
+        },
+        "amravati": {
+          "dengue": 69,
+          "malaria": 63,
+          "chikungunya": 52,
+          "typhoid": 49
+        },
+        "noida": {
+          "dengue": 36,
+          "malaria": 42,
+          "chikungunya": 30,
+          "typhoid": 34
+        },
+        "jamshedpur": {
+          "dengue": 60,
+          "malaria": 69,
+          "chikungunya": 50,
+          "typhoid": 69
+        },
+        "bhilai": {
+          "dengue": 59,
+          "malaria": 67,
+          "chikungunya": 51,
+          "typhoid": 69
+        },
+        "cuttack": {
+          "dengue": 60,
+          "malaria": 69,
+          "chikungunya": 54,
+          "typhoid": 69
+        },
+        "firozabad": {
+          "dengue": 28,
+          "malaria": 34,
+          "chikungunya": 22,
+          "typhoid": 25
+        },
+        "kochi": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 54
+        },
+        "nellore": {
+          "dengue": 49,
+          "malaria": 51,
+          "chikungunya": 39,
+          "typhoid": 16
+        },
+        "dehradun": {
+          "dengue": 57,
+          "malaria": 61,
+          "chikungunya": 50,
+          "typhoid": 69
+        },
+        "durgapur": {
+          "dengue": 62,
+          "malaria": 62,
+          "chikungunya": 51,
+          "typhoid": 66
+        },
+        "asansol": {
+          "dengue": 60,
+          "malaria": 60,
+          "chikungunya": 50,
+          "typhoid": 65
+        },
+        "rourkela": {
+          "dengue": 57,
+          "malaria": 68,
+          "chikungunya": 51,
+          "typhoid": 69
+        },
+        "nanded": {
+          "dengue": 69,
+          "malaria": 64,
+          "chikungunya": 53,
+          "typhoid": 48
+        },
+        "kolhapur": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 58,
+          "typhoid": 69
+        },
+        "ajmer": {
+          "dengue": 48,
+          "malaria": 51,
+          "chikungunya": 42,
+          "typhoid": 43
+        },
+        "akola": {
+          "dengue": 69,
+          "malaria": 64,
+          "chikungunya": 53,
+          "typhoid": 47
+        },
+        "gulbarga": {
+          "dengue": 63,
+          "malaria": 52,
+          "chikungunya": 42,
+          "typhoid": 20
+        },
+        "jamnagar": {
+          "dengue": 63,
+          "malaria": 63,
+          "chikungunya": 55,
+          "typhoid": 52
+        },
+        "ujjain": {
+          "dengue": 58,
+          "malaria": 61,
+          "chikungunya": 54,
+          "typhoid": 69
+        },
+        "siliguri": {
+          "dengue": 65,
+          "malaria": 65,
+          "chikungunya": 55,
+          "typhoid": 66
+        },
+        "jhansi": {
+          "dengue": 47,
+          "malaria": 53,
+          "chikungunya": 41,
+          "typhoid": 69
+        },
+        "jammu": {
+          "dengue": 53,
+          "malaria": 58,
+          "chikungunya": 45,
+          "typhoid": 61
+        },
+        "mangaluru": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 69
+        },
+        "erode": {
+          "dengue": 50,
+          "malaria": 43,
+          "chikungunya": 37,
+          "typhoid": 7
+        },
+        "belagavi": {
+          "dengue": 69,
+          "malaria": 68,
+          "chikungunya": 58,
+          "typhoid": 69
+        },
+        "tirunelveli": {
+          "dengue": 52,
+          "malaria": 45,
+          "chikungunya": 39,
+          "typhoid": 8
+        },
+        "gaya": {
+          "dengue": 33,
+          "malaria": 41,
+          "chikungunya": 27,
+          "typhoid": 38
+        },
+        "udaipur": {
+          "dengue": 57,
+          "malaria": 60,
+          "chikungunya": 51,
+          "typhoid": 66
+        },
+        "tirupati": {
+          "dengue": 53,
+          "malaria": 55,
+          "chikungunya": 43,
+          "typhoid": 17
+        },
+        "davanagere": {
+          "dengue": 69,
+          "malaria": 59,
+          "chikungunya": 49,
+          "typhoid": 37
+        },
+        "kozhikode": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 66
+        },
+        "kurnool": {
+          "dengue": 57,
+          "malaria": 59,
+          "chikungunya": 47,
+          "typhoid": 25
+        },
+        "bokaro": {
+          "dengue": 59,
+          "malaria": 69,
+          "chikungunya": 48,
+          "typhoid": 59
+        },
+        "bellary": {
+          "dengue": 61,
+          "malaria": 51,
+          "chikungunya": 41,
+          "typhoid": 20
+        },
+        "patiala": {
+          "dengue": 49,
+          "malaria": 49,
+          "chikungunya": 41,
+          "typhoid": 65
+        },
+        "agartala": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 57
+        },
+        "bhagalpur": {
+          "dengue": 44,
+          "malaria": 52,
+          "chikungunya": 38,
+          "typhoid": 43
+        },
+        "muzaffarnagar": {
+          "dengue": 39,
+          "malaria": 45,
+          "chikungunya": 33,
+          "typhoid": 40
+        },
+        "latur": {
+          "dengue": 67,
+          "malaria": 61,
+          "chikungunya": 50,
+          "typhoid": 28
+        },
+        "dhule": {
+          "dengue": 66,
+          "malaria": 61,
+          "chikungunya": 50,
+          "typhoid": 35
+        },
+        "rohtak": {
+          "dengue": 39,
+          "malaria": 42,
+          "chikungunya": 30,
+          "typhoid": 36
+        },
+        "korba": {
+          "dengue": 56,
+          "malaria": 64,
+          "chikungunya": 48,
+          "typhoid": 69
+        },
+        "bhilwara": {
+          "dengue": 54,
+          "malaria": 57,
+          "chikungunya": 48,
+          "typhoid": 37
+        },
+        "brahmapur": {
+          "dengue": 63,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "muzaffarpur": {
+          "dengue": 41,
+          "malaria": 49,
+          "chikungunya": 35,
+          "typhoid": 42
+        },
+        "mathura": {
+          "dengue": 30,
+          "malaria": 36,
+          "chikungunya": 24,
+          "typhoid": 24
+        },
+        "kollam": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 42
+        },
+        "bilaspur": {
+          "dengue": 56,
+          "malaria": 64,
+          "chikungunya": 48,
+          "typhoid": 69
+        },
+        "shahjahanpur": {
+          "dengue": 43,
+          "malaria": 48,
+          "chikungunya": 36,
+          "typhoid": 54
+        },
+        "thrissur": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 60
+        },
+        "alwar": {
+          "dengue": 41,
+          "malaria": 43,
+          "chikungunya": 35,
+          "typhoid": 25
+        },
+        "kakinada": {
+          "dengue": 68,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 65
+        },
+        "nizamabad": {
+          "dengue": 66,
+          "malaria": 62,
+          "chikungunya": 54,
+          "typhoid": 46
+        },
+        "panipat": {
+          "dengue": 40,
+          "malaria": 43,
+          "chikungunya": 32,
+          "typhoid": 40
+        },
+        "darbhanga": {
+          "dengue": 45,
+          "malaria": 53,
+          "chikungunya": 39,
+          "typhoid": 45
+        },
+        "thiruvananthapuram": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 42
+        },
+        "gandhinagar": {
+          "dengue": 50,
+          "malaria": 50,
+          "chikungunya": 42,
+          "typhoid": 38
+        },
+        "panaji": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 56
+        },
+        "puducherry": {
+          "dengue": 50,
+          "malaria": 69,
+          "chikungunya": 39,
+          "typhoid": 5
+        },
+        "port-blair": {
+          "dengue": 67,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 68
+        },
+        "daman": {
+          "dengue": 68,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "silvassa": {
+          "dengue": 68,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "sangli": {
+          "dengue": 69,
+          "malaria": 68,
+          "chikungunya": 57,
+          "typhoid": 49
+        },
+        "jalgaon": {
+          "dengue": 69,
+          "malaria": 65,
+          "chikungunya": 54,
+          "typhoid": 55
+        },
+        "ahmednagar": {
+          "dengue": 69,
+          "malaria": 66,
+          "chikungunya": 54,
+          "typhoid": 41
+        },
+        "chandrapur": {
+          "dengue": 69,
+          "malaria": 63,
+          "chikungunya": 52,
+          "typhoid": 69
+        },
+        "parbhani": {
+          "dengue": 69,
+          "malaria": 64,
+          "chikungunya": 53,
+          "typhoid": 45
+        },
+        "satara": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 58,
+          "typhoid": 69
+        },
+        "rampur": {
+          "dengue": 49,
+          "malaria": 54,
+          "chikungunya": 42,
+          "typhoid": 69
+        },
+        "hapur": {
+          "dengue": 37,
+          "malaria": 43,
+          "chikungunya": 31,
+          "typhoid": 36
+        },
+        "mirzapur": {
+          "dengue": 38,
+          "malaria": 44,
+          "chikungunya": 32,
+          "typhoid": 47
+        },
+        "etawah": {
+          "dengue": 36,
+          "malaria": 42,
+          "chikungunya": 30,
+          "typhoid": 41
+        },
+        "bulandshahr": {
+          "dengue": 33,
+          "malaria": 38,
+          "chikungunya": 26,
+          "typhoid": 29
+        },
+        "amroha": {
+          "dengue": 40,
+          "malaria": 46,
+          "chikungunya": 34,
+          "typhoid": 42
+        },
+        "hardoi": {
+          "dengue": 45,
+          "malaria": 51,
+          "chikungunya": 39,
+          "typhoid": 69
+        },
+        "fatehpur": {
+          "dengue": 43,
+          "malaria": 49,
+          "chikungunya": 37,
+          "typhoid": 60
+        },
+        "raebareli": {
+          "dengue": 43,
+          "malaria": 49,
+          "chikungunya": 37,
+          "typhoid": 61
+        },
+        "sitapur": {
+          "dengue": 45,
+          "malaria": 50,
+          "chikungunya": 38,
+          "typhoid": 63
+        },
+        "unnao": {
+          "dengue": 44,
+          "malaria": 50,
+          "chikungunya": 38,
+          "typhoid": 69
+        },
+        "budaun": {
+          "dengue": 43,
+          "malaria": 48,
+          "chikungunya": 36,
+          "typhoid": 56
+        },
+        "bihar-sharif": {
+          "dengue": 35,
+          "malaria": 43,
+          "chikungunya": 29,
+          "typhoid": 34
+        },
+        "arrah": {
+          "dengue": 16,
+          "malaria": 23,
+          "chikungunya": 9,
+          "typhoid": 29
+        },
+        "begusarai": {
+          "dengue": 39,
+          "malaria": 47,
+          "chikungunya": 33,
+          "typhoid": 39
+        },
+        "purnia": {
+          "dengue": 54,
+          "malaria": 62,
+          "chikungunya": 48,
+          "typhoid": 54
+        },
+        "katihar": {
+          "dengue": 53,
+          "malaria": 30,
+          "chikungunya": 47,
+          "typhoid": 30
+        },
+        "chhapra": {
+          "dengue": 30,
+          "malaria": 38,
+          "chikungunya": 24,
+          "typhoid": 29
+        },
+        "bardhaman": {
+          "dengue": 64,
+          "malaria": 64,
+          "chikungunya": 54,
+          "typhoid": 61
+        },
+        "malda": {
+          "dengue": 60,
+          "malaria": 60,
+          "chikungunya": 50,
+          "typhoid": 46
+        },
+        "baharampur": {
+          "dengue": 52,
+          "malaria": 52,
+          "chikungunya": 42,
+          "typhoid": 28
+        },
+        "kharagpur": {
+          "dengue": 65,
+          "malaria": 65,
+          "chikungunya": 54,
+          "typhoid": 66
+        },
+        "haldia": {
+          "dengue": 67,
+          "malaria": 67,
+          "chikungunya": 57,
+          "typhoid": 66
+        },
+        "sikar": {
+          "dengue": 36,
+          "malaria": 39,
+          "chikungunya": 30,
+          "typhoid": 23
+        },
+        "sri-ganganagar": {
+          "dengue": 11,
+          "malaria": 13,
+          "chikungunya": 5,
+          "typhoid": 13
+        },
+        "pali": {
+          "dengue": 41,
+          "malaria": 44,
+          "chikungunya": 35,
+          "typhoid": 33
+        },
+        "bharatpur": {
+          "dengue": 35,
+          "malaria": 38,
+          "chikungunya": 29,
+          "typhoid": 22
+        },
+        "hanumangarh": {
+          "dengue": 26,
+          "malaria": 28,
+          "chikungunya": 20,
+          "typhoid": 14
+        },
+        "sagar": {
+          "dengue": 52,
+          "malaria": 55,
+          "chikungunya": 48,
+          "typhoid": 69
+        },
+        "ratlam": {
+          "dengue": 57,
+          "malaria": 60,
+          "chikungunya": 53,
+          "typhoid": 69
+        },
+        "satna": {
+          "dengue": 47,
+          "malaria": 51,
+          "chikungunya": 43,
+          "typhoid": 69
+        },
+        "rewa": {
+          "dengue": 43,
+          "malaria": 46,
+          "chikungunya": 39,
+          "typhoid": 50
+        },
+        "dewas": {
+          "dengue": 58,
+          "malaria": 61,
+          "chikungunya": 53,
+          "typhoid": 69
+        },
+        "katni": {
+          "dengue": 51,
+          "malaria": 54,
+          "chikungunya": 47,
+          "typhoid": 69
+        },
+        "singrauli": {
+          "dengue": 49,
+          "malaria": 52,
+          "chikungunya": 45,
+          "typhoid": 64
+        },
+        "khandwa": {
+          "dengue": 57,
+          "malaria": 60,
+          "chikungunya": 53,
+          "typhoid": 69
+        },
+        "junagadh": {
+          "dengue": 62,
+          "malaria": 62,
+          "chikungunya": 54,
+          "typhoid": 67
+        },
+        "gandhidham": {
+          "dengue": 41,
+          "malaria": 42,
+          "chikungunya": 33,
+          "typhoid": 9
+        },
+        "anand": {
+          "dengue": 48,
+          "malaria": 48,
+          "chikungunya": 40,
+          "typhoid": 28
+        },
+        "nadiad": {
+          "dengue": 48,
+          "malaria": 48,
+          "chikungunya": 40,
+          "typhoid": 28
+        },
+        "bharuch": {
+          "dengue": 62,
+          "malaria": 62,
+          "chikungunya": 54,
+          "typhoid": 60
+        },
+        "navsari": {
+          "dengue": 63,
+          "malaria": 63,
+          "chikungunya": 55,
+          "typhoid": 67
+        },
+        "tumakuru": {
+          "dengue": 58,
+          "malaria": 48,
+          "chikungunya": 38,
+          "typhoid": 17
+        },
+        "vijayapura": {
+          "dengue": 66,
+          "malaria": 56,
+          "chikungunya": 46,
+          "typhoid": 28
+        },
+        "raichur": {
+          "dengue": 59,
+          "malaria": 49,
+          "chikungunya": 39,
+          "typhoid": 16
+        },
+        "udupi": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 69
+        },
+        "hassan": {
+          "dengue": 63,
+          "malaria": 53,
+          "chikungunya": 43,
+          "typhoid": 28
+        },
+        "vellore": {
+          "dengue": 54,
+          "malaria": 48,
+          "chikungunya": 41,
+          "typhoid": 11
+        },
+        "thoothukudi": {
+          "dengue": 50,
+          "malaria": 43,
+          "chikungunya": 36,
+          "typhoid": 7
+        },
+        "dindigul": {
+          "dengue": 54,
+          "malaria": 48,
+          "chikungunya": 41,
+          "typhoid": 10
+        },
+        "thanjavur": {
+          "dengue": 59,
+          "malaria": 52,
+          "chikungunya": 46,
+          "typhoid": 14
+        },
+        "nagercoil": {
+          "dengue": 60,
+          "malaria": 53,
+          "chikungunya": 47,
+          "typhoid": 19
+        },
+        "kanchipuram": {
+          "dengue": 57,
+          "malaria": 50,
+          "chikungunya": 44,
+          "typhoid": 13
+        },
+        "hosur": {
+          "dengue": 51,
+          "malaria": 44,
+          "chikungunya": 38,
+          "typhoid": 10
+        },
+        "rajahmundry": {
+          "dengue": 67,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 69
+        },
+        "kadapa": {
+          "dengue": 50,
+          "malaria": 53,
+          "chikungunya": 41,
+          "typhoid": 17
+        },
+        "anantapur": {
+          "dengue": 48,
+          "malaria": 50,
+          "chikungunya": 38,
+          "typhoid": 15
+        },
+        "eluru": {
+          "dengue": 66,
+          "malaria": 69,
+          "chikungunya": 57,
+          "typhoid": 65
+        },
+        "ongole": {
+          "dengue": 61,
+          "malaria": 63,
+          "chikungunya": 51,
+          "typhoid": 44
+        },
+        "khammam": {
+          "dengue": 67,
+          "malaria": 63,
+          "chikungunya": 55,
+          "typhoid": 63
+        },
+        "karimnagar": {
+          "dengue": 65,
+          "malaria": 62,
+          "chikungunya": 54,
+          "typhoid": 50
+        },
+        "ramagundam": {
+          "dengue": 65,
+          "malaria": 61,
+          "chikungunya": 53,
+          "typhoid": 68
+        },
+        "kannur": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 59,
+          "typhoid": 66
+        },
+        "kottayam": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 55
+        },
+        "palakkad": {
+          "dengue": 69,
+          "malaria": 62,
+          "chikungunya": 52,
+          "typhoid": 32
+        },
+        "alappuzha": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 52
+        },
+        "sambalpur": {
+          "dengue": 56,
+          "malaria": 67,
+          "chikungunya": 50,
+          "typhoid": 69
+        },
+        "puri": {
+          "dengue": 62,
+          "malaria": 69,
+          "chikungunya": 56,
+          "typhoid": 69
+        },
+        "hisar": {
+          "dengue": 46,
+          "malaria": 48,
+          "chikungunya": 37,
+          "typhoid": 55
+        },
+        "karnal": {
+          "dengue": 43,
+          "malaria": 46,
+          "chikungunya": 35,
+          "typhoid": 48
+        },
+        "ambala": {
+          "dengue": 46,
+          "malaria": 48,
+          "chikungunya": 37,
+          "typhoid": 48
+        },
+        "bathinda": {
+          "dengue": 34,
+          "malaria": 34,
+          "chikungunya": 27,
+          "typhoid": 35
+        },
+        "mohali": {
+          "dengue": 45,
+          "malaria": 45,
+          "chikungunya": 37,
+          "typhoid": 45
+        },
+        "haridwar": {
+          "dengue": 49,
+          "malaria": 53,
+          "chikungunya": 42,
+          "typhoid": 58
+        },
+        "haldwani": {
+          "dengue": 52,
+          "malaria": 56,
+          "chikungunya": 45,
+          "typhoid": 69
+        },
+        "dibrugarh": {
+          "dengue": 69,
+          "malaria": 69,
+          "chikungunya": 60,
+          "typhoid": 44
+        },
+        "deoghar": {
+          "dengue": 57,
+          "malaria": 69,
+          "chikungunya": 47,
+          "typhoid": 68
+        },
+        "hazaribagh": {
+          "dengue": 56,
+          "malaria": 69,
+          "chikungunya": 46,
+          "typhoid": 69
+        },
+        "raigarh": {
+          "dengue": 56,
+          "malaria": 64,
+          "chikungunya": 49,
+          "typhoid": 69
+        }
+      },
+      "sigs": {
+        "mumbai": {
+          "dengue": [
+            93,
+            46,
+            58
+          ],
+          "malaria": [
+            93,
+            32,
+            81
+          ],
+          "chikungunya": [
+            93,
+            4,
+            14
+          ],
+          "typhoid": [
+            100,
+            23,
+            49
+          ]
+        },
+        "delhi": {
+          "dengue": [
+            47,
+            35,
+            9
+          ],
+          "malaria": [
+            47,
+            33,
+            22
+          ],
+          "chikungunya": [
+            47,
+            4,
+            null
+          ],
+          "typhoid": [
+            26,
+            59,
+            74
+          ]
+        },
+        "bengaluru": {
+          "dengue": [
+            58,
+            56,
+            55
+          ],
+          "malaria": [
+            58,
+            30,
+            0
+          ],
+          "chikungunya": [
+            58,
+            5,
+            24
+          ],
+          "typhoid": [
+            5,
+            30,
+            57
+          ]
+        },
+        "hyderabad": {
+          "dengue": [
+            67,
+            33,
+            53
+          ],
+          "malaria": [
+            67,
+            24,
+            0
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            16,
+            20,
+            100
+          ]
+        },
+        "ahmedabad": {
+          "dengue": [
+            67,
+            24,
+            null
+          ],
+          "malaria": [
+            67,
+            25,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            52,
+            18,
+            null
+          ]
+        },
+        "chennai": {
+          "dengue": [
+            74,
+            37,
+            43
+          ],
+          "malaria": [
+            74,
+            20,
+            0
+          ],
+          "chikungunya": [
+            74,
+            4,
+            null
+          ],
+          "typhoid": [
+            16,
+            17,
+            68
+          ]
+        },
+        "kolkata": {
+          "dengue": [
+            89,
+            30,
+            21
+          ],
+          "malaria": [
+            89,
+            30,
+            93
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            89,
+            15,
+            44
+          ]
+        },
+        "surat": {
+          "dengue": [
+            89,
+            24,
+            null
+          ],
+          "malaria": [
+            89,
+            25,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            18,
+            null
+          ]
+        },
+        "pune": {
+          "dengue": [
+            93,
+            46,
+            62
+          ],
+          "malaria": [
+            93,
+            32,
+            0
+          ],
+          "chikungunya": [
+            93,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            60
+          ]
+        },
+        "jaipur": {
+          "dengue": [
+            70,
+            19,
+            null
+          ],
+          "malaria": [
+            70,
+            26,
+            null
+          ],
+          "chikungunya": [
+            70,
+            4,
+            null
+          ],
+          "typhoid": [
+            88,
+            26,
+            null
+          ]
+        },
+        "lucknow": {
+          "dengue": [
+            59,
+            20,
+            40
+          ],
+          "malaria": [
+            59,
+            34,
+            100
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            79,
+            46,
+            70
+          ]
+        },
+        "kanpur": {
+          "dengue": [
+            60,
+            20,
+            null
+          ],
+          "malaria": [
+            60,
+            34,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            95,
+            46,
+            null
+          ]
+        },
+        "nagpur": {
+          "dengue": [
+            83,
+            46,
+            null
+          ],
+          "malaria": [
+            83,
+            32,
+            null
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "indore": {
+          "dengue": [
+            87,
+            15,
+            null
+          ],
+          "malaria": [
+            87,
+            23,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "thane": {
+          "dengue": [
+            93,
+            46,
+            null
+          ],
+          "malaria": [
+            93,
+            32,
+            null
+          ],
+          "chikungunya": [
+            93,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "bhopal": {
+          "dengue": [
+            83,
+            15,
+            null
+          ],
+          "malaria": [
+            83,
+            23,
+            null
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            45
+          ]
+        },
+        "visakhapatnam": {
+          "dengue": [
+            95,
+            28,
+            null
+          ],
+          "malaria": [
+            95,
+            34,
+            null
+          ],
+          "chikungunya": [
+            95,
+            4,
+            null
+          ],
+          "typhoid": [
+            72,
+            27,
+            null
+          ]
+        },
+        "patna": {
+          "dengue": [
+            13,
+            20,
+            32
+          ],
+          "malaria": [
+            13,
+            39,
+            0
+          ],
+          "chikungunya": [
+            13,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            45,
+            72
+          ]
+        },
+        "vadodara": {
+          "dengue": [
+            60,
+            24,
+            null
+          ],
+          "malaria": [
+            60,
+            25,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            25,
+            18,
+            null
+          ]
+        },
+        "ghaziabad": {
+          "dengue": [
+            47,
+            20,
+            null
+          ],
+          "malaria": [
+            47,
+            34,
+            null
+          ],
+          "chikungunya": [
+            47,
+            4,
+            null
+          ],
+          "typhoid": [
+            26,
+            46,
+            null
+          ]
+        },
+        "ludhiana": {
+          "dengue": [
+            63,
+            23,
+            null
+          ],
+          "malaria": [
+            63,
+            23,
+            null
+          ],
+          "chikungunya": [
+            63,
+            4,
+            null
+          ],
+          "typhoid": [
+            98,
+            45,
+            null
+          ]
+        },
+        "agra": {
+          "dengue": [
+            34,
+            20,
+            null
+          ],
+          "malaria": [
+            34,
+            34,
+            null
+          ],
+          "chikungunya": [
+            34,
+            4,
+            null
+          ],
+          "typhoid": [
+            11,
+            46,
+            null
+          ]
+        },
+        "nashik": {
+          "dengue": [
+            92,
+            46,
+            null
+          ],
+          "malaria": [
+            92,
+            32,
+            null
+          ],
+          "chikungunya": [
+            92,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "faridabad": {
+          "dengue": [
+            44,
+            26,
+            null
+          ],
+          "malaria": [
+            44,
+            32,
+            null
+          ],
+          "chikungunya": [
+            44,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            47,
+            null
+          ]
+        },
+        "meerut": {
+          "dengue": [
+            49,
+            20,
+            null
+          ],
+          "malaria": [
+            49,
+            34,
+            null
+          ],
+          "chikungunya": [
+            49,
+            4,
+            null
+          ],
+          "typhoid": [
+            29,
+            46,
+            null
+          ]
+        },
+        "rajkot": {
+          "dengue": [
+            85,
+            24,
+            null
+          ],
+          "malaria": [
+            85,
+            25,
+            null
+          ],
+          "chikungunya": [
+            85,
+            4,
+            null
+          ],
+          "typhoid": [
+            97,
+            18,
+            null
+          ]
+        },
+        "varanasi": {
+          "dengue": [
+            23,
+            20,
+            null
+          ],
+          "malaria": [
+            23,
+            34,
+            null
+          ],
+          "chikungunya": [
+            23,
+            4,
+            null
+          ],
+          "typhoid": [
+            48,
+            46,
+            null
+          ]
+        },
+        "srinagar": {
+          "dengue": [
+            18,
+            23,
+            null
+          ],
+          "malaria": [
+            18,
+            36,
+            null
+          ],
+          "chikungunya": [
+            18,
+            4,
+            null
+          ],
+          "typhoid": [
+            10,
+            38,
+            null
+          ]
+        },
+        "aurangabad": {
+          "dengue": [
+            89,
+            46,
+            null
+          ],
+          "malaria": [
+            89,
+            32,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            76,
+            23,
+            null
+          ]
+        },
+        "dhanbad": {
+          "dengue": [
+            75,
+            30,
+            null
+          ],
+          "malaria": [
+            75,
+            67,
+            null
+          ],
+          "chikungunya": [
+            75,
+            4,
+            null
+          ],
+          "typhoid": [
+            64,
+            51,
+            null
+          ]
+        },
+        "amritsar": {
+          "dengue": [
+            62,
+            23,
+            null
+          ],
+          "malaria": [
+            62,
+            23,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            66,
+            45,
+            null
+          ]
+        },
+        "prayagraj": {
+          "dengue": [
+            26,
+            20,
+            null
+          ],
+          "malaria": [
+            26,
+            34,
+            null
+          ],
+          "chikungunya": [
+            26,
+            4,
+            null
+          ],
+          "typhoid": [
+            50,
+            46,
+            72
+          ]
+        },
+        "ranchi": {
+          "dengue": [
+            80,
+            30,
+            0
+          ],
+          "malaria": [
+            80,
+            67,
+            26
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            51,
+            100
+          ]
+        },
+        "howrah": {
+          "dengue": [
+            89,
+            30,
+            null
+          ],
+          "malaria": [
+            89,
+            30,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            89,
+            15,
+            null
+          ]
+        },
+        "coimbatore": {
+          "dengue": [
+            67,
+            37,
+            null
+          ],
+          "malaria": [
+            67,
+            20,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            16,
+            17,
+            null
+          ]
+        },
+        "jabalpur": {
+          "dengue": [
+            80,
+            15,
+            null
+          ],
+          "malaria": [
+            80,
+            23,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "gwalior": {
+          "dengue": [
+            62,
+            15,
+            null
+          ],
+          "malaria": [
+            62,
+            23,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            56,
+            40,
+            null
+          ]
+        },
+        "vijayawada": {
+          "dengue": [
+            91,
+            28,
+            null
+          ],
+          "malaria": [
+            91,
+            34,
+            null
+          ],
+          "chikungunya": [
+            91,
+            4,
+            null
+          ],
+          "typhoid": [
+            88,
+            27,
+            null
+          ]
+        },
+        "jodhpur": {
+          "dengue": [
+            59,
+            19,
+            null
+          ],
+          "malaria": [
+            59,
+            26,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            47,
+            26,
+            null
+          ]
+        },
+        "madurai": {
+          "dengue": [
+            60,
+            37,
+            null
+          ],
+          "malaria": [
+            60,
+            20,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            2,
+            17,
+            null
+          ]
+        },
+        "raipur": {
+          "dengue": [
+            80,
+            22,
+            null
+          ],
+          "malaria": [
+            80,
+            42,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            36,
+            null
+          ]
+        },
+        "kota": {
+          "dengue": [
+            60,
+            19,
+            null
+          ],
+          "malaria": [
+            60,
+            26,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            26,
+            null
+          ]
+        },
+        "guwahati": {
+          "dengue": [
+            83,
+            28,
+            0
+          ],
+          "malaria": [
+            83,
+            46,
+            0
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            31,
+            25,
+            21
+          ]
+        },
+        "chandigarh": {
+          "dengue": [
+            59,
+            47,
+            null
+          ],
+          "malaria": [
+            59,
+            12,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            45,
+            41,
+            null
+          ]
+        },
+        "solapur": {
+          "dengue": [
+            89,
+            46,
+            null
+          ],
+          "malaria": [
+            89,
+            32,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            34,
+            23,
+            null
+          ]
+        },
+        "hubballi": {
+          "dengue": [
+            91,
+            56,
+            null
+          ],
+          "malaria": [
+            91,
+            30,
+            null
+          ],
+          "chikungunya": [
+            91,
+            5,
+            null
+          ],
+          "typhoid": [
+            56,
+            30,
+            null
+          ]
+        },
+        "mysuru": {
+          "dengue": [
+            58,
+            56,
+            null
+          ],
+          "malaria": [
+            58,
+            30,
+            null
+          ],
+          "chikungunya": [
+            58,
+            5,
+            null
+          ],
+          "typhoid": [
+            6,
+            30,
+            null
+          ]
+        },
+        "tiruchirappalli": {
+          "dengue": [
+            65,
+            37,
+            null
+          ],
+          "malaria": [
+            65,
+            20,
+            null
+          ],
+          "chikungunya": [
+            65,
+            4,
+            null
+          ],
+          "typhoid": [
+            5,
+            17,
+            null
+          ]
+        },
+        "bareilly": {
+          "dengue": [
+            60,
+            20,
+            null
+          ],
+          "malaria": [
+            60,
+            34,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            62,
+            46,
+            null
+          ]
+        },
+        "aligarh": {
+          "dengue": [
+            36,
+            20,
+            null
+          ],
+          "malaria": [
+            36,
+            34,
+            null
+          ],
+          "chikungunya": [
+            36,
+            4,
+            null
+          ],
+          "typhoid": [
+            11,
+            46,
+            null
+          ]
+        },
+        "tiruppur": {
+          "dengue": [
+            60,
+            37,
+            null
+          ],
+          "malaria": [
+            60,
+            20,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            2,
+            17,
+            null
+          ]
+        },
+        "gurugram": {
+          "dengue": [
+            43,
+            26,
+            null
+          ],
+          "malaria": [
+            43,
+            32,
+            null
+          ],
+          "chikungunya": [
+            43,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            47,
+            null
+          ]
+        },
+        "moradabad": {
+          "dengue": [
+            66,
+            20,
+            null
+          ],
+          "malaria": [
+            66,
+            34,
+            null
+          ],
+          "chikungunya": [
+            66,
+            4,
+            null
+          ],
+          "typhoid": [
+            63,
+            46,
+            null
+          ]
+        },
+        "jalandhar": {
+          "dengue": [
+            64,
+            23,
+            null
+          ],
+          "malaria": [
+            64,
+            23,
+            null
+          ],
+          "chikungunya": [
+            64,
+            4,
+            null
+          ],
+          "typhoid": [
+            96,
+            45,
+            null
+          ]
+        },
+        "bhubaneswar": {
+          "dengue": [
+            88,
+            19,
+            null
+          ],
+          "malaria": [
+            88,
+            47,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            13
+          ]
+        },
+        "salem": {
+          "dengue": [
+            62,
+            37,
+            null
+          ],
+          "malaria": [
+            62,
+            20,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            3,
+            17,
+            null
+          ]
+        },
+        "warangal": {
+          "dengue": [
+            88,
+            33,
+            null
+          ],
+          "malaria": [
+            88,
+            24,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            83,
+            20,
+            null
+          ]
+        },
+        "guntur": {
+          "dengue": [
+            91,
+            28,
+            null
+          ],
+          "malaria": [
+            91,
+            34,
+            null
+          ],
+          "chikungunya": [
+            91,
+            4,
+            null
+          ],
+          "typhoid": [
+            68,
+            27,
+            null
+          ]
+        },
+        "bhiwandi": {
+          "dengue": [
+            92,
+            46,
+            null
+          ],
+          "malaria": [
+            92,
+            32,
+            null
+          ],
+          "chikungunya": [
+            92,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "saharanpur": {
+          "dengue": [
+            63,
+            20,
+            null
+          ],
+          "malaria": [
+            63,
+            34,
+            null
+          ],
+          "chikungunya": [
+            63,
+            4,
+            null
+          ],
+          "typhoid": [
+            55,
+            46,
+            null
+          ]
+        },
+        "gorakhpur": {
+          "dengue": [
+            35,
+            20,
+            null
+          ],
+          "malaria": [
+            35,
+            34,
+            null
+          ],
+          "chikungunya": [
+            35,
+            4,
+            null
+          ],
+          "typhoid": [
+            52,
+            46,
+            null
+          ]
+        },
+        "bikaner": {
+          "dengue": [
+            32,
+            19,
+            null
+          ],
+          "malaria": [
+            32,
+            26,
+            null
+          ],
+          "chikungunya": [
+            32,
+            4,
+            null
+          ],
+          "typhoid": [
+            4,
+            26,
+            null
+          ]
+        },
+        "amravati": {
+          "dengue": [
+            84,
+            46,
+            null
+          ],
+          "malaria": [
+            84,
+            32,
+            null
+          ],
+          "chikungunya": [
+            84,
+            4,
+            null
+          ],
+          "typhoid": [
+            66,
+            23,
+            null
+          ]
+        },
+        "noida": {
+          "dengue": [
+            47,
+            20,
+            null
+          ],
+          "malaria": [
+            47,
+            34,
+            null
+          ],
+          "chikungunya": [
+            47,
+            4,
+            null
+          ],
+          "typhoid": [
+            26,
+            46,
+            null
+          ]
+        },
+        "jamshedpur": {
+          "dengue": [
+            80,
+            30,
+            null
+          ],
+          "malaria": [
+            80,
+            67,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            51,
+            null
+          ]
+        },
+        "bhilai": {
+          "dengue": [
+            83,
+            22,
+            null
+          ],
+          "malaria": [
+            83,
+            42,
+            null
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            36,
+            null
+          ]
+        },
+        "cuttack": {
+          "dengue": [
+            88,
+            19,
+            null
+          ],
+          "malaria": [
+            88,
+            47,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            null
+          ]
+        },
+        "firozabad": {
+          "dengue": [
+            34,
+            20,
+            null
+          ],
+          "malaria": [
+            34,
+            34,
+            null
+          ],
+          "chikungunya": [
+            34,
+            4,
+            null
+          ],
+          "typhoid": [
+            11,
+            46,
+            null
+          ]
+        },
+        "kochi": {
+          "dengue": [
+            97,
+            100,
+            null
+          ],
+          "malaria": [
+            97,
+            30,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            81,
+            14,
+            null
+          ]
+        },
+        "nellore": {
+          "dengue": [
+            63,
+            28,
+            null
+          ],
+          "malaria": [
+            63,
+            34,
+            null
+          ],
+          "chikungunya": [
+            63,
+            4,
+            null
+          ],
+          "typhoid": [
+            8,
+            27,
+            null
+          ]
+        },
+        "dehradun": {
+          "dengue": [
+            80,
+            23,
+            null
+          ],
+          "malaria": [
+            80,
+            33,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            65,
+            null
+          ]
+        },
+        "durgapur": {
+          "dengue": [
+            83,
+            30,
+            null
+          ],
+          "malaria": [
+            83,
+            30,
+            null
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            15,
+            null
+          ]
+        },
+        "asansol": {
+          "dengue": [
+            80,
+            30,
+            null
+          ],
+          "malaria": [
+            80,
+            30,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            99,
+            15,
+            null
+          ]
+        },
+        "rourkela": {
+          "dengue": [
+            82,
+            19,
+            null
+          ],
+          "malaria": [
+            82,
+            47,
+            null
+          ],
+          "chikungunya": [
+            82,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            null
+          ]
+        },
+        "nanded": {
+          "dengue": [
+            86,
+            46,
+            null
+          ],
+          "malaria": [
+            86,
+            32,
+            null
+          ],
+          "chikungunya": [
+            86,
+            4,
+            null
+          ],
+          "typhoid": [
+            64,
+            23,
+            null
+          ]
+        },
+        "kolhapur": {
+          "dengue": [
+            94,
+            46,
+            null
+          ],
+          "malaria": [
+            94,
+            32,
+            null
+          ],
+          "chikungunya": [
+            94,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "ajmer": {
+          "dengue": [
+            67,
+            19,
+            null
+          ],
+          "malaria": [
+            67,
+            26,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            55,
+            26,
+            null
+          ]
+        },
+        "akola": {
+          "dengue": [
+            86,
+            46,
+            null
+          ],
+          "malaria": [
+            86,
+            32,
+            null
+          ],
+          "chikungunya": [
+            86,
+            4,
+            null
+          ],
+          "typhoid": [
+            63,
+            23,
+            null
+          ]
+        },
+        "gulbarga": {
+          "dengue": [
+            67,
+            56,
+            null
+          ],
+          "malaria": [
+            67,
+            30,
+            null
+          ],
+          "chikungunya": [
+            67,
+            5,
+            null
+          ],
+          "typhoid": [
+            14,
+            30,
+            null
+          ]
+        },
+        "jamnagar": {
+          "dengue": [
+            89,
+            24,
+            null
+          ],
+          "malaria": [
+            89,
+            25,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            74,
+            18,
+            null
+          ]
+        },
+        "ujjain": {
+          "dengue": [
+            87,
+            15,
+            null
+          ],
+          "malaria": [
+            87,
+            23,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "siliguri": {
+          "dengue": [
+            89,
+            30,
+            null
+          ],
+          "malaria": [
+            89,
+            30,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            15,
+            null
+          ]
+        },
+        "jhansi": {
+          "dengue": [
+            65,
+            20,
+            null
+          ],
+          "malaria": [
+            65,
+            34,
+            null
+          ],
+          "chikungunya": [
+            65,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            46,
+            null
+          ]
+        },
+        "jammu": {
+          "dengue": [
+            73,
+            23,
+            null
+          ],
+          "malaria": [
+            73,
+            36,
+            null
+          ],
+          "chikungunya": [
+            73,
+            4,
+            null
+          ],
+          "typhoid": [
+            76,
+            38,
+            null
+          ]
+        },
+        "mangaluru": {
+          "dengue": [
+            96,
+            56,
+            null
+          ],
+          "malaria": [
+            96,
+            30,
+            null
+          ],
+          "chikungunya": [
+            96,
+            5,
+            null
+          ],
+          "typhoid": [
+            100,
+            30,
+            null
+          ]
+        },
+        "erode": {
+          "dengue": [
+            59,
+            37,
+            null
+          ],
+          "malaria": [
+            59,
+            20,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            1,
+            17,
+            null
+          ]
+        },
+        "belagavi": {
+          "dengue": [
+            94,
+            56,
+            null
+          ],
+          "malaria": [
+            94,
+            30,
+            null
+          ],
+          "chikungunya": [
+            94,
+            5,
+            null
+          ],
+          "typhoid": [
+            100,
+            30,
+            null
+          ]
+        },
+        "tirunelveli": {
+          "dengue": [
+            62,
+            37,
+            null
+          ],
+          "malaria": [
+            62,
+            20,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            2,
+            17,
+            null
+          ]
+        },
+        "gaya": {
+          "dengue": [
+            42,
+            20,
+            null
+          ],
+          "malaria": [
+            42,
+            39,
+            null
+          ],
+          "chikungunya": [
+            42,
+            4,
+            null
+          ],
+          "typhoid": [
+            34,
+            45,
+            null
+          ]
+        },
+        "udaipur": {
+          "dengue": [
+            82,
+            19,
+            null
+          ],
+          "malaria": [
+            82,
+            26,
+            null
+          ],
+          "chikungunya": [
+            82,
+            4,
+            null
+          ],
+          "typhoid": [
+            92,
+            26,
+            null
+          ]
+        },
+        "tirupati": {
+          "dengue": [
+            69,
+            28,
+            null
+          ],
+          "malaria": [
+            69,
+            34,
+            null
+          ],
+          "chikungunya": [
+            69,
+            4,
+            null
+          ],
+          "typhoid": [
+            10,
+            27,
+            null
+          ]
+        },
+        "davanagere": {
+          "dengue": [
+            79,
+            56,
+            null
+          ],
+          "malaria": [
+            79,
+            30,
+            null
+          ],
+          "chikungunya": [
+            79,
+            5,
+            null
+          ],
+          "typhoid": [
+            41,
+            30,
+            null
+          ]
+        },
+        "kozhikode": {
+          "dengue": [
+            96,
+            100,
+            null
+          ],
+          "malaria": [
+            96,
+            30,
+            null
+          ],
+          "chikungunya": [
+            96,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            14,
+            null
+          ]
+        },
+        "kurnool": {
+          "dengue": [
+            76,
+            28,
+            null
+          ],
+          "malaria": [
+            76,
+            34,
+            null
+          ],
+          "chikungunya": [
+            76,
+            4,
+            null
+          ],
+          "typhoid": [
+            24,
+            27,
+            null
+          ]
+        },
+        "bokaro": {
+          "dengue": [
+            78,
+            30,
+            null
+          ],
+          "malaria": [
+            78,
+            67,
+            null
+          ],
+          "chikungunya": [
+            78,
+            4,
+            null
+          ],
+          "typhoid": [
+            64,
+            51,
+            null
+          ]
+        },
+        "bellary": {
+          "dengue": [
+            65,
+            56,
+            null
+          ],
+          "malaria": [
+            65,
+            30,
+            null
+          ],
+          "chikungunya": [
+            65,
+            5,
+            null
+          ],
+          "typhoid": [
+            14,
+            30,
+            null
+          ]
+        },
+        "patiala": {
+          "dengue": [
+            66,
+            23,
+            null
+          ],
+          "malaria": [
+            66,
+            23,
+            null
+          ],
+          "chikungunya": [
+            66,
+            4,
+            null
+          ],
+          "typhoid": [
+            78,
+            45,
+            null
+          ]
+        },
+        "agartala": {
+          "dengue": [
+            96,
+            44,
+            null
+          ],
+          "malaria": [
+            96,
+            28,
+            null
+          ],
+          "chikungunya": [
+            96,
+            6,
+            null
+          ],
+          "typhoid": [
+            88,
+            10,
+            null
+          ]
+        },
+        "bhagalpur": {
+          "dengue": [
+            60,
+            20,
+            null
+          ],
+          "malaria": [
+            60,
+            39,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            41,
+            45,
+            null
+          ]
+        },
+        "muzaffarnagar": {
+          "dengue": [
+            52,
+            20,
+            null
+          ],
+          "malaria": [
+            52,
+            34,
+            null
+          ],
+          "chikungunya": [
+            52,
+            4,
+            null
+          ],
+          "typhoid": [
+            36,
+            46,
+            null
+          ]
+        },
+        "latur": {
+          "dengue": [
+            81,
+            46,
+            null
+          ],
+          "malaria": [
+            81,
+            32,
+            null
+          ],
+          "chikungunya": [
+            81,
+            4,
+            null
+          ],
+          "typhoid": [
+            32,
+            23,
+            null
+          ]
+        },
+        "dhule": {
+          "dengue": [
+            80,
+            46,
+            null
+          ],
+          "malaria": [
+            80,
+            32,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            43,
+            23,
+            null
+          ]
+        },
+        "rohtak": {
+          "dengue": [
+            48,
+            26,
+            null
+          ],
+          "malaria": [
+            48,
+            32,
+            null
+          ],
+          "chikungunya": [
+            48,
+            4,
+            null
+          ],
+          "typhoid": [
+            28,
+            47,
+            null
+          ]
+        },
+        "korba": {
+          "dengue": [
+            78,
+            22,
+            null
+          ],
+          "malaria": [
+            78,
+            42,
+            null
+          ],
+          "chikungunya": [
+            78,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            36,
+            null
+          ]
+        },
+        "bhilwara": {
+          "dengue": [
+            77,
+            19,
+            null
+          ],
+          "malaria": [
+            77,
+            26,
+            null
+          ],
+          "chikungunya": [
+            77,
+            4,
+            null
+          ],
+          "typhoid": [
+            44,
+            26,
+            null
+          ]
+        },
+        "brahmapur": {
+          "dengue": [
+            93,
+            19,
+            null
+          ],
+          "malaria": [
+            93,
+            47,
+            null
+          ],
+          "chikungunya": [
+            93,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            null
+          ]
+        },
+        "muzaffarpur": {
+          "dengue": [
+            55,
+            20,
+            null
+          ],
+          "malaria": [
+            55,
+            39,
+            null
+          ],
+          "chikungunya": [
+            55,
+            4,
+            null
+          ],
+          "typhoid": [
+            40,
+            45,
+            null
+          ]
+        },
+        "mathura": {
+          "dengue": [
+            37,
+            20,
+            null
+          ],
+          "malaria": [
+            37,
+            34,
+            null
+          ],
+          "chikungunya": [
+            37,
+            4,
+            null
+          ],
+          "typhoid": [
+            10,
+            46,
+            null
+          ]
+        },
+        "kollam": {
+          "dengue": [
+            96,
+            100,
+            null
+          ],
+          "malaria": [
+            96,
+            30,
+            null
+          ],
+          "chikungunya": [
+            96,
+            4,
+            null
+          ],
+          "typhoid": [
+            60,
+            14,
+            null
+          ]
+        },
+        "bilaspur": {
+          "dengue": [
+            78,
+            22,
+            null
+          ],
+          "malaria": [
+            78,
+            42,
+            null
+          ],
+          "chikungunya": [
+            78,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            36,
+            null
+          ]
+        },
+        "shahjahanpur": {
+          "dengue": [
+            58,
+            20,
+            null
+          ],
+          "malaria": [
+            58,
+            34,
+            null
+          ],
+          "chikungunya": [
+            58,
+            4,
+            null
+          ],
+          "typhoid": [
+            60,
+            46,
+            null
+          ]
+        },
+        "thrissur": {
+          "dengue": [
+            97,
+            100,
+            null
+          ],
+          "malaria": [
+            97,
+            30,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            90,
+            14,
+            null
+          ]
+        },
+        "alwar": {
+          "dengue": [
+            55,
+            19,
+            null
+          ],
+          "malaria": [
+            55,
+            26,
+            null
+          ],
+          "chikungunya": [
+            55,
+            4,
+            null
+          ],
+          "typhoid": [
+            24,
+            26,
+            null
+          ]
+        },
+        "kakinada": {
+          "dengue": [
+            95,
+            28,
+            null
+          ],
+          "malaria": [
+            95,
+            34,
+            null
+          ],
+          "chikungunya": [
+            95,
+            4,
+            null
+          ],
+          "typhoid": [
+            90,
+            27,
+            null
+          ]
+        },
+        "nizamabad": {
+          "dengue": [
+            88,
+            33,
+            null
+          ],
+          "malaria": [
+            88,
+            24,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            64,
+            20,
+            null
+          ]
+        },
+        "panipat": {
+          "dengue": [
+            50,
+            26,
+            null
+          ],
+          "malaria": [
+            50,
+            32,
+            null
+          ],
+          "chikungunya": [
+            50,
+            4,
+            null
+          ],
+          "typhoid": [
+            35,
+            47,
+            null
+          ]
+        },
+        "darbhanga": {
+          "dengue": [
+            62,
+            20,
+            null
+          ],
+          "malaria": [
+            62,
+            39,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            45,
+            45,
+            null
+          ]
+        },
+        "thiruvananthapuram": {
+          "dengue": [
+            97,
+            100,
+            null
+          ],
+          "malaria": [
+            97,
+            30,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            60,
+            14,
+            null
+          ]
+        },
+        "gandhinagar": {
+          "dengue": [
+            67,
+            24,
+            null
+          ],
+          "malaria": [
+            67,
+            25,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            52,
+            18,
+            null
+          ]
+        },
+        "panaji": {
+          "dengue": [
+            96,
+            90,
+            null
+          ],
+          "malaria": [
+            96,
+            29,
+            null
+          ],
+          "chikungunya": [
+            96,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            29,
+            45
+          ]
+        },
+        "puducherry": {
+          "dengue": [
+            63,
+            30,
+            null
+          ],
+          "malaria": [
+            63,
+            100,
+            null
+          ],
+          "chikungunya": [
+            63,
+            4,
+            null
+          ],
+          "typhoid": [
+            2,
+            9,
+            null
+          ]
+        },
+        "port-blair": {
+          "dengue": [
+            96,
+            23,
+            null
+          ],
+          "malaria": [
+            96,
+            31,
+            null
+          ],
+          "chikungunya": [
+            96,
+            6,
+            null
+          ],
+          "typhoid": [
+            100,
+            19,
+            null
+          ]
+        },
+        "daman": {
+          "dengue": [
+            91,
+            33,
+            null
+          ],
+          "malaria": [
+            91,
+            35,
+            null
+          ],
+          "chikungunya": [
+            91,
+            6,
+            null
+          ],
+          "typhoid": [
+            100,
+            37,
+            null
+          ]
+        },
+        "silvassa": {
+          "dengue": [
+            91,
+            33,
+            null
+          ],
+          "malaria": [
+            91,
+            35,
+            null
+          ],
+          "chikungunya": [
+            91,
+            6,
+            null
+          ],
+          "typhoid": [
+            100,
+            37,
+            null
+          ]
+        },
+        "sangli": {
+          "dengue": [
+            92,
+            46,
+            null
+          ],
+          "malaria": [
+            92,
+            32,
+            null
+          ],
+          "chikungunya": [
+            92,
+            4,
+            null
+          ],
+          "typhoid": [
+            67,
+            23,
+            null
+          ]
+        },
+        "jalgaon": {
+          "dengue": [
+            87,
+            46,
+            null
+          ],
+          "malaria": [
+            87,
+            32,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            77,
+            23,
+            null
+          ]
+        },
+        "ahmednagar": {
+          "dengue": [
+            88,
+            46,
+            null
+          ],
+          "malaria": [
+            88,
+            32,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            53,
+            23,
+            null
+          ]
+        },
+        "chandrapur": {
+          "dengue": [
+            84,
+            46,
+            null
+          ],
+          "malaria": [
+            84,
+            32,
+            null
+          ],
+          "chikungunya": [
+            84,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "parbhani": {
+          "dengue": [
+            86,
+            46,
+            null
+          ],
+          "malaria": [
+            86,
+            32,
+            null
+          ],
+          "chikungunya": [
+            86,
+            4,
+            null
+          ],
+          "typhoid": [
+            59,
+            23,
+            null
+          ]
+        },
+        "satara": {
+          "dengue": [
+            94,
+            46,
+            null
+          ],
+          "malaria": [
+            94,
+            32,
+            null
+          ],
+          "chikungunya": [
+            94,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            23,
+            null
+          ]
+        },
+        "rampur": {
+          "dengue": [
+            68,
+            20,
+            null
+          ],
+          "malaria": [
+            68,
+            34,
+            null
+          ],
+          "chikungunya": [
+            68,
+            4,
+            null
+          ],
+          "typhoid": [
+            97,
+            46,
+            null
+          ]
+        },
+        "hapur": {
+          "dengue": [
+            49,
+            20,
+            null
+          ],
+          "malaria": [
+            49,
+            34,
+            null
+          ],
+          "chikungunya": [
+            49,
+            4,
+            null
+          ],
+          "typhoid": [
+            29,
+            46,
+            null
+          ]
+        },
+        "mirzapur": {
+          "dengue": [
+            50,
+            20,
+            null
+          ],
+          "malaria": [
+            50,
+            34,
+            null
+          ],
+          "chikungunya": [
+            50,
+            4,
+            null
+          ],
+          "typhoid": [
+            48,
+            46,
+            null
+          ]
+        },
+        "etawah": {
+          "dengue": [
+            47,
+            20,
+            null
+          ],
+          "malaria": [
+            47,
+            34,
+            null
+          ],
+          "chikungunya": [
+            47,
+            4,
+            null
+          ],
+          "typhoid": [
+            37,
+            46,
+            null
+          ]
+        },
+        "bulandshahr": {
+          "dengue": [
+            41,
+            20,
+            null
+          ],
+          "malaria": [
+            41,
+            34,
+            null
+          ],
+          "chikungunya": [
+            41,
+            4,
+            null
+          ],
+          "typhoid": [
+            18,
+            46,
+            null
+          ]
+        },
+        "amroha": {
+          "dengue": [
+            54,
+            20,
+            null
+          ],
+          "malaria": [
+            54,
+            34,
+            null
+          ],
+          "chikungunya": [
+            54,
+            4,
+            null
+          ],
+          "typhoid": [
+            39,
+            46,
+            null
+          ]
+        },
+        "hardoi": {
+          "dengue": [
+            62,
+            20,
+            null
+          ],
+          "malaria": [
+            62,
+            34,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            95,
+            46,
+            null
+          ]
+        },
+        "fatehpur": {
+          "dengue": [
+            59,
+            20,
+            null
+          ],
+          "malaria": [
+            59,
+            34,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            70,
+            46,
+            null
+          ]
+        },
+        "raebareli": {
+          "dengue": [
+            59,
+            20,
+            null
+          ],
+          "malaria": [
+            59,
+            34,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            71,
+            46,
+            null
+          ]
+        },
+        "sitapur": {
+          "dengue": [
+            61,
+            20,
+            null
+          ],
+          "malaria": [
+            61,
+            34,
+            null
+          ],
+          "chikungunya": [
+            61,
+            4,
+            null
+          ],
+          "typhoid": [
+            75,
+            46,
+            null
+          ]
+        },
+        "unnao": {
+          "dengue": [
+            60,
+            20,
+            null
+          ],
+          "malaria": [
+            60,
+            34,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            46,
+            null
+          ]
+        },
+        "budaun": {
+          "dengue": [
+            58,
+            20,
+            null
+          ],
+          "malaria": [
+            58,
+            34,
+            null
+          ],
+          "chikungunya": [
+            58,
+            4,
+            null
+          ],
+          "typhoid": [
+            62,
+            46,
+            null
+          ]
+        },
+        "bihar-sharif": {
+          "dengue": [
+            45,
+            20,
+            null
+          ],
+          "malaria": [
+            45,
+            39,
+            null
+          ],
+          "chikungunya": [
+            45,
+            4,
+            null
+          ],
+          "typhoid": [
+            26,
+            45,
+            null
+          ]
+        },
+        "arrah": {
+          "dengue": [
+            13,
+            20,
+            null
+          ],
+          "malaria": [
+            13,
+            39,
+            null
+          ],
+          "chikungunya": [
+            13,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            45,
+            null
+          ]
+        },
+        "begusarai": {
+          "dengue": [
+            52,
+            20,
+            null
+          ],
+          "malaria": [
+            52,
+            39,
+            null
+          ],
+          "chikungunya": [
+            52,
+            4,
+            null
+          ],
+          "typhoid": [
+            35,
+            45,
+            null
+          ]
+        },
+        "purnia": {
+          "dengue": [
+            77,
+            20,
+            null
+          ],
+          "malaria": [
+            77,
+            39,
+            null
+          ],
+          "chikungunya": [
+            77,
+            4,
+            null
+          ],
+          "typhoid": [
+            60,
+            45,
+            null
+          ]
+        },
+        "katihar": {
+          "dengue": [
+            75,
+            20,
+            null
+          ],
+          "malaria": [
+            75,
+            39,
+            0
+          ],
+          "chikungunya": [
+            75,
+            4,
+            null
+          ],
+          "typhoid": [
+            64,
+            45,
+            4
+          ]
+        },
+        "chhapra": {
+          "dengue": [
+            37,
+            20,
+            null
+          ],
+          "malaria": [
+            37,
+            39,
+            null
+          ],
+          "chikungunya": [
+            37,
+            4,
+            null
+          ],
+          "typhoid": [
+            19,
+            45,
+            null
+          ]
+        },
+        "bardhaman": {
+          "dengue": [
+            87,
+            30,
+            null
+          ],
+          "malaria": [
+            87,
+            30,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            92,
+            15,
+            null
+          ]
+        },
+        "malda": {
+          "dengue": [
+            80,
+            30,
+            null
+          ],
+          "malaria": [
+            80,
+            30,
+            null
+          ],
+          "chikungunya": [
+            80,
+            4,
+            null
+          ],
+          "typhoid": [
+            66,
+            15,
+            null
+          ]
+        },
+        "baharampur": {
+          "dengue": [
+            67,
+            30,
+            null
+          ],
+          "malaria": [
+            67,
+            30,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            37,
+            15,
+            null
+          ]
+        },
+        "kharagpur": {
+          "dengue": [
+            88,
+            30,
+            null
+          ],
+          "malaria": [
+            88,
+            30,
+            null
+          ],
+          "chikungunya": [
+            88,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            15,
+            null
+          ]
+        },
+        "haldia": {
+          "dengue": [
+            92,
+            30,
+            null
+          ],
+          "malaria": [
+            92,
+            30,
+            null
+          ],
+          "chikungunya": [
+            92,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            15,
+            null
+          ]
+        },
+        "sikar": {
+          "dengue": [
+            48,
+            19,
+            null
+          ],
+          "malaria": [
+            48,
+            26,
+            null
+          ],
+          "chikungunya": [
+            48,
+            4,
+            null
+          ],
+          "typhoid": [
+            21,
+            26,
+            null
+          ]
+        },
+        "sri-ganganagar": {
+          "dengue": [
+            5,
+            19,
+            null
+          ],
+          "malaria": [
+            5,
+            26,
+            null
+          ],
+          "chikungunya": [
+            5,
+            4,
+            null
+          ],
+          "typhoid": [
+            5,
+            26,
+            null
+          ]
+        },
+        "pali": {
+          "dengue": [
+            56,
+            19,
+            null
+          ],
+          "malaria": [
+            56,
+            26,
+            null
+          ],
+          "chikungunya": [
+            56,
+            4,
+            null
+          ],
+          "typhoid": [
+            38,
+            26,
+            null
+          ]
+        },
+        "bharatpur": {
+          "dengue": [
+            46,
+            19,
+            null
+          ],
+          "malaria": [
+            46,
+            26,
+            null
+          ],
+          "chikungunya": [
+            46,
+            4,
+            null
+          ],
+          "typhoid": [
+            20,
+            26,
+            null
+          ]
+        },
+        "hanumangarh": {
+          "dengue": [
+            30,
+            19,
+            null
+          ],
+          "malaria": [
+            30,
+            26,
+            null
+          ],
+          "chikungunya": [
+            30,
+            4,
+            null
+          ],
+          "typhoid": [
+            6,
+            26,
+            null
+          ]
+        },
+        "sagar": {
+          "dengue": [
+            77,
+            15,
+            null
+          ],
+          "malaria": [
+            77,
+            23,
+            null
+          ],
+          "chikungunya": [
+            77,
+            4,
+            null
+          ],
+          "typhoid": [
+            94,
+            40,
+            null
+          ]
+        },
+        "ratlam": {
+          "dengue": [
+            85,
+            15,
+            null
+          ],
+          "malaria": [
+            85,
+            23,
+            null
+          ],
+          "chikungunya": [
+            85,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "satna": {
+          "dengue": [
+            69,
+            15,
+            null
+          ],
+          "malaria": [
+            69,
+            23,
+            null
+          ],
+          "chikungunya": [
+            69,
+            4,
+            null
+          ],
+          "typhoid": [
+            91,
+            40,
+            null
+          ]
+        },
+        "rewa": {
+          "dengue": [
+            62,
+            15,
+            null
+          ],
+          "malaria": [
+            62,
+            23,
+            null
+          ],
+          "chikungunya": [
+            62,
+            4,
+            null
+          ],
+          "typhoid": [
+            57,
+            40,
+            null
+          ]
+        },
+        "dewas": {
+          "dengue": [
+            86,
+            15,
+            null
+          ],
+          "malaria": [
+            86,
+            23,
+            null
+          ],
+          "chikungunya": [
+            86,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "katni": {
+          "dengue": [
+            75,
+            15,
+            null
+          ],
+          "malaria": [
+            75,
+            23,
+            null
+          ],
+          "chikungunya": [
+            75,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "singrauli": {
+          "dengue": [
+            72,
+            15,
+            null
+          ],
+          "malaria": [
+            72,
+            23,
+            null
+          ],
+          "chikungunya": [
+            72,
+            4,
+            null
+          ],
+          "typhoid": [
+            80,
+            40,
+            null
+          ]
+        },
+        "khandwa": {
+          "dengue": [
+            85,
+            15,
+            null
+          ],
+          "malaria": [
+            85,
+            23,
+            null
+          ],
+          "chikungunya": [
+            85,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            40,
+            null
+          ]
+        },
+        "junagadh": {
+          "dengue": [
+            87,
+            24,
+            null
+          ],
+          "malaria": [
+            87,
+            25,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            18,
+            null
+          ]
+        },
+        "gandhidham": {
+          "dengue": [
+            53,
+            24,
+            null
+          ],
+          "malaria": [
+            53,
+            25,
+            null
+          ],
+          "chikungunya": [
+            53,
+            4,
+            null
+          ],
+          "typhoid": [
+            3,
+            18,
+            null
+          ]
+        },
+        "anand": {
+          "dengue": [
+            64,
+            24,
+            null
+          ],
+          "malaria": [
+            64,
+            25,
+            null
+          ],
+          "chikungunya": [
+            64,
+            4,
+            null
+          ],
+          "typhoid": [
+            35,
+            18,
+            null
+          ]
+        },
+        "nadiad": {
+          "dengue": [
+            64,
+            24,
+            null
+          ],
+          "malaria": [
+            64,
+            25,
+            null
+          ],
+          "chikungunya": [
+            64,
+            4,
+            null
+          ],
+          "typhoid": [
+            35,
+            18,
+            null
+          ]
+        },
+        "bharuch": {
+          "dengue": [
+            87,
+            24,
+            null
+          ],
+          "malaria": [
+            87,
+            25,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            88,
+            18,
+            null
+          ]
+        },
+        "navsari": {
+          "dengue": [
+            89,
+            24,
+            null
+          ],
+          "malaria": [
+            89,
+            25,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            18,
+            null
+          ]
+        },
+        "tumakuru": {
+          "dengue": [
+            60,
+            56,
+            null
+          ],
+          "malaria": [
+            60,
+            30,
+            null
+          ],
+          "chikungunya": [
+            60,
+            5,
+            null
+          ],
+          "typhoid": [
+            9,
+            30,
+            null
+          ]
+        },
+        "vijayapura": {
+          "dengue": [
+            73,
+            56,
+            null
+          ],
+          "malaria": [
+            73,
+            30,
+            null
+          ],
+          "chikungunya": [
+            73,
+            5,
+            null
+          ],
+          "typhoid": [
+            26,
+            30,
+            null
+          ]
+        },
+        "raichur": {
+          "dengue": [
+            61,
+            56,
+            null
+          ],
+          "malaria": [
+            61,
+            30,
+            null
+          ],
+          "chikungunya": [
+            61,
+            5,
+            null
+          ],
+          "typhoid": [
+            7,
+            30,
+            null
+          ]
+        },
+        "udupi": {
+          "dengue": [
+            95,
+            56,
+            null
+          ],
+          "malaria": [
+            95,
+            30,
+            null
+          ],
+          "chikungunya": [
+            95,
+            5,
+            null
+          ],
+          "typhoid": [
+            100,
+            30,
+            null
+          ]
+        },
+        "hassan": {
+          "dengue": [
+            68,
+            56,
+            null
+          ],
+          "malaria": [
+            68,
+            30,
+            null
+          ],
+          "chikungunya": [
+            68,
+            5,
+            null
+          ],
+          "typhoid": [
+            27,
+            30,
+            null
+          ]
+        },
+        "vellore": {
+          "dengue": [
+            66,
+            37,
+            null
+          ],
+          "malaria": [
+            66,
+            20,
+            null
+          ],
+          "chikungunya": [
+            66,
+            4,
+            null
+          ],
+          "typhoid": [
+            7,
+            17,
+            null
+          ]
+        },
+        "thoothukudi": {
+          "dengue": [
+            58,
+            37,
+            null
+          ],
+          "malaria": [
+            58,
+            20,
+            null
+          ],
+          "chikungunya": [
+            58,
+            4,
+            null
+          ],
+          "typhoid": [
+            1,
+            17,
+            null
+          ]
+        },
+        "dindigul": {
+          "dengue": [
+            66,
+            37,
+            null
+          ],
+          "malaria": [
+            66,
+            20,
+            null
+          ],
+          "chikungunya": [
+            66,
+            4,
+            null
+          ],
+          "typhoid": [
+            6,
+            17,
+            null
+          ]
+        },
+        "thanjavur": {
+          "dengue": [
+            74,
+            37,
+            null
+          ],
+          "malaria": [
+            74,
+            20,
+            null
+          ],
+          "chikungunya": [
+            74,
+            4,
+            null
+          ],
+          "typhoid": [
+            12,
+            17,
+            null
+          ]
+        },
+        "nagercoil": {
+          "dengue": [
+            75,
+            37,
+            null
+          ],
+          "malaria": [
+            75,
+            20,
+            null
+          ],
+          "chikungunya": [
+            75,
+            4,
+            null
+          ],
+          "typhoid": [
+            20,
+            17,
+            null
+          ]
+        },
+        "kanchipuram": {
+          "dengue": [
+            70,
+            37,
+            null
+          ],
+          "malaria": [
+            70,
+            20,
+            null
+          ],
+          "chikungunya": [
+            70,
+            4,
+            null
+          ],
+          "typhoid": [
+            11,
+            17,
+            null
+          ]
+        },
+        "hosur": {
+          "dengue": [
+            60,
+            37,
+            null
+          ],
+          "malaria": [
+            60,
+            20,
+            null
+          ],
+          "chikungunya": [
+            60,
+            4,
+            null
+          ],
+          "typhoid": [
+            5,
+            17,
+            null
+          ]
+        },
+        "rajahmundry": {
+          "dengue": [
+            93,
+            28,
+            null
+          ],
+          "malaria": [
+            93,
+            34,
+            null
+          ],
+          "chikungunya": [
+            93,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            27,
+            null
+          ]
+        },
+        "kadapa": {
+          "dengue": [
+            65,
+            28,
+            null
+          ],
+          "malaria": [
+            65,
+            34,
+            null
+          ],
+          "chikungunya": [
+            65,
+            4,
+            null
+          ],
+          "typhoid": [
+            10,
+            27,
+            null
+          ]
+        },
+        "anantapur": {
+          "dengue": [
+            61,
+            28,
+            null
+          ],
+          "malaria": [
+            61,
+            34,
+            null
+          ],
+          "chikungunya": [
+            61,
+            4,
+            null
+          ],
+          "typhoid": [
+            7,
+            27,
+            null
+          ]
+        },
+        "eluru": {
+          "dengue": [
+            92,
+            28,
+            null
+          ],
+          "malaria": [
+            92,
+            34,
+            null
+          ],
+          "chikungunya": [
+            92,
+            4,
+            null
+          ],
+          "typhoid": [
+            91,
+            27,
+            null
+          ]
+        },
+        "ongole": {
+          "dengue": [
+            83,
+            28,
+            null
+          ],
+          "malaria": [
+            83,
+            34,
+            null
+          ],
+          "chikungunya": [
+            83,
+            4,
+            null
+          ],
+          "typhoid": [
+            55,
+            27,
+            null
+          ]
+        },
+        "khammam": {
+          "dengue": [
+            89,
+            33,
+            null
+          ],
+          "malaria": [
+            89,
+            24,
+            null
+          ],
+          "chikungunya": [
+            89,
+            4,
+            null
+          ],
+          "typhoid": [
+            92,
+            20,
+            null
+          ]
+        },
+        "karimnagar": {
+          "dengue": [
+            87,
+            33,
+            null
+          ],
+          "malaria": [
+            87,
+            24,
+            null
+          ],
+          "chikungunya": [
+            87,
+            4,
+            null
+          ],
+          "typhoid": [
+            70,
+            20,
+            null
+          ]
+        },
+        "ramagundam": {
+          "dengue": [
+            86,
+            33,
+            null
+          ],
+          "malaria": [
+            86,
+            24,
+            null
+          ],
+          "chikungunya": [
+            86,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            20,
+            null
+          ]
+        },
+        "kannur": {
+          "dengue": [
+            95,
+            100,
+            null
+          ],
+          "malaria": [
+            95,
+            30,
+            null
+          ],
+          "chikungunya": [
+            95,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            14,
+            null
+          ]
+        },
+        "kottayam": {
+          "dengue": [
+            97,
+            100,
+            null
+          ],
+          "malaria": [
+            97,
+            30,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            82,
+            14,
+            null
+          ]
+        },
+        "palakkad": {
+          "dengue": [
+            84,
+            100,
+            null
+          ],
+          "malaria": [
+            84,
+            30,
+            null
+          ],
+          "chikungunya": [
+            84,
+            4,
+            null
+          ],
+          "typhoid": [
+            44,
+            14,
+            null
+          ]
+        },
+        "alappuzha": {
+          "dengue": [
+            97,
+            100,
+            null
+          ],
+          "malaria": [
+            97,
+            30,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            78,
+            14,
+            null
+          ]
+        },
+        "sambalpur": {
+          "dengue": [
+            81,
+            19,
+            null
+          ],
+          "malaria": [
+            81,
+            47,
+            null
+          ],
+          "chikungunya": [
+            81,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            null
+          ]
+        },
+        "puri": {
+          "dengue": [
+            91,
+            19,
+            null
+          ],
+          "malaria": [
+            91,
+            47,
+            null
+          ],
+          "chikungunya": [
+            91,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            22,
+            null
+          ]
+        },
+        "hisar": {
+          "dengue": [
+            59,
+            26,
+            null
+          ],
+          "malaria": [
+            59,
+            32,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            60,
+            47,
+            null
+          ]
+        },
+        "karnal": {
+          "dengue": [
+            55,
+            26,
+            null
+          ],
+          "malaria": [
+            55,
+            32,
+            null
+          ],
+          "chikungunya": [
+            55,
+            4,
+            null
+          ],
+          "typhoid": [
+            49,
+            47,
+            null
+          ]
+        },
+        "ambala": {
+          "dengue": [
+            59,
+            26,
+            null
+          ],
+          "malaria": [
+            59,
+            32,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            48,
+            47,
+            null
+          ]
+        },
+        "bathinda": {
+          "dengue": [
+            42,
+            23,
+            null
+          ],
+          "malaria": [
+            42,
+            23,
+            null
+          ],
+          "chikungunya": [
+            42,
+            4,
+            null
+          ],
+          "typhoid": [
+            28,
+            45,
+            null
+          ]
+        },
+        "mohali": {
+          "dengue": [
+            59,
+            23,
+            null
+          ],
+          "malaria": [
+            59,
+            23,
+            null
+          ],
+          "chikungunya": [
+            59,
+            4,
+            null
+          ],
+          "typhoid": [
+            45,
+            45,
+            null
+          ]
+        },
+        "haridwar": {
+          "dengue": [
+            67,
+            23,
+            null
+          ],
+          "malaria": [
+            67,
+            33,
+            null
+          ],
+          "chikungunya": [
+            67,
+            4,
+            null
+          ],
+          "typhoid": [
+            53,
+            65,
+            null
+          ]
+        },
+        "haldwani": {
+          "dengue": [
+            72,
+            23,
+            null
+          ],
+          "malaria": [
+            72,
+            33,
+            null
+          ],
+          "chikungunya": [
+            72,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            65,
+            null
+          ]
+        },
+        "dibrugarh": {
+          "dengue": [
+            97,
+            28,
+            null
+          ],
+          "malaria": [
+            97,
+            46,
+            null
+          ],
+          "chikungunya": [
+            97,
+            4,
+            null
+          ],
+          "typhoid": [
+            56,
+            25,
+            null
+          ]
+        },
+        "deoghar": {
+          "dengue": [
+            75,
+            30,
+            null
+          ],
+          "malaria": [
+            75,
+            67,
+            null
+          ],
+          "chikungunya": [
+            75,
+            4,
+            null
+          ],
+          "typhoid": [
+            80,
+            51,
+            null
+          ]
+        },
+        "hazaribagh": {
+          "dengue": [
+            74,
+            30,
+            null
+          ],
+          "malaria": [
+            74,
+            67,
+            null
+          ],
+          "chikungunya": [
+            74,
+            4,
+            null
+          ],
+          "typhoid": [
+            99,
+            51,
+            null
+          ]
+        },
+        "raigarh": {
+          "dengue": [
+            79,
+            22,
+            null
+          ],
+          "malaria": [
+            79,
+            42,
+            null
+          ],
+          "chikungunya": [
+            79,
+            4,
+            null
+          ],
+          "typhoid": [
+            100,
+            36,
             null
           ]
         }
