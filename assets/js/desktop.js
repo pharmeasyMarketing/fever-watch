@@ -493,7 +493,7 @@
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' today.</p>' +
-      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div></section>';
+      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test</a></div></section>';
   }
 
   function methodSection() {

@@ -118,7 +118,11 @@ ACTIONS = [
     ("Fever? Follow our framework", "When to test, when to wait", "https://pharmeasy.in/blog/fever-high-temperature-causes-stages-treatments-and-red-flags/?src=feverwatch"),
     ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
 ]
-CTA_LABEL, CTA_HREF = "Book a fever panel test", "https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch"
+CTA_LABEL = "Book a fever panel test"
+# Per-city diagnostics deep-link for the CTA (same link in the SSR fallback and both JS flows; params locked
+# with marketing). config/diag_links.json maps {city_id -> clean local packages URL}; unmatched -> DIAG_DEFAULT.
+DIAG_SUFFIX = "?src=feverwatch&page=2#:~:text=Fever"
+DIAG_DEFAULT = "https://pharmeasy.in/diagnostics/health-checkup-packages"
 # Legal-provided disclaimers (verbatim except en-dash normalized to ASCII hyphen per the house style).
 MEDICAL_DISCLAIMER = ("Fever Watch is a risk indicator and not a diagnosis or representation of actual case "
                       "counts. It is for informational purposes only and should not constitute medical advice; "
@@ -202,6 +206,20 @@ def load_json(path: str) -> dict:
         return json.load(fh)
 
 
+# Per-city header "Medicines" nav target: config/med_links.json maps {city_id -> local online-medicine-order
+# page}; unmatched cities (and the national landing) use MED_DEFAULT. Same alias map as diag_links. The header
+# is baked per page (SSR) and reflects the page's city; it does not re-render on client-side city switch.
+MED_SUFFIX = "?src=feverwatch"
+MED_DEFAULT = "https://pharmeasy.in/online-medicine-order"
+try:
+    MED_LINKS = {k: v for k, v in load_json(os.path.join(ROOT, "config", "med_links.json")).items()
+                 if not k.startswith("_")}
+except Exception:
+    MED_LINKS = {}
+def _meds_href(city_id):
+    return (MED_LINKS.get(city_id, MED_DEFAULT) if city_id else MED_DEFAULT) + MED_SUFFIX
+
+
 def iso_date(iso) -> str:
     """IST (UTC+5:30) calendar date of the build, YYYY-MM-DD - the sitemap <lastmod>. Shifts the UTC
     generated_at +5:30 so the lastmod matches the India date shown on the page."""
@@ -248,11 +266,11 @@ def asset_version() -> str:
 
 # --- shared baked chrome -----------------------------------------------------
 
-def nav_html(rel: str) -> str:
+def nav_html(rel: str, meds_href: str) -> str:
     items = (
         '<div class="pe-nav-item"><button type="button" class="pe-nav-btn" aria-expanded="false" aria-haspopup="true">Healthcare <span class="pe-caret" aria-hidden="true">&#9662;</span></button>'
         '<div class="pe-nav-drop">'
-        '<a href="https://pharmeasy.in/online-medicine-order?src=homecard">Medicines</a>'
+        '<a href="' + meds_href + '">Medicines</a>'
         '<a href="https://pharmeasy.in/diagnostics?src=homecard">Lab tests</a>'
         '<a href="https://pharmeasy.in/online-doctor-consultation/">Doctor consult</a>'
         '<a href="https://pharmeasy.in/health-care?src=homecard">Healthcare products</a>'
@@ -1282,7 +1300,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
         for t, s, h in ACTIONS)
     do_sec = ('<section><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
-              '<p><a class="fw-cta" href="' + esc(CTA_HREF) + '">' + esc(CTA_LABEL) + '</a></p></section>')
+              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">' + esc(CTA_LABEL) + '</a></p></section>')
 
     other_sec = ('<section><h2>What is happening in other cities?</h2>'
                  '<p>Overall monsoon-fever risk today across ' + str(len(all_cities))
@@ -1395,11 +1413,12 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     # scores are recomputed (keyed on grid.generated_at). JSON-LD keeps the clean URL.
     ver = og_version(generated_at)
     og_meta = (og_url + "?v=" + ver) if (city and ver) else og_url
+    meds_href = _meds_href(city["id"] if city else None)
     return PAGE.format(
         lang=cfg.get("language", "en-IN"),
         head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
         jsonld=jsonld(cfg, generated_at, diseases, city, og_url, faq),
-        rel=rel, nav=nav_html(rel), ticker=ticker_html(grid["cities"], rel),
+        rel=rel, nav=nav_html(rel, meds_href), ticker=ticker_html(grid["cities"], rel),
         fallback=fallback, footer=footer_html(),
         fw=json.dumps(fw, ensure_ascii=False).replace("</", "<\\/"), av=av,
     )
@@ -1465,7 +1484,20 @@ def main() -> int:
     cities, diseases = grid["cities"], grid["diseases"]
     cells_by = {(r["city"], r["disease"]): r for r in grid["grid"]}
 
+    # Per-city diagnostics CTA target: stored on each city as diag_url so the "Book a fever panel test" CTA
+    # tracks the rendered city in the SSR fallback AND the JS flows (which swap city client-side without reload).
+    diag_links = {}
+    try:
+        diag_links = {k: v for k, v in load_json(os.path.join(ROOT, "config", "diag_links.json")).items()
+                      if not k.startswith("_")}
+    except Exception as _e:
+        print("WARN: config/diag_links.json not loaded (%s); CTAs use the default packages page." % _e, file=sys.stderr)
+    for _c in cities:
+        _c["diag_url"] = diag_links.get(_c["id"], DIAG_DEFAULT) + DIAG_SUFFIX
+
     print("SITE_ENV=" + env + "  base_url=" + cfg["base_url"])
+    print("Diagnostics CTA: %d/%d cities mapped to a local page (rest -> default)."
+          % (sum(1 for _c in cities if _c["id"] in diag_links), len(cities)))
     print("Cities: %d  diseases: %d  grid cells: %d" % (len(cities), len(diseases), len(grid["grid"])))
 
     # fresh output
@@ -1478,7 +1510,9 @@ def main() -> int:
     os.makedirs(os.path.join(DIST, "assets", "css"), exist_ok=True)
     shutil.copy(os.path.join(ROOT, "prototypes", "tokens.css"), os.path.join(DIST, "assets", "css", "tokens.css"))
     os.makedirs(os.path.join(DIST, "data"), exist_ok=True)
-    shutil.copy(grid_path, os.path.join(DIST, "data", "grid.json"))
+    # Re-serialize (not a raw copy) so the per-city diag_url enrichment above ships in the fetched grid.
+    with open(os.path.join(DIST, "data", "grid.json"), "w", encoding="utf-8") as _gf:
+        json.dump(grid, _gf, ensure_ascii=False, separators=(",", ":"))
     arch_path = os.path.join(ROOT, "data", "archive", "trend_series.json")
     archive = None
     if os.path.exists(arch_path):

@@ -451,7 +451,7 @@
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<div class="card"><h2 class="sectiontitle">What you can do</h2><p class="sectionsub">Quick, practical follow-through for ' + c.name + '.</p>' + cards +
-      '<a class="ctabig" style="background:var(--pe-green)" href="https://pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch">Book a fever panel test</a></div>';
+      '<a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test</a></div>';
   }
 
   function leaderboardCard(c) {
