@@ -178,3 +178,20 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # Reliable, cron-lag-free PRODUCTION trigger. The moment the refresh job has committed fresh data,
+  # explicitly dispatch the "Deploy Fever Watch to CyberPanel (production)" workflow. This REPLACES that
+  # workflow's own scheduled cron (GitHub delayed it ~4h -> landed ~10:00 IST) and its flaky workflow_run
+  # chain, so the VPS is updated by ~05:30 IST. A workflow_dispatch sent with GITHUB_TOKEN is exempt from the
+  # recursion guard, so this genuinely starts the run. Runs in parallel with the Pages deploy above (both
+  # need: refresh) and is independent of it - a failed Pages publish must not block the VPS (source of truth).
+  dispatch-production:
+    needs: refresh
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write                 # gh workflow run -> POST /actions/workflows/.../dispatches
+    steps:
+      - name: Trigger the CyberPanel (production) VPS deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-cyberpanel.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"

@@ -8,9 +8,11 @@ name: Deploy Fever Watch to CyberPanel (production)
 # (parity_check.js contract holds).
 #
 # Trigger:
-#   - automatically after each successful "Daily refresh + deploy (Fever Watch)" run
-#     (so a fresh grid.json -> a fresh CyberPanel deploy, with no manual upload), and
-#   - manually from the Actions tab (workflow_dispatch).
+#   - automatically by daily.yml's "dispatch-production" job, the moment the fresh grid.json is
+#     committed (~05:15 IST) -> the VPS is updated by ~05:30 IST, and
+#   - manually from the Actions tab (workflow_dispatch), e.g. to recover from a failed run.
+# The old 00:30-UTC schedule was removed: GitHub delayed that cron ~4h, so it landed ~10:00 IST.
+# The daily.yml chain is cron-lag-free. The workflow_run trigger was also removed - it never fired.
 #
 # One-time repo secrets (Settings > Secrets and variables > Actions):
 #   FW_PROD_BASE_URL  the PUBLIC user-facing URL as seen behind the pharmeasy.in reverse
@@ -28,16 +30,9 @@ name: Deploy Fever Watch to CyberPanel (production)
 # No SSH on the host? See DEPLOY-CYBERPANEL.md for the drop-in FTP/FTPS fallback step.
 
 on:
+  # Fired by daily.yml's "dispatch-production" job (a workflow_dispatch sent with GITHUB_TOKEN, which is
+  # exempt from the recursion guard) as soon as the fresh data is committed, plus manual runs from the tab.
   workflow_dispatch:
-  schedule:
-    # 00:30 UTC = 06:00 IST. Reliable daily trigger: daily.yml (the data refresh) consistently finishes
-    # by ~00:00 UTC, so by 00:30 the fresh grid.json is committed and this deploy picks it up on checkout.
-    # Kept alongside workflow_run below as a dependable backstop, because the workflow_run chain off
-    # daily.yml proved unreliable (it never fired). GitHub delays cron ~1h, so it lands ~06:30-07:30 IST.
-    - cron: "30 0 * * *"
-  workflow_run:
-    workflows: ["Daily refresh + deploy (Fever Watch)"]
-    types: [completed]
 
 concurrency:
   group: cyberpanel-deploy
@@ -45,8 +40,6 @@ concurrency:
 
 jobs:
   deploy:
-    # Manual + scheduled runs always proceed; the workflow_run path runs only when the daily refresh succeeded.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -89,12 +82,52 @@ jobs:
           grep -q 'index,follow' dist/fever-watch/indore/index.html || { echo "::error::prod robots meta missing - is SITE_ENV=production?"; exit 1; }
           echo "Pages: $(find dist/fever-watch -mindepth 2 -name index.html | wc -l) cities + landing"
 
-      - name: Deploy to CyberPanel via rsync over SSH
+      # Deploy to the VPS with up to 2 automatic retries (3 attempts total). The rsync/SSH step is the only
+      # flaky part - a transient "ssh: connect ... Operation timed out" hits when the VPS or its firewall
+      # briefly drops the runner. Attempts 1-2 use continue-on-error so a failure falls through to the next
+      # (after an escalating pause); attempt 3 is unguarded, so if all three fail the job still fails and you
+      # are notified. -a archive, -z compress, -r recurse, --delete keeps the remote an EXACT mirror (safe:
+      # the dedicated fever-watch/ folder). Trailing slash copies the CONTENTS of dist/fever-watch/.
+      - name: Deploy to CyberPanel via rsync over SSH (attempt 1)
+        id: rsync1
+        continue-on-error: true
         uses: burnett01/rsync-deployments@7.0.2
         with:
-          # -a archive, -z compress, -r recurse, --delete keeps the remote an EXACT mirror
-          # (safe: public_html/fever-watch/ is dedicated to this site). Trailing slash on
-          # path copies the CONTENTS of dist/fever-watch/ into remote_path.
+          switches: -avzr --delete --exclude='.git'
+          path: dist/fever-watch/
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+          remote_port: ${{ secrets.DEPLOY_PORT || '22' }}
+
+      - name: Pause before retry 1
+        if: steps.rsync1.outcome == 'failure'
+        run: echo "rsync attempt 1 failed; waiting 30s before retry..."; sleep 30
+
+      - name: Deploy to CyberPanel via rsync over SSH (attempt 2)
+        id: rsync2
+        if: steps.rsync1.outcome == 'failure'
+        continue-on-error: true
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete --exclude='.git'
+          path: dist/fever-watch/
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+          remote_port: ${{ secrets.DEPLOY_PORT || '22' }}
+
+      - name: Pause before retry 2
+        if: steps.rsync1.outcome == 'failure' && steps.rsync2.outcome == 'failure'
+        run: echo "rsync attempt 2 failed; waiting 90s before final retry..."; sleep 90
+
+      - name: Deploy to CyberPanel via rsync over SSH (attempt 3, final)
+        id: rsync3
+        if: steps.rsync1.outcome == 'failure' && steps.rsync2.outcome == 'failure'
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
           switches: -avzr --delete --exclude='.git'
           path: dist/fever-watch/
           remote_path: ${{ secrets.DEPLOY_PATH }}
