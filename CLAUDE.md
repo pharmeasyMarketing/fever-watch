@@ -53,9 +53,11 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   it was the offline validation truth only.
 - **Hosting:** PRODUCTION deploys to a **Hostinger VPS (CyberPanel / OpenLiteSpeed)** via rsync-over-SSH from
   `.github/workflows/deploy-cyberpanel.yml` (2026-07-02; build stays in Actions with `SITE_ENV=production`, the VPS
-  serves the pre-rendered static files, no Python/PHP). It runs on a daily **`schedule` (00:30 UTC / 06:00 IST)** as the primary, dependable trigger, plus manual dispatch and
-  a `workflow_run` fast-path off `daily.yml` (that `workflow_run` chain proved unreliable and NEVER fired, so the
-  schedule carries the daily deploy; added 2026-07-03). **GitHub Pages (github.io) is now the STAGING origin** (`deploy.yml` on push + `daily.yml`
+  serves the pre-rendered static files, no Python/PHP). It is triggered by **daily.yml's `dispatch-production` job** (an
+  explicit `gh workflow run` fired the moment the fresh grid is committed, cron-lag-free), so the VPS updates by **~05:30
+  IST** (2026-07-07; this replaced the 00:30-UTC schedule, which GitHub delayed a consistent ~4h to ~10:00 IST, and the
+  flaky `workflow_run` chain that never fired). Manual `workflow_dispatch` is the recovery path; the rsync step
+  auto-retries up to 2x on a transient SSH timeout. **GitHub Pages (github.io) is now the STAGING origin** (`deploy.yml` on push + `daily.yml`
   daily; `daily.yml`'s Pages `deploy` job is `continue-on-error` so a Pages hiccup cannot block the VPS deploy).
   Public URL + `base_url` are unchanged: `https://pharmeasy.in/fever-watch/` (a subpath on the pharmeasy.in apex
   served to the VPS origin via the edge reverse-proxy, mirroring Mosquito Watch; the edge rule is PENDING, another

@@ -5,7 +5,26 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-06, PER-CITY LOCALIZED OUTBOUND LINKS - diagnostics CTA + Medicines nav - committed + pushed):**
+> **NEWEST (2026-07-07, DEPLOY TIMING FIX + RSYNC AUTO-RETRIES - committed + pushed):** The CyberPanel (production)
+> deploy now fires the MOMENT `daily.yml` commits the fresh grid, via a new **`dispatch-production` job** in daily.yml
+> that runs `gh workflow run deploy-cyberpanel.yml` (a workflow_dispatch sent with GITHUB_TOKEN - exempt from GitHub's
+> anti-recursion guard, so it genuinely starts the run). This is the RELIABLE, cron-lag-free replacement for
+> deploy-cyberpanel.yml's own `schedule` (00:30 UTC), which GitHub was delaying a consistent **~4h** (firing ~04:30 UTC =
+> **~10:00 IST**, not the 06:00 the cron implies) - so the VPS now updates by **~05:30 IST**. The old `schedule` cron AND
+> the never-firing `workflow_run` trigger were REMOVED from deploy-cyberpanel.yml; its triggers are now just
+> `workflow_dispatch` (used by both the daily.yml chain and manual recovery). Moving the cron alone could NOT beat the
+> deadline (the deploy must run AFTER daily.yml's ~23:45-UTC data commit, and +4h lag lands ~09:24 IST), so chaining is
+> the only reliable fix. **Retries:** the single rsync/SSH step became **3 attempts** (attempts 1-2 `continue-on-error`
+> with a 30s then 90s pause; attempt 3 unguarded, so the job still fails + notifies if all three time out) - this
+> directly absorbs the transient `ssh: connect ... Operation timed out` that broke the 2026-07-07 morning deploy (the
+> build was fine; a manual re-run then succeeded, confirming it was transient). Trade-off: the deploy's only AUTOMATIC
+> trigger is now the daily.yml chain (+ manual dispatch); no cron backstop, but the chain is deterministic and the
+> retries + manual recovery cover the gaps. First live test: the next daily run (~05:30 IST) - watch for a
+> `dispatch-production` job in daily.yml, then a workflow_dispatch-triggered CyberPanel deploy right after. YAML
+> validated (both files parse; step wiring confirmed); the live production dispatch can only be proven by that run.
+> burnett01/rsync-deployments stays on v7.0.2 (deprecation warning noted; v8 + host-key pinning remain open harden items).
+>
+> **(2026-07-06, PER-CITY LOCALIZED OUTBOUND LINKS - diagnostics CTA + Medicines nav - committed + pushed):**
 > Two outbound PharmEasy links now resolve to the visitor's CITY page (local-SEO authority + relevance), each with an
 > honest generic fallback for unmatched cities:
 > 1. **"Book a fever panel test" CTA** (the in-content `What you can do` button; SSR fallback + both JS flows) ->
@@ -55,7 +74,9 @@
 > actual top disease + its live number) - the piece that most directly stops Google discarding the description and
 > stitching its own snippet.
 >
-> **(2026-07-03, VPS DEPLOY TRIGGER FIX - `workflow_run` NEVER FIRED, ADDED A DIRECT DAILY CRON):** The
+> **(2026-07-03, VPS DEPLOY TRIGGER FIX - `workflow_run` NEVER FIRED, ADDED A DIRECT DAILY CRON):** [SUPERSEDED
+> 2026-07-07: this schedule cron was REMOVED - GitHub delayed it ~4h to ~10:00 IST; the deploy now chains off
+> daily.yml's `dispatch-production` job (~05:30 IST). See the newest banner.] The
 > `workflow_run` chain (CyberPanel deploy auto-runs after `daily.yml` completes) turned out to **never fire even
 > once**. The morning after go-live, `daily.yml` ran + succeeded (23:35->23:44 UTC, both jobs green) and refreshed the
 > data, but no CyberPanel deploy was triggered - every run to date was a manual `workflow_dispatch`. Config was correct
