@@ -774,7 +774,9 @@
 >   `.dashnote` CSS in `tokens.css`. The footer lab attribution updated to "PharmEasy Labs and its Partner
 >   Affiliates"; the legal "0-100" en-dash normalized to an ASCII hyphen per house style.
 > - **CTA landing pages wired:** "Book a fever panel test" -> `pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch`;
->   "Book a consult" / "Not sure? Talk to a doctor" -> `pharmeasy.in/doctor-consultation/landing?src=feverwatch`.
+>   "Book a consult" / "Not sure? Talk to a doctor" -> `pharmeasy.in/doctor-consultation/landing?src=feverwatch`. [UPDATED
+>   2026-07-07: the consult CTA now points to `pharmeasy.in/online-doctor-consultation/?src=feverwatch`; the "Book a
+>   fever panel test" CTA is now per-city - see the 2026-07-06 banner.]
 >   The big `.ctabig` buttons are now `<a>` links (CSS set to render as block / inline-block). SSR `CTA_HREF` +
 >   new `CONSULT_HREF` in `build_site.py`; both flows' `ACTIONS` carry `href`; `do_sec`/`actionsCard`/`doSection`.
 > - **Copy:** dropped ", more coming soon." everywhere -> just "Available in select cities." (SSR + both flows + prototypes).

@@ -47,7 +47,7 @@
     { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut mosquito sites and bites", href: "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch" },
     { ic: IC_VACC, t: "Vaccination: does it work?", s: "What helps, what does not", href: "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch" },
     { ic: IC_THERMO, t: "Fever? Follow our framework", s: "When to test, when to wait", href: "https://pharmeasy.in/blog/fever-high-temperature-causes-stages-treatments-and-red-flags/?src=feverwatch" },
-    { ic: IC_DOC, t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch" }
+    { ic: IC_DOC, t: "Not sure? Talk to a doctor", s: "Online consult on PharmEasy", href: "https://pharmeasy.in/online-doctor-consultation/?src=feverwatch" }
   ];
   var DASHNOTE = "This is a daily updated dashboard where we compute a monsoon-risk score (0-100) based on multiple data inputs, including weather data, Google search trends, and aggregate data from PharmEasy Labs and its Partner Affiliates.";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

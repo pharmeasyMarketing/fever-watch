@@ -111,7 +111,7 @@ METHOD_HTML = (
     "<li>IDSP Weekly Outbreak Reports, MoHFW (official surveillance).</li></ul>"
 )
 
-CONSULT_HREF = "https://pharmeasy.in/doctor-consultation/landing?src=feverwatch"
+CONSULT_HREF = "https://pharmeasy.in/online-doctor-consultation/?src=feverwatch"
 ACTIONS = [
     ("Monsoon precautions", "Cut mosquito sites and bites", "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch"),
     ("Vaccination: does it work?", "What helps, what does not", "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch"),
