@@ -246,8 +246,8 @@
       '<div class="shell"><aside class="toc"><h2>Quick Links</h2>' +
         '<a class="cur" href="#s-week">Overall fever risk</a><a href="#s-why">Why this score?</a><a href="#s-weather">Weather conditions today</a><a href="#s-do">What you can do</a><a href="#s-trend">This year vs last year</a><a href="#s-other">What is happening in other cities?</a><a href="#s-faq">Common questions</a>' +
       '</aside>' + weekSectionD(c, b) + whySection(c) + '<div class="main">' + weatherSection(c) +
-        doSection(c) +
-        '<section id="s-trend" class="fwtrend-host"></section>' + methodSection() + otherSection(c) +
+        doSection(c) + testsSection(c) +
+        '<section id="s-trend" class="fwtrend-host"></section>' + seasonSection(c) + methodSection() + otherSection(c) +
         faqSection() + readsSection() + '</div></div>';
     wireLeaderboard();
     mountTrend(c);
@@ -391,7 +391,7 @@
         '<span class="wxsep"></span><b>' + esc(x[2]) + '</b></span></div><div class="wxsub">' + esc(x[3]) + '</div></div>';
     }).join("");
     return '<div class="card wxsec"><h2 class="sectiontitle">Weather conditions today</h2>' +
-      '<p class="sectionsub">What the weather means for fever risk today.</p>' +
+      '<p class="sectionsub">Conditions as of ' + fmtDate(DATA.generated_at) + ' and what they mean for fever risk.</p>' +
       '<div class="wxgrid">' + cells + '</div></div>';
   }
 
@@ -493,7 +493,7 @@
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' today.</p>' +
-      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test</a></div></section>';
+      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test in ' + esc(c.name) + '</a></div></section>';
   }
 
   function methodSection() {
@@ -512,7 +512,76 @@
     return '<section id="s-other"><div class="card"><h2 class="sechead">What is happening in other cities?</h2><p class="secsub">' + label + ' risk leaderboard today. Pick a disease to re-rank.</p>' +
       '<div class="lbtabs">' + tabs + '</div>' +
       '<input class="lbsearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" />' +
-      '<div id="lbcontainer">' + leaderboardInner(c) + '</div></div></section>';
+      '<div id="lbcontainer">' + leaderboardInner(c) + '</div>' + nearbyHtml(c) + '</div></section>';
+  }
+
+  // --- Phase-0 SEO blocks: fever tests / season insight / nearby cities ---------------------------
+  // Facts must stay consistent with build_site.py (_tests_sec/_season_bits/_nearest_cities) and
+  // mobile.js: same test names, same +/-8 season thresholds, same 0.00872664626 distance constant
+  // and id tie-break. Edit all three together.
+  // GATED (2026-07-08): tests section held back pending the medical review; flip with build_site.py
+  // FW_TESTS_ENABLED and mobile.js FW_TESTS_ON, re-add '<a href="#s-tests">Fever tests</a>' after
+  // "What you can do" in BOTH TOC twins (render() above + build_site._desktop_pre, byte-identical)
+  // and "s-tests" after "s-do" in spyScroll ids.
+  var FW_TESTS_ON = false;
+  var FW_TESTS = [
+    ["🦟", "Dengue", "NS1 antigen (first few days) or IgM antibody test", "A CBC alongside tracks platelets, which dengue can lower."],
+    ["🦟", "Malaria", "Peripheral blood smear or a rapid antigen test", "Identifies the parasite and its species."],
+    ["🦟", "Chikungunya", "IgM antibody test; RT-PCR in the first week", "Lingering joint pain is its signature."],
+    ["💧", "Typhoid", "Blood culture (definitive); Widal is the common screen", "From contaminated food or water, so it builds slowly."]
+  ];
+  function testBandLine(nm, band) {
+    if (band === "HIGH") return "With " + nm + " elevated right now, do not sit on a fever - if it lasts past 2 days, a test plus a doctor visit is the sensible move.";
+    if (band === "MODERATE") return "At MODERATE, the practical rule of thumb: a fever that lasts more than 2 days is worth testing.";
+    return "Even at lower risk, a fever that drags past 2 to 3 days or feels severe deserves a test and a doctor's opinion.";
+  }
+  function testsSection(c) {
+    if (!FW_TESTS_ON) return "";
+    var b = c.blend;
+    var rows = FW_TESTS.map(function (t) {
+      return '<div class="trow"><span class="tname">' + t[0] + ' ' + esc(t[1]) + '</span><span class="tinfo"><b>' + esc(t[2]) + '</b><span>' + esc(t[3]) + '</span></span></div>';
+    }).join("");
+    return '<section id="s-tests"><div class="card fwtests"><h2 class="sechead">Fever tests: which test confirms what?</h2>' +
+      '<p class="secsub">As of ' + fmtDate(DATA.generated_at) + ', ' + esc(c.name) + "'s overall risk is " + b.score + '/100 (' + b.band + '). If a fever shows up and sticks around, testing is how it gets identified - here is what doctors typically order.</p>' +
+      rows +
+      '<p class="bandline">' + testBandLine(esc(c.name), b.band) + '</p>' +
+      '<a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test in ' + esc(c.name) + '</a>' +
+      '<p class="fwdisc">Fever Watch is a risk indicator, not a diagnosis. Which test fits, and what a result means, is a doctor\'s call.</p></div></section>';
+  }
+  function seasonBits(c) {
+    var ac = DATA.archive && DATA.archive.cities && DATA.archive.cities[c.id];
+    var ov = (ac && ac.overall) || {};
+    var ly = ov.ly || [], ty = ov.ty || [];
+    if (ly.length !== 22 || !ty.length) return null;
+    var i = Math.min(ty.length - 1, 21);
+    var tyNow = ty[i], lySame = ly[i], diff = tyNow - lySame;
+    var phrase = diff >= 8 ? "running above" : (diff <= -8 ? "running below" : "about level with");
+    var pk = 0; for (var j = 0; j < 22; j++) { if (ly[j] > ly[pk]) pk = j; }
+    var lyYear = new Date(new Date(DATA.generated_at).getTime() + 19800000).getUTCFullYear() - 1;
+    var pd = new Date(Date.UTC(lyYear, 5, 1) + pk * 7 * 86400000);
+    var peak = pd.getUTCDate() + " " + MONTHS[pd.getUTCMonth()] + " " + pd.getUTCFullYear();
+    return { ty: tyNow, ly: lySame, phrase: phrase, peak: peak };
+  }
+  function seasonSection(c) {
+    var s = seasonBits(c); if (!s) return "";
+    return '<section class="fwseason-sec"><div class="card fwseason"><h2 class="sechead">How this monsoon compares</h2>' +
+      '<p class="seasonp">As of ' + fmtDate(DATA.generated_at) + ', ' + esc(c.name) + "'s overall fever signal is <b>" + s.ty + '/100</b> - ' + s.phrase + ' the same week last monsoon (' + s.ly + "/100). Last season's high point came in the week of " + s.peak + '. Rain drives this number, so the picture shifts as the season moves - we refresh it daily.</p></div></section>';
+  }
+  function nearbyHtml(c) {
+    if (!DATA.cities || DATA.cities.length < 2) return "";
+    var la1 = c.lat || 0, lo1 = c.lon || 0, out = [];
+    for (var i = 0; i < DATA.cities.length; i++) {
+      var o = DATA.cities[i]; if (o.id === c.id) continue;
+      var la2 = o.lat || 0, lo2 = o.lon || 0;
+      var dx = (lo2 - lo1) * Math.cos((la1 + la2) * 0.00872664626), dy = la2 - la1;
+      out.push([dx * dx + dy * dy, o.id, o]);
+    }
+    out.sort(function (a, b) { return a[0] - b[0] || (a[1] < b[1] ? -1 : 1); });
+    var chips = out.slice(0, 5).map(function (t) {
+      var o = t[2];
+      return '<a class="fwnear-chip" href="' + cityHref(o.id) + '" data-act="pickrow" data-id="' + o.id + '"><b>' + esc(o.name) + '</b><span>' + o.blend.score + '/100</span></a>';
+    }).join("");
+    return '<div class="fwnear"><div class="fwnear-t">Nearby cities right now</div><div class="fwnear-row">' + chips + '</div></div>';
   }
 
   function leaderboardInner(c) {

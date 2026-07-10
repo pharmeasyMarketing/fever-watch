@@ -451,8 +451,19 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "inLanguage": lang, "isPartOf": {"@id": base + "#website"},
             "about": [d["label"] for d in diseases] + ["monsoon fever risk in India"],
             "primaryImageOfPage": og_url, "dateModified": generated_at,
+            "breadcrumb": {"@id": url + "#breadcrumb"},
             "reviewedBy": [{"@type": "Person", "@id": r["url"] + "#person", "name": r["name"], "url": r["url"],
                             "jobTitle": "Doctor", "worksFor": {"@id": base + "#organization"}} for r in REVIEWERS],
+        })
+        # Breadcrumb trail (PharmEasy > Fever Watch > {City}) - a GENERIC navigation entity, not medical
+        # schema, so it stays inside the no-medical-JSON-LD guardrail.
+        graph.append({
+            "@type": "BreadcrumbList", "@id": url + "#breadcrumb",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": pub["name"], "item": pub["url"] + "/"},
+                {"@type": "ListItem", "position": 2, "name": cfg["site_name"], "item": base},
+                {"@type": "ListItem", "position": 3, "name": city["name"], "item": url},
+            ],
         })
         graph.append({
             "@type": "Dataset", "@id": url + "#dataset",
@@ -465,7 +476,24 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "license": "https://creativecommons.org/publicdomain/zero/1.0/",
             "spatialCoverage": {"@type": "Place", "name": city["name"] + ", India",
                                 "geo": {"@type": "GeoCoordinates", "latitude": city["lat"], "longitude": city["lon"]}},
-            "variableMeasured": {"@type": "PropertyValue", "name": "monsoon_fever_risk_score", "minValue": 0, "maxValue": 100},
+            # temporalCoverage: this monsoon season, open-ended (ISO 8601 interval; ".." = ongoing).
+            "temporalCoverage": iso_date(generated_at)[:4] + "-06-01/..",
+            "measurementTechnique": "Confirmation-weighted blend of weather suitability (NOAA CPC rainfall; "
+                                    "NASA POWER temperature and humidity), Google search interest and PharmEasy "
+                                    "lab test positivity, normalized 0 to 100 per disease and recomputed daily. "
+                                    "Cities without lab confirmation are capped below the HIGH band.",
+            "isBasedOn": [
+                {"@type": "CreativeWork", "name": "NOAA CPC Global Unified Gauge-Based Analysis of Daily Precipitation",
+                 "url": "https://psl.noaa.gov/data/gridded/data.cpc.globalprecip.html"},
+                {"@type": "CreativeWork", "name": "NASA POWER meteorology", "url": "https://power.larc.nasa.gov/"},
+                {"@type": "CreativeWork", "name": "Google Trends search interest (via SerpApi)", "url": "https://trends.google.com/"},
+                {"@type": "CreativeWork", "name": "PharmEasy lab test positivity (aggregated, de-identified)",
+                 "url": "https://pharmeasy.in/diagnostics"},
+            ],
+            "variableMeasured": [{"@type": "PropertyValue", "name": "overall_fever_risk_score",
+                                  "minValue": 0, "maxValue": 100}]
+                               + [{"@type": "PropertyValue", "name": d["id"] + "_risk_score",
+                                   "minValue": 0, "maxValue": 100} for d in diseases],
             "distribution": {"@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": base + "data/grid.json"},
             "dateModified": generated_at,
         })
@@ -480,6 +508,13 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "creator": {"@id": base + "#organization"}, "publisher": {"@id": base + "#organization"},
             "reviewedBy": [{"@type": "Person", "@id": r["url"] + "#person", "name": r["name"], "url": r["url"],
                             "jobTitle": "Doctor", "worksFor": {"@id": base + "#organization"}} for r in REVIEWERS],
+        })
+        graph.append({
+            "@type": "BreadcrumbList", "@id": base + "#breadcrumb",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": pub["name"], "item": pub["url"] + "/"},
+                {"@type": "ListItem", "position": 2, "name": cfg["site_name"], "item": base},
+            ],
         })
         graph.append(faqpage)
     body = json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False, indent=2).replace("</", "<\\/")
@@ -780,11 +815,12 @@ def _risk_card(city: dict, diseases: list, cells_by: dict, periods: list) -> str
             '<button class="sharebtn" data-act="openShare">⤴ Share</button></div></div>')
 
 
-def _weather_card(city: dict) -> str:
+def _weather_card(city: dict, date_str: str) -> str:
     """Weather conditions today: the live inputs that drive the mosquito weather sub-score -
     temperature (near the ~29C optimum, the dominant term), 14-day lagged rainfall (standing water) and
     humidity, each as an outline icon + "Label . value" + a short line. Mirrors mobile.js weatherCard().
-    Above the fold, so byte-identical to the JS twin."""
+    Above the fold, so byte-identical to the JS twin. The sub is DATED (AI-citability): a quotable,
+    dated weather read the daily rebuild re-stamps."""
     w = city.get("weather") or {}
     temp, r14 = w.get("temp_mean_c"), w.get("rain_14d_mm")
     hum = w.get("humidity_pct")
@@ -799,7 +835,7 @@ def _weather_card(city: dict) -> str:
                   + '<span class="wxsep"></span><b>' + esc(val) + '</b></span></div>'
                   '<div class="wxsub">' + esc(sub) + '</div></div>')
     return ('<div class="card wxsec"><h2 class="sectiontitle">Weather conditions today</h2>'
-            '<p class="sectionsub">What the weather means for fever risk today.</p>'
+            '<p class="sectionsub">Conditions as of ' + date_str + ' and what they mean for fever risk.</p>'
             '<div class="wxgrid">' + cells + '</div></div>')
 
 
@@ -811,7 +847,7 @@ def _mobile_pre(city: dict, diseases: list, cells_by: dict, date_str: str, perio
             '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
             '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
             '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>' + REVIEWBY
-            + '<div class="wrap">' + _risk_card(city, diseases, cells_by, periods) + _weather_card(city) + '</div></div>')
+            + '<div class="wrap">' + _risk_card(city, diseases, cells_by, periods) + _weather_card(city, date_str) + '</div></div>')
 
 
 SIGCOL = {"weather": [21, 172, 165], "trends": [124, 108, 214], "positivity": [54, 97, 176]}
@@ -1266,6 +1302,110 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, a
             '</div></div></section>')
 
 
+# --- Phase-0 SEO blocks: fever tests / season insight / nearby cities ----------------------------
+# SSR versions here; the interactive flows render their own versions in mobile.js (testCard/seasonCard/
+# nearbyHtml) and desktop.js (testsSection/seasonSection/nearbyHtml). The FACTS must stay consistent
+# across all three: same test names, same +/-8 season thresholds, same distance math with the same
+# 0.00872664626 (pi/360... avg-lat radians) constant and id tie-break. Edit all three together.
+# GATE (2026-07-08): the fever-tests block is BUILT but held back pending the medical/counsel review
+# planned for next week. To ship it, flip this to True TOGETHER with FW_TESTS_ON in mobile.js and
+# desktop.js, re-add '<a href="#s-tests">Fever tests</a>' after "What you can do" in the _desktop_pre
+# TOC AND desktop.js render() (byte-identical twins), and put "s-tests" back in desktop.js spyScroll ids.
+FW_TESTS_ENABLED = False
+FW_TESTS = [
+    ("🦟", "Dengue", "NS1 antigen (first few days) or IgM antibody test",
+     "A CBC alongside tracks platelets, which dengue can lower."),
+    ("🦟", "Malaria", "Peripheral blood smear or a rapid antigen test",
+     "Identifies the parasite and its species."),
+    ("🦟", "Chikungunya", "IgM antibody test; RT-PCR in the first week",
+     "Lingering joint pain is its signature."),
+    ("💧", "Typhoid", "Blood culture (definitive); Widal is the common screen",
+     "From contaminated food or water, so it builds slowly."),
+]
+
+
+def _tests_band_line(nm: str, band: str) -> str:
+    if band == "HIGH":
+        return ("With " + nm + " elevated right now, do not sit on a fever - if it lasts past 2 days, "
+                "a test plus a doctor visit is the sensible move.")
+    if band == "MODERATE":
+        return "At MODERATE, the practical rule of thumb: a fever that lasts more than 2 days is worth testing."
+    return ("Even at lower risk, a fever that drags past 2 to 3 days or feels severe deserves a test "
+            "and a doctor's opinion.")
+
+
+def _tests_sec(city: dict, generated_at: str) -> str:
+    """Crawler-readable fever-tests section (which test confirms which fever + a band-tied nudge).
+    Careful copy: informational, doctor-deferring, risk-indicator framing - not diagnostic advice."""
+    b = city["blend"]; nm = city["name"]
+    lead = ("As of " + _fmt_date_js(generated_at) + ", " + nm + "'s overall risk is " + str(b["score"])
+            + "/100 (" + b["band"] + "). If a fever shows up and sticks around, testing is how it gets "
+            "identified - here is what doctors typically order.")
+    rows = "".join('<li><strong>' + esc(e + " " + t) + '</strong> - ' + esc(w) + '. <em>' + esc(n) + '</em></li>'
+                   for e, t, w, n in FW_TESTS)
+    return ('<section><h2>Fever tests: which test confirms what?</h2>'
+            '<p>' + esc(lead) + '</p><ul>' + rows + '</ul>'
+            '<p>' + esc(_tests_band_line(nm, b["band"])) + '</p>'
+            '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX))
+            + '">Book a fever panel test in ' + esc(nm) + '</a></p>'
+            '<p class="microcopy">Fever Watch is a risk indicator, not a diagnosis. Which test fits, '
+            'and what a result means, is a doctor\'s call.</p></section>')
+
+
+def _season_bits(archive_city: dict | None, generated_at: str) -> dict | None:
+    """Season-comparison facts from the archive (overall ly vs ty). None when the slice is absent or
+    malformed - the section is then omitted, honest like the trend fallback ladder. Number-for-number
+    twin of the JS seasonBits(): same index, same first-max peak, same year derivation (IST year - 1)."""
+    ov = (archive_city or {}).get("overall") or {}
+    ly, ty = ov.get("ly") or [], ov.get("ty") or []
+    if len(ly) != TREND_NW or not ty:
+        return None
+    i = min(len(ty) - 1, TREND_NW - 1)
+    ty_now, ly_same = ty[i], ly[i]
+    diff = ty_now - ly_same
+    phrase = "running above" if diff >= 8 else ("running below" if diff <= -8 else "about level with")
+    pk = 0
+    for j in range(TREND_NW):
+        if ly[j] > ly[pk]:
+            pk = j
+    try:
+        d0 = datetime.datetime.fromisoformat((generated_at or "").replace("Z", "+00:00")) + datetime.timedelta(hours=5, minutes=30)
+        ly_year = d0.year - 1
+    except Exception:
+        ly_year = 2025
+    pdate = datetime.date(ly_year, 6, 1) + datetime.timedelta(days=7 * pk)
+    peak = str(pdate.day) + " " + _MONTHS[pdate.month - 1] + " " + str(pdate.year)
+    return {"ty": ty_now, "ly": ly_same, "phrase": phrase, "peak": peak}
+
+
+def _season_sec(city: dict, archive_city: dict | None, generated_at: str) -> str:
+    s = _season_bits(archive_city, generated_at)
+    if not s:
+        return ""
+    nm = city["name"]
+    return ('<section><h2>How this monsoon compares for ' + esc(nm) + '</h2>'
+            '<p>As of ' + esc(_fmt_date_js(generated_at)) + ', ' + esc(nm) + '\'s overall fever signal is '
+            + str(s["ty"]) + '/100 - ' + s["phrase"] + ' the same week last monsoon (' + str(s["ly"])
+            + '/100). Last season\'s high point came in the week of ' + esc(s["peak"]) + '. Rain drives '
+            'this number, so the picture shifts as the season moves - we refresh it daily.</p></section>')
+
+
+def _nearest_cities(city: dict, all_cities: list, n: int = 5) -> list:
+    """Nearest cities by equirectangular distance (dx scaled by cos of the average latitude). Tie-break
+    by id so Python and JS order identically."""
+    la1, lo1 = float(city.get("lat") or 0), float(city.get("lon") or 0)
+    out = []
+    for c in all_cities:
+        if c["id"] == city["id"]:
+            continue
+        la2, lo2 = float(c.get("lat") or 0), float(c.get("lon") or 0)
+        dx = (lo2 - lo1) * math.cos((la1 + la2) * 0.00872664626)
+        dy = la2 - la1
+        out.append((dx * dx + dy * dy, c["id"], c))
+    out.sort(key=lambda t: (t[0], t[1]))
+    return [t[2] for t in out[:n]]
+
+
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                    generated_at: str, disclaimer: str, rel: str, faq: list, periods: list,
                    archive_city: dict | None = None) -> str:
@@ -1300,18 +1440,24 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
         for t, s, h in ACTIONS)
     do_sec = ('<section><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
-              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">' + esc(CTA_LABEL) + '</a></p></section>')
+              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">' + esc(CTA_LABEL + " in " + city["name"]) + '</a></p></section>')
 
+    near = _nearest_cities(city, all_cities)
+    near_p = ('<p class="fw-near">Nearby: ' + ", ".join(
+        '<a href="' + rel + esc(c["id"]) + '/">' + esc(c["name"]) + '</a> (' + str(c["blend"]["score"])
+        + '/100, ' + esc(c["blend"]["band"]) + ')' for c in near) + '.</p>')
     other_sec = ('<section><h2>What is happening in other cities?</h2>'
                  '<p>Overall monsoon-fever risk today across ' + str(len(all_cities))
-                 + ' cities, highest first.</p>' + _cities_table(all_cities, rel) + '</section>')
+                 + ' cities, highest first.</p>' + near_p + _cities_table(all_cities, rel) + '</section>')
 
+    tests_sec = _tests_sec(city, generated_at) if FW_TESTS_ENABLED else ""
+    season_sec = _season_sec(city, archive_city, generated_at)
     trend_sec = _trend_html(city, diseases, cells_by, generated_at, archive_city)
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
-    return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec
-            + other_sec + trend_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(MEDICAL_DISCLAIMER) + '</p></div>')
+    return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec + tests_sec
+            + other_sec + trend_sec + season_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(MEDICAL_DISCLAIMER) + '</p></div>')
 
 
 def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: str, faq: list) -> str:
@@ -1343,9 +1489,17 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     disclaimer = grid.get("disclaimer", "")
     if city:
         title = city["name"] + " Monsoon Fever Risk, " + _fmt_date_js(generated_at) + " | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch"
-        desc = ("Today's dengue, malaria, chikungunya and typhoid risk for " + city["name"]
-                + ", " + city["state"] + ": one decomposable score from weather conditions, search interest "
-                "and lab positivity. A risk indicator, not a diagnosis.")
+        # Driver-led, dated, number-rich description rebuilt on every daily build - front-loads the live
+        # numbers a searcher (and an AI overview) wants, so Google keeps OUR description instead of
+        # stitching its own snippet from the FAQ.
+        _b = city["blend"]
+        _drv = next((d for d in diseases if d["id"] == _b["driver"]), diseases[0])
+        _dband = cells_by.get((city["id"], _b["driver"]), {}).get("band", _b["band"])
+        _s = lambda did: str(cells_by[(city["id"], did)]["score"]) if (city["id"], did) in cells_by else "-"
+        desc = (city["name"] + " fever risk today, " + _fmt_date_js(generated_at) + ": " + _drv["label"].lower()
+                + " leads at " + str(_b["driver_score"]) + "/100 (" + _dband + "). Dengue " + _s("dengue")
+                + ", malaria " + _s("malaria") + ", chikungunya " + _s("chikungunya") + ", typhoid " + _s("typhoid")
+                + ". A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"] + city["id"] + "/"
         faq = faq_items(city, diseases, cells_by, grid["cities"], generated_at)
         periods = grid.get("periods", ["today"])
@@ -1378,7 +1532,9 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
         og_alt = city["name"] + " monsoon fever risk score card from Fever Watch"
     else:
         title = "Monsoon Fever Risk in India, " + _fmt_date_js(generated_at) + " | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch"
-        desc = cfg["description"]
+        desc = ("Monsoon fever risk in " + str(len(grid["cities"])) + " Indian cities today, "
+                + _fmt_date_js(generated_at) + ": dengue, malaria, chikungunya and typhoid scored 0-100 daily "
+                "from weather, search and lab signals. A risk indicator, not a diagnosis.")
         canonical = cfg["base_url"]
         faq = faq_items_landing()
         fallback = render_landing(cfg, grid["cities"], generated_at, disclaimer, faq)
