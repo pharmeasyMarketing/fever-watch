@@ -241,6 +241,24 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   switch. Aliases are state-verified; **brahmapur (Odisha) is deliberately NOT mapped to berhampore-2530 (West Bengal,
   cross-state)**. Meds fallbacks (absent from the 2022 sitemap): bhubaneswar, kolhapur, rohtak, karimnagar, brahmapur.
   Full detail + match tables: PROJECT_STATE 2026-07-06 banner.
+- **2026-07-08 SEO Phase 0 on-page pass (committed + pushed; plan + forecast in `docs/seo_growth_plan.md`):**
+  Every city page gained: **BreadcrumbList** JSON-LD (PharmEasy > Fever Watch > {City}; landing 2-item, wired to
+  WebPage.breadcrumb); **Dataset enrichment** (temporalCoverage `{yr}-06-01/..`, isBasedOn x4 sources incl. "Google
+  Trends search interest (via SerpApi)", measurementTechnique incl. the forecast cap, variableMeasured x5) ->
+  Google Dataset Search eligible; **dynamic driver-led meta description** (`{City} fever risk today, {date}:
+  {driver} leads at {n}/100 ({BAND}). Dengue {d}, ... A risk indicator, not a diagnosis.`, 154-169 chars, re-stamped
+  daily; landing dated too); **"How this monsoon compares" season block** (archive ly-vs-ty same-week compare,
+  +/-8 thresholds, last season's peak week; the anti-thin-content block; omitted honestly when a slice is missing);
+  **"Nearby cities right now" chips** (nearest-5 equirectangular, crawlable links + in-app switch, inside the
+  leaderboard card); **dated weather sub** (`Conditions as of {date} ...`, byte-identical 3-way); the **"What you
+  can do" CTA is personalized** (`Book a fever panel test in {City}`). Shared helpers live in build_site.py
+  (_season_bits/_nearest_cities/FW_TESTS) + both flows (seasonBits/nearbyHtml/FW_TESTS) - facts byte-consistent
+  3-way (same +/-8 thresholds, same 0.00872664626 distance constant, id tie-break). **The "Fever tests" block is
+  BUILT but GATED OFF** pending the medical/counsel review (~2026-07-15): `FW_TESTS_ENABLED=False` (build_site.py)
+  + `FW_TESTS_ON=false` (mobile.js/desktop.js); to ship, flip all three AND re-add the `#s-tests` TOC link in both
+  byte-identical TOC twins + desktop spyScroll ids (instructions at each flag). Its `.fwtests` CSS stays dormant in
+  tokens.css. Independently QA'd (fresh-eyes agent): 0 blockers/majors, facts recomputed on all 209 cities,
+  SHIP-READY verdict; post-QA fixes folded in (meta tail trim, CTA localization, SerpApi attribution).
 
 ## Open decisions / TODO
 

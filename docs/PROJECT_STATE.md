@@ -5,7 +5,54 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-07, DEPLOY TIMING FIX + RSYNC AUTO-RETRIES - committed + pushed):** The CyberPanel (production)
+> **NEWEST (2026-07-08, SEO PHASE 0 ON-PAGE PASS - committed + pushed; the plan + traffic forecast live in
+> `docs/seo_growth_plan.md`):** Implemented Phase 0A (0.1-0.3) + Phase 0B (0.5, 0.6, 0.8) from the growth plan, with
+> 0.4 BUILT but GATED. Per city page:
+> 1. **BreadcrumbList** JSON-LD (PharmEasy > Fever Watch > {City}; landing = 2 items) wired to `WebPage.breadcrumb`.
+>    Generic navigation schema - inside the no-medical-schema guardrail.
+> 2. **Dataset enrichment**: `temporalCoverage {yr}-06-01/..` (open interval), `isBasedOn` x4 (NOAA CPC, NASA POWER,
+>    "Google Trends search interest (via SerpApi)" - phrased to match the legal footer's Serpapi attribution -
+>    PharmEasy labs), `measurementTechnique` (confirmation-weighted blend incl. the forecast cap), `variableMeasured`
+>    x5 (overall + 4 diseases, 0-100). Completes Google Dataset Search eligibility.
+> 3. **Dynamic driver-led meta description**, re-stamped every daily build: `{City} fever risk today, {date}:
+>    {driver} leads at {n}/100 ({driver BAND}). Dengue {d}, malaria {m}, chikungunya {c}, typhoid {t}. A risk
+>    indicator, not a diagnosis.` 154-169 chars across the 209 cities (QA-trimmed); landing dated, 191 chars.
+> 4. **"How this monsoon compares" block** (mobile card after the trend host; desktop section after s-trend; SSR
+>    fallback section): `As of {date}, {City}'s overall fever signal is {ty}/100 - {running above|running below|
+>    about level with} the same week last monsoon ({ly}/100). Last season's high point came in the week of {peak}.
+>    Rain drives this number, so the picture shifts as the season moves - we refresh it daily.` (wording humanized
+>    2026-07-08 PM per review). Computed from the archive (+/-8 thresholds, first-max peak, ly_year = IST year - 1);
+>    omitted honestly when a city's slice is missing. THE anti-thin-content block: 209 templated pages each get a
+>    genuinely different dated fact.
+> 5. **"Nearby cities right now" chips** at the bottom of the leaderboard card (both flows) + a "Nearby:" link line
+>    in the SSR other-cities section: nearest-5 by equirectangular distance (dx scaled by cos avg-lat, constant
+>    0.00872664626, id tie-break - IDENTICAL in build_site.py `_nearest_cities` / both flows' `nearbyHtml`). Real
+>    hrefs for crawlers; `data-act=pickrow` switches in-app. JS renders only once the full grid is loaded.
+> 6. **Dated weather sub** (byte-identical 3-way, parity-gated): `Conditions as of {date} and what they mean for
+>    fever risk.` - the AI-citability pass: every new block leads with a dated quotable sentence.
+> 7. **CTA personalization**: the "What you can do" CTA reads `Book a fever panel test in {City}` (SSR + both flows;
+>    fallback cities get the generic packages URL with the city-named label).
+> 8. **"Fever tests: which test confirms what?" block - BUILT, NOT SHIPPED.** Full implementation exists in all
+>    three renderers (band-tied nudge lines, per-city diag CTA, doctor-deferring copy) but is GATED pending the
+>    medical/counsel review planned ~2026-07-15: `FW_TESTS_ENABLED = False` in build_site.py + `FW_TESTS_ON = false`
+>    in mobile.js/desktop.js (testCard/testsSection/_tests_sec return ""). TO SHIP: flip all three flags AND re-add
+>    `<a href="#s-tests">Fever tests</a>` after "What you can do" in BOTH byte-identical TOC twins
+>    (build_site._desktop_pre + desktop.js render()) AND "s-tests" after "s-do" in desktop.js spyScroll ids
+>    (step-by-step comments sit at each flag). The `.fwtests` CSS in tokens.css stays (dormant). Verified gated:
+>    0/210 built pages contain the section or the #s-tests anchor.
+> **Verification:** build 210 pages; above-fold parity byte-identical both flows; FAQ render-diff clean; Python =
+> mobile.js = desktop.js facts on 10 sample cities (near sets, season bits, band lines); 51/51 output checks
+> (schema shapes, meta lengths, dash guardrails, IST dates); an INDEPENDENT QA agent then recomputed every fact on
+> ALL 209 cities (0 mismatches), swept JSON-LD + guardrails on all 210 pages, live-tested both flows (hydration,
+> city switch via nearby chips, scroll-spy, share/method/tooltip, no overflow at 360/375/414/1280/1440) with
+> hydrated screenshots - verdict SHIP-READY, 0 blockers/majors. Post-QA fixes: meta tail trimmed ("A daily local
+> risk indicator" -> "A risk indicator"), landing desc 224 -> 191, CTA localized, Trends attribution "(via
+> SerpApi)". KNOWN (pre-existing, now more visible): the trend-card caption keys on this-year SLOPE ("Risk is
+> holding close to last year") and can sit near the season block's level-compare ("running above ... (58/100)") -
+> issue #6; a one-line caption reword in the parity-gated trend twins fixes it if wanted. Design-review mock
+> (layout maps + block renders + QA status): Claude artifact "fw_phase0_mock".
+>
+> **(2026-07-07, DEPLOY TIMING FIX + RSYNC AUTO-RETRIES - committed + pushed):** The CyberPanel (production)
 > deploy now fires the MOMENT `daily.yml` commits the fresh grid, via a new **`dispatch-production` job** in daily.yml
 > that runs `gh workflow run deploy-cyberpanel.yml` (a workflow_dispatch sent with GITHUB_TOKEN - exempt from GitHub's
 > anti-recursion guard, so it genuinely starts the run). This is the RELIABLE, cron-lag-free replacement for
