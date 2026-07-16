@@ -169,28 +169,44 @@ def _search_blocks(tseries, dids, cities, as_of, nw=NW):
 
 
 def _search_per_disease(tseries, dids):
-    """Return a closure search_d(did, year, w, state) -> int 0-100 = that ONE disease's state weekly
-    interest at week w, with the SAME nearest-week match + national-mean fallback as _search_blocks
-    (one Google normalisation across both years). This is the per-disease decomposition of the mean
-    that _search_blocks collapses, so the per-disease consolidate() below sees the exact search the live
-    grid would have for that disease/state/week."""
+    """Return a closure search_d(did, year, w, state) -> int 0-100 | None = that ONE disease's state weekly
+    interest at week w: nearest-week match, then CARRY-FORWARD the most recent point at or before the week,
+    then the national mean of the carried values. This is the per-disease decomposition of the mean that
+    _search_blocks collapses, so the per-disease consolidate() below sees the same search the DISPLAYED
+    search line shows (_state_search_none + carry_forward). Returns None only when a disease has no data
+    at all; the caller then treats the week as missing and carry_forwards the whole week.
+
+    It must NEVER fall back to 0. A week past the end of the trends pull is UNKNOWN, not "nobody searched",
+    and a 0 silently collapses the reconstructed score to 0.6 x weather (and rain-only typhoid to ~0). That
+    is what corrupted the 2026 season line: the pull ended 2026-06-07, TREND_TOL_DAYS is 4, so from week 2
+    (anchor 15 Jun) every lookup missed, the old `else 0.0` national-mean fallback returned 0, and weeks 3-6
+    of every city scored as if search interest were zero while the displayed search line carried forward."""
     natmean_cache = {}
+
+    def _carried(s, target):
+        """Nearest point within tolerance, else the most recent point at or before `target`."""
+        if not s:
+            return None
+        v = _nearest(s, target)
+        if v is None:
+            prior = [val for (d, val) in s if d <= target]
+            v = prior[-1] if prior else None
+        return v
 
     def national_mean(did, target):
         key = (did, target)
         if key not in natmean_cache:
-            vals = [_nearest(s, target) for s in tseries[did].values()]
+            vals = [_carried(s, target) for s in tseries[did].values()]
             vals = [v for v in vals if v is not None]
-            natmean_cache[key] = (sum(vals) / len(vals)) if vals else 0.0
+            natmean_cache[key] = (sum(vals) / len(vals)) if vals else None
         return natmean_cache[key]
 
     def search_d(did, year, w, state):
         target = _week_date(year, w)
-        s = tseries[did].get(state)
-        v = _nearest(s, target) if s else None
+        v = _carried(tseries[did].get(state), target)
         if v is None:
             v = national_mean(did, target)
-        return _r(v)
+        return _r(v) if v is not None else None
     return search_d
 
 
@@ -238,7 +254,8 @@ def _load_labs_2025_weekly(path, dids, *, min_tests=LAB_MIN_TESTS, ref_pct=LAB_R
 def _state_search_none(tseries, dids):
     """Per-disease per-state weekly search with None (not 0) beyond the pull, mirroring _search_blocks'
     None-propagation so carry_forward pads stale weeks instead of collapsing them to a misleading 0.
-    (This differs from _search_per_disease, whose 0.0 fallback exists to feed consolidate seeds.)"""
+    (_search_per_disease now carries forward for the same reason, so the score reconstruction and this
+    displayed line agree; it used to fall back to 0.0, which corrupted the 2026 season line.)"""
     natmean_cache = {}
 
     def national_mean(did, target):
@@ -327,6 +344,8 @@ def _overall_blocks(cities, dids, fam_of, weather, tseries, labs2025, consol, as
             if wx is None:
                 return None  # no weather backfill for this city/week -> week is missing, carry_forward fills it
             sr = search_d(did, year, w, state)
+            if sr is None:
+                return None  # no search at all -> missing week, NOT a zero-search week (carry_forward fills it)
             pos = labs2025.get((cid, did, w)) if with_labs else None
             scores.append(_consolidate({"weather": wx, "trends": sr, "positivity": pos}, consol)["score"])
         return _city_headline(scores, cb)
@@ -402,6 +421,8 @@ def build_history():
         if wx is None:
             return None
         sr = search_d(did, year, w, state)
+        if sr is None:
+            return None  # no search at all -> missing week, NOT a zero-search week (carry_forward fills it)
         pos = labs2025.get((cid, did, w)) if with_labs else None
         return _consolidate({"weather": wx, "trends": sr, "positivity": pos}, consol)["score"]
 
