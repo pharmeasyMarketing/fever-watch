@@ -40,12 +40,13 @@
  */
 
 var SK_SHEET = 'raw_data';
-// Rows per execution slice. Each slice is only ~4 batched Range calls, so this comfortably clears a
-// full season's sheet (~27k rows) in ONE run, well inside the 6-minute limit. Kept chunked + resumable
-// anyway: if a run ever times out, the cursor is only advanced AFTER a successful write, so simply
-// running the function again resumes safely (re-writing a row is idempotent - the formula is derived
-// purely from the row number). Lower this if you ever do hit a timeout.
-var SK_CHUNK = 30000;
+// Rows written per setFormulas call. KEEP THIS SMALL. A 30k-row write makes the Spreadsheets service
+// time out on flush ("Service Spreadsheets timed out while accessing document"), which silently rolls
+// back the WHOLE write - 5k is proven to commit fine. One Run loops over as many chunks as it can fit
+// in SK_TIME_BUDGET_MS, so a small chunk does not mean more clicking.
+var SK_CHUNK = 5000;
+// Stop starting new chunks after this long and hand back cleanly (Apps Script hard-kills at 6 min).
+var SK_TIME_BUDGET_MS = 4.5 * 60 * 1000;
 var SK_COL_DISEASE = 5;     // E
 var SK_COL_SCORE = 20;      // T
 var SK_CURSOR_KEY = 'sk_cursor';
@@ -112,40 +113,70 @@ function previewSoftKneeRewrite() {
   Logger.log('Chunks needed at %s rows/run: ~%s', SK_CHUNK, Math.ceil(n / SK_CHUNK));
 }
 
-/** The migration. Run repeatedly until COMPLETE. Chunked + resumable. */
+/**
+ * The migration. Loops over SK_CHUNK-sized slices until the sheet is done or the time budget runs
+ * out; just Run it again if it reports NOT DONE.
+ *
+ * Two hard-won rules encoded here:
+ *  1. FLUSH each chunk and only THEN advance the cursor. Apps Script queues bulk writes and flushes
+ *     at end-of-execution, so a big write could log "COMPLETE" and then die on the flush with
+ *     "Service Spreadsheets timed out", rolling the write back while the cursor said it was done.
+ *     flush() forces the commit here, and throws on failure BEFORE the cursor moves - so a timeout
+ *     is always safely resumable and the log never lies.
+ *  2. Skip the write for slices that are already migrated, so re-running from the top is cheap.
+ */
 function rewriteScoreFormulasSoftKnee() {
   var sh = _skSheet(), last = sh.getLastRow();
   var props = PropertiesService.getScriptProperties();
+  var t0 = new Date().getTime();
   var start = Number(props.getProperty(SK_CURSOR_KEY) || 2);   // row 1 = header
   // HARD GUARD: never let the write range reach row 1. The header row is consumed by CRM automation,
   // so clobbering it would break downstream systems. Also catches a NaN/garbage cursor property.
   if (!(start >= 2)) start = 2;
   if (start > last) { props.deleteProperty(SK_CURSOR_KEY); Logger.log('COMPLETE - nothing left to do.'); return; }
 
-  var end = Math.min(start + SK_CHUNK - 1, last), n = end - start + 1;
-  var dis = sh.getRange(start, SK_COL_DISEASE, n, 1).getValues();
-  var curF = sh.getRange(start, SK_COL_SCORE, n, 1).getFormulas();
-  var curV = sh.getRange(start, SK_COL_SCORE, n, 1).getValues();
-  var out = [], rewritten = 0, preserved = 0;
-
-  for (var i = 0; i < n; i++) {
-    var r = start + i;
-    if (String(dis[i][0]).trim() === 'OVERALL') {
-      // Preserve the blend row EXACTLY: write its own formula back (a no-op). If it somehow holds a
-      // literal rather than a formula, write the literal back so we never blank a cell.
-      out.push([curF[i][0] ? curF[i][0] : curV[i][0]]);
-      preserved++;
-      continue;
+  var totalRewritten = 0, totalSkipped = 0, slices = 0;
+  while (start <= last) {
+    if (new Date().getTime() - t0 > SK_TIME_BUDGET_MS) {
+      Logger.log('TIME BUDGET reached after %s slice(s). NOT DONE - just Run this again (next row %s of %s).',
+                 slices, start, last);
+      return;
     }
-    out.push([_skScoreFormula(r)]);
-    rewritten++;
-  }
-  sh.getRange(start, SK_COL_SCORE, n, 1).setFormulas(out);
+    var end = Math.min(start + SK_CHUNK - 1, last), n = end - start + 1;
+    var dis = sh.getRange(start, SK_COL_DISEASE, n, 1).getValues();
+    var curF = sh.getRange(start, SK_COL_SCORE, n, 1).getFormulas();
+    var curV = sh.getRange(start, SK_COL_SCORE, n, 1).getValues();
+    var out = [], rewritten = 0;
 
-  props.setProperty(SK_CURSOR_KEY, String(end + 1));
-  Logger.log('rows %s-%s: %s disease rows rewritten, %s OVERALL rows preserved.', start, end, rewritten, preserved);
-  if (end < last) Logger.log('NOT DONE - run rewriteScoreFormulasSoftKnee() again (next row %s of %s).', end + 1, last);
-  else { props.deleteProperty(SK_CURSOR_KEY); Logger.log('COMPLETE - all %s rows processed. Now run verifySoftKneeRewrite().', last - 1); }
+    for (var i = 0; i < n; i++) {
+      var r = start + i, f = curF[i][0] || '';
+      if (String(dis[i][0]).trim() === 'OVERALL') {
+        // Preserve the blend row EXACTLY: write its own formula back (a no-op). If it somehow holds a
+        // literal rather than a formula, write the literal back so we never blank a cell.
+        out.push([f ? f : curV[i][0]]);
+        continue;
+      }
+      if (f.indexOf('14/45') !== -1) { out.push([f]); continue; }   // already on the soft knee
+      out.push([_skScoreFormula(r)]);
+      rewritten++;
+    }
+
+    if (rewritten > 0) {
+      sh.getRange(start, SK_COL_SCORE, n, 1).setFormulas(out);
+      SpreadsheetApp.flush();                       // commit NOW - throws here rather than lying later
+      Logger.log('  rows %s-%s: %s rewritten (flushed).', start, end, rewritten);
+      totalRewritten += rewritten;
+    } else {
+      Logger.log('  rows %s-%s: already migrated, no write needed.', start, end);
+      totalSkipped += n;
+    }
+    props.setProperty(SK_CURSOR_KEY, String(end + 1));   // only AFTER a confirmed flush
+    start = end + 1;
+    slices++;
+  }
+  props.deleteProperty(SK_CURSOR_KEY);
+  Logger.log('COMPLETE - %s disease rows rewritten, %s rows already done/skipped, %s slice(s). ' +
+             'Now run verifySoftKneeRewrite().', totalRewritten, totalSkipped, slices);
 }
 
 /** Sanity check after migrating: forecast rows (O blank) parked on exactly 69 should be ~0. */
