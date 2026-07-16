@@ -235,6 +235,47 @@ def _load_labs_2025_weekly(path, dids, *, min_tests=LAB_MIN_TESTS, ref_pct=LAB_R
     return sig, cids_seen
 
 
+def _state_search_none(tseries, dids):
+    """Per-disease per-state weekly search with None (not 0) beyond the pull, mirroring _search_blocks'
+    None-propagation so carry_forward pads stale weeks instead of collapsing them to a misleading 0.
+    (This differs from _search_per_disease, whose 0.0 fallback exists to feed consolidate seeds.)"""
+    natmean_cache = {}
+
+    def national_mean(did, target):
+        key = (did, target)
+        if key not in natmean_cache:
+            vals = [_nearest(s, target) for s in tseries[did].values()]
+            vals = [v for v in vals if v is not None]
+            natmean_cache[key] = (sum(vals) / len(vals)) if vals else None
+        return natmean_cache[key]
+
+    def f(did, year, w, state):
+        target = _week_date(year, w)
+        s = tseries[did].get(state)
+        v = _nearest(s, target) if s else None
+        if v is None:
+            v = national_mean(did, target)
+        return _r(v) if v is not None else None
+    return f
+
+
+def _state_search_blocks(tseries, dids, states, as_of, nw=NW):
+    """archive['states'] = {state: {disease: {ly, ty}}} - the per-disease decomposition of the city search
+    metric, keyed by STATE so 209 cities share ~30 compact blocks (search is state-resolution anyway).
+    Both years read from ONE timeseries pull (one Google normalisation), same as _search_blocks. Feeds the
+    city x disease pages' Searches tab + sparklines."""
+    sd = _state_search_none(tseries, dids)
+    out = {}
+    for st in sorted(states):
+        out[st] = {}
+        for did in dids:
+            out[st][did] = {
+                "ly": carry_forward([sd(did, LY_YEAR, w, st) for w in range(nw)]),
+                "ty": carry_forward([sd(did, TY_YEAR, w, st) for w in range(as_of + 1)]),
+            }
+    return out
+
+
 def _labs_ly_from_tc(labs2025, cids_seen, dids):
     """COUNTS-FREE last-year (2025) labs.ly per city from the TC weekly signal map. Week metric = mean over
     the diseases with a non-None signal that week (None if all None), then carry_forward. An all-None city
@@ -348,6 +389,28 @@ def build_history():
     arch = _load(OUT_PATH)
     cities_blk = arch.setdefault("cities", {})
     labs_nonzero = 0
+
+    # --- v1.1 (city x disease pages): per-disease decompositions, all COUNTS-FREE 0-100 ---
+    # scores: the disease's own dial line, consolidate()d per week exactly like overall but unblended.
+    # ly runs with the 2025 labs signal; ty is seeded labs-free and update_daily overwrites ty[as_of]
+    # daily from the live grid cell (which DOES carry live positivity), so the line ends on the dial.
+    search_d = _search_per_disease(tseries, dids)
+    weather_d = _weather_per_disease(weather, fam_of)
+
+    def disease_score(cid, state, did, year, w, with_labs):
+        wx = weather_d(did, year, w, cid)
+        if wx is None:
+            return None
+        sr = search_d(did, year, w, state)
+        pos = labs2025.get((cid, did, w)) if with_labs else None
+        return _consolidate({"weather": wx, "trends": sr, "positivity": pos}, consol)["score"]
+
+    fams = sorted(set(fam_of.values()))
+
+    def fam_metric(year, w, cid, fam):
+        e = weather.get(year, {}).get(_week_date(year, w).isoformat(), {}).get(cid)
+        return None if not e else e.get("families", {}).get(fam)
+
     for c in cities:
         cid = c["id"]
         block = cities_blk.setdefault(cid, {})  # add even if absent from the prior weather/search build
@@ -358,12 +421,46 @@ def build_history():
         if any(v for v in ly):
             labs_nonzero += 1
 
+        # per-family weather lines (mosquito diseases share one; typhoid the other) - the disease pages'
+        # Weather tab. Preserve prior ty tail beyond the backfill via merge with the existing block.
+        prior_bf = block.get("byFamily") or {}
+        block["byFamily"] = {}
+        for fam in fams:
+            f_ly = carry_forward([fam_metric(LY_YEAR, w, cid, fam) for w in range(NW)])
+            f_ty = carry_forward([fam_metric(TY_YEAR, w, cid, fam) for w in range(as_of + 1)])
+            prior_ty = (prior_bf.get(fam) or {}).get("ty", [])
+            for i, pv in enumerate(prior_ty[:len(f_ty)]):
+                # the daily cron upserts live grid values; prefer those over backfill carry-forward
+                if pv is not None and i > 0 and f_ty[i] == f_ty[i - 1]:
+                    f_ty[i] = pv
+            block["byFamily"][fam] = {"ly": f_ly, "ty": f_ty}
+
+        # per-disease: score line always; labs line ONLY where the 2025 feed has real weekly signal
+        # (its absence keeps the honest "coming soon" state on that disease's Labs tab).
+        prior_bd = block.get("byDisease") or {}
+        bd = {}
+        for did in dids:
+            entry = {"score": {
+                "ly": carry_forward([disease_score(cid, c.get("state", ""), did, LY_YEAR, w, True) for w in range(NW)]),
+                "ty": carry_forward([disease_score(cid, c.get("state", ""), did, TY_YEAR, w, False) for w in range(as_of + 1)]),
+            }}
+            weekly = [labs2025.get((cid, did, wk)) for wk in range(NW)]
+            if any(v is not None for v in weekly):
+                entry["labs"] = {"ly": carry_forward(weekly),
+                                 "ty": (prior_bd.get(did) or {}).get("labs", {}).get("ty", [])}
+            bd[did] = entry
+        block["byDisease"] = bd
+
+    # per-state per-disease EXACT search lines (the Searches tab). ly (2025) is stable history; ty is as
+    # fresh as the local trends_history pull and is fully recomputed by the WEEKLY CI refresh_search().
+    arch["states"] = _state_search_blocks(tseries, dids, {c.get("state", "") for c in cities}, as_of)
+
     _prune_to_config(arch)
     write_json_atomic(OUT_PATH, arch, indent=None)
     size = os.path.getsize(OUT_PATH)
-    print("build_history: merged real labs.ly + overall{ly,ty} into %s for %d config cities "
-          "(%d with real >0 lab history; overall ty seeded to as-of week %d, len %d). %d bytes. "
-          "weather/search PRESERVED."
+    print("build_history: merged real labs.ly + overall{ly,ty} + v1.1 byDisease/byFamily/states into %s "
+          "for %d config cities (%d with real >0 lab history; ty seeded to as-of week %d, len %d). %d bytes. "
+          "weather/search city blocks PRESERVED."
           % (OUT_PATH, len(cities), labs_nonzero, as_of, as_of + 1, size))
 
 
@@ -444,6 +541,7 @@ def update_daily():
     diseases = _load(os.path.join("config", "diseases.json"))
     diseases = diseases["diseases"] if isinstance(diseases, dict) and "diseases" in diseases else diseases
     dids = [d["id"] for d in diseases]
+    fam_of = {d["id"]: d.get("family") for d in diseases}
 
     consol = _load(CONSOL_PATH)
     cb = consol["city_blend"]
@@ -512,7 +610,32 @@ def update_daily():
         if overall is not None and len(overall.get("ly", [])) == NW:
             overall.setdefault("ty", [])
             upsert(overall["ty"], as_of, headline(cells))
+        # v1.1 (city x disease pages): keep the per-family weather, per-disease score and per-disease labs
+        # ty vectors current from the live grid, same COUNTS-FREE rules as their city-level counterparts.
+        bf = block.get("byFamily")
+        if bf:
+            for fam, vec in bf.items():
+                did = next((d for d in dids if fam_of.get(d) == fam and d in cells), None)
+                if did is not None and isinstance(vec, dict):
+                    upsert(vec.setdefault("ty", []), as_of, cells[did].get("signals", {}).get("weather"))
+        bd = block.get("byDisease")
+        if bd:
+            for did, entry in bd.items():
+                if did not in cells or not isinstance(entry, dict):
+                    continue
+                sc = entry.get("score")
+                if sc is not None and len(sc.get("ly", [])) == NW:
+                    upsert(sc.setdefault("ty", []), as_of, cells[did].get("score"))
+                lb = entry.get("labs")
+                if lb is not None:
+                    upsert(lb.setdefault("ty", []), as_of, cells[did].get("signals", {}).get("positivity"))
         updated += 1
+
+    # v1.1: length-pad the per-state per-disease search ty (recomputed EXACT by the weekly refresh_search).
+    for st_block in (arch.get("states") or {}).values():
+        for vec in st_block.values():
+            if isinstance(vec, dict):
+                pad_only(vec.setdefault("ty", []), as_of)
 
     arch["generated_at"] = generated_at
     arch["asOf"] = as_of
@@ -578,6 +701,13 @@ def refresh_search():
             updated += 1
         else:
             preserved += 1  # null-geo / no series this run: keep last-good rather than degrade to fallback
+
+    # v1.1: recompute the per-state per-disease EXACT search blocks from the same fresh pull, with the
+    # same thin-pull guard (a state absent from this run keeps its last-good block).
+    all_states = {c.get("state", "") for c in cities}
+    fresh_states = _state_search_blocks(tseries, dids, all_states & states_present, as_of)
+    st_arch = arch.setdefault("states", {})
+    st_arch.update(fresh_states)
 
     arch["generated_at"] = generated_at
     arch["asOf"] = as_of

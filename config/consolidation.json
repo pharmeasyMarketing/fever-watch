@@ -1,6 +1,6 @@
 {
-  "_comment": "Confirmation-weighted ensemble (the deliberate INVERSE of Mosquito Watch, which keeps its layers separate and never blends them). Ported from the What's Going Around prototype. Three signals sit at different points in the illness pipeline: weather (leading), trends (coincident), positivity (lagging ground truth). When positivity exists it dominates and agreement across all three applies a confidence multiplier. With no positivity, 'Forecast only' mode blends weather and trends and CAPS the score one point below the HIGH band floor (so score_cap 69 vs HIGH at 70), which means a conditions-only read can never reach HIGH, a credibility guard. The output is always decomposable; never a mystery number.",
-  "model_version": "FW-ENSEMBLE-0.1.0",
+  "_comment": "Confirmation-weighted ensemble (the deliberate INVERSE of Mosquito Watch, which keeps its layers separate and never blends them). Ported from the What's Going Around prototype. Three signals sit at different points in the illness pipeline: weather (leading), trends (coincident), positivity (lagging ground truth). When positivity exists it dominates and agreement across all three applies a confidence multiplier. With no positivity, 'Forecast only' mode blends weather and trends and applies a SOFT-KNEE taper toward score_cap 69 (one below the HIGH floor of 70), so a conditions-only read can never reach HIGH (a credibility guard) while still separating cities instead of piling them onto a single capped number. See forecast_only._comment. The output is always decomposable; never a mystery number.",
+  "model_version": "FW-ENSEMBLE-0.2.0",
   "with_positivity": {
     "weights": {"weather": 0.30, "trends": 0.22, "positivity": 0.48},
     "agreement_spread_max": 22,
@@ -8,7 +8,9 @@
     "disagree_multiplier": 0.96
   },
   "forecast_only": {
+    "_comment": "No-lab mode. The weather+search blend is passed through a SOFT-KNEE taper (src/consolidate.py _soft_knee): at or below soft_knee it is unchanged; from soft_knee up to a raw blend of 100 it is linearly compressed into [soft_knee, score_cap]. So score_cap (69, one below the HIGH floor of 70) is only reached at a theoretical raw blend of 100 and never becomes a wall that many cities pile onto - which read as fake. Standard dynamic-range compression (same piecewise-linear construction as the AQI). Set soft_knee == score_cap to recover the legacy hard clip. score_cap stays 69 so a conditions-only read can NEVER show HIGH.",
     "weights": {"weather": 0.60, "trends": 0.40},
+    "soft_knee": 55,
     "score_cap": 69
   },
   "signal_floor": 4,

@@ -1,6 +1,7 @@
 (function () {
   "use strict";
   var FW = window.FW || {};
+  var DIS = FW.disease || null;  // active disease id on a /{city}/{disease}/ child page (null on the city hub)
   var RISK = { "HIGH": "#E4572E", "MODERATE": "#E8923A", "LOW-MODERATE": "#C7A93C", "LOW": "#2FA66F" };
   var RISK_SOFT = { "HIGH": "#FCEBE4", "MODERATE": "#FBF0E2", "LOW-MODERATE": "#F7F3E1", "LOW": "#E4F4EC" };
   var BAND_TITLE = { "HIGH": "High", "MODERATE": "Moderate", "LOW-MODERATE": "Low-Moderate", "LOW": "Low" };
@@ -30,6 +31,18 @@
     positivity: { c: "#3661B0", bg: "#E7EEFA", fg: "#22468f", label: "🧪 Lab", what: "How many local tests come back positive." }
   };
   var SHORT = { positivity: "Lab", weather: "Weather", trends: "Search" };
+  // Disease-page constants - byte-identical to build_site.py DIS_MECH (the family weather-mechanism line).
+  var DIS_MECH = {
+    mosquito: "Mosquitoes breed in the standing water left after rain and bite most around 29C, so warm, wet spells lift this score and drier or cooler ones ease it.",
+    waterborne: "Typhoid is waterborne, so heavy rain that can wash contamination into the water supply drives this score more than temperature does."
+  };
+  // About-{disease} blurb + locked "full guide" blog link (byte-identical to build_site.py DIS_ABOUT).
+  var DIS_ABOUT = {
+    dengue: ["Dengue is a viral fever spread by the day-biting Aedes mosquito, which breeds in the clean standing water that collects in and after the monsoon. It is a risk that rises with the rains; most people recover with rest and fluids, but a fever that worsens or persists needs a doctor.", "https://pharmeasy.in/blog/5-ways-to-avoid-dengue-fever/"],
+    malaria: ["Malaria is caused by a parasite carried by the night-biting Anopheles mosquito, and tends to climb through the rainy months. It is treatable, and testing early helps identify the parasite; a fever with chills is a reason to see a doctor.", "https://pharmeasy.in/blog/types-of-malaria-symptoms-causes-and-treatment/"],
+    chikungunya: ["Chikungunya is a viral fever spread by the same Aedes mosquito as dengue, so it shares the monsoon timing. Its hallmark is fever with joint pain that can linger; care is supportive, so rest, fluids and a doctor's guidance matter.", "https://pharmeasy.in/blog/vaccine-viral-fever-causes-symptoms-and-treatment-options/"],
+    typhoid: ["Typhoid is a bacterial infection spread through food and water contaminated during the monsoon, not by mosquitoes. It tends to build gradually; safe drinking water, hygiene and timely testing are the practical defences, and a sustained fever is worth a doctor's visit.", "https://pharmeasy.in/blog/typhoid-causes-symptoms-and-treatment/"]
+  };
   // Per-signal "what is this 0-100 number" popover text (byte-identical to build_site.py TIPINFO).
   var TIPINFO = {
     weather: "How much recent weather helps these fevers spread, on a 0-100 scale.",
@@ -74,13 +87,15 @@
     DATA = j;
     if (!state.cityId || !DATA.cities.some(function (c) { return c.id === state.cityId; })) state.cityId = pickDefaultCity();
     state.expanded = cityObj(state.cityId).blend.driver;
+    if (DIS) state.leader = DIS;  // disease page: the "other cities" leaderboard ranks by this disease
     if (!booted) {
       booted = true;
       document.addEventListener("click", onClick);
       window.addEventListener("scroll", onTipScroll, { passive: true });
       var cs = document.getElementById("citysearch"); if (cs) cs.addEventListener("input", renderCityList);
     }
-    renderCityList(); render(); buildTicker(); buildShareFooter();
+    renderCityList(); render(); buildTicker();
+    if (!DIS) buildShareFooter();  // disease pages hide all share surfaces (per product); hubs keep them
   }
   // boot() is invoked at the very END of the IIFE - render() uses FAQ/METHOD, which are defined below.
 
@@ -155,11 +170,22 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]; }); }
 
   // City <-> URL sync. CITY_ROOT is the absolute path of /fever-watch/ on this origin.
-  var CITY_ROOT = FW.city
-    ? location.pathname.replace(/[^/]+\/?$/, "")
-    : location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
-  function cityHref(id) { return CITY_ROOT + id + "/"; }
-  function cityFromPath() { return location.pathname.replace(/\/(index\.html)?$/, "").split("/").pop(); }
+  // Normalize a trailing index.html first so CITY_ROOT strips the right segment count whether the URL is
+  // the clean production form (/fever-watch/{city}/{disease}/) or an index.html-served local form.
+  var _fwPath = location.pathname.replace(/index\.html$/, "");
+  var CITY_ROOT = DIS
+    ? _fwPath.replace(/[^/]+\/[^/]+\/?$/, "")   // disease child: strip {city}/{disease}
+    : (FW.city
+      ? _fwPath.replace(/[^/]+\/?$/, "")
+      : _fwPath.replace(/\/?$/, "/"));
+  // On a disease child, city links stay in the SAME disease vertical (/{city}/{disease}/); hubHref reaches
+  // that city's overall hub (used by the "see all fevers" link).
+  function cityHref(id) { return CITY_ROOT + id + "/" + (DIS ? DIS + "/" : ""); }
+  function hubHref(id) { return CITY_ROOT + id + "/"; }
+  function cityFromPath() {
+    var parts = location.pathname.replace(/\/(index\.html)?$/, "").split("/");
+    return DIS ? parts[parts.length - 2] : parts[parts.length - 1];
+  }
   function setCity(id, push) {
     state.cityId = id;
     state.expanded = cityObj(id).blend.driver;
@@ -221,6 +247,7 @@
   }
 
   function render() {
+    if (DIS) return renderDisease();
     var c = cityObj(state.cityId), b = c.blend;
     app.innerHTML =
       '<div class="hero"><h1>Live monsoon-fever risk for ' + esc(c.name) + ' in <em>one score</em>.</h1>' +
@@ -306,7 +333,7 @@
   // The "this monsoon vs last year" widget owns its own subtree (tabs/tooltip/collapse); recompute it
   // from the grid on every render so it tracks the selected city, like the FAQ (faq.js).
   function mountTrend(c) {
-    if (window.FeverWatchTrend) window.FeverWatchTrend.mount(document.getElementById("s-trend"), c, DATA, { mode: "mobile" });
+    if (window.FeverWatchTrend) window.FeverWatchTrend.mount(document.getElementById("s-trend"), c, DATA, { mode: "mobile", disease: DIS });
   }
 
   // Band phrase with a {d} driver placeholder; composed into the dialmean read-out below.
@@ -392,7 +419,7 @@
   }
   // Largest-remainder (Hamilton) apportionment of the displayed integer score across the signals'
   // weighted shares, so the per-signal contribution points sum EXACTLY to cell.score in every mode
-  // (agree x1.08, disagree x0.96, forecast cap 69 are all absorbed - we apportion the final score, not base).
+  // (agree x1.08, disagree x0.96, forecast soft-knee taper are all absorbed - we apportion the final score, not base).
   function contribs(cell) {
     var s = cell.signals, w = cell.weights, score = cell.score, order = ["positivity", "weather", "trends"];
     var sh = {}, base = 0;
@@ -444,6 +471,160 @@
       '<div style="font-size:10px;color:var(--pe-muted-2);font-weight:600;margin:0 0 4px;white-space:nowrap">' + cell.weights[k] + '% weight × ' + v + '/100 <span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this number means">i</button><span class="dialtip">' + TIPINFO[k] + '<span class="tipcaret"></span></span></span></div>' +
       '<div class="track" style="height:6px"><div class="fill" style="width:' + bw + '%;background:' + meta.c + '"></div></div>' +
       '<div style="font-size:10px;color:var(--pe-muted);line-height:1.4;margin-top:6px">' + meta.what + '</div></div>';
+  }
+
+  // ===== Disease page (FW.disease) - the /{city}/{disease}/ child flow ==============================
+  // The above-fold hero (diseaseCard + diseaseWeatherCard) is a byte-identical twin of build_site.py
+  // _disease_pre_m / _disease_card / _disease_ring / _disease_weather_card (parity-gated). Edit BOTH.
+  function renderDisease() {
+    var c = cityObj(state.cityId), disease = diseaseObj(DIS), cell = cellFor(c.id, DIS);
+    app.innerHTML =
+      '<div class="hero"><h1>' + esc(disease.label) + ' risk in ' + esc(c.name) + ' today, in <em>one score</em>.</h1>' +
+      '<p>A daily ' + esc(disease.label) + ' risk score for ' + esc(c.name) + ', blended from weather conditions, Google search interest and PharmEasy lab signals.</p></div>' +
+      '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + esc(c.name) + '</span>' +
+      '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>' +
+      '<p class="searchnote loc-note">Updated ' + fmtDate(DATA.generated_at) + '. Available in select cities.</p>' +
+      REVIEWBY +
+      '<div class="wrap">' +
+        diseaseCard(c, disease, cell) + diseaseWeatherCard(c, disease.family) + diseaseBreakdown(c, disease, cell) +
+        diseaseSwitcherCard(c) + actionsCard(c) + diseaseLeaderboardCard(c) +
+        '<section id="s-trend" class="fwtrend-host"></section>' + diseaseSeasonCard(c) + aboutCard(disease) +
+        faqCard() + readsCard() +
+      '</div>';
+    wireLeaderboard();
+    mountTrend(c);
+    updateShareFooter();
+    document.body.classList.add("fw-hydrated");
+    peekDialInfo();
+  }
+  // Single-arc disease dial - byte-identical to build_site.py _disease_ring (ns()==_num, toFixed(1)=="%.1f").
+  function diseaseRing(score, col, dlabel, size) {
+    var sw = 12, cx = size / 2, r = (size - sw) / 2 - 1, C = 2 * Math.PI * r, arc = 0.75, GAP_PX = 13.5;
+    var track = (arc * C).toFixed(1), gapAll = (C - arc * C).toFixed(1), off = (C * 2).toFixed(1), cs = ns(cx), rs = ns(r);
+    var dashPx = (score / 100) * arc * C - GAP_PX; if (dashPx < 0) dashPx = 0;
+    var dash = dashPx.toFixed(1);
+    var trackC = '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gapAll + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>';
+    var seg = '<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + off + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>';
+    return '<div class="ringwrap" style="width:' + size + 'px;height:' + size + 'px">' +
+      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + trackC + seg +
+      '</svg><div class="num"><div class="numtop"><b>' + score + '</b><span>/ 100</span></div><em>' + esc(dlabel) + ' risk</em></div></div>';
+  }
+  function confChip(cell) {
+    return cell.mode === "confirmed"
+      ? '<span class="confchip" style="background:#E4F4EC;color:#1c7a4f">Lab-confirmed</span>'
+      : '<span class="confchip" style="background:#FBF0E2;color:#96520F">Early estimate, capped below HIGH</span>';
+  }
+  // National rank for DIS: recompute from the full grid once loaded, else use the seed's inlined rank so the
+  // first paint matches the SSR (which computed it from the full grid) byte-for-byte.
+  function diseaseNatRank(c) {
+    if (DATA.cities.length > 1) {
+      var sorted = DATA.cities.slice().sort(function (a, b) { return cellFor(b.id, DIS).score - cellFor(a.id, DIS).score; });
+      for (var i = 0; i < sorted.length; i++) { if (sorted[i].id === c.id) return i + 1; }
+    }
+    return (FW.seed && FW.seed.disease_rank) || 1;
+  }
+  function rankStrip(c, disease, cell) {
+    var nat = diseaseNatRank(c);
+    var ncit = DATA.cities.length > 1 ? DATA.cities.length : ((FW.seed && FW.seed.ncities) || DATA.cities.length);
+    var ordered = orderedDiseases(c), k = 1;
+    for (var i = 0; i < ordered.length; i++) { if (ordered[i].id === disease.id) { k = i + 1; break; } }
+    return '<div class="rankstrip"><span class="rankfact">' + esc(c.name) + ' ranks <b>#' + nat + '</b> of ' + ncit + ' cities for ' + esc(disease.label) + ' today.</span>' +
+      '<span class="rankfact">' + esc(disease.label) + ' is ' + esc(c.name) + '\'s <b>#' + k + '</b> fever concern of 4 right now.</span></div>';
+  }
+  function diseaseBandChip(c, dl, band, info) {
+    var bg = "#FFF8E3", bd = "#F0D27A", bc = "#F5B630";
+    if (band !== "MODERATE") { bg = RISK_SOFT[band]; bd = RISK[band]; bc = RISK[band]; }
+    var beacon = '<span class="beacon" style="--c:' + bc + ';--bdur:' + (BEACON_DUR[band] || "1.6s") + '"><i></i></span>';
+    return '<div class="bandchip" style="background:' + bg + ';border-color:' + bd + '">' + beacon + (BAND_TITLE[band] || band) + ' ' + esc(dl) + ' risk in ' + esc(c.name) + ' ' + info + '</div>';
+  }
+  function diseaseMeaning(c, dl, cell) {
+    return '<p class="dialmean">Right now ' + esc(c.name) + '\'s ' + esc(dl) + ' score is ' + cell.score + '/100 (' + (BAND_TITLE[cell.band] || cell.band) + '). A daily look at local ' + esc(dl.toLowerCase()) + ' risk, not who\'s actually sick.</p>';
+  }
+  function diseaseCard(c, disease, cell) {
+    var col = DISEASE[disease.id] || "#888", band = cell.band;
+    var info = '<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>' +
+      '<span class="dialtip"><span class="tiprow">This is ' + esc(c.name) + '\'s ' + esc(disease.label) + ' risk today on a 0-100 scale, blended from weather, search and lab signals.</span>' +
+      '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>';
+    var aside = '<div class="disaside">' + confChip(cell) + rankStrip(c, disease, cell) + '</div>';
+    return '<div class="card riskcard discard">' + periodTabs(DATA.periods) + '<div class="rtop">' + diseaseRing(cell.score, col, disease.label, 120) + aside + '</div>' +
+      diseaseBandChip(c, disease.label, band, info) + diseaseMeaning(c, disease.label, cell) +
+      '<div class="rfoot"><span class="note">Scored from weather conditions, Google search interest and PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span></div></div>';
+  }
+  function diseaseWeatherCard(c, family) {
+    var base = weatherCard(c), mech = '<p class="wxmech">' + esc(DIS_MECH[family] || DIS_MECH.mosquito) + '</p>';
+    return base.slice(0, -6) + mech + '</div>';
+  }
+  function diseaseBreakdown(c, disease, cell) {
+    var ORDER = ["positivity", "weather", "trends"], pts = contribs(cell);
+    var order = ORDER.slice().sort(function (a, b) { return (pts[b] - pts[a]) || (ORDER.indexOf(a) - ORDER.indexOf(b)); });
+    var rows = "", sum = [];
+    order.forEach(function (k) { rows += sig(SIG[k], cell, k, pts[k]); if (cell.signals[k] != null) sum.push(SHORT[k] + " " + pts[k]); });
+    var note = '<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">' + sum.join(" + ") + " = " + cell.score + '</span>' + cell.note + '</p>';
+    // Mobile uses the mobile title classes (sectiontitle/sectionsub), like the hub's breakdownCard; the
+    // desktop twin keeps sechead/secsub. Same per-flow divergence as the hub (SSR mirrors the DESKTOP one).
+    return '<div class="card whycard discard-why"><h2 class="sectiontitle">Why this ' + esc(disease.label) + ' score?</h2>' +
+      '<p class="sectionsub">How each signal builds ' + esc(c.name) + '\'s ' + esc(disease.label) + ' score. <button class="knowmore" data-act="openMethod">Know more</button></p>' +
+      '<div class="acc open"><div class="accbody">' + rows + note + '</div></div></div>';
+  }
+  function diseaseLeaderboardCard(c) {
+    var dl = diseaseObj(DIS).label;
+    return '<div class="card" id="others"><h2 class="sectiontitle">' + esc(dl) + ' risk in other cities</h2><p class="sectionsub">Top cities for ' + esc(dl) + ' today.</p>' +
+      '<input class="citysearch" id="lbsearch" placeholder="Search a city" value="' + esc(state.lbQuery) + '" autocomplete="off" style="margin-bottom:10px" />' +
+      '<div id="lbcontainer">' + leaderboardInner(c) + '</div>' + diseaseNearbyHtml(c) +
+      '<p class="lbmore" style="margin-top:10px"><a href="' + hubHref(c.id) + '">See all fevers in ' + esc(c.name) + '</a></p></div>';
+  }
+  function diseaseNearbyHtml(c) {
+    if (!DATA.cities || DATA.cities.length < 2) return "";
+    var la1 = c.lat || 0, lo1 = c.lon || 0, out = [];
+    for (var i = 0; i < DATA.cities.length; i++) {
+      var o = DATA.cities[i]; if (o.id === c.id) continue;
+      var la2 = o.lat || 0, lo2 = o.lon || 0;
+      var dx = (lo2 - lo1) * Math.cos((la1 + la2) * 0.00872664626), dy = la2 - la1;
+      out.push([dx * dx + dy * dy, o.id, o]);
+    }
+    out.sort(function (a, b) { return a[0] - b[0] || (a[1] < b[1] ? -1 : 1); });
+    var chips = out.slice(0, 5).map(function (t) {
+      var o = t[2], cell = cellFor(o.id, DIS);
+      return '<a class="fwnear-chip" href="' + cityHref(o.id) + '" data-act="pickrow" data-id="' + o.id + '"><b>' + esc(o.name) + '</b><span>' + (cell ? cell.score : "-") + '/100</span></a>';
+    }).join("");
+    return '<div class="fwnear"><div class="fwnear-t">Nearby cities right now</div><div class="fwnear-row">' + chips + '</div></div>';
+  }
+  function diseaseSeasonBits(c) {
+    var ac = DATA.archive && DATA.archive.cities && DATA.archive.cities[c.id];
+    var bd = ac && ac.byDisease && ac.byDisease[DIS];
+    var ov = (bd && bd.score) || {};
+    var ly = ov.ly || [], ty = ov.ty || [];
+    if (ly.length !== 22 || !ty.length) return null;
+    var i = Math.min(ty.length - 1, 21);
+    var tyNow = ty[i], lySame = ly[i], diff = tyNow - lySame;
+    var phrase = diff >= 8 ? "running above" : (diff <= -8 ? "running below" : "about level with");
+    var pk = 0; for (var j = 0; j < 22; j++) { if (ly[j] > ly[pk]) pk = j; }
+    var lyYear = new Date(new Date(DATA.generated_at).getTime() + 19800000).getUTCFullYear() - 1;
+    var pd = new Date(Date.UTC(lyYear, 5, 1) + pk * 7 * 86400000);
+    var peak = pd.getUTCDate() + " " + MONTHS[pd.getUTCMonth()] + " " + pd.getUTCFullYear();
+    return { ty: tyNow, ly: lySame, phrase: phrase, peak: peak };
+  }
+  function diseaseSeasonCard(c) {
+    var s = diseaseSeasonBits(c); if (!s) return "";
+    var dl = diseaseObj(DIS).label;
+    return '<div class="card fwseason"><h2 class="sectiontitle">How this monsoon compares</h2>' +
+      '<p class="seasonp">As of ' + fmtDate(DATA.generated_at) + ', ' + esc(c.name) + "'s " + esc(dl) + ' signal is <b>' + s.ty + '/100</b> - ' + s.phrase + ' the same week last monsoon (' + s.ly + "/100). Last season's high point came in the week of " + s.peak + '. Rain drives this number, so the picture shifts as the season moves - we refresh it daily.</p></div>';
+  }
+  function aboutCard(disease) {
+    var a = DIS_ABOUT[disease.id]; if (!a) return "";
+    // Chikungunya: blurb only, no guide link (its blog match is a generic viral-fever page). See build_site.py.
+    var link = (a[1] && disease.id !== "chikungunya") ? '<p><a class="fw-guidelink" href="' + a[1] + '" target="_blank" rel="noopener">Read the full ' + esc(disease.label) + ' guide on PharmEasy</a></p>' : "";
+    return '<div class="card" id="s-about"><h2 class="sectiontitle">About ' + esc(disease.label) + '</h2><p class="aboutp">' + esc(a[0]) + '</p>' + link + '</div>';
+  }
+  function diseaseSwitcherCard(c) {
+    var chips = DATA.diseases.map(function (d) {
+      var cell = cellFor(c.id, d.id), on = d.id === DIS ? " on" : "";
+      return '<a class="disswitch-chip' + on + '" href="' + hubHref(c.id) + d.id + '/"><span class="dsc-dot" style="background:' + (DISEASE[d.id] || "#888") + '"></span>' + esc(d.label) + ' <b>' + (cell ? cell.score : "-") + '</b></a>';
+    }).join("");
+    var hub = '<a class="disswitch-chip" href="' + hubHref(c.id) + '">All fevers in ' + esc(c.name) + ' <b>' + c.blend.score + '</b></a>';
+    return '<div class="card"><h2 class="sectiontitle">Explore other fevers in ' + esc(c.name) + '</h2>' +
+      '<p class="sectionsub">Each fever gets its own daily score. Tap one to see it.</p>' +
+      '<div class="disswitch-row">' + chips + hub + '</div></div>';
   }
 
   function actionsCard(c) {
@@ -596,7 +777,9 @@
   }
 
   function faqCard() {
-    var faq = (window.FeverWatchFaq && DATA) ? FeverWatchFaq.forCity(cityObj(state.cityId), DATA, FW.seed) : FAQ;
+    var faq = (window.FeverWatchFaq && DATA)
+      ? (DIS ? FeverWatchFaq.forCityDisease(cityObj(state.cityId), DIS, DATA, FW.seed) : FeverWatchFaq.forCity(cityObj(state.cityId), DATA, FW.seed))
+      : FAQ;
     var items = faq.map(function (f, i) {
       return '<details class="faqitem"' + (i < 2 ? ' open' : '') + '><summary><span class="faq-q">' + f[0] + '</span><span class="faq-chev" aria-hidden="true"></span></summary><div class="faq-a">' + f[1] + '</div></details>';
     }).join("");
@@ -635,15 +818,22 @@
 
   function renderCityList() {
     var q = (document.getElementById("citysearch").value || "").toLowerCase();
+    // In a disease vertical, show each city's THIS-disease score (not the overall city blend) so the picker
+    // stays consistent with the page you are on. Falls back to the blend if that cell has not loaded yet.
     document.getElementById("citylist").innerHTML = DATA.cities.filter(function (c) { return c.name.toLowerCase().indexOf(q) >= 0; }).map(function (c) {
-      var b = c.blend;
+      var b = DIS ? (cellFor(c.id, DIS) || c.blend) : c.blend;
       return '<button class="cityopt" data-act="pickCity" data-id="' + c.id + '"><span>📍 ' + c.name + ' <small>' + c.state + '</small></span>' +
         '<span class="sb" style="background:' + RISK_SOFT[b.band] + ';color:' + RISK[b.band] + '">' + b.band + ' ' + b.score + '</span></button>';
     }).join("");
   }
 
-  function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/"; }
-  function shareText(c) { var b = c.blend, drv = diseaseObj(b.driver); return "Today: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
+  function shareUrl() { return (FW.canonicalBase || (location.origin + CITY_ROOT)) + state.cityId + "/" + (DIS ? DIS + "/" : ""); }
+  function shareText(c) {
+    if (DIS) { var cell = cellFor(c.id, DIS), dl = diseaseObj(DIS).label;
+      return "Today: " + cell.band + " " + dl + " risk in " + c.name + ", " + cell.score + "/100, modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl(); }
+    var b = c.blend, drv = diseaseObj(b.driver);
+    return "Today: " + b.band + " monsoon-fever risk in " + c.name + ", " + b.score + "/100 (top concern: " + drv.label + "), modelled from weather conditions, Google search interest and PharmEasy lab signals. Know more here: " + shareUrl();
+  }
   function renderShare() {
     // preview = the CI-baked share card itself (assets/img/share/{city}.jpg), so what the
     // user sees is byte-identical to what gets shared - no re-drawn mock to drift.
@@ -747,7 +937,7 @@
     ["What is Fever Watch?", "Fever Watch is a daily risk indicator for India's top monsoon fevers (dengue, malaria, chikungunya and typhoid), shown as one decomposable score per city and disease. It blends weather conditions, public search interest and PharmEasy lab positivity."],
     ["Is this a diagnosis or medical advice?", "No. Fever Watch is a risk indicator only. It is not a diagnosis, not a count of actual cases or mosquitoes, and not a substitute for a doctor. If you feel unwell, consult a clinician."],
     ["How is the score calculated?", "It is a transparent weighted blend of three signals at different points in the illness pipeline: weather conditions (leading), search interest (coincident) and lab positivity (lagging ground truth). When lab data is present it leads the score, and the breakdown is always shown."],
-    ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
+    ["What does forecast-only mean?", "Where there is not enough lab data for a city and disease yet, the score is a conditions-based forecast and is held below the HIGH band, so a forecast-only read can never show HIGH. This keeps the read honest."],
     ["How often is it updated?", "Weather is refreshed daily from NOAA CPC and NASA POWER, search interest weekly, and the lab signal daily. The score for each city is recomputed every day."],
     ["Which cities are covered?", "Fever Watch currently covers over 200 Indian cities, with more planned. Use the city search to see the read for your city."]
   ];
@@ -831,7 +1021,7 @@
           '<span class="seg" style="background:var(--risk-mod)"><span class="bn">Moderate</span><span class="br">45-69</span></span>' +
           '<span class="seg" style="background:var(--risk-high)"><span class="bn">High</span><span class="br">70-100</span></span>' +
         '</div>' +
-        '<p class="mthd-foot" style="margin:0">Forecast-only reads are capped at 69, so they can never reach red.</p>' +
+        '<p class="mthd-foot" style="margin:0">Without lab data, a forecast-only read is held below the red High band - the closer conditions climb, the more we hold it back.</p>' +
       '</div>' +
       '<p class="mthd-foot"><span class="one">A risk indicator, not a diagnosis or a case count.</span>Sources: rainfall NOAA CPC; temperature and humidity NASA POWER; search Google Trends; positivity PharmEasy Labs and its Partner Affiliates (aggregate, de-identified).</p>' +
     '</div>';

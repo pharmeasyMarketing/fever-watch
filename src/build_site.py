@@ -51,7 +51,7 @@ FAQ_ITEMS = [
      "truth). When lab data is present it leads the score, and the breakdown is always shown."),
     ("What does forecast-only mean?",
      "Where there is not enough lab data for a city and disease yet, the score is a conditions-based "
-     "forecast and is capped below the HIGH band, so a forecast-only read can never show HIGH. This "
+     "forecast and is held below the HIGH band, so a forecast-only read can never show HIGH. This "
      "keeps the read honest."),
     ("How often is it updated?",
      "Weather is refreshed daily from NOAA CPC and NASA POWER, search interest weekly, and the lab signal daily. "
@@ -67,7 +67,7 @@ METHOD_SUMMARY = (
     "mosquito-borne diseases, and rainfall for waterborne typhoid). That weather signal is then blended "
     "with population search interest and PharmEasy "
     "lab positivity in a confirmation-weighted ensemble, with the driver disease named. Forecast-only "
-    "locations are capped below the HIGH band."
+    "locations are held below the HIGH band."
 )
 
 # Full methodology baked into the page (H3 subsections under the "How we calculate this" H2).
@@ -91,14 +91,15 @@ METHOD_HTML = (
     "<h3>3. Confirmation-weighted ensemble</h3>"
     "<p>Not a flat average. With lab data present it dominates (weights about 30 / 22 / 48 weather / search / "
     "positivity); when all three signals agree we nudge the score up by about 8%, and when they disagree we ease "
-    "off by about 4% and lean on the lab. Without lab data, a capped forecast-only mode "
-    "(maximum 69, below the HIGH threshold) keeps a conditions-only read honest. The city headline is a "
+    "off by about 4% and lean on the lab. Without lab data, a forecast-only mode eases the score back as it "
+    "climbs toward the HIGH threshold (a soft cap held below 70) so it can approach but never enter HIGH, "
+    "keeping a conditions-only read honest. The city headline is a "
     "max-dominant blend (0.8 times the top disease plus 0.2 times the mean of the rest) with the driver disease named.</p>"
     "<p>In the breakdown each signal is shown as a plain <strong>High / Moderate / Low</strong> level with its "
     "weight and underlying 0 to 100 score, and the three contributions add up exactly to the displayed score.</p>"
     "<h3>Score bands</h3>"
     "<p>Low (0 to 24), Low-moderate (25 to 44), Moderate (45 to 69) and High (70 to 100). A forecast-only "
-    "read is capped at 69, so it can never reach the red High band.</p>"
+    "read (no lab data) is eased back as it climbs and held below 70, so it can never reach the red High band.</p>"
     "<h3>Data sources</h3><ul>"
     "<li>Rainfall: NOAA CPC (US public domain)</li>"
     "<li>Temperature and humidity: NASA POWER (NASA Langley, US public domain / CC0)</li>"
@@ -424,7 +425,8 @@ def head_meta(cfg: dict, env: str, title: str, desc: str, canonical: str, rel: s
     return "\n".join(parts)
 
 
-def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_url: str, faq: list) -> str:
+def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_url: str, faq: list,
+          disease: dict | None = None) -> str:
     base = cfg["base_url"]
     # dateModified must express the IST calendar date - the same one the sitemap <lastmod> and the
     # visible "Updated" text show. generated_at is minted in UTC, so shift it +5:30 once here so all
@@ -441,7 +443,65 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
     faqpage = {"@type": "FAQPage", "mainEntity": [
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
     graph = [org, website]
-    if city:
+    if city and disease:
+        url = base + city["id"] + "/" + disease["id"] + "/"
+        hub_url = base + city["id"] + "/"
+        dl = disease["label"]
+        graph.append({
+            "@type": "WebPage", "@id": url, "url": url,
+            "name": dl + " risk in " + city["name"] + " | Fever Watch",
+            "description": "Daily " + dl + " risk score (0 to 100) for " + city["name"]
+                           + ", India, blended from weather conditions, search interest and lab positivity.",
+            "inLanguage": lang, "isPartOf": {"@id": base + "#website"},
+            "about": [dl, "monsoon fever risk in India"],
+            "primaryImageOfPage": og_url, "dateModified": generated_at,
+            "breadcrumb": {"@id": url + "#breadcrumb"},
+            "reviewedBy": [{"@type": "Person", "@id": r["url"] + "#person", "name": r["name"], "url": r["url"],
+                            "jobTitle": "Doctor", "worksFor": {"@id": base + "#organization"}} for r in REVIEWERS],
+        })
+        graph.append({
+            "@type": "BreadcrumbList", "@id": url + "#breadcrumb",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": pub["name"], "item": pub["url"] + "/"},
+                {"@type": "ListItem", "position": 2, "name": cfg["site_name"], "item": base},
+                {"@type": "ListItem", "position": 3, "name": city["name"], "item": hub_url},
+                {"@type": "ListItem", "position": 4, "name": dl, "item": url},
+            ],
+        })
+        graph.append({
+            "@type": "Dataset", "@id": url + "#dataset",
+            "name": "Fever Watch " + dl + " risk scores for " + city["name"],
+            "description": "A daily, decomposable " + dl + " risk score (0 to 100) for " + city["name"]
+                           + ", India, blended from weather conditions, search interest and lab positivity. "
+                           "A risk indicator, not case counts.",
+            "url": url, "inLanguage": lang, "isAccessibleForFree": True,
+            "creator": {"@id": base + "#organization"}, "publisher": {"@id": base + "#organization"},
+            "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+            "spatialCoverage": {"@type": "Place", "name": city["name"] + ", India",
+                                "geo": {"@type": "GeoCoordinates", "latitude": city["lat"], "longitude": city["lon"]}},
+            "temporalCoverage": iso_date(generated_at)[:4] + "-06-01/..",
+            "measurementTechnique": "Confirmation-weighted blend of weather suitability (NOAA CPC rainfall; "
+                                    "NASA POWER temperature and humidity), Google search interest and PharmEasy "
+                                    "lab test positivity, normalized 0 to 100 per disease and recomputed daily. "
+                                    "Cities without lab confirmation are held below the HIGH band.",
+            "isBasedOn": [
+                {"@type": "CreativeWork", "name": "NOAA CPC Global Unified Gauge-Based Analysis of Daily Precipitation",
+                 "url": "https://psl.noaa.gov/data/gridded/data.cpc.globalprecip.html"},
+                {"@type": "CreativeWork", "name": "NASA POWER meteorology", "url": "https://power.larc.nasa.gov/"},
+                {"@type": "CreativeWork", "name": "Google Trends search interest (via SerpApi)", "url": "https://trends.google.com/"},
+                {"@type": "CreativeWork", "name": "PharmEasy lab test positivity (aggregated, de-identified)",
+                 "url": "https://pharmeasy.in/diagnostics"},
+            ],
+            "variableMeasured": [{"@type": "PropertyValue", "name": disease["id"] + "_risk_score",
+                                  "minValue": 0, "maxValue": 100},
+                                 {"@type": "PropertyValue", "name": disease["id"] + "_weather_signal", "minValue": 0, "maxValue": 100},
+                                 {"@type": "PropertyValue", "name": disease["id"] + "_search_signal", "minValue": 0, "maxValue": 100},
+                                 {"@type": "PropertyValue", "name": disease["id"] + "_lab_positivity_signal", "minValue": 0, "maxValue": 100}],
+            "distribution": {"@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": base + "data/grid.json"},
+            "dateModified": generated_at,
+        })
+        graph.append(faqpage)
+    elif city:
         url = base + city["id"] + "/"
         graph.append({
             "@type": "WebPage", "@id": url, "url": url,
@@ -481,7 +541,7 @@ def jsonld(cfg: dict, generated_at: str, diseases: list, city: dict | None, og_u
             "measurementTechnique": "Confirmation-weighted blend of weather suitability (NOAA CPC rainfall; "
                                     "NASA POWER temperature and humidity), Google search interest and PharmEasy "
                                     "lab test positivity, normalized 0 to 100 per disease and recomputed daily. "
-                                    "Cities without lab confirmation are capped below the HIGH band.",
+                                    "Cities without lab confirmation are held below the HIGH band.",
             "isBasedOn": [
                 {"@type": "CreativeWork", "name": "NOAA CPC Global Unified Gauge-Based Analysis of Daily Precipitation",
                  "url": "https://psl.noaa.gov/data/gridded/data.cpc.globalprecip.html"},
@@ -570,7 +630,7 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
                 else "PharmEasy lab results feed into this one, so it reflects what's actually turning up in tests, not just the weather")
     weights_clause = ("When lab data is in, it leads - the mix is roughly 30/22/48 across weather, search and labs, with a small confidence bump when all three agree"
                       if any_conf
-                      else "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40), capped at 69 so it can't hit HIGH until the labs back it up")
+                      else "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40) that we hold below the HIGH band until the labs back it up")
     season_clause = ("that's firmly in risk-raising territory" if dw >= 60 else ("that's middling - not nothing, not alarming" if dw >= 25 else "that's on the quiet side for now"))
     band_open = {
         "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly right now - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
@@ -578,7 +638,7 @@ def faq_items(city: dict, diseases: list, cells_by: dict, all_cities: list, gene
         "LOW-MODERATE": "A LOW-MODERATE reading (" + bs + "/100) means " + nm + " is fairly calm right now - low pressure overall, though the monsoon can turn that around fast.",
         "LOW": "A LOW reading (" + bs + "/100) means it's quiet in " + nm + " right now - conditions and signals are all on the gentle side.",
     }.get(bb, "A " + bb + " reading (" + bs + "/100) is the headline for " + nm + " right now.")
-    cap_clause = (" And since " + nm + " is on a conditions-only forecast for now, it's capped at 69 - it won't show HIGH until lab data confirms it." if not any_conf else "")
+    cap_clause = (" And since " + nm + " is on a conditions-only forecast for now, we hold it below the HIGH band - it won't show HIGH until lab data confirms it." if not any_conf else "")
     news_clause = (", and there's a national news spike around dengue at the moment" if news else "")
 
     return [
@@ -908,7 +968,7 @@ def _sig_badge(delta) -> str:
 def _contribs(cell: dict) -> dict:
     """Largest-remainder (Hamilton) apportionment of cell.score across the signals' weighted shares, so the
     per-signal contribution points sum EXACTLY to the displayed integer score in every mode (agree x1.08,
-    disagree x0.96, forecast cap 69 absorbed). Byte-identical results to desktop.js contribs(cell)."""
+    disagree x0.96, forecast soft-knee taper absorbed). Byte-identical results to desktop.js contribs(cell)."""
     s = cell.get("signals", {}); w = cell.get("weights", {}); score = cell["score"]; order = ["positivity", "weather", "trends"]
     sh = {}; base = 0.0
     for k in order:
@@ -1252,17 +1312,23 @@ def _trend_chart_static(model: dict) -> str:
             + zones + yaxis + ly_area + ly_stroke + ty_line + dot + labels + axis + '</svg>')
 
 
-def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, archive_city: dict | None = None) -> str:
+def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, archive_city: dict | None = None,
+                disease: dict | None = None) -> str:
     cid = city["id"]
     cells = [cells_by[(cid, d["id"])] for d in diseases if (cid, d["id"]) in cells_by]
     model = _trend_series(city, cells, generated_at, archive_city)
+    # On a disease page the trend is scoped to THAT disease (overall line = its own weekly score), so the
+    # title + the "Overall" tab are labeled with the disease to make that explicit. Mirrors trend.js.
+    _ttl = (("This monsoon vs last for " + esc(disease["label"]) + " in " + esc(city["name"])) if disease
+            else ("This monsoon vs last in " + esc(city["name"])))
+    _overall_lbl = disease["label"] if disease else "Overall"
     # No real Overall line -> honest "coming soon" empty state (mirrors trend.js unavailableCard). Unreachable
     # in production: page() asserts every city has a real overall line before any page is written.
     if model.get("unavailable"):
         return ('<section id="s-trend" class="fwtrend-host">'
                 '<div class="card fwtrend open" data-metric="overall">'
                 '<div class="fwtrend-head"><div>'
-                '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(city["name"]) + '</h2></div>'
+                '<h2 class="fwtrend-title">' + _ttl + '</h2></div>'
                 '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
                 '<span class="chev" aria-hidden="true"></span></button></div>'
                 '<div class="fwtrend-soon"><span class="i">📈</span><b>Season trend coming soon</b>'
@@ -1271,19 +1337,19 @@ def _trend_html(city: dict, diseases: list, cells_by: dict, generated_at: str, a
     tone = model["tone"]
     tone_icon = {"below": "▼", "above": "▲", "inline": "≈"}[tone]
     tabs = ""
-    for k, lbl in (("overall", "Overall"), ("weather", "Weather"), ("search", "Searches"), ("labs", "Labs")):
+    for k, lbl in (("overall", _overall_lbl), ("weather", "Weather"), ("search", "Searches"), ("labs", "Labs")):
         on = k == "overall"
         avail = model["metrics"][k].get("avail")
         tabs += ('<button class="fwtrend-tab' + (" on" if on else "") + ("" if avail else " soon")
                  + '" data-tact="metric" data-metric="' + k + '"' + (' aria-current="true"' if on else "")
-                 + '>' + lbl + '</button>')
+                 + '>' + esc(lbl) + '</button>')
     months = '<div class="fwtrend-months">' + "".join('<span>' + m + '</span>' for m in TREND_MONTHS) + '</div>'
     # Title + Hide toggle INSIDE the card (matches the mobile twin + the desktop JS branch); the flow JS
     # re-renders this. Below the fold, so no parity impact (the trend host is a JS-only section).
     return ('<section id="s-trend" class="fwtrend-host">'
             '<div class="card fwtrend open" data-metric="overall">'
             '<div class="fwtrend-head"><div>'
-            '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(city["name"]) + '</h2></div>'
+            '<h2 class="fwtrend-title">' + _ttl + '</h2></div>'
             '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="true"><span class="t">Hide</span>'
             '<span class="chev" aria-hidden="true"></span></button></div>'
             '<div class="fwtrend-verdict"><span class="fwtrend-vicon ' + tone + '">' + tone_icon + '</span>'
@@ -1406,6 +1472,417 @@ def _nearest_cities(city: dict, all_cities: list, n: int = 5) -> list:
     return [t[2] for t in out[:n]]
 
 
+# --- SEO Phase 1: per-city per-disease pages (/fever-watch/{city}/{disease}/) --------------------
+# Children of the city hub, one per disease. The hub (disease=None) code path below is UNTOUCHED; all
+# disease-scoped SSR lives in these helpers so the hub stays byte-identical (parity-gated).
+#
+# GATE (2026-07-11): disease-page EMISSION is held behind FW_DISEASE_PAGES_ENABLED. Default OFF = the build
+# writes only the landing + 209 hubs (byte-identical to today, 210 pages). Set the env var FW_DISEASE_PAGES=1
+# to build all 836 children (for LOCAL review + the disease parity fixtures) without editing code; when the
+# W2b JS is signed off + the About/early-estimate copy clears counsel, flip the default here (or set the env
+# in the deploy workflow) to ship. It MUST stay off in production until the JS FW.disease first paint ships,
+# else a JS user on a child page repaints the hub over the disease SSR. Same safety idea as FW_TESTS_ENABLED.
+FW_DISEASE_PAGES_ENABLED = os.environ.get("FW_DISEASE_PAGES", "").strip().lower() in ("1", "true", "yes")
+
+# Disease-family weather mechanism line (module 4). ASCII hyphens only.
+DIS_MECH = {
+    "mosquito": "Mosquitoes breed in the standing water left after rain and bite most around 29C, so warm, "
+                "wet spells lift this score and drier or cooler ones ease it.",
+    "waterborne": "Typhoid is waterborne, so heavy rain that can wash contamination into the water supply "
+                  "drives this score more than temperature does.",
+}
+
+# About-{disease}: 2-sentence, non-diagnostic, doctor-deferring blurb + the locked "full guide" blog link
+# (user decision 2026-07-11). PENDING medical/counsel sign-off in the ~2026-07-15 review bundle - keep the
+# copy factual and non-diagnostic; do not add symptoms-as-advice or case language.
+DIS_ABOUT = {
+    "dengue": ("Dengue is a viral fever spread by the day-biting Aedes mosquito, which breeds in the clean "
+               "standing water that collects in and after the monsoon. It is a risk that rises with the rains; "
+               "most people recover with rest and fluids, but a fever that worsens or persists needs a doctor.",
+               "https://pharmeasy.in/blog/5-ways-to-avoid-dengue-fever/"),
+    "malaria": ("Malaria is caused by a parasite carried by the night-biting Anopheles mosquito, and tends to "
+                "climb through the rainy months. It is treatable, and testing early helps identify the parasite; "
+                "a fever with chills is a reason to see a doctor.",
+                "https://pharmeasy.in/blog/types-of-malaria-symptoms-causes-and-treatment/"),
+    "chikungunya": ("Chikungunya is a viral fever spread by the same Aedes mosquito as dengue, so it shares the "
+                    "monsoon timing. Its hallmark is fever with joint pain that can linger; care is supportive, so "
+                    "rest, fluids and a doctor's guidance matter.",
+                    "https://pharmeasy.in/blog/vaccine-viral-fever-causes-symptoms-and-treatment-options/"),
+    "typhoid": ("Typhoid is a bacterial infection spread through food and water contaminated during the monsoon, "
+                "not by mosquitoes. It tends to build gradually; safe drinking water, hygiene and timely testing "
+                "are the practical defences, and a sustained fever is worth a doctor's visit.",
+                "https://pharmeasy.in/blog/typhoid-causes-symptoms-and-treatment/"),
+}
+
+# Confidence-chip colours (early-estimate lead darkened to AA per the design review).
+_CONF_LAB = ("#E4F4EC", "#1c7a4f")
+_CONF_EST = ("#FBF0E2", "#96520F")
+
+
+def _dis_by_id(diseases: list, did: str) -> dict:
+    return next((d for d in diseases if d["id"] == did), diseases[0])
+
+
+def _dis_family(diseases: list, did: str) -> str:
+    return _dis_by_id(diseases, did).get("family", "mosquito")
+
+
+def _disease_ring(score: int, col: str, dlabel: str, size: int = 120) -> str:
+    """Single-arc dial for a disease page: the 270deg gauge FILLED to that disease's score in its identity
+    colour, centre = score/100 + "{Disease} risk". Same geometry as _ring_svg with one segment; byte-identical
+    to the diseaseRing() twin in mobile.js/desktop.js (W2b)."""
+    sw = 12
+    cx = size / 2.0
+    r = (size - sw) / 2.0 - 1
+    c = 2 * math.pi * r
+    arc = 0.75
+    GAP_PX = 13.5
+    track, gap_all, off = "%.1f" % (arc * c), "%.1f" % (c - arc * c), "%.1f" % (c * 2)
+    cs, rs = _num(cx), _num(r)
+    dash_px = (score / 100.0) * arc * c - GAP_PX
+    if dash_px < 0:
+        dash_px = 0.0
+    dash = "%.1f" % dash_px
+    track_c = ('<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="#e9eef5" stroke-width="'
+               + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + track + ' ' + gap_all
+               + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>')
+    seg = ('<circle cx="' + cs + '" cy="' + cs + '" r="' + rs + '" fill="none" stroke="' + col
+           + '" stroke-width="' + str(sw) + '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + off
+           + '" transform="rotate(135 ' + cs + ' ' + cs + ')"/>')
+    return ('<div class="ringwrap" style="width:' + str(size) + 'px;height:' + str(size) + 'px">'
+            '<svg width="' + str(size) + '" height="' + str(size) + '" viewBox="0 0 ' + str(size) + ' ' + str(size) + '">'
+            + track_c + seg +
+            '</svg><div class="num"><div class="numtop"><b>' + str(score) + '</b><span>/ 100</span></div>'
+            '<em>' + esc(dlabel) + ' risk</em></div></div>')
+
+
+def _conf_chip(cell: dict) -> str:
+    """Lab-confirmed vs Early-estimate honesty chip for the disease hero. 'Early estimate' is the locked
+    replacement for 'Forecast only' (user 2026-07-11); the full-project sweep is W2c."""
+    if cell.get("mode") == "confirmed":
+        bg, fg = _CONF_LAB
+        return ('<span class="confchip" style="background:' + bg + ';color:' + fg + '">Lab-confirmed</span>')
+    bg, fg = _CONF_EST
+    return ('<span class="confchip" style="background:' + bg + ';color:' + fg + '">Early estimate, capped below HIGH</span>')
+
+
+def _disease_rank(city: dict, did: str, dlabel: str, cells_by: dict, all_cities: list, diseases: list) -> tuple:
+    """(national rank for this disease, how this disease ranks among the city's 4). Both live facts."""
+    cid = city["id"]
+    ranked = sorted(all_cities, key=lambda c: cells_by[(c["id"], did)]["score"], reverse=True)
+    nat = next((i + 1 for i, c in enumerate(ranked) if c["id"] == cid), len(all_cities))
+    local = sorted(diseases, key=lambda d: cells_by[(cid, d["id"])]["score"], reverse=True)
+    k = next((i + 1 for i, d in enumerate(local) if d["id"] == did), 1)
+    return nat, len(all_cities), k
+
+
+def _rank_strip(city: dict, did: str, dlabel: str, cells_by: dict, all_cities: list, diseases: list) -> str:
+    nat, ncit, k = _disease_rank(city, did, dlabel, cells_by, all_cities, diseases)
+    return ('<div class="rankstrip"><span class="rankfact">' + esc(city["name"]) + ' ranks <b>#' + str(nat)
+            + '</b> of ' + str(ncit) + ' cities for ' + esc(dlabel) + ' today.</span>'
+            '<span class="rankfact">' + esc(dlabel) + ' is ' + esc(city["name"]) + "'s <b>#" + str(k)
+            + '</b> fever concern of 4 right now.</span></div>')
+
+
+def _disease_band_chip(city: dict, dlabel: str, band: str, info: str = "") -> str:
+    if band == "MODERATE":
+        bg, bd, bc = "#FFF8E3", "#F0D27A", "#F5B630"
+    else:
+        bg, bd, bc = RISK_SOFT.get(band, "#eee"), RISK.get(band, "#888"), RISK.get(band, "#888")
+    beacon = ('<span class="beacon" style="--c:' + bc + ';--bdur:' + BEACON_DUR.get(band, "1.6s") + '"><i></i></span>')
+    return ('<div class="bandchip" style="background:' + bg + ';border-color:' + bd + '">'
+            + beacon + BAND_TITLE.get(band, band) + ' ' + esc(dlabel) + ' risk in ' + esc(city["name"]) + ' ' + info + '</div>')
+
+
+def _disease_meaning(city: dict, dlabel: str, cell: dict) -> str:
+    return ('<p class="dialmean">Right now ' + esc(city["name"]) + "'s " + esc(dlabel) + ' score is '
+            + str(cell["score"]) + '/100 (' + BAND_TITLE.get(cell["band"], cell["band"]) + '). A daily look at local '
+            + esc(dlabel.lower()) + ' risk, not who\'s actually sick.</p>')
+
+
+def _disease_card(city: dict, disease: dict, cell: dict, cells_by: dict, all_cities: list, diseases: list, periods: list) -> str:
+    """The disease hero card (module 1 + 2): single-arc dial + confidence chip + rank facts, band chip with
+    beacon, plain-language meaning line. Byte-identical to the diseaseCard() twin (W2b)."""
+    did = disease["id"]
+    col = DISEASE.get(did, "#888")
+    band = cell["band"]
+    info = ('<span class="dialinfo"><button type="button" class="dialinfo-btn" data-act="dialInfo" aria-label="What this score means">i</button>'
+            '<span class="dialtip"><span class="tiprow">This is ' + esc(city["name"]) + "'s " + esc(disease["label"])
+            + ' risk today on a 0-100 scale, blended from weather, search and lab signals.</span>'
+            '<span class="tipbands"><span class="tb"><i style="background:#3f9d6f"></i>Low 0-24</span><span class="tb"><i style="background:#c2a93a"></i>Low-Mod 25-44</span><span class="tb"><i style="background:#d98a2b"></i>Moderate 45-69</span><span class="tb"><i style="background:#d64545"></i>High 70-100</span></span><span class="tipcaret"></span></span></span>')
+    aside = ('<div class="disaside">' + _conf_chip(cell)
+             + _rank_strip(city, did, disease["label"], cells_by, all_cities, diseases) + '</div>')
+    return ('<div class="card riskcard discard">' + _period_tabs(periods) + '<div class="rtop">'
+            + _disease_ring(cell["score"], col, disease["label"], 120) + aside + '</div>'
+            + _disease_band_chip(city, disease["label"], band, info) + _disease_meaning(city, disease["label"], cell)
+            + '<div class="rfoot"><span class="note">Scored from weather conditions, Google search interest and '
+            'PharmEasy lab signals. <button class="knowmore" data-act="openMethod">Know more</button></span></div></div>')
+
+
+def _disease_weather_card(city: dict, family: str, date_str: str) -> str:
+    """Reuses the hub weather card and appends the disease-family mechanism line (module 4)."""
+    base = _weather_card(city, date_str)
+    mech = '<p class="wxmech">' + esc(DIS_MECH.get(family, DIS_MECH["mosquito"])) + '</p>'
+    return base[:-6] + mech + '</div>' if base.endswith('</div>') else base + mech
+
+
+def _disease_breakdown(city: dict, disease: dict, cell: dict) -> str:
+    """Single-disease "Why this score?" (module 3): the 3 signal rows for this cell, pre-expanded (no
+    accordion of the other diseases), + the reconciliation note. Reuses _sig / _contribs / SIG."""
+    did = disease["id"]
+    pts = _contribs(cell)
+    ORDER = ["positivity", "weather", "trends"]
+    order = sorted(ORDER, key=lambda k: (-pts[k], ORDER.index(k)))
+    rows = ""
+    sumparts = []
+    for k in order:
+        rows += _sig(SIG[k], cell, k, pts[k])
+        if cell.get("signals", {}).get(k) is not None:
+            sumparts.append(SHORT[k] + " " + str(pts[k]))
+    note = ('<p class="accnote"><span style="display:block;font-weight:700;margin:0 0 4px">'
+            + " + ".join(sumparts) + " = " + str(cell["score"]) + '</span>' + cell["note"] + '</p>')
+    # The body is wrapped in an always-open .acc so it inherits the exact opened-accordion layout (mobile
+    # display:block; desktop 3-col grid + equal-height), instead of the collapsed .accbody default. It reads
+    # like one opened hub accordion, minus the clickable header (there is only one disease here).
+    return ('<div class="card whycard discard-why"><h2 class="sechead">Why this ' + esc(disease["label"]) + ' score?</h2>'
+            '<p class="secsub">How each signal builds ' + esc(city["name"]) + "'s " + esc(disease["label"])
+            + ' score. <button class="knowmore" data-act="openMethod">Know more</button></p>'
+            '<div class="acc open"><div class="accbody">' + rows + note + '</div></div></div>')
+
+
+def _disease_switcher(city: dict, rel: str, diseases: list, cells_by: dict, active: str | None = None) -> str:
+    """Crawlable disease cross-link row: chips to this city's 4 disease pages (+ a hub link). On the hub it
+    links all 4 children (internal-linking + sitemap discovery); on a child it links the 3 siblings + hub.
+    Below-fold SEO markup (not parity-gated); the in-app JS switcher is W2b."""
+    cid = city["id"]
+    chips = ""
+    for d in diseases:
+        cell = cells_by[(cid, d["id"])]
+        on = " on" if d["id"] == active else ""
+        chips += ('<a class="disswitch-chip' + on + '" href="' + rel + esc(cid) + '/' + esc(d["id"]) + '/">'
+                  '<span class="dsc-dot" style="background:' + DISEASE.get(d["id"], "#888") + '"></span>'
+                  + esc(d["label"]) + ' <b>' + str(cell["score"]) + '</b></a>')
+    hub = ('<a class="disswitch-chip" href="' + rel + esc(cid) + '/">All fevers in ' + esc(city["name"])
+           + ' <b>' + str(city["blend"]["score"]) + '</b></a>') if active else ""
+    # No inner .disswitch-t label: both call sites (the hub's gated section and the disease page's
+    # "Explore other fevers" section) carry their own outer H2, so an inner title would duplicate it.
+    return '<div class="disswitch"><div class="disswitch-row">' + chips + hub + '</div></div>'
+
+
+def _disease_archive_view(archive_city: dict | None, states: dict, state: str, did: str, family: str) -> dict | None:
+    """Remap the per-disease archive slices into the {overall,weather,search,labs} shape that the existing
+    _trend_series / _season_bits already read, so the disease season module reuses the hub trend math verbatim.
+    overall = byDisease.{did}.score (its own dial line), weather = byFamily.{family}, search =
+    states.{state}.{did}, labs = byDisease.{did}.labs (only where 2025 history exists)."""
+    if not archive_city:
+        return None
+    bd = (archive_city.get("byDisease") or {}).get(did) or {}
+    bf = (archive_city.get("byFamily") or {}).get(family) or {}
+    ssearch = ((states or {}).get(state) or {}).get(did) or {}
+    view = {}
+    if bd.get("score"):
+        view["overall"] = bd["score"]
+    if bf:
+        view["weather"] = bf
+    if ssearch:
+        view["search"] = ssearch
+    if bd.get("labs"):
+        view["labs"] = bd["labs"]
+    return view or None
+
+
+def _disease_leaderboard_table(all_cities: list, cells_by: dict, did: str, dlabel: str, rel: str, top: int = 20) -> str:
+    """Top cities for THIS disease today, ranked by the disease cell score, each linking to the same disease
+    page of that city (same-disease crawl mesh). Reuses the hub table styling."""
+    ranked = sorted(all_cities, key=lambda c: cells_by[(c["id"], did)]["score"], reverse=True)[:top]
+    rows = ""
+    for i, c in enumerate(ranked):
+        cell = cells_by[(c["id"], did)]
+        rows += ('<tr><td>' + str(i + 1) + '</td>'
+                 '<td><a href="' + rel + esc(c["id"]) + '/' + esc(did) + '/">' + esc(c["name"]) + '</a></td>'
+                 '<td>' + esc(c.get("state", "")) + '</td>'
+                 '<td>' + esc(cell["band"]) + '</td>'
+                 '<td><strong>' + str(cell["score"]) + '</strong></td></tr>')
+    return ('<table class="fw-table"><thead><tr><th scope="col">#</th><th scope="col">City</th>'
+            '<th scope="col">State</th><th scope="col">Band</th><th scope="col">Score</th></tr></thead>'
+            '<tbody>' + rows + '</tbody></table>')
+
+
+def _disease_nearby_p(city: dict, did: str, dlabel: str, all_cities: list, cells_by: dict, rel: str) -> str:
+    near = _nearest_cities(city, all_cities)
+    return ('<p class="fw-near">Nearby for ' + esc(dlabel) + ': ' + ", ".join(
+        '<a href="' + rel + esc(c["id"]) + '/' + esc(did) + '/">' + esc(c["name"]) + '</a> ('
+        + str(cells_by[(c["id"], did)]["score"]) + '/100, ' + esc(cells_by[(c["id"], did)]["band"]) + ')'
+        for c in near) + '.</p>')
+
+
+def _about_disease(disease: dict) -> str:
+    txt, guide = DIS_ABOUT.get(disease["id"], ("", ""))
+    if not txt:
+        return ""
+    # Chikungunya's only blog match is a generic viral-fever page, not a chikungunya guide, so per user
+    # feedback the "Read the full guide" link is omitted for chikungunya (the blurb stays).
+    link = ('<p><a class="fw-guidelink" href="' + esc(guide) + '" target="_blank" rel="noopener">Read the full '
+            + esc(disease["label"]) + ' guide on PharmEasy</a></p>') if (guide and disease["id"] != "chikungunya") else ""
+    return ('<section id="s-about"><h2>About ' + esc(disease["label"]) + '</h2>'
+            '<p>' + esc(txt) + '</p>' + link + '</section>')
+
+
+def _disease_season_sec(city: dict, disease: dict, view: dict | None, generated_at: str) -> str:
+    s = _season_bits(view, generated_at)
+    if not s:
+        return ""
+    nm = city["name"]; dl = disease["label"]
+    return ('<section><h2>How this monsoon compares for ' + esc(dl) + ' in ' + esc(nm) + '</h2>'
+            '<p>As of ' + esc(_fmt_date_js(generated_at)) + ', ' + esc(nm) + "'s " + esc(dl) + ' signal is '
+            + str(s["ty"]) + '/100 - ' + s["phrase"] + ' the same week last monsoon (' + str(s["ly"])
+            + '/100). Last season\'s high point came in the week of ' + esc(s["peak"]) + '. Rain drives '
+            'this number, so the picture shifts as the season moves - we refresh it daily.</p></section>')
+
+
+def faq_items_disease(city: dict, disease: dict, cells_by: dict, all_cities: list, generated_at: str, diseases: list) -> list:
+    """Per-city per-disease FAQ (question, answer) pairs weaving the live cell numbers. Risk-indicator
+    framing only; ASCII hyphens; no diagnosis, no case counts; positivity as an aggregate trend only.
+    Byte-mirrored by faq.js buildDisease() (W2b) for the interactive flow; this baked SSR + the FAQPage
+    JSON-LD are the crawlable source."""
+    cid = city["id"]; nm = city["name"]; st = city["state"]; dl = disease["label"]; did = disease["id"]
+    cell = cells_by[(cid, did)]; sc = str(cell["score"]); bd = cell["band"]
+    sigs = cell.get("signals", {})
+    w = sigs.get("weather"); wv = "no data" if w is None else str(w)
+    tv = sigs.get("trends"); tvs = "no data" if tv is None else str(tv)
+    conf = cell.get("mode") == "confirmed"
+    news = bool(sigs.get("news_spike")) and did == "dengue"
+    nat, ncit, k = _disease_rank(city, did, dl, cells_by, all_cities, diseases)
+    date_str = _fmt_date_js(generated_at)
+    tert = "the higher-risk third" if nat <= ncit / 3.0 else ("the middle band" if nat <= 2 * ncit / 3.0 else "the lower half")
+    fam = disease.get("family", "mosquito")
+    wwrd = "warm, wet spells" if fam == "mosquito" else "heavy rain that can dirty the water supply"
+    mode_clause = ("PharmEasy lab results feed this one, so it reflects what's actually turning up in tests, not just the weather"
+                   if conf else "we don't have enough confirmed lab data for " + nm + " yet, so this is an early, conditions-based estimate that we cap below the HIGH band to stay honest")
+    news_clause = (", and there's a national news spike around dengue at the moment" if news else "")
+    band_line = {
+        "HIGH": "A HIGH reading (" + sc + "/100) means " + dl + " signals in " + nm + " are lining up strongly right now.",
+        "MODERATE": "A MODERATE reading (" + sc + "/100) means " + dl + " risk in " + nm + " is a touch elevated but mixed.",
+        "LOW-MODERATE": "A LOW-MODERATE reading (" + sc + "/100) means " + dl + " risk in " + nm + " is fairly calm right now.",
+        "LOW": "A LOW reading (" + sc + "/100) means " + dl + " is quiet in " + nm + " right now.",
+    }.get(bd, "A " + bd + " reading (" + sc + "/100) is the " + dl + " headline for " + nm + " right now.")
+    cap_clause = (" It stays below the HIGH band until lab data confirms it, so it can't show HIGH yet." if not conf else "")
+    return [
+        ("What is " + nm + "'s " + dl + " risk today?",
+         nm + "'s " + dl + " score is " + sc + "/100 (" + bd + ") as of " + date_str + ", where 0 is quiet and 100 "
+         "is the loudest we show. " + band_line[0].upper() + band_line[1:] + " It's a daily risk indicator across "
+         "weather, search and lab signals, not a diagnosis or a count of cases."),
+        ("Is " + dl + " rising in " + nm + " right now?",
+         "We can't give case counts - Fever Watch doesn't report those. What we can show is that " + st + "'s search "
+         "interest for " + dl.lower() + " is " + tvs + "/100 today" + news_clause + ", and the weather signal for it is "
+         + wv + "/100. Search and weather can run ahead of an outbreak, but they aren't confirmed cases; for the "
+         "confirmed side we lean on PharmEasy's aggregated, de-identified lab positivity where it's available."),
+        ("How is " + nm + "'s " + dl + " score calculated?",
+         "Three signals, blended and always shown: weather conditions, how much people nearby search " + dl.lower()
+         + " symptoms, and PharmEasy lab positivity. " + mode_clause[0].upper() + mode_clause[1:] + "." + cap_clause
+         + " The bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."),
+        ("Is it " + dl + " season in " + nm + "?",
+         "Monsoon fevers follow the rain more than the calendar. Right now " + nm + "'s weather signal for " + dl.lower()
+         + " is " + wv + "/100, so " + wwrd + " push it up and drier or cooler spells pull it back. Rather than guessing "
+         "by the month, check back here - it updates daily."),
+        ("How does " + nm + " compare with other cities for " + dl + "?",
+         "Out of the " + str(ncit) + " cities we cover, " + nm + " ranks #" + str(nat) + " today for " + dl + " (" + sc
+         + "/100, " + bd + "), which puts it in " + tert + " nationally. That ordering shifts through the season because "
+         "every city is rescored each day from its own weather, search and lab signals."),
+        ("What should someone in " + nm + " do about " + dl + "?",
+         ("Keep up the basics: clear standing water and use repellent, since " + dl + " is mosquito-borne, and don't brush "
+          "off a fever that lasts more than a couple of days." if fam == "mosquito"
+          else "Stick to safe drinking water and good food hygiene, since typhoid is waterborne, and don't brush off a "
+          "fever that lasts more than a couple of days.") + " If you're feeling off, a fever panel test or a quick online "
+         "doctor consult on PharmEasy is an easy next step. This is a risk indicator, not medical advice, so do see a "
+         "doctor if you're unwell."),
+    ]
+
+
+def render_disease_content(city: dict, disease: dict, diseases: list, cells_by: dict, all_cities: list,
+                           generated_at: str, rel: str, faq: list, periods: list,
+                           archive_city: dict | None = None, states: dict | None = None) -> str:
+    """Full crawler-readable content for a /{city}/{disease}/ child page: the disease hero pre (parity twin
+    with the W2b JS first paint) + the .fw-below deep SEO block."""
+    cid = city["id"]; did = disease["id"]
+    cell = cells_by[(cid, did)]
+    family = disease.get("family", "mosquito")
+    date_str = _fmt_date_js(generated_at)
+    view = _disease_archive_view(archive_city, states or {}, city.get("state", ""), did, family)
+
+    pre = (_disease_pre_m(city, disease, cell, cells_by, all_cities, diseases, date_str, periods)
+           + _disease_pre_d(city, disease, cell, cells_by, all_cities, diseases, generated_at, periods))
+
+    # --- below-fold SEO block (crawlers / no-JS) ---
+    why_sec = ('<section><h2>Why this ' + esc(disease["label"]) + ' score</h2>'
+               + _disease_breakdown(city, disease, cell) + '</section>')
+    method_sec = ('<section><h2>How we calculate the score</h2>' + METHOD_HTML
+                  + '<p class="dashnote">' + esc(DASHBOARD_NOTE) + '</p></section>')
+    acts = "".join(
+        ('<li><a href="' + esc(h) + '"><strong>' + esc(t) + '</strong> - ' + esc(s) + '</a></li>')
+        if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
+        for t, s, h in ACTIONS)
+    do_sec = ('<section id="s-do"><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
+              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">'
+              + esc(CTA_LABEL + " in " + city["name"]) + '</a></p></section>')
+    switch_sec = ('<section><h2>Explore other fevers in ' + esc(city["name"]) + '</h2>'
+                  + _disease_switcher(city, rel, diseases, cells_by, active=did) + '</section>')
+    other_sec = ('<section id="s-other"><h2>' + esc(disease["label"]) + ' risk in other cities today</h2>'
+                 '<p>Top cities for ' + esc(disease["label"]) + ' right now, highest first.</p>'
+                 + _disease_nearby_p(city, did, disease["label"], all_cities, cells_by, rel)
+                 + _disease_leaderboard_table(all_cities, cells_by, did, disease["label"], rel) + '</section>')
+    trend_sec = _trend_html(city, [disease], cells_by, generated_at, view, disease)
+    season_sec = _disease_season_sec(city, disease, view, generated_at)
+    about_sec = _about_disease(disease)
+    faq_sec = '<section id="s-faq"><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
+    reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
+
+    return (pre + '<div class="fw-fallback fw-below">' + why_sec + switch_sec + method_sec + do_sec
+            + other_sec + trend_sec + season_sec + about_sec + faq_sec + reads_sec
+            + '<p class="fw-disc">' + esc(MEDICAL_DISCLAIMER) + '</p></div>')
+
+
+def _disease_pre_m(city: dict, disease: dict, cell: dict, cells_by: dict, all_cities: list, diseases: list,
+                   date_str: str, periods: list) -> str:
+    nm = esc(city["name"]); dl = esc(disease["label"])
+    return ('<div class="fw-pre fw-pre-m">'
+            '<div class="hero"><h1>' + dl + ' risk in ' + nm + ' today, in <em>one score</em>.</h1>'
+            '<p>A daily ' + dl + ' risk score for ' + nm + ', blended from weather conditions, Google search interest and PharmEasy lab signals.</p></div>'
+            '<button class="loccard" data-act="openCity">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
+            '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
+            '<p class="searchnote loc-note">Updated ' + date_str + '. Available in select cities.</p>' + REVIEWBY
+            + '<div class="wrap">' + _disease_card(city, disease, cell, cells_by, all_cities, diseases, periods)
+            + _disease_weather_card(city, disease.get("family", "mosquito"), date_str) + '</div></div>')
+
+
+def _search_hero_disease_d(city: dict, disease: dict, generated_at: str) -> str:
+    nm = esc(city["name"]); dl = esc(disease["label"])
+    return ('<section class="srch"><div class="srchin">'
+            '<h1>' + dl + ' risk in ' + nm + ' today, in <em>one score</em>.</h1>'
+            '<p class="subtitle">A daily ' + dl + ' risk score for ' + nm + ', blended from weather conditions, Google Search interest and PharmEasy lab signals.</p>'
+            '<div class="locwrap"><button class="loccard" data-act="combo">' + LOC_PIN + '<span class="locname">' + nm + '</span>'
+            '<span class="locchange">Change <span class="loccaret" aria-hidden="true">▾</span></span></button>'
+            '<div class="combopanel"><input id="cityinput" placeholder="Where are you from? Type a city" autocomplete="off"><div class="comboloc" data-act="useLoc">◎ Use my location</div><div class="combolist" id="combolist"></div></div>'
+            '</div>'
+            '<p class="searchnote loc-note">Updated ' + _fmt_date_js(generated_at) + '. Available in select cities.</p>' + REVIEWBY + '</div></section>')
+
+
+def _disease_toc(disease: dict) -> str:
+    return ('<aside class="toc"><h2>Quick Links</h2>'
+            '<a class="cur" href="#s-week">' + esc(disease["label"]) + ' risk</a><a href="#s-why">Why this score?</a>'
+            '<a href="#s-weather">Weather conditions today</a><a href="#s-do">What you can do</a>'
+            '<a href="#s-trend">This year vs last year</a><a href="#s-about">About ' + esc(disease["label"]) + '</a>'
+            '<a href="#s-other">Other cities</a><a href="#s-faq">Common questions</a></aside>')
+
+
+def _disease_pre_d(city: dict, disease: dict, cell: dict, cells_by: dict, all_cities: list, diseases: list,
+                   generated_at: str, periods: list) -> str:
+    return ('<div class="fw-pre fw-pre-d">' + _search_hero_disease_d(city, disease, generated_at)
+            + '<div class="shell">' + _disease_toc(disease)
+            + '<section id="s-week">' + _disease_card(city, disease, cell, cells_by, all_cities, diseases, periods) + '</section>'
+            + '<section id="s-why">' + _disease_breakdown(city, disease, cell) + '</section></div></div>')
+
+
 def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                    generated_at: str, disclaimer: str, rel: str, faq: list, periods: list,
                    archive_city: dict | None = None) -> str:
@@ -1451,12 +1928,16 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
                  + ' cities, highest first.</p>' + near_p + _cities_table(all_cities, rel) + '</section>')
 
     tests_sec = _tests_sec(city, generated_at) if FW_TESTS_ENABLED else ""
+    # Crawlable disease-switcher row -> this city's 4 child pages (internal linking + sitemap discovery).
+    # Gated with the child-page emission so the hub never links to pages the build did not write.
+    switch_sec = ('<section><h2>' + esc(city["name"]) + ' by fever</h2>'
+                  + _disease_switcher(city, rel, diseases, cells_by) + '</section>') if FW_DISEASE_PAGES_ENABLED else ""
     season_sec = _season_sec(city, archive_city, generated_at)
     trend_sec = _trend_html(city, diseases, cells_by, generated_at, archive_city)
     faq_sec = '<section><h2>Common questions</h2>' + _faq_html(faq) + '</section>'
     reads_sec = '<section><h2>Further reading from PharmEasy</h2>' + _reads_html() + '</section>'
 
-    return (pre + '<div class="fw-fallback fw-below">' + why_sec + method_sec + do_sec + tests_sec
+    return (pre + '<div class="fw-fallback fw-below">' + why_sec + switch_sec + method_sec + do_sec + tests_sec
             + other_sec + trend_sec + season_sec + faq_sec + reads_sec + '<p class="fw-disc">' + esc(MEDICAL_DISCLAIMER) + '</p></div>')
 
 
@@ -1482,12 +1963,56 @@ def render_landing(cfg: dict, all_cities: list, generated_at: str, disclaimer: s
 # --- page assembly -----------------------------------------------------------
 
 def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av: str,
-         archive: dict | None = None) -> str:
-    rel = "../" if city else ""
+         archive: dict | None = None, disease: dict | None = None) -> str:
+    rel = "../../" if (city and disease) else ("../" if city else "")
     diseases = grid["diseases"]
     generated_at = grid.get("generated_at", "")
     disclaimer = grid.get("disclaimer", "")
-    if city:
+    if city and disease:
+        did = disease["id"]; dl = disease["label"]
+        cell = cells_by[(city["id"], did)]
+        # Title: front-load the exact "{disease} in {city}" query, date re-stamps daily, no raw score
+        # (band/score churn would churn the title; the meta carries the numbers).
+        title = dl + " in " + city["name"] + ": Risk Score Today, " + _fmt_date_js(generated_at) + " | Fever Watch by PharmEasy"
+        _d = cell.get("delta_1d")
+        _vy = ("steady vs yesterday" if not _d else (("up " + str(_d)) if _d > 0 else ("down " + str(abs(_d)))) + " vs yesterday")
+        _sig = cell.get("signals", {})
+        _wt = "no data" if _sig.get("weather") is None else str(_sig.get("weather"))
+        _st = "no data" if _sig.get("trends") is None else str(_sig.get("trends"))
+        _lt = "no data yet" if _sig.get("positivity") is None else str(_sig.get("positivity"))
+        desc = (dl + " risk in " + city["name"] + " today, " + _fmt_date_js(generated_at) + ": " + str(cell["score"])
+                + "/100 (" + cell["band"] + "), " + _vy + ". Signals: weather " + _wt + ", search " + _st
+                + ", labs " + _lt + ". A risk indicator, not a diagnosis.")
+        canonical = cfg["base_url"] + city["id"] + "/" + did + "/"
+        faq = faq_items_disease(city, disease, cells_by, grid["cities"], generated_at, diseases)
+        periods = grid.get("periods", ["today"])
+        archive_city = ((archive or {}).get("cities", {}) or {}).get(city["id"])
+        states = (archive or {}).get("states")
+        fallback = render_disease_content(city, disease, diseases, cells_by, grid["cities"], generated_at,
+                                          rel, faq, periods, archive_city, states)
+        # Inline the disease seed so the W2b JS disease mode first-paints instantly (city cell + rank +
+        # this city's archive slice incl. its state search line for the per-disease trend).
+        city_cells = [cells_by[(city["id"], d["id"])] for d in diseases if (city["id"], d["id"]) in cells_by]
+        _ranked = sorted(grid["cities"], key=lambda c: c["blend"]["score"], reverse=True)
+        rank = next((i + 1 for i, c in enumerate(_ranked) if c["id"] == city["id"]), len(grid["cities"]))
+        # National rank for THIS disease (ranked by the disease cell score), inlined so the rank strip
+        # first-paints the same number the SSR computed from the full grid (seed carries only one city).
+        drank = _disease_rank(city, did, dl, cells_by, grid["cities"], diseases)[0]
+        seed = {"generated_at": generated_at, "diseases": diseases, "bands": grid.get("bands", []),
+                "trends_provider": grid.get("trends_provider"), "positivity_provider": grid.get("positivity_provider"),
+                "periods": periods, "disease": did,
+                "cities": [city], "grid": city_cells, "rank": rank, "ncities": len(grid["cities"]),
+                "disease_rank": drank}
+        if archive_city:
+            seed["archive"] = {"cities": {city["id"]: archive_city},
+                               "states": {city.get("state", ""): ((states or {}).get(city.get("state", "")) or {})}}
+        dv = og_version(generated_at)
+        fw = {"city": city["id"], "disease": did, "gridUrl": rel + "data/grid.json?v=" + dv,
+              "archiveUrl": rel + "data/archive/trend_series.json?v=" + dv,
+              "base": rel, "logo": rel + "assets/img/pe_logo-white.svg", "canonicalBase": cfg["base_url"], "ver": av, "seed": seed}
+        og_url = cfg["base_url"] + "assets/img/og/" + city["id"] + ".jpg"  # v1 reuses the CITY og card
+        og_alt = dl + " risk in " + city["name"] + " from Fever Watch"
+    elif city:
         title = city["name"] + " Monsoon Fever Risk, " + _fmt_date_js(generated_at) + " | Dengue, Malaria, Chikungunya, Typhoid | Fever Watch"
         # Driver-led, dated, number-rich description rebuilt on every daily build - front-loads the live
         # numbers a searcher (and an AI overview) wants, so Google keeps OUR description instead of
@@ -1573,7 +2098,7 @@ def page(cfg: dict, grid: dict, cells_by: dict, city: dict | None, env: str, av:
     return PAGE.format(
         lang=cfg.get("language", "en-IN"),
         head=head_meta(cfg, env, title, desc, canonical, rel, og_meta, og_alt),
-        jsonld=jsonld(cfg, generated_at, diseases, city, og_url, faq),
+        jsonld=jsonld(cfg, generated_at, diseases, city, og_url, faq, disease),
         rel=rel, nav=nav_html(rel, meds_href), ticker=ticker_html(grid["cities"], rel),
         fallback=fallback, footer=footer_html(),
         fw=json.dumps(fw, ensure_ascii=False).replace("</", "<\\/"), av=av,
@@ -1588,12 +2113,18 @@ def write_robots(cfg: dict, env: str) -> None:
     _write("robots.txt", body)
 
 
-def write_sitemap(cfg: dict, cities: list, generated_at: str) -> None:
+def write_sitemap(cfg: dict, cities: list, generated_at: str, diseases: list | None = None) -> None:
     base, lm = cfg["base_url"], iso_date(generated_at)
     rows = ['  <url><loc>' + esc(base) + '</loc><lastmod>' + lm + '</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>']
     for c in cities:
         rows.append('  <url><loc>' + esc(base + c["id"] + "/") + '</loc><lastmod>' + lm
                     + '</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>')
+        # Child disease pages (emitted only when the disease pages are enabled; gated so the sitemap never
+        # advertises a URL the build did not write).
+        if FW_DISEASE_PAGES_ENABLED and diseases:
+            for d in diseases:
+                rows.append('  <url><loc>' + esc(base + c["id"] + "/" + d["id"] + "/") + '</loc><lastmod>' + lm
+                            + '</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>')
     body = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
             + "\n".join(rows) + "\n</urlset>\n")
     _write("sitemap.xml", body)
@@ -1701,16 +2232,24 @@ def main() -> int:
     # landing
     av = asset_version()
     _write("index.html", page(cfg, grid, cells_by, None, env, av, archive))
-    # cities
+    # cities (+ per-disease children when enabled)
+    n_children = 0
     for c in cities:
         _write(os.path.join(c["id"], "index.html"), page(cfg, grid, cells_by, c, env, av, archive))
+        if FW_DISEASE_PAGES_ENABLED:
+            for d in diseases:
+                _write(os.path.join(c["id"], d["id"], "index.html"),
+                       page(cfg, grid, cells_by, c, env, av, archive, d))
+                n_children += 1
 
     write_robots(cfg, env)
-    write_sitemap(cfg, cities, grid.get("generated_at", ""))
+    write_sitemap(cfg, cities, grid.get("generated_at", ""), diseases)
     write_manifest(cfg)
 
-    print("Wrote %d pages (1 landing + %d cities) -> %s" % (len(cities) + 1, len(cities), DIST))
-    print("robots.txt (%s), sitemap.xml (%d urls), site.webmanifest written." % (env, len(cities) + 1))
+    n_pages = len(cities) + 1 + n_children
+    print("Wrote %d pages (1 landing + %d cities + %d disease children) -> %s"
+          % (n_pages, len(cities), n_children, DIST))
+    print("robots.txt (%s), sitemap.xml (%d urls), site.webmanifest written." % (env, n_pages))
     return 0
 
 

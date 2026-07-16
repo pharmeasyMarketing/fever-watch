@@ -78,7 +78,7 @@ def build_overview(wb, row_counts, live_labs_info, sampling_notes):
     add("WHAT THIS SCORES", "sub")
     add("A daily 0-100 risk indicator (NOT a diagnosis, case count, or medical advice) per city and disease")
     add("for India's top monsoon fevers: dengue (flagship), malaria, chikungunya, typhoid. The score is")
-    add("always decomposable into its three signals; a forecast-only read (no lab data) is capped below HIGH.")
+    add("always decomposable into its three signals; a forecast-only read (no lab data) is held below HIGH.")
     add("")
     add("THE THREE SIGNALS", "sub")
     add("1. WEATHER (leading - conditions ahead). Environmental sub-score from NOAA CPC rainfall +")
@@ -98,8 +98,10 @@ def build_overview(wb, row_counts, live_labs_info, sampling_notes):
     add("   score = ROUND( MIN(100, (0.30*weather + 0.22*trends + 0.48*positivity) * M) )", indent=1)
     add("   M = 1.08 if the three signals agree (max-min spread < 22) else 0.96 (the agree/disagree multiplier).", indent=1)
     add("Without positivity (forecast-only mode):")
-    add("   score = ROUND( MIN(69, 0.60*weather + 0.40*trends) )", indent=1)
-    add("   Capped at 69, one point below the HIGH band floor (70): a conditions-only read can never show HIGH.", indent=1)
+    add("   blend = 0.60*weather + 0.40*trends", indent=1)
+    add("   score = ROUND( blend if blend <= 55 else 55 + (blend-55)*(69-55)/(100-55) )   [soft-knee taper]", indent=1)
+    add("   Pass-through at or below 55, then compressed into [55,69]: a conditions-only read approaches", indent=1)
+    add("   but never reaches the HIGH band floor (70), and no longer piles many cities onto a single cap.", indent=1)
     add("Per-city OVERALL headline (max-dominant blend):")
     add("   ROUND( 0.8*top-disease-score + 0.2*mean-of-the-rest ), with the driver disease named.", indent=1)
     add("Bands:  HIGH >= 70   MODERATE >= 45   LOW-MODERATE >= 25   LOW < 25.", indent=1)
@@ -184,7 +186,7 @@ DICT = [
     ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
     ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],
     ['confidence', 'FORMULA: Forecast only if no positivity; else High if the three signals agree (max-min < 22) else Moderate; downgraded one step (High->Moderate, Moderate->Low) when stale=TRUE.'],
-    ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96, capped 100. forecast = weather+trends only, capped 69. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
+    ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96, capped 100. forecast = weather+trends only, soft-knee taper (<=55 unchanged, else 55+(blend-55)*14/45) held below 70. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
     ['band', 'FORMULA: HIGH >=70, MODERATE >=45, LOW-MODERATE >=25, LOW <25 (from score).'],
     ['mode', 'FORMULA: confirmed (positivity present) or forecast (capped, no positivity); OVERALL rows = blend.'],
     ['trends_state_interest', 'Raw Google Trends interest (0-100) for the city state (or the disease national mean if the state has no row), BEFORE the floor. trends_score = MAX(4, MIN(100, this)).'],
@@ -379,15 +381,15 @@ def build_config_refs(wb):
     title("Ensemble weights")
     table(["Mode", "Weather", "Trends", "Positivity", "Notes"],
           [["Confirmed (positivity present)", 0.30, 0.22, 0.48, "score = ROUND(MIN(100, blend * agree_mult))"],
-           ["Forecast-only (no positivity)", 0.60, 0.40, "n/a", "score = ROUND(MIN(69, blend)); capped below HIGH"]])
+           ["Forecast-only (no positivity)", 0.60, 0.40, "n/a", "score = ROUND(soft-knee taper of blend); held below HIGH"]])
 
     title("Agreement multiplier (confirmed mode only)")
     table(["Condition", "Multiplier"],
           [["Signals agree: max-min spread < 22", 1.08],
            ["Signals disagree: spread >= 22", 0.96]])
 
-    title("Forecast cap")
-    table(["Constant", "Value"], [["score_cap (forecast-only)", 69], ["HIGH band floor", 70]])
+    title("Forecast soft cap (taper)")
+    table(["Constant", "Value"], [["soft_knee (taper start)", 55], ["score_cap (forecast ceiling)", 69], ["HIGH band floor", 70]])
 
     title("Per-disease positivity reference (% that maps to a full 100 signal)")
     table(["Disease", "ref_positivity_pct"],

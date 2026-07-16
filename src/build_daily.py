@@ -33,7 +33,7 @@ DISCLAIMER = (
     "Fever Watch is a risk indicator that blends weather conditions, search interest "
     "and lab positivity into one decomposable score per city and disease. It is not "
     "a diagnosis, a count of actual cases or mosquitoes, or medical advice. "
-    "Forecast-only locations are capped and cannot show HIGH."
+    "Forecast-only locations are held below the HIGH band and cannot show HIGH."
 )
 _BAND_CODE = {"HIGH": "H", "MODERATE": "M", "LOW-MODERATE": "l", "LOW": "o"}
 # A stale signal downgrades the cell's confidence one step (Forecast-only is left as is).

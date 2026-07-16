@@ -138,10 +138,37 @@
     return { loading: true, city: city.name, cityId: city.id, asOf: ax.asOf, weeks: ax.weeks };
   }
 
-  function forCity(city, DATA) {
+  // Disease mode: remap the per-disease archive slices into the {overall,weather,search,labs} shape build()
+  // already reads (mirror of build_site.py _disease_archive_view). overall <- byDisease.{d}.score, weather <-
+  // byFamily.{fam}, search <- states.{state}.{d}, labs <- byDisease.{d}.labs. Returns null if there is no
+  // per-disease overall line to chart (-> skeleton).
+  function famOf(DATA, dis) {
+    for (var i = 0; i < DATA.diseases.length; i++) { if (DATA.diseases[i].id === dis) return DATA.diseases[i].family || "mosquito"; }
+    return "mosquito";
+  }
+  function diseaseView(arch, statesArch, state, dis, fam) {
+    if (!arch) return null;
+    var bd = (arch.byDisease && arch.byDisease[dis]) || {};
+    var bf = (arch.byFamily && arch.byFamily[fam]) || null;
+    var ssearch = (statesArch && statesArch[state] && statesArch[state][dis]) || null;
+    var v = {};
+    if (bd.score) v.overall = bd.score;
+    if (bf) v.weather = bf;
+    if (ssearch) v.search = ssearch;
+    if (bd.labs) v.labs = bd.labs;
+    return v.overall ? v : null;
+  }
+
+  function forCity(city, DATA, dis) {
     var cid = city.id;
     var cells = DATA.grid.filter(function (g) { return g.city === cid; });
     var arch = (DATA.archive && DATA.archive.cities) ? DATA.archive.cities[cid] : null;
+    if (dis) {
+      if (!arch) return buildSkeleton(city, DATA.generated_at);
+      var view = diseaseView(arch, DATA.archive && DATA.archive.states, city.state, dis, famOf(DATA, dis));
+      if (!view) return buildSkeleton(city, DATA.generated_at);
+      return build(city, cells.filter(function (g) { return g.disease === dis; }), DATA.generated_at, view);
+    }
     // No mock, ever. If this city's real archive slice is not present yet, show a height-matched skeleton
     // (the seed inlines the CURRENT city's slice, so its first paint is real; other cities skeleton only
     // until the full archive lands, then re-render real). If the archive fetch hard-fails, the current city
@@ -253,11 +280,13 @@
   var TABS = [["overall", "Overall"], ["weather", "Weather"], ["search", "Searches"], ["labs", "Labs"]];
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]; }); }
 
-  function tabsHtml(model, metric) {
+  function tabsHtml(model, metric, st) {
     return TABS.map(function (t) {
       var avail = model.metrics[t[0]].avail, on = t[0] === metric;
+      // On a disease page the "overall" line IS that disease's own score, so label the tab with the disease.
+      var label = (t[0] === "overall" && st && st.disease) ? st.diseaseLabel : t[1];
       return '<button class="fwtrend-tab' + (on ? " on" : "") + (avail ? "" : " soon") + '" data-tact="metric" data-metric="' + t[0] + '"'
-        + (on ? ' aria-current="true"' : "") + '>' + t[1] + '</button>';
+        + (on ? ' aria-current="true"' : "") + '>' + label + '</button>';
     }).join("");
   }
 
@@ -304,12 +333,13 @@
     var phrase = "vs the same week last year";
     var avail = model.metrics[metric].avail;
     st.geo = avail ? chartGeom(false, st.mode, model.metrics[metric]) : null;  // for the tooltip's coords
-    var title = "This monsoon vs last in " + esc(model.city);
+    var title = st.disease ? ("This monsoon vs last for " + esc(st.diseaseLabel) + " in " + esc(model.city))
+      : ("This monsoon vs last in " + esc(model.city));
     var toggle = '<button class="fwtrend-toggle" data-tact="toggle" aria-expanded="' + (st.expanded ? "true" : "false") + '">'
       + '<span class="t">' + (st.expanded ? "Hide" : "Show") + '</span><span class="chev" aria-hidden="true"></span></button>';
     var monthsRow = avail ? '<div class="fwtrend-months">' + MONTHS_ROW.map(function (mn) { return '<span>' + mn + '</span>'; }).join("") + '</div>' : "";
     var body =
-      '<div class="fwtrend-tabs" role="tablist">' + tabsHtml(model, metric) + '</div>'
+      '<div class="fwtrend-tabs" role="tablist">' + tabsHtml(model, metric, st) + '</div>'
       + '<div class="fwtrend-chartwrap">'
       + (avail ? chartSVG(model, metric, false, st.mode) : soonHtml(model))
       + '<div class="fwtrend-tip" hidden></div></div>'
@@ -386,9 +416,11 @@
       '<div class="fwtrend-pill inline"><span class="fwtrend-vicon fwtrend-skelvicon"></span>' + sb("130px") + '</div>'
       + '<p class="fwtrend-context">' + sb("70%") + '</p>';
     var toggle = '<button class="fwtrend-toggle" type="button" disabled><span class="t">Hide</span><span class="chev" aria-hidden="true"></span></button>';
+    var skTitle = st.disease ? ("This monsoon vs last for " + esc(st.diseaseLabel) + " in " + esc(model.city))
+      : ("This monsoon vs last in " + esc(model.city));
     return '<div class="card fwtrend open fwtrend--skel" data-metric="overall" aria-busy="true">'
       + '<div class="fwtrend-head"><div>'
-      + '<h2 class="fwtrend-title">This monsoon vs last in ' + esc(model.city) + '</h2></div>' + toggle + '</div>'
+      + '<h2 class="fwtrend-title">' + skTitle + '</h2></div>' + toggle + '</div>'
       + lead + '<div class="fwtrend-body">' + body + '</div></div>';
   }
 
@@ -429,7 +461,9 @@
   // --- mount ------------------------------------------------------------------------------------
   function mount(host, city, DATA, opts) {
     if (!host || !window || !DATA) return;
-    var st = { metric: "overall", expanded: true, mode: (opts && opts.mode) || "mobile", model: forCity(city, DATA) };
+    var dis = (opts && opts.disease) || null, disLabel = null;
+    if (dis) { for (var di = 0; di < DATA.diseases.length; di++) { if (DATA.diseases[di].id === dis) { disLabel = DATA.diseases[di].label; break; } } }
+    var st = { metric: "overall", expanded: true, mode: (opts && opts.mode) || "mobile", disease: dis, diseaseLabel: disLabel, model: forCity(city, DATA, dis) };
     function paint() { host.innerHTML = st.model.loading ? skeletonCard(st.model, st) : renderCard(st.model, st); }
     paint();
     if (!host._fwTrendWired) {

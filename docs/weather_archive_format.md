@@ -110,7 +110,8 @@ to keep the committed store small.
 Any historical Fever Watch grid the downstream runner builds from this archive is
 WEATHER plus TRENDS driven only. There is no lab-positivity ground truth for past dates
 (the PharmEasy lab feed is mock / not back-dated). That means every historical cell runs
-in the consolidation engine's "forecast only" mode and is CAPPED at 69 - one point below
-the HIGH band floor (70). A backtested historical grid can therefore never show HIGH by
+in the consolidation engine's "forecast only" mode and is SOFT-CAPPED (a soft-knee taper
+that eases the blend back above 55 and holds it below 69 - one point below the HIGH band
+floor of 70; see src/consolidate.py _soft_knee). A backtested historical grid can therefore never show HIGH by
 construction, and any positivity-derived value in it is mock, not lab-confirmed. Keep this
 distinction in any backtest or early-warning claim.

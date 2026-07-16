@@ -141,7 +141,11 @@ function _setRawFormulas(sh, start, n, rows) {
       // confidence (S): base label, then a one-step downgrade if the cell is STALE (Z=TRUE).
       const base = 'IF($O' + r + '="","Forecast only",IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,"High","Moderate"))';
       fS.push(['=IF($Z' + r + '=TRUE,IFS(' + base + '="High","Moderate",' + base + '="Moderate","Low",TRUE,' + base + '),' + base + ')']);
-      fT.push(['=IF($O' + r + '="",ROUND(MIN(69,($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + ')),' +
+      // score (T) forecast branch = SOFT-KNEE taper of the weather+search blend (mirror of
+      // src/consolidate.py _soft_knee): <=55 pass-through, else 55+(blend-55)*14/45 into [55,69], so a
+      // no-lab read approaches but never reaches the HIGH floor of 70. FB is wrapped so <= is unambiguous.
+      const fb = '(($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + ')';
+      fT.push(['=IF($O' + r + '="",ROUND(IF(' + fb + '<=55,' + fb + ',55+(' + fb + '-55)*14/45)),' +
         'ROUND(MIN(100,(($P' + r + '/100)*$K' + r + '+($Q' + r + '/100)*$L' + r + '+($R' + r + '/100)*$O' + r + ')*' +
         'IF(MAX($K' + r + ',$L' + r + ',$O' + r + ')-MIN($K' + r + ',$L' + r + ',$O' + r + ')<22,1.08,0.96))))']);
       fV.push(['=IF($O' + r + '="","forecast","confirmed")']);
@@ -217,7 +221,7 @@ const DICT = [
   ['w_trends', 'Weight (%) on trends_score (22 confirmed / 40 forecast).'],
   ['w_positivity', 'Weight (%) on positivity (48 confirmed / 0 forecast).'],
   ['confidence', 'FORMULA: Forecast only if no positivity; else High if the three signals agree (max-min < 22) else Moderate; downgraded one step (High->Moderate, Moderate->Low) when stale=TRUE.'],
-  ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96. forecast = weather+trends only, capped 69. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
+  ['score', 'FORMULA. confirmed = (w_weather*weather + w_trends*trends + w_positivity*positivity) x1.08 if signals agree else x0.96. forecast = weather+trends only, soft-knee taper (<=55 unchanged, else 55+(blend-55)*14/45) held below 70. OVERALL = 0.8*top disease + 0.2*mean of the rest.'],
   ['band', 'FORMULA: HIGH >=70, MODERATE >=45, LOW-MODERATE >=25, LOW <25 (from score).'],
   ['mode', 'FORMULA: confirmed (positivity present) or forecast (capped, no positivity); OVERALL rows = blend.'],
   ['trends_state_interest', 'Raw Google Trends interest (0-100) for the city state (or the disease national mean if the state has no row), BEFORE the floor. trends_score = MAX(4, MIN(100, this)).'],

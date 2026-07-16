@@ -89,8 +89,8 @@
     if (!arc) return;
     var v, col, label, subhtml;
     if (mode === "fc") {
-      v = 68; col = "var(--risk-mod)"; label = "Moderate - typhoid";
-      subhtml = "<b>41 + 27 = 68</b>, capped at 69. Forecast only, never red.";
+      v = 59; col = "var(--risk-mod)"; label = "Moderate - typhoid";
+      subhtml = "<b>41 + 27 = 68</b>, eased to <b>59</b>. Forecast only, never red.";
       if (cap) cap.classList.add("show");
     } else {
       v = 86; col = "var(--risk-high)"; label = "High - dengue";
@@ -159,7 +159,8 @@
   // --- Dynamic worked examples ("see the parts add up") -----------------------------------------
   // Build example cards from REAL grid cells, mirroring src/consolidate.py exactly:
   //   confirmed: base = .30*weather + .22*search + .48*lab; spread<22 -> x1.08 (cap 100) else x0.96
-  //   forecast : base = .60*weather + .40*search; capped at 69.  final = round(...) == cell.score.
+  //   forecast : base = .60*weather + .40*search; soft-knee taper (<=55 pass through, else
+  //              55 + (base-55)*14/45 into [55,69]).  final = round(...) == cell.score.
   // The per-signal pieces are apportioned (largest remainder) so they SUM EXACTLY to the blended value.
   var BANDRANGE = { HIGH: "70 to 100", MODERATE: "45 to 69", "LOW-MODERATE": "25 to 44", LOW: "0 to 24" };
   function titleCase(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s; }
@@ -194,9 +195,9 @@
         '<div class="exrow">' + SW("var(--pe-line)") + '<span class="l" style="color:var(--pe-muted)">Lab none yet</span><span class="c">-</span><span class="o" style="color:var(--pe-muted-2)">0</span></div>' +
         '<div class="exhr"></div>' +
         '<div class="exrow">' + SW("var(--pe-muted-2)") + '<span class="l">Forecast blend</span><span class="c">' + fparts[0] + '+' + fparts[1] + '</span><span class="o">' + fblend + '</span></div>' +
-        (capped ? '<div class="exrow">' + SW("var(--risk-mod)") + '<span class="l">Held below red</span><span class="c">cap 69</span><span class="o">' + cell.score + '</span></div>' : '');
+        (capped ? '<div class="exrow">' + SW("var(--risk-mod)") + '<span class="l">Eased below HIGH</span><span class="c">soft cap</span><span class="o">' + cell.score + '</span></div>' : '');
     }
-    var eq = conf ? ((BANDRANGE[cell.band] ? "= " + BANDRANGE[cell.band] + " band" : "")) : (capped ? "capped, never High" : "forecast only");
+    var eq = conf ? ((BANDRANGE[cell.band] ? "= " + BANDRANGE[cell.band] + " band" : "")) : (capped ? "eased, never High" : "forecast only");
     return '<div class="mthd-ex ' + (conf ? "full" : "fc") + '">' +
       '<span class="tag">' + (conf ? "With lab - 3 signals" : "No lab - forecast only") + '</span>' +
       '<div class="mthd-exh4">' + disease + ' in ' + city + '</div>' + rows +

@@ -23,15 +23,18 @@ The raw-input columns (A-J, M-R, W-Z) are identical VALUES in both formats; only
 K/L/S/T/U/V differ (formulas vs literals). The header row is byte-identical to the
 live raw_data header in both.
 
-Two date ranges (locked decisions):
-  * 2026 backfill: 2026-06-01 .. latest backfilled date. (The raw_data tab was RESET 2026-06-16 for the
-    NOAA CPC rain switch, so the FULL Jun 1 history is regenerated; was 06-01..06-08 when the live tab
-    already held 06-09+.) -> data/backfill/sheet/raw_data_2026_backfill.{xlsx,csv}  (import into the tab).
-  * 2025 backfill: 2025-06-01 .. 2025-10-30, DAILY (exact replicate).
-    -> data/backfill/sheet/raw_data_2025.{xlsx,csv}  (a SEPARATE new spreadsheet).
+Runs (locked decisions), selected via --years (default: 2025,2026):
+  * 2026 (current season): 2026-06-01 .. 2026-06-30, DAILY, full month of June with REAL weekly labs
+    from the live Google Sheet (built by scripts/build_lab_feed_2026_historic.py). The current-season
+    analogue of the 2025 file. -> data/backfill/sheet/raw_data_2026.{xlsx,csv} (a SEPARATE spreadsheet).
+  * 2025 (last season): 2025-06-01 .. 2025-10-30, DAILY, REAL weekly labs from the 2025 historic feed.
+    -> data/backfill/sheet/raw_data_2025.{xlsx,csv}  (a SEPARATE spreadsheet).
+  * 2026-backfill (legacy, explicit only): 2026-06-01 .. 2026-06-14, MOCK positivity. The live-tab
+    import artifact regenerated after the 2026-06-16 raw_data reset for the NOAA CPC rain switch.
+    -> data/backfill/sheet/raw_data_2026_backfill.{xlsx,csv}  (import into the live tab).
 
 Per (date, city) we emit 5 rows: one per city x disease + one disease="OVERALL"
-city-blend row. 228 cities -> 5 x 228 = 1,140 rows/day.
+city-blend row. 209 cities (scope locked 2026-06-17) -> 5 x 209 = 1,045 rows/day.
 
 Inputs (all under data/backfill/, which is gitignored):
   weather_{year}.json : by_date[YYYY-MM-DD][cityId] = {agg:{...}, families:{...}}
@@ -86,6 +89,12 @@ HEADER = [
     "city_url_prod", "city_url_staging",
 ]
 
+# The historic analytics deliverables (raw_data_2025, raw_data_2026) stop at AD (positivity_pct):
+# the trailing live-only push/city-URL columns (AE-AH) are always blank for a backfill and carry no
+# analytical value, so they are trimmed to match the 30-column schema of the last-season file. Only
+# the live-tab import artifact (raw_data_2026_backfill) keeps the full width.
+ANALYTICS_COLS = HEADER.index("positivity_pct") + 1  # 30
+
 # --- per-disease positivity reference (the % positivity that maps to signal 100) ----------------
 # Per-disease reference: the % positivity that maps to a full 100 signal, calibrated per fever (each
 # has a very different realistic 'high'). MUST match config/signals.json ref_positivity_pct_by_disease,
@@ -95,8 +104,10 @@ DEFAULT_REF_PCT = 35.0
 REF_PCT_BY_DISEASE = {"dengue": 25.0, "malaria": 4.0, "chikungunya": 15.0, "typhoid": 45.0}
 GATE_MIN_TESTS = 30                     # confidence gate, matches the live feed + canonical csv
 SEASON_2025_START = date(2025, 6, 1)    # season week 1 anchor (mirrors build_lab_feed_2025_historic)
+SEASON_2026_START = date(2026, 6, 1)    # season week 1 anchor for the 2026 (current-season) run
 N_SEASON_WEEKS = 22
 LAB_FEED_2025 = os.path.join(ROOT, "data", "lab_feed_2025_historic.csv")
+LAB_FEED_2026 = os.path.join(ROOT, "data", "lab_feed_2026_historic.csv")
 
 
 def _ref_pct(disease_id: str) -> float:
@@ -122,8 +133,8 @@ def load_historic_positivity(path: str) -> dict:
     return out
 
 
-def season_week_2025(iso_date: str) -> int:
-    return ((date.fromisoformat(iso_date) - SEASON_2025_START).days // 7) + 1
+def season_week(iso_date: str, season_start: date = SEASON_2025_START) -> int:
+    return ((date.fromisoformat(iso_date) - season_start).days // 7) + 1
 
 
 def historic_pos_signal(tests, positives, ref_pct: float, min_tests: int = GATE_MIN_TESTS):
@@ -246,15 +257,20 @@ def _f_confidence(r: int) -> str:  # S confidence - base label with a one-step S
     )
 
 
-def _f_score(r: int) -> str:  # T score - forecast (capped 69) vs confirmed (agree multiplier)
-    return (
-        '=IF($O' + str(r) + '="",ROUND(MIN(69,($P' + str(r) + '/100)*$K' + str(r) + '+($Q' + str(r)
-        + '/100)*$L' + str(r) + ')),'
-        + 'ROUND(MIN(100,(($P' + str(r) + '/100)*$K' + str(r) + '+($Q' + str(r) + '/100)*$L' + str(r)
-        + '+($R' + str(r) + '/100)*$O' + str(r) + ')*'
-        + 'IF(MAX($K' + str(r) + ',$L' + str(r) + ',$O' + str(r) + ')-MIN($K' + str(r) + ',$L'
-        + str(r) + ',$O' + str(r) + ')<22,1.08,0.96))))'
+def _f_score(r: int) -> str:  # T score - forecast (soft-knee taper below HIGH) vs confirmed (agree multiplier)
+    R = str(r)
+    # Forecast blend (weather+search), wrapped so the spreadsheet <= comparison is unambiguous.
+    fb = '(($P' + R + '/100)*$K' + R + '+($Q' + R + '/100)*$L' + R + ')'
+    # Soft-knee taper, mirroring src/consolidate.py _soft_knee: pass-through at or below 55, then compress
+    # the [55,100] blend into [55,69] so a no-lab read approaches but never reaches the HIGH floor of 70.
+    forecast = 'ROUND(IF(' + fb + '<=55,' + fb + ',55+(' + fb + '-55)*14/45))'
+    confirmed = (
+        'ROUND(MIN(100,(($P' + R + '/100)*$K' + R + '+($Q' + R + '/100)*$L' + R
+        + '+($R' + R + '/100)*$O' + R + ')*'
+        + 'IF(MAX($K' + R + ',$L' + R + ',$O' + R + ')-MIN($K' + R + ',$L'
+        + R + ',$O' + R + ')<22,1.08,0.96)))'
     )
+    return '=IF($O' + R + '="",' + forecast + ',' + confirmed + ')'
 
 
 def _f_mode(r: int) -> str:  # V mode
@@ -290,7 +306,7 @@ def _f_positivity(r: int, ref_pct: float) -> str:  # O positivity signal - MIN(1
 def build_grid_for_date(
     iso_date: str, weather_by_date: dict, cities: list, diseases: list,
     consol: dict, trends_hist: TrendsHistory, pos_provider, terms: dict, run_id: str,
-    hist_pos: dict | None = None,
+    hist_pos: dict | None = None, season_start: date = SEASON_2025_START,
 ) -> list:
     """Return the list of raw_data rows (each a 30-value list in HEADER order) for one
     date: 4 disease rows + 1 OVERALL row per city. Fail-loud on any missing weather.
@@ -321,7 +337,7 @@ def build_grid_for_date(
         r7 = agg["rain_7d_mm"]
         r14 = agg["rain_14d_mm"]
 
-        season_wk = season_week_2025(iso_date) if hist_pos is not None else None
+        season_wk = season_week(iso_date, season_start) if hist_pos is not None else None
         disease_scores: list = []  # (disease_id, score) for the city blend
         for disease in diseases:
             fam = disease["family"]
@@ -403,12 +419,16 @@ def build_grid_for_date(
     return rows
 
 
-def write_csv(path: str, rows: list) -> int:
+def write_csv(path: str, rows: list, max_cols: int | None = None) -> int:
+    # max_cols trims the always-blank trailing live-only columns (AE-AH push/city URLs) so a
+    # historic deliverable matches the 30-column analytics schema of raw_data_2025. No computed
+    # formula references a column past AD (positivity_pct, index 29), so the trim is loss-free.
+    n = max_cols or len(HEADER)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="") as fh:
         wtr = csv.writer(fh, quoting=csv.QUOTE_MINIMAL)
-        wtr.writerow(HEADER)
-        wtr.writerows(rows)
+        wtr.writerow(HEADER[:n])
+        wtr.writerows(row[:n] for row in rows)
     return len(rows)
 
 
@@ -426,7 +446,7 @@ _IDX = {
 }
 
 
-def write_xlsx(path: str, rows: list, pos_formula: bool = False) -> int:
+def write_xlsx(path: str, rows: list, pos_formula: bool = False, max_cols: int | None = None) -> int:
     """Stream the rows to an .xlsx in openpyxl WRITE-ONLY mode (low memory, fast for
     the ~160K-row file). The raw-input cells (A-J, M-N, P-R, W-AC) carry the same VALUES as
     the CSV; K/L/S/T/U/V are overwritten with the live `_setRawFormulas` formula strings, with
@@ -434,13 +454,16 @@ def write_xlsx(path: str, rows: list, pos_formula: bool = False) -> int:
     has real tests_booked/positives in AB/AC), O (positivity) and AD (positivity_pct) ALSO become
     in-sheet formulas - so the labs build-up AB,AC -> AD -> O -> score(T) recomputes on open, exactly
     like the live tab. When it is unset (mock positivity), O keeps its literal value and AD is blank.
-    Data starts at sheet row 2 (row 1 is the header), so list index i lives at sheet row r = i + 2."""
+    Data starts at sheet row 2 (row 1 is the header), so list index i lives at sheet row r = i + 2.
+    max_cols trims the always-blank trailing live-only columns (AE-AH) to the 30-column analytics
+    schema; every computed formula references only A-AD, so the trim is loss-free."""
     from openpyxl import Workbook  # lazy: keeps the CSV / stdlib path dependency-free
 
+    n = max_cols or len(HEADER)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     wb = Workbook(write_only=True)
     ws = wb.create_sheet(title="raw_data")
-    ws.append(HEADER)  # row 1
+    ws.append(HEADER[:n])  # row 1
 
     i_dis = _IDX["disease"]
     i_k, i_l, i_s = _IDX["weather_score"], _IDX["trends_score"], _IDX["confidence"]
@@ -470,7 +493,7 @@ def write_xlsx(path: str, rows: list, pos_formula: bool = False) -> int:
                 row[i_ad] = _f_pos_pct(r)
                 row[i_o] = _f_positivity(r, _ref_pct(str(row[i_dis])))
         row[i_u] = _f_band(r)  # band is a formula for both row kinds
-        ws.append(row)
+        ws.append(row[:n])
 
     wb.save(path)
     return len(rows)
@@ -478,11 +501,13 @@ def write_xlsx(path: str, rows: list, pos_formula: bool = False) -> int:
 
 def run_year(label: str, weather_path: str, start: date, end: date,
              cities, diseases, consol, trends_hist, pos_provider, terms,
-             out_base: str, fmt: str, hist_pos: dict | None = None) -> dict:
+             out_base: str, fmt: str, hist_pos: dict | None = None,
+             season_start: date = SEASON_2025_START, max_cols: int | None = None) -> dict:
     """Build every row for [start, end] once, then write the requested format(s).
     `out_base` is the path WITHOUT extension; `.xlsx` / `.csv` is appended.
     `hist_pos` (when given) sources real positivity from the canonical weekly lab feed and makes
-    O/AD in-sheet formulas in the xlsx; otherwise mock positivity is used and O stays literal."""
+    O/AD in-sheet formulas in the xlsx; otherwise mock positivity is used and O stays literal.
+    `max_cols` trims the trailing always-blank live-only columns to match a leaner schema."""
     if not os.path.exists(weather_path):
         raise SystemExit(f"ABORT: {weather_path} not found.")
     wdata = load_json(weather_path)
@@ -494,7 +519,7 @@ def run_year(label: str, weather_path: str, start: date, end: date,
         run_id = "bf-" + d.strftime("%Y%m%d")  # UNIQUE per date so nothing aggregates across days
         rows.extend(build_grid_for_date(
             iso, weather_by_date, cities, diseases, consol, trends_hist, pos_provider, terms, run_id,
-            hist_pos=hist_pos))
+            hist_pos=hist_pos, season_start=season_start))
 
     pos_formula = bool(hist_pos)
     written = []
@@ -502,7 +527,7 @@ def run_year(label: str, weather_path: str, start: date, end: date,
         import time
         path = out_base + ".xlsx"
         t0 = time.perf_counter()
-        n = write_xlsx(path, rows, pos_formula=pos_formula)
+        n = write_xlsx(path, rows, pos_formula=pos_formula, max_cols=max_cols)
         dt = time.perf_counter() - t0
         size = os.path.getsize(path)
         print(f"[{label}] {len(dates)} dates ({start} .. {end}) -> {n} rows -> {path} "
@@ -510,7 +535,7 @@ def run_year(label: str, weather_path: str, start: date, end: date,
         written.append({"path": path, "rows": n, "bytes": size, "seconds": dt})
     if fmt in ("csv", "both"):
         path = out_base + ".csv"
-        n = write_csv(path, rows)
+        n = write_csv(path, rows, max_cols=max_cols)
         size = os.path.getsize(path)
         print(f"[{label}] {len(dates)} dates ({start} .. {end}) -> {n} rows -> {path} ({size:,} bytes)")
         written.append({"path": path, "rows": n, "bytes": size})
@@ -548,20 +573,38 @@ def main() -> int:
 
     trends_hist = TrendsHistory(os.path.join(BACKFILL_DIR, "trends_history.json"))
     pos_provider = MockPositivityProvider()
-    # Real last-season labs for the 2025 run (positivity build-up); mock for 2026 (no offline feed).
+    # Real labs for the 2025 (last season) and 2026 (current season) runs alike: the 2026 feed is
+    # built from the LIVE Google Sheet by scripts/build_lab_feed_2026_historic.py (weekly buckets),
+    # the exact analogue of the 2025 historic feed. Mock is only the fallback if a feed is missing.
     hist_2025 = load_historic_positivity(LAB_FEED_2025)
+    hist_2026 = load_historic_positivity(LAB_FEED_2026)
     pos_note_2025 = (f"REAL labs from {os.path.relpath(LAB_FEED_2025, ROOT)} ({len(hist_2025)} weekly cells)"
                      if hist_2025 else "MOCK (lab feed missing)")
+    pos_note_2026 = (f"REAL labs from {os.path.relpath(LAB_FEED_2026, ROOT)} ({len(hist_2026)} weekly cells)"
+                     if hist_2026 else "MOCK (lab feed missing)")
     refs = ", ".join(f"{k}={('%g' % v)}" for k, v in REF_PCT_BY_DISEASE.items())
 
     print(f"Engine: {consol.get('model_version')}  |  cities={len(cities)}  "
           f"diseases={len(diseases)}  |  format={fmt}  |  years={','.join(sorted(years))}")
     print(f"2025 positivity: {pos_note_2025}  |  ref_positivity_pct: {refs}  |  gate={GATE_MIN_TESTS}")
+    print(f"2026 positivity: {pos_note_2026}")
     print("-" * 80)
 
+    # 2026 (current season): the full-month June deliverable, REAL weekly labs, the analogue of the
+    # 2025 season file -> data/backfill/sheet/raw_data_2026.{xlsx,csv}.
     if "2026" in years:
         run_year(
             "2026", os.path.join(BACKFILL_DIR, "weather_2026.json"),
+            date(2026, 6, 1), date(2026, 6, 30),
+            cities, diseases, consol, trends_hist, pos_provider, terms,
+            os.path.join(OUT_DIR, "raw_data_2026"), fmt,
+            hist_pos=hist_2026 or None, season_start=SEASON_2026_START, max_cols=ANALYTICS_COLS)
+
+    # Legacy live-tab import artifact: MOCK positivity, Jun 1-14 only. Kept for reproducing the
+    # raw_data tab reset import; run explicitly with --years 2026-backfill (not in the default set).
+    if "2026-backfill" in years:
+        run_year(
+            "2026-backfill", os.path.join(BACKFILL_DIR, "weather_2026.json"),
             date(2026, 6, 1), date(2026, 6, 14),
             cities, diseases, consol, trends_hist, pos_provider, terms,
             os.path.join(OUT_DIR, "raw_data_2026_backfill"), fmt)
@@ -571,7 +614,8 @@ def main() -> int:
             "2025", os.path.join(BACKFILL_DIR, "weather_2025.json"),
             date(2025, 6, 1), date(2025, 10, 30),
             cities, diseases, consol, trends_hist, pos_provider, terms,
-            os.path.join(OUT_DIR, "raw_data_2025"), fmt, hist_pos=hist_2025 or None)
+            os.path.join(OUT_DIR, "raw_data_2025"), fmt, hist_pos=hist_2025 or None,
+            season_start=SEASON_2025_START, max_cols=ANALYTICS_COLS)
 
     print("-" * 80)
     print(f"Done. Outputs ({fmt}) written under", OUT_DIR)

@@ -121,6 +121,17 @@
     #s-week > .card, #s-why > .card { height: auto; }
     #s-why .acc.open .accbody { gap: 22px; padding: 4px 18px 18px; }
   }
+  /* --- Disease page: single-disease "Why this score?" breakdown --------------------------------
+     A disease cell has only 3 signals, so the hub's 3-column + equal-height layout (tuned for the
+     taller 4-accordion hub card) inflates the tiles and leaves a big void beside the busier disease
+     dial. For the disease breakdown (.discard-why) only: stack the 3 signals as full-width rows that
+     fill the rail naturally, and let the card size to its own content (relax the first-fold stretch,
+     so it top-aligns with the dial instead of being force-stretched). Scoped so the hub is untouched. */
+  #s-why:has(.discard-why) { align-self: start; }
+  #s-why .discard-why .acc.open { flex: none; }
+  #s-why .discard-why .acc.open .accbody { display: block; grid-template-columns: none; grid-template-rows: none; padding: 16px 16px 16px; }
+  #s-why .discard-why .acc.open .accbody .sig { display: block; background: var(--pe-bg); border: 1px solid var(--pe-line); border-radius: 12px; padding: 11px 15px 13px; margin: 12px 0 0; }
+  #s-why .discard-why .acc.open .accbody .sig:first-child { margin-top: 0; }
   /* The 8 desktop section headings normalize to a consistent 21px (item 4): .sechead already 21px;
      .sectiontitle (weather card, line below) + .fwtrend-title (trend card) are bumped to match. */
   .sechead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }

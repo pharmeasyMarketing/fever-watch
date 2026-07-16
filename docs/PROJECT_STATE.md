@@ -5,7 +5,222 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
-> **NEWEST (2026-07-08, SEO PHASE 0 ON-PAGE PASS - committed + pushed; the plan + traffic forecast live in
+> **SCORING: forecast hard-cap -> SOFT-KNEE taper (SHIPPED 2026-07-16; user-approved after independent QA = SHIP, 0 blockers):**
+> Leadership flag: with no lab data the score was `min(69, 0.60*weather + 0.40*trends)` - a HARD CLIP. In peak monsoon
+> 184/790 forecast cells (and 9/209 city headlines) displayed EXACTLY 69, whose true uncapped blends ranged 69-98
+> (median 76) - a wall of identical 69s that read as fake. FIX = replace the clip with a
+> soft-knee taper in `src/consolidate.py` (`_soft_knee(base, knee, cap)`) + `config/consolidation.json`
+> `forecast_only.soft_knee: 55` (`score_cap` stays 69; `model_version` -> `FW-ENSEMBLE-0.2.0`): pass-through at or
+> below 55, then linearly compress [55,100] into [55,69]. 69 is now only reachable at a raw blend of 100 (never happens;
+> observed max raw ~98 -> 68). Result on the SHIPPED 2026-07-15 grid: forecast cells at 69 **184 -> 0** (max 68, 59
+> distinct values; biggest cluster 184@69 -> 95@58); city headlines at 69 **9 -> 0**; forecast scores drop a median
+> 6 pts (max 10). **All 836 per-disease cell BANDS are invariant** (the taper lives inside MODERATE 45-69; verified
+> 0/836 band changes old-vs-new) and **0/209 headline band changes** on the shipped data; confirmed (lab-backed) cells
+> are byte-untouched (0 changed). NOTE a headline CAN cross a band when a confirmed-HIGH city's blend was propped up by
+> an inflated forecast cell - observed on the 2026-07-09 snapshot (**Delhi + Kolkata 70->69, HIGH->MODERATE**), each
+> keeping its confirmed HIGH driver (typhoid 76) named on the dial; they were only >=70 because
+> an inflated forecast chikungunya cell (hard-clipped to 69) dragged the 0.8/0.2 blend up. Standard dynamic-range
+> compression (same piecewise-linear construction as the AQI); honest story ("the closer a no-lab read climbs, the more
+> we hold it back") beats a silent clip. **Surfaces updated (all twins byte-consistent):** engine + config; the sheet
+> loggers (`src/backfill_sheetlog.py` `_f_score` in-cell formula AND the Apps Script in `docs/sheets_logging.md` line ~144
+> -> `ROUND(IF(FB<=55,FB,55+(FB-55)*14/45))`, forecast branch verified == engine on all 441 grid points; **USER MUST
+> RE-DEPLOY the Apps Script**); `method.js` worked-example (live) + dead setDial; every "capped at 69"/"maximum 69" copy
+> -> "held below the HIGH band"/"eased back ... held below 70" across build_site.py (FAQ_ITEMS + faq_items + faq_items_disease
+> + METHOD_HTML + METHOD_SUMMARY + Dataset measurementTechnique), faq.js, mobile.js, desktop.js, method.js, build_daily.py
+> disclaimer, explain_score.py, build_score_workbook.py, analyze_alert_cadence_2025.py. **Data regenerated (engine-isolated,
+> real gsheet positivity split preserved):** `data/grid.json` transformed in place (462 cells rescored on the fresh 07-15
+> grid; the transform re-runs `consolidate()` on each cell's STORED signals, so only forecast scores move); `data/archive/
+> trend_series.json` rebuilt via `build_archive.py --history` then `--daily` -> the season this-year line is squeezed with
+> NO cliff and is **dial-consistent (overall ty[-1] == live dial for all 209; byDisease ty[-1] == every cell, 0 mismatch)**.
+> **`--history` is REQUIRED after any engine change** (CI's daily only runs `--daily`, which re-scores just the latest
+> weekly point -> would leave an old-engine history and a visible cliff). **Verified:** engine self-test (identity below
+> knee, continuity, monotonic, only raw 100 -> 69, forecast max < 70);
+> band-invariance 836/836; parity 4/4 (hub+disease x mobile+desktop); FAQ render-diff **0/4180**; contribution-sum **0/836**
+> (breakdown bars still reconcile to the squeezed score); no "capped at 69"/"MIN(69" in `dist/`; browser (mobile+desktop,
+> threaded server) 0 console errors, leaderboard differentiated. Disease pages (gated OFF, unchanged for this
+> release) inherit the taper automatically - verified with `FW_DISEASE_PAGES=1` (parity 4/4). On the FIRST
+> production build after this, capped cities step down ~6 pts once (bands unchanged) - analytics pre-briefed.
+>
+> **DE-SATURATION SIMULATED AND REJECTED (2026-07-16) - do NOT redo this experiment without new information.** After the
+> soft-knee shipped, the leaderboard still showed runs of identical scores (e.g. 10 cities at 62; 201/209 cities occupy
+> only 23 integer slots in MODERATE 45-69, so ties are pigeonhole-inevitable). Root causes: (1) weather SATURATES in
+> monsoon (rain unit pegs at 1.0 - 335/836 subs >=85, 75 at exactly 100 - because rain saturates at 60mm/14d and every
+> monsoon city clears it; temp sits near the 29C optimum everywhere), and (2) **Google Trends is STATE-level** - 209
+> cities but only 27 states, so all 20 Maharashtra cities share one identical search signal. The sub-integer floats DO
+> differ (the ten "62" cities are really 61.53-62.40); integer rounding hides it. Simulated fixes (all keeping temp/
+> humidity/trends/positivity/soft-knee/blend fixed, only reshaping the rain unit), measured vs the live scores by
+> Spearman rank corr: per-city ANOMALY percentile (vs own 2025 same-window climatology) spreads best (distinct 30->41,
+> biggest cluster 39->15) but **Spearman 0.623** - it loses the HIGH band entirely (Ranchi 78->58, Delhi 69->64), shifts
+> the map down (LOW-MODERATE 6->45), and effectively encodes YoY rainfall change (2026 is broadly drier than 2025), NOT
+> current risk. Gentler absolute curves (Hill K=120/200/300) land at Spearman 0.62-0.76 and also zero out HIGH.
+> Directionally-FAITHFUL variants (power p0.5 = Spearman 0.942; 14-day-rain-only = 0.905) barely spread (distinct 28-33,
+> cluster 24-29). **The tradeoff is structural: breaking the ties IS re-ranking the risk, because the ties mean the
+> cities genuinely have equal risk** (peak monsoon = everyone has ample standing water). De-saturation also moves
+> CONFIRMED cells (weather is 30% of the confirmed blend; Delhi typhoid-driven 69->53), so it is a whole-model
+> recalibration needing a 2025-labs backtest - not a tie-breaker. Ties are honest and were ACCEPTED. A float tie-break
+> for the leaderboard ORDER (keep integers, order ties by the true float) was offered and DECLINED - ship as-is.
+> Rejected outright: decimals (false precision) and jitter (dishonest). If revisited, do it as a genuine model upgrade
+> (multi-year climatology + backtest), not to make the leaderboard look busier. Scripts: scratchpad `desat_sim*.py`.
+>
+> **W2b REVIEW ROUND 2 + INDEPENDENT QA x2 (2026-07-11, all fixed + verified, LOCAL; W3 substantially DONE):**
+> User's 6 UI items on the disease pages, all landed: (1) desktop breakdown `.accbody` padding evened to 16px all
+> round (first tile margin-top 0); (2) mobile "Why this {disease} score?" now uses the mobile `sectiontitle`/
+> `sectionsub` classes (was desktop-only `sechead` -> browser-default h2, oversized + uneven margins; per-flow
+> divergence matches the hub's breakdownCard precedent - SSR mirrors the DESKTOP twin, parity keeps 4/4); (3) the
+> switcher card is retitled **"Explore other fevers in {city}"** (+ a one-line sub), proper h2 sizing both flows,
+> and on mobile it MOVED to directly under the breakdown (SSR crawler block moved after why_sec too; the inner
+> `.disswitch-t` label was dropped from `_disease_switcher` - both call sites carry an outer H2, so `.disswitch-t`
+> CSS is now dormant); (4)+(5) the disease band chip is now a flex row (`.discard .bandchip`, tokens.css): long
+> "{Band} {Disease} risk in {City}" wraps with NO hanging indent and the ⓘ stays pinned right + vertically centred,
+> never wrapping to line 2; (6) dial-card consistency sweep across short/long city x disease x confirmed/forecast at
+> 360/375/414/1280 (mobile screenshots + desktop DOM probes - NOTE: desktop-size screenshots/zoom TIME OUT in the
+> local browser harness, mobile sizes work): one fix found+applied - `.confchip` radius 999px -> 10px so the 2-line
+> "Early estimate, capped below HIGH" pill wraps as a clean rounded rect on narrow mobile. **INDEPENDENT QA agent 1
+> (disease pages e2e): SHIP-READY, 0 blockers/majors/minors** - recomputed ALL 836 pages' facts from grid+archive
+> (JSON-LD shapes, titles, metas incl. delta clause, rank strips #N-of-209 + #k-of-4, season sentences, trend
+> you-are-here == live cell, conf chips 1:1 with mode, share absent, chik guide-link absent, guardrails), parity
+> 4/4, live-tested 5 combos both flows, flag-off regression = exactly 210 pages then restored the 1,046 build.
+> **INDEPENDENT QA agent 2 (whole product vs LIVE https://pharmeasy.in/fever-watch/): NO REGRESSIONS** - normalized
+> structural diff of landing + kolkata hub vs live = identical except expected (data date, gated switcher block,
+> ?v hash); legal `.footdisc` VERBATIM; all hub functionality passes both flows (dial/tooltip/breakdown/leaderboard
+> tabs+search+pager+pinned/nearby/season/trend/FAQ/method/share modal+dock+bottom bar STILL ON HUBS/nav/burger/
+> ticker/picker/back); heading scale consistent (mobile 16px x9/9, desktop 21px x7/7 hub + 9/9 disease); 0 broken
+> internal links (517 checked); sitemap 1,046 == disk; new CSS did not leak into hubs. QA NOTES (no action): local
+> ThreadingHTTPServer occasionally resets the ~1MB grid fetch (retries recover; not reproducible on the VPS); local
+> baked share-card images are stale (CI regenerates daily); the pre-existing trend "~0%" single-week quirk (issue
+> #6) is unchanged. Seed budget: disease seed 7.4KB (<25KB), page 72KB. W3 remaining: nothing blocking (a full
+> Lighthouse run is not possible in this harness; the budget metric is verified).
+>
+> **W2b REVIEW ROUND 1 (2026-07-11, user feedback on the local disease pages - all fixed + browser-verified,
+> LOCAL):** (1) **"Why this {disease} score?" breakdown was invisible** - the single-disease body reused `.accbody`
+> which is `display:none` outside `.acc.open`; now wrapped in an always-open `<div class="acc open">` so it inherits
+> the exact opened-accordion layout (mobile block, desktop 3-col grid). Parity re-verified 4/4 (the wrapper is in the
+> desktop s-why parity region; SSR + JS edited identically). (2) **City picker dropdown showed the overall city
+> score** - now shows each city's THIS-disease score in a disease vertical (`renderCityList`/`renderCombo`:
+> `DIS ? cellFor(id,DIS)||blend : blend`; verified Mumbai 60 dengue vs 58 overall). (3) **Trend was ambiguous** - the
+> title is now "This monsoon vs last for {Disease} in {City}" and the first tab is the disease name (was "Overall");
+> `_trend_html` + trend.js `renderCard`/`tabsHtml`/`mount` got a disease param. It IS per-disease: overall line =
+> `byDisease.{d}.score`, weather = `byFamily.{fam}`, searches = `states.{state}.{d}`, labs = `byDisease.{d}.labs`.
+> (4) **Chikungunya "Read the full guide" link removed** (its only blog match is a generic viral-fever page) - blurb
+> kept; dengue/malaria/typhoid keep their links (gated on `disease.id != "chikungunya"` in all 3 renderers).
+> (5) **Share text+link were city-overall + pointed at the hub** - now disease-scoped ("{band} {Disease} risk in
+> {city}, {diseaseScore}/100...", link `/{city}/{disease}/`). (6) **Desktop breakdown void** - the single-disease
+> "Why this {disease} score?" card sat in the equal-height right rail, but a disease has only 3 signals so the hub's
+> 3-col + `1fr`-row layout inflated the tiles into a tall void beside the busier disease dial. REDESIGNED (CSS-only,
+> `.discard-why`-scoped in desktop.css): the 3 signals now stack as full-width bordered rows at natural height, and
+> `#s-why:has(.discard-why)` relaxes the forced stretch so the card sizes to its content (verified: breakdown 502px
+> vs dial 546px, top-aligned - the ~200px internal void is gone; parity unaffected, markup untouched). (7) **All
+> share surfaces hidden on disease pages** (user decision: disease pages ONLY; hubs + landing keep share, the
+> "share-driven" funnel is intact). Removed the in-card share button from the disease dial card (`_disease_card` +
+> both `diseaseCard` twins, parity re-verified 4/4), and `boot()` skips `buildShareFooter`/`buildDock` when `DIS` so
+> the mobile bottom share bar + the desktop share dock never build. Verified: disease page = 0 share buttons / 0
+> floating units / 0 openShare triggers; hub = 1 card button + dock + 2 triggers (untouched). **This closes the
+> earlier share-IMAGE question** - with no share on disease pages, the confusing per-city OG card is moot there (the
+> disease-scoped shareText/shareUrl code stays, harmless/unused). FAQ render-diff still 30/30; zero console errors.
+>
+> **(2026-07-11, later still - SEO PHASE 1 W2b DONE: the JS `FW.disease` mode, verified end-to-end in a
+> browser, LOCAL + uncommitted):** The disease child pages now work as a full device-adaptive flow. `mobile.js`
+> and `desktop.js` got a `FW.disease` branch (`render()` -> `renderDisease()`) whose above-fold hero is
+> BYTE-IDENTICAL to the W2a SSR twins - `diseaseCard`/`diseaseRing`/`diseaseBreakdown`/`diseaseWeatherCard`
+> (+ `searchHeroDisease`/`diseaseToc` on desktop) mirror `_disease_*` in build_site.py. `faq.js` gained
+> `buildDisease`/`forCityDisease` (byte-mirror of `faq_items_disease`; the SSR FAQPage JSON-LD == the JS render,
+> verified 30/30 Q/A across 5 pages). `trend.js` got a disease mode: `mount({disease})` -> `forCity(city,DATA,dis)`
+> remaps the archive `byDisease`/`byFamily`/`states` slices into the `{overall,weather,search,labs}` shape `build()`
+> already reads (JS twin of `_disease_archive_view`); the you-are-here point == the live disease cell (verified
+> dengue 42, typhoid 55). `scripts/parity_check.js` now tests **4 fixtures** - hub + disease x mobile + desktop -
+> ALL GREEN (byte-identical above-fold, CLS 0). City switching STAYS IN-VERTICAL: `CITY_ROOT`/`cityHref` are
+> disease-aware so a nearby chip / leaderboard row / combo pick pushState-navigates to `/{new-city}/{disease}/`
+> and re-renders (verified live: mumbai/typhoid -> thane/typhoid, hero+switcher+trend all updated, no reload); the
+> switcher "All fevers" + "See all fevers" links reach the hub; leaderboard is pre-ranked by the disease. **Browser
+> verified** (fever-watch-dist preview): desktop + mobile hydrate with ZERO console errors, no horizontal overflow
+> at 375px, all below-fold links resolve into the disease vertical, per-disease trend + season + about + FAQ all
+> render. **Bug fixed:** `CITY_ROOT` now strips a trailing `index.html` before segment-stripping (an index.html-
+> served URL was doubling a path segment; also fixes the same latent hub case - production clean URLs unaffected).
+> New dormant CSS block in `tokens.css` (`.disaside`/`.confchip`/`.rankstrip`/`.disswitch`/`.wxmech`/`.aboutp`).
+> **GATE is now ENV-OVERRIDABLE:** `FW_DISEASE_PAGES_ENABLED = os.environ.get("FW_DISEASE_PAGES") in (1/true/yes)`,
+> default OFF (prod-safe: 210 pages, hub byte-identical, parity green - VERIFIED). Build with `FW_DISEASE_PAGES=1`
+> for LOCAL review + the disease parity fixtures (1,046 pages). **DO NOT flip the default / set the deploy env until
+> the About-{disease} copy + the early-estimate terminology (W2c) clear the ~2026-07-15 counsel review.** REMAINING:
+> **W2c** (early-estimate sweep, needs sign-off), **W3** (independent QA + trend render-diff + broader JSON-LD/meta
+> + guardrail sweep across the 836 + Lighthouse seed-weight spot-check). Carry-forward (all local, uncommitted):
+> `src/build_site.py`, `assets/js/{mobile,desktop,faq,trend}.js`, `scripts/parity_check.js`, `prototypes/tokens.css`,
+> the enriched `data/archive/trend_series.json`, and the docs.
+>
+> **(2026-07-11, later - SEO PHASE 1 W2a DONE: the `build_site.py` disease-page SSR template, verified,
+> LOCAL + uncommitted):** The full server-side render of the 209 x 4 = 836 `/fever-watch/{city}/{disease}/` child
+> pages is built and verified. Architecture (zero hub-regression by construction): `page()` + `jsonld()` got a
+> `disease` param; a `if city and disease:` branch renders children while the hub (`disease=None`) code path is
+> LITERALLY UNCHANGED (parity stays green). ALL disease logic lives in new helpers (`render_disease_content`,
+> `_disease_card`, `_disease_ring` single-arc dial twin, `_disease_breakdown`, `_disease_weather_card` + family
+> mechanism line, `_disease_pre_m`/`_disease_pre_d`/`_disease_toc`, `_disease_leaderboard_table`,
+> `_disease_nearby_p`, `_about_disease`, `_disease_switcher`, `faq_items_disease`, `_disease_season_sec`). **The
+> per-disease season trend REUSES the hub trend math verbatim** via `_disease_archive_view()`, which remaps the
+> v1.1 archive slices into the `{overall,weather,search,labs}` shape `_trend_series`/`_season_bits` already read
+> (overall <- `byDisease.{d}.score`, weather <- `byFamily.{fam}`, search <- `states.{state}.{d}`, labs <-
+> `byDisease.{d}.labs`) - verified DIAL-CONSISTENT (kolkata/dengue trend you-are-here = 42 = the live dengue cell).
+> **GATED for safety:** disease-page emission + the hub disease-switcher row + the sitemap children are all held
+> behind `FW_DISEASE_PAGES_ENABLED` (build_site.py, default **False**, same pattern as `FW_TESTS_ENABLED`). Flag
+> OFF = today's 210 pages, byte-identical hub, parity green (VERIFIED). Flag ON = 1,046 pages + sitemap 1,046
+> (VERIFIED). It MUST stay False until W2b ships the JS `FW.disease` first paint, else a JS user on a child page
+> repaints the hub over the disease SSR. **Verified with the flag on:** title = `Dengue in Kolkata: Risk Score
+> Today, {date} | Fever Watch by PharmEasy`; number-rich dated meta (`... 42/100 (LOW-MODERATE), up 4 vs
+> yesterday. Signals: weather 91, search 30, labs 21. ...`); H1 = locked `{Disease} risk in {City} today, in one
+> score.`; JSON-LD = WebPage + 4-item BreadcrumbList + disease-scoped Dataset (4 variableMeasured) + FAQPage(6),
+> NO medical schema; canonical self-referencing; OG reuses the CITY card; confidence chip = **Lab-confirmed**
+> (confirmed cell) vs **Early estimate, capped below HIGH** (forecast cell) - both correct per mode; family
+> mechanism line correct (mosquito vs waterborne); guardrails clean (no em/en/middot, no "this week"). The seed
+> inlines `FW.disease` + the city cell + national rank + this city's archive slice INCL. its state search line,
+> ready for W2b. **About-{disease} copy is net-new + non-diagnostic and still needs the ~2026-07-15 counsel pass.**
+> **REMAINING: W2b** (mobile.js/desktop.js `FW.disease` mode: `diseaseCard`/`diseaseRing`/`_disease_pre_*` byte-
+> identical twins; leaderboard pre-filtered to the disease; city switch stays in-vertical `/{new}/{d}/`; faq.js
+> `buildDisease` twin; trend.js disease mode reading the seed/archive `states`; extend `scripts/parity_check.js`
+> with a disease fixture) then flip the gate. **W2c** early-estimate sweep (needs product+counsel sign-off).
+> **W3** verification. Carry-forward = `src/build_site.py` (local).
+>
+> **(2026-07-11, SEO PHASE 1 KICKOFF - city x disease pages: archive v1.1 DONE, pages PENDING; all LOCAL +
+> uncommitted; continuing in a new session):** Building the growth plan's flagship + biggest traffic line: 209 x 4 =
+> **836 pages** at `/fever-watch/{city}/{disease}/`. Design v2 was imported (Claude Design, 4 frames: mobile
+> early-estimate default, mobile lab-confirmed HIGH, Labs empty-state detail, desktop w/ Quick Links rail) and
+> reviewed end-to-end by the lead + an INDEPENDENT reviewer against the spec, CLAUDE.md guardrails, and production
+> source. Verdict: **BUILD-READY WITH ADAPTATIONS** - 1 blocker + 6 majors, all fixable without re-layout (footer =
+> verbatim `footer_html()` reuse; NO risk-band zones behind signal-tab lines; split the Labs empty-state's "capped
+> at 69" claim from chart-history; swap product-copy middots; the H1; the terminology fork; a one-disease tests-slot
+> variant). ~80% of the design verified as REUSE of existing production machinery. Full spec + review record +
+> locked decisions + the design-review gating list: **`docs/city_disease_page_spec.md`** (sec 0 = build status).
+>
+> **W1 SHIPPED (verified, LOCAL): archive v1.1** (`src/build_archive.py`) - the per-disease season data the disease
+> pages need, COUNTS-FREE + dial-consistent, ADDITIVE so the hub is untouched (legacy `weather/search/labs/overall`
+> city blocks byte-preserved). New keys: `cities.{id}.byDisease.{disease}.{score,labs}` (score line consolidate()'d
+> per week, `ty[-1]` == the live dial; labs line only for the 24 cities with 2025 history, absent elsewhere so the
+> Labs tab keeps "coming soon"), `cities.{id}.byFamily.{mosquito,waterborne}`, and `states.{state}.{disease}` EXACT
+> per-disease search (27 states, one Google normalisation). The `--daily`/`--search-only` CI modes were extended to
+> maintain them; built one-off via `--history` (reads the gitignored backfills). **The enriched
+> `data/archive/trend_series.json` is a COMMIT artifact** (carries the 2025 ly history `--daily` can't regenerate,
+> like Phase 0). Verified: byDisease score `ty[-1]` == live dial 4/4 (Kolkata); labs line present only for the 24
+> history cities; 14/14 invariants; the existing 210-page build stays clean with full above-fold parity + 51/51
+> Phase-0 checks (ZERO regression). NOT yet applied: the F21 vs-last-year window fix (3-week centered mean) - do it
+> before the "+31%" chip ships.
+>
+> **DECISIONS LOCKED (user, 2026-07-11):** (1) "early estimate" replaces "Forecast only" EVERYWHERE - full sweep
+> (method.js, faq, TIPINFO, consolidate.py notes + grid.json patch, hub + new pages), one term, byte-identical twins
+> = W2c; (2) H1 = `{Disease} risk in {City} today, in one score.`; (3) "What you can do" = REPLICATE the live hub
+> section AS IS (drops the design's band-adaptive HIGH actions for v1); (4) "About {disease}" = short blurb + "Read
+> the full guide" to locked blog URLs (dengue `/blog/5-ways-to-avoid-dengue-fever/`, malaria
+> `/blog/types-of-malaria-symptoms-causes-and-treatment/`, typhoid `/blog/typhoid-causes-symptoms-and-treatment/`,
+> chikungunya `/blog/vaccine-viral-fever-causes-symptoms-and-treatment-options/`); (5) per-signal rising badges
+> hidden v1, "+31%" chip after the window fix, tests row gated.
+>
+> **REMAINING (next session):** **W2a** - `build_site.py` disease template: hero (NEW above-fold parity twin) + rank
+> strip + breakdown w/ sibling-disease rows + weather + trend (v1.1 lines) + season + the reused "What you can do" +
+> nearby (disease-scored) + leaderboard-as-links + About + guide links + FAQ x8 + 4-item BreadcrumbList + disease
+> Dataset + title/meta/H1 + hub disease-switcher row + sitemap 210->1046. **W2b** - `mobile.js`/`desktop.js`
+> `FW.disease` mode (hero dial + vs-yesterday delta, switcher pushState in-vertical, pre-tabbed leaderboard, dock
+> tiers, first-FAQ-open). **W2c** - the early-estimate sweep. **W3** - parity fixtures (disease hero) + FAQ/trend
+> render-diffs + guardrail sweeps + independent QA. **NOTHING committed this session**; the carry-forward artifacts
+> are `src/build_archive.py`, the enriched `data/archive/trend_series.json`, and `docs/city_disease_page_spec.md`
+> (all local).
+>
+> **(2026-07-08, SEO PHASE 0 ON-PAGE PASS - committed + pushed; the plan + traffic forecast live in
 > `docs/seo_growth_plan.md`):** Implemented Phase 0A (0.1-0.3) + Phase 0B (0.5, 0.6, 0.8) from the growth plan, with
 > 0.4 BUILT but GATED. Per city page:
 > 1. **BreadcrumbList** JSON-LD (PharmEasy > Fever Watch > {City}; landing = 2 items) wired to `WebPage.breadcrumb`.
@@ -1180,7 +1395,7 @@ Hosting: GitHub Pages; production = pharmeasy.in subpath via reverse-proxy (mirr
 
 `src/consolidate.py` (config: `config/consolidation.json`):
 - With positivity: weights ~`30/22/48` (weather/trends/positivity); agreement (spread < 22) x1.08, else x0.96.
-- Without positivity: `forecast_only` blends `60/40` and **caps at 69** (one below the HIGH floor of 70) -> can never show HIGH.
+- Without positivity: `forecast_only` blends `60/40` and applies a **soft-knee taper** (`soft_knee` 55 -> `score_cap` 69: pass-through <=55, then compress [55,100] into [55,69]) so it approaches but can never show HIGH (was a hard clip `min(69, blend)` until 2026-07-15; see the top banner).
 - Bands: HIGH >=70, MODERATE >=45, LOW-MODERATE >=25, LOW >=0.
 - **City headline blend** (in `build_daily.py`): `0.8 x top disease + 0.2 x mean(rest)`, with the **driver disease named**.
 

@@ -44,7 +44,7 @@
       : "PharmEasy lab results feed into this one, so it reflects what's actually turning up in tests, not just the weather";
     var weights_clause = any_conf
       ? "When lab data is in, it leads - the mix is roughly 30/22/48 across weather, search and labs, with a small confidence bump when all three agree"
-      : "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40), capped at 69 so it can't hit HIGH until the labs back it up";
+      : "Lab data hasn't reached " + nm + " yet, so for now it's a weather-and-search forecast (about 60/40) that we hold below the HIGH band until the labs back it up";
     var season_clause = (dw >= 60) ? "that's firmly in risk-raising territory" : (dw >= 25 ? "that's middling - not nothing, not alarming" : "that's on the quiet side for now");
     var band_open = {
       "HIGH": "A HIGH reading (" + bs + "/100) means conditions and signals in " + nm + " are lining up strongly right now - the moment to be most careful about bites, clearing standing water, and not shrugging off a fever that drags past a couple of days.",
@@ -52,7 +52,7 @@
       "LOW-MODERATE": "A LOW-MODERATE reading (" + bs + "/100) means " + nm + " is fairly calm right now - low pressure overall, though the monsoon can turn that around fast.",
       "LOW": "A LOW reading (" + bs + "/100) means it's quiet in " + nm + " right now - conditions and signals are all on the gentle side."
     }[bb] || ("A " + bb + " reading (" + bs + "/100) is the headline for " + nm + " right now.");
-    var cap_clause = !any_conf ? " And since " + nm + " is on a conditions-only forecast for now, it's capped at 69 - it won't show HIGH until lab data confirms it." : "";
+    var cap_clause = !any_conf ? " And since " + nm + " is on a conditions-only forecast for now, we hold it below the HIGH band - it won't show HIGH until lab data confirms it." : "";
     var news_clause = news ? ", and there's a national news spike around dengue at the moment" : "";
 
     return [
@@ -78,6 +78,54 @@
        "With " + nm + " at " + bb + " (" + bs + "/100) and " + dl + " leading, the sensible basics: tip out any standing water and use repellent for the mosquito-borne ones, stick to safe drinking water to keep typhoid at bay, and don't brush off a fever that lasts more than a couple of days. If you're feeling off, a fever panel test or a quick online doctor consult on PharmEasy is an easy next step. And the usual reminder - this is a risk indicator, not medical advice, so do see a doctor if you're unwell."]
     ];
   }
+  // Per-city per-disease FAQ, byte-mirror of build_site.py faq_items_disease(). cells = DATA.grid array.
+  // rankInfo = { rank (this disease's national rank), ncities }.
+  function buildDisease(city, dis, cells, diseases, generatedAt, rankInfo) {
+    var cid = city.id, nm = city.name, st = city.state, i;
+    var disease = null; for (i = 0; i < diseases.length; i++) { if (diseases[i].id === dis) { disease = diseases[i]; break; } } if (!disease) disease = diseases[0];
+    var dl = disease.label;
+    function cf(did) { for (var j = 0; j < cells.length; j++) { if (cells[j].city === cid && cells[j].disease === did) return cells[j]; } return null; }
+    var cell = cf(dis), sc = String(cell.score), bd = cell.band, sigs = cell.signals || {};
+    var wv = sigs.weather == null ? "no data" : String(sigs.weather);
+    var tvs = sigs.trends == null ? "no data" : String(sigs.trends);
+    var conf = cell.mode === "confirmed";
+    var news = !!sigs.news_spike && dis === "dengue";
+    var nat = rankInfo.rank, ncit = rankInfo.ncities;
+    var ordered = diseases.slice().sort(function (a, c) { return cf(c.id).score - cf(a.id).score; });
+    var k = 1; for (i = 0; i < ordered.length; i++) { if (ordered[i].id === dis) { k = i + 1; break; } }
+    var date_str = fmtDate(generatedAt);
+    var tert = (nat <= ncit / 3) ? "the higher-risk third" : (nat <= 2 * ncit / 3 ? "the middle band" : "the lower half");
+    var fam = disease.family || "mosquito";
+    var wwrd = fam === "mosquito" ? "warm, wet spells" : "heavy rain that can dirty the water supply";
+    var mode_clause = conf
+      ? "PharmEasy lab results feed this one, so it reflects what's actually turning up in tests, not just the weather"
+      : "we don't have enough confirmed lab data for " + nm + " yet, so this is an early, conditions-based estimate that we cap below the HIGH band to stay honest";
+    var news_clause = news ? ", and there's a national news spike around dengue at the moment" : "";
+    var band_line = {
+      "HIGH": "A HIGH reading (" + sc + "/100) means " + dl + " signals in " + nm + " are lining up strongly right now.",
+      "MODERATE": "A MODERATE reading (" + sc + "/100) means " + dl + " risk in " + nm + " is a touch elevated but mixed.",
+      "LOW-MODERATE": "A LOW-MODERATE reading (" + sc + "/100) means " + dl + " risk in " + nm + " is fairly calm right now.",
+      "LOW": "A LOW reading (" + sc + "/100) means " + dl + " is quiet in " + nm + " right now."
+    }[bd] || ("A " + bd + " reading (" + sc + "/100) is the " + dl + " headline for " + nm + " right now.");
+    var cap_clause = !conf ? " It stays below the HIGH band until lab data confirms it, so it can't show HIGH yet." : "";
+    return [
+      ["What is " + nm + "'s " + dl + " risk today?",
+       nm + "'s " + dl + " score is " + sc + "/100 (" + bd + ") as of " + date_str + ", where 0 is quiet and 100 is the loudest we show. " + cap(band_line) + " It's a daily risk indicator across weather, search and lab signals, not a diagnosis or a count of cases."],
+      ["Is " + dl + " rising in " + nm + " right now?",
+       "We can't give case counts - Fever Watch doesn't report those. What we can show is that " + st + "'s search interest for " + dl.toLowerCase() + " is " + tvs + "/100 today" + news_clause + ", and the weather signal for it is " + wv + "/100. Search and weather can run ahead of an outbreak, but they aren't confirmed cases; for the confirmed side we lean on PharmEasy's aggregated, de-identified lab positivity where it's available."],
+      ["How is " + nm + "'s " + dl + " score calculated?",
+       "Three signals, blended and always shown: weather conditions, how much people nearby search " + dl.toLowerCase() + " symptoms, and PharmEasy lab positivity. " + cap(mode_clause) + "." + cap_clause + " The bands are LOW (0-24), LOW-MODERATE (25-44), MODERATE (45-69) and HIGH (70 and up)."],
+      ["Is it " + dl + " season in " + nm + "?",
+       "Monsoon fevers follow the rain more than the calendar. Right now " + nm + "'s weather signal for " + dl.toLowerCase() + " is " + wv + "/100, so " + wwrd + " push it up and drier or cooler spells pull it back. Rather than guessing by the month, check back here - it updates daily."],
+      ["How does " + nm + " compare with other cities for " + dl + "?",
+       "Out of the " + ncit + " cities we cover, " + nm + " ranks #" + nat + " today for " + dl + " (" + sc + "/100, " + bd + "), which puts it in " + tert + " nationally. That ordering shifts through the season because every city is rescored each day from its own weather, search and lab signals."],
+      ["What should someone in " + nm + " do about " + dl + "?",
+       (fam === "mosquito"
+         ? "Keep up the basics: clear standing water and use repellent, since " + dl + " is mosquito-borne, and don't brush off a fever that lasts more than a couple of days."
+         : "Stick to safe drinking water and good food hygiene, since typhoid is waterborne, and don't brush off a fever that lasts more than a couple of days.") + " If you're feeling off, a fever panel test or a quick online doctor consult on PharmEasy is an easy next step. This is a risk indicator, not medical advice, so do see a doctor if you're unwell."]
+    ];
+  }
+
   // Convenience: resolve the national rank from the loaded data (full grid = compute; seed = use the
   // baked rank) and build the FAQ for the current city. Used by both flows on every render/switch.
   function forCity(city, DATA, seed) {
@@ -91,5 +139,18 @@
     }
     return build(city, DATA.grid, DATA.diseases, DATA.generated_at, ri);
   }
-  window.FeverWatchFaq = { build: build, forCity: forCity };
+  // Disease variant: national rank is by THIS disease's cell score (seed = the inlined disease_rank).
+  function forCityDisease(city, dis, DATA, seed) {
+    var ri, i;
+    if (DATA.cities.length > 1) {
+      function gcell(cid) { for (var j = 0; j < DATA.grid.length; j++) { if (DATA.grid[j].city === cid && DATA.grid[j].disease === dis) return DATA.grid[j]; } return { score: 0 }; }
+      var sorted = DATA.cities.slice().sort(function (a, b) { return gcell(b.id).score - gcell(a.id).score; }), rk = 1;
+      for (i = 0; i < sorted.length; i++) { if (sorted[i].id === city.id) { rk = i + 1; break; } }
+      ri = { rank: rk, ncities: DATA.cities.length };
+    } else {
+      ri = { rank: (seed && seed.disease_rank) || 1, ncities: (seed && seed.ncities) || DATA.cities.length };
+    }
+    return buildDisease(city, dis, DATA.grid, DATA.diseases, DATA.generated_at, ri);
+  }
+  window.FeverWatchFaq = { build: build, forCity: forCity, buildDisease: buildDisease, forCityDisease: forCityDisease };
 })();

@@ -14,9 +14,14 @@ Rules (all numbers live in config/consolidation.json):
   * With positivity: it dominates (weights ~30/22/48). When all three signals
     agree (small spread) a confidence multiplier is applied; otherwise the
     score is damped slightly and confidence drops to Moderate.
-  * Without positivity: "Forecast only" mode blends weather and trends and CAPS
-    the score, so a conditions-only read can never reach HIGH. This honesty
-    mechanism protects credibility.
+  * Without positivity: "Forecast only" mode blends weather and trends and applies
+    a SOFT-KNEE taper toward the cap, so a conditions-only read can never reach
+    HIGH. Below the knee the blend passes through unchanged; above it every extra
+    raw point buys proportionally less displayed score, so scores approach but
+    never pile up on the cap. This honesty mechanism protects credibility while
+    preserving the real differences between cities (the old hard clip flattened
+    every strong-conditions city onto the same number). Set soft_knee == score_cap
+    in config to recover the legacy hard clip.
   * The output is always decomposable (weights + per-signal values + a plain
     note), never a mystery number.
 
@@ -64,7 +69,7 @@ def consolidate(signals: dict, cfg: dict) -> dict:
         c = cfg["forecast_only"]
         w = c["weights"]
         base = w["weather"] * weather + w["trends"] * trends
-        score = min(c["score_cap"], base)
+        score = _soft_knee(base, c.get("soft_knee", c["score_cap"]), c["score_cap"])
         weights = {
             "weather": round(w["weather"] * 100),
             "trends": round(w["trends"] * 100),
@@ -103,6 +108,23 @@ def _clamp(value, lo: float = 0.0, hi: float = 100.0) -> float:
     return max(lo, min(hi, f))
 
 
+def _soft_knee(base: float, knee: float, cap: float) -> float:
+    """Soft-knee taper for the forecast-only (no-lab) score.
+
+    Below `knee` the blend passes through unchanged; from `knee` up to a raw
+    blend of 100 it is compressed linearly into [`knee`, `cap`]. So the cap is
+    only reached at a theoretical raw blend of 100 (both weather and search
+    maxed at once) and never becomes a wall that many cities pile onto. Strictly
+    monotonic, continuous at the knee, and identical to a hard clip when
+    knee == cap. Standard dynamic-range compression, same construction the AQI
+    uses to map raw values through piecewise-linear breakpoints.
+    """
+    b = min(base, 100.0)
+    if b <= knee or knee >= 100.0:
+        return min(b, cap)
+    return knee + (b - knee) * (cap - knee) / (100.0 - knee)
+
+
 if __name__ == "__main__":
     import json
     import os
@@ -114,7 +136,9 @@ if __name__ == "__main__":
     cases = [
         ("Confirmed, all agree", {"weather": 78, "trends": 74, "positivity": 80, "news_spike": False}),
         ("Confirmed, diverging", {"weather": 80, "trends": 30, "positivity": 35, "news_spike": False}),
-        ("Forecast only (capped)", {"weather": 90, "trends": 85, "positivity": None, "news_spike": False}),
+        ("Forecast, below knee", {"weather": 55, "trends": 40, "positivity": None, "news_spike": False}),
+        ("Forecast, mid taper", {"weather": 80, "trends": 70, "positivity": None, "news_spike": False}),
+        ("Forecast, near max", {"weather": 100, "trends": 95, "positivity": None, "news_spike": False}),
         ("Forecast only + news spike", {"weather": 40, "trends": 88, "positivity": None, "news_spike": True}),
         ("Low everywhere", {"weather": 12, "trends": 9, "positivity": 7, "news_spike": False}),
     ]
@@ -125,4 +149,19 @@ if __name__ == "__main__":
         bnd = band(r["score"], cfg)
         print(f"  {name:28} score={r['score']:>3}  {bnd['label']:<13} [{r['confidence']:<13}] {r['mode']}")
     print("-" * 74)
-    print("  expect: forecast-only never reaches HIGH (cap 69 < 70); confirmed+agree can amplify.")
+
+    # Soft-knee invariants (fail loud if the taper ever regresses).
+    fo = cfg["forecast_only"]
+    knee, cap = fo.get("soft_knee", fo["score_cap"]), fo["score_cap"]
+    assert _soft_knee(knee, knee, cap) == knee, "identity must hold at the knee"
+    assert _soft_knee(0.0, knee, cap) == 0.0 and _soft_knee(30.0, knee, cap) == 30.0, "pass-through below the knee"
+    assert abs(_soft_knee(100.0, knee, cap) - cap) < 1e-9, "raw 100 maps exactly to the cap"
+    ladder = [_soft_knee(x, knee, cap) for x in range(0, 101)]
+    assert all(ladder[i] <= ladder[i + 1] + 1e-9 for i in range(len(ladder) - 1)), "must be monotonic"
+    assert max(ladder) <= cap + 1e-9, "never exceeds the cap"
+    assert _soft_knee(85.0, cap, cap) == cap, "knee==cap recovers the legacy hard clip"
+    forecast_scores = [consolidate({"weather": w, "trends": t, "positivity": None}, cfg)["score"]
+                       for w in range(0, 101, 5) for t in range(0, 101, 5)]
+    assert max(forecast_scores) < 70, "forecast-only can NEVER reach the HIGH band (>=70)"
+    print(f"  soft-knee OK: knee={knee} cap={cap}; forecast range "
+          f"{min(forecast_scores)}..{max(forecast_scores)} (all < 70, no HIGH). Only raw 100 -> {cap}.")

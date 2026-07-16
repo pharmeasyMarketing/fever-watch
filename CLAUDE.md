@@ -30,9 +30,16 @@ different point in the illness pipeline:
 Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
 - positivity present, it dominates (~30/22/48 weather/trends/positivity); agreement across all three
   applies a confidence multiplier.
-- no positivity, "Forecast only" mode blends weather and trends and **caps the score at 69, one
-  point below the HIGH band floor (70)**, with lower confidence. So a forecast-only read can never
-  reach HIGH by construction. This honesty mechanism protects credibility.
+- no positivity, "Forecast only" mode blends weather and trends and applies a **SOFT-KNEE taper**
+  toward the cap (`config/consolidation.json` `forecast_only.soft_knee` 55, `score_cap` 69):
+  the blend passes through unchanged at or below 55, then is linearly compressed into [55, 69], so
+  `score_cap` (69, one below the HIGH floor of 70) is only reached at a theoretical raw blend of 100
+  and never becomes a WALL that many cities pile onto (the old hard clip `min(69, blend)` flattened
+  every strong-monsoon city onto 69, which read as fake - leadership flag, fixed 2026-07-15). A
+  forecast-only read still can never reach HIGH by construction. Standard dynamic-range compression
+  (same piecewise-linear breakpoint construction as the AQI). Set `soft_knee == score_cap` to recover
+  the legacy hard clip. Only forecast cells change; confirmed (lab-backed) cells are untouched, and
+  all per-disease cell BANDS are invariant (the taper lives entirely inside the MODERATE band 45-69).
 - per-city z-score normalization vs a baseline (kills big-city bias): hook now, real baselines later.
 - the score is ALWAYS decomposable in the UI; never a mystery number.
 
@@ -259,6 +266,38 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   byte-identical TOC twins + desktop spyScroll ids (instructions at each flag). Its `.fwtests` CSS stays dormant in
   tokens.css. Independently QA'd (fresh-eyes agent): 0 blockers/majors, facts recomputed on all 209 cities,
   SHIP-READY verdict; post-QA fixes folded in (meta tail trim, CTA localization, SerpApi attribution).
+- **2026-07-11 SEO Phase 1 KICKOFF - city x disease pages (IN PROGRESS, LOCAL/uncommitted, continuing next
+  session):** Building 209 x 4 = **836 pages** at `/fever-watch/{city}/{disease}/` (the growth plan's biggest
+  traffic line). Design v2 imported (Claude Design) + reviewed by the lead + an independent reviewer =
+  BUILD-READY WITH ADAPTATIONS. **Full spec + review record + locked decisions: `docs/city_disease_page_spec.md`
+  (sec 0 = build status).** **W1 DONE (verified): archive v1.1** (`src/build_archive.py`) - ADDITIVE per-disease
+  season data (`cities.{id}.byDisease.{disease}.{score,labs}`, `cities.{id}.byFamily.{fam}`,
+  `states.{state}.{disease}`), COUNTS-FREE + dial-consistent (byDisease score `ty[-1]` == the live dial); legacy
+  `weather/search/labs/overall` blocks preserved so the hub is untouched (210-page build clean, full parity,
+  51/51 Phase-0 checks). Maintained by the extended `--daily`/`--search-only` modes; built one-off via `--history`;
+  **the enriched `data/archive/trend_series.json` is a COMMIT artifact.** LOCKED DECISIONS: "early estimate"
+  replaces "Forecast only" everywhere (sweep pending = W2c); H1 = `{Disease} risk in {City} today, in one score.`;
+  "What you can do" replicated from the live hub AS IS; About-{disease} = short blurb + a locked blog "full guide"
+  link per disease (URLs in the spec). **W2a DONE (verified, local): the `build_site.py` disease template** -
+  `page()`/`jsonld()` got a `disease` param; a `if city and disease:` branch renders all 836 children while the
+  hub (`disease=None`) path stays byte-identical (parity green). Disease-page emission + hub switcher + sitemap
+  children are GATED behind `FW_DISEASE_PAGES_ENABLED` (default `False`, `FW_TESTS`-style): OFF = 210 pages /
+  byte-identical hub; ON = 1,046 pages / sitemap 1,046 (both verified). The per-disease season trend reuses the
+  hub trend math via `_disease_archive_view()` (remaps the v1.1 `byDisease`/`byFamily`/`states` slices), verified
+  dial-consistent. SEO surface verified (exact-match title, number-rich meta, locked H1, 4-item breadcrumb +
+  disease Dataset + FAQPage, no medical schema, Lab-confirmed/Early-estimate chip per mode). **W2b DONE (verified
+  end-to-end in a browser, local): the JS `FW.disease` mode** - `mobile.js`/`desktop.js` `renderDisease()` with an
+  above-fold hero BYTE-IDENTICAL to the SSR twins (`diseaseCard`/`diseaseRing`/`diseaseBreakdown`/
+  `diseaseWeatherCard`, + desktop `searchHeroDisease`/`diseaseToc`); `faq.js` `buildDisease`/`forCityDisease`
+  (render-diff 30/30 vs the SSR FAQPage JSON-LD); `trend.js` disease mode (remaps `byDisease`/`byFamily`/`states`,
+  dial-consistent); `scripts/parity_check.js` now runs **4 fixtures (hub + disease x mobile + desktop), ALL GREEN**.
+  City switch stays in-vertical (`CITY_ROOT`/`cityHref` disease-aware -> `/{new}/{disease}/` pushState; verified
+  live). Fixed a `CITY_ROOT` `index.html` bug; new dormant CSS in `tokens.css`. **The gate is now env-overridable**
+  (`FW_DISEASE_PAGES=1` builds the 1,046 set for LOCAL review; default OFF = 210 pages, byte-identical hub). **Do
+  NOT flip the default until the About-{disease} copy + early-estimate terminology clear the ~2026-07-15 counsel
+  review.** REMAINING: W2c (early-estimate sweep, needs sign-off), W3 (trend render-diff + guardrails + independent
+  QA + Lighthouse). NOTHING committed; carry-forward = `build_site.py` + `assets/js/{mobile,desktop,faq,trend}.js`
+  + `scripts/parity_check.js` + `prototypes/tokens.css` + the enriched `trend_series.json` + the spec (all local).
 
 ## Open decisions / TODO
 

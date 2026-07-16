@@ -451,3 +451,32 @@ img, svg { max-width: 100%; }
 .fwnear-chip b { font-weight: 700; }
 .fwnear-chip span { color: var(--pe-muted); font-weight: 600; }
 .fwnear-chip:hover { border-color: var(--pe-green); }
+
+/* ===== SEO Phase 1: per-city per-disease pages (gated; styles are dormant until FW_DISEASE_PAGES) ===== */
+/* Disease hero: the ring's right-hand column carries the confidence chip + the two rank facts. */
+.discard .rtop { align-items: center; }
+.disaside { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; padding-left: 2px; }
+.confchip { align-self: flex-start; font-size: 11px; font-weight: 800; letter-spacing: .01em; padding: 4px 11px; border-radius: 10px; line-height: 1.35; }
+.rankstrip { display: flex; flex-direction: column; gap: 6px; }
+.rankfact { font-size: 12.5px; line-height: 1.4; color: var(--pe-ink-2); }
+.rankfact b { color: var(--pe-ink); font-weight: 800; }
+/* Band chip on the disease dial: flex layout so a long "{Band} {Disease} risk in {City}" wraps cleanly
+   (continuation lines align with the text, no hanging indent past the beacon) and the info i stays pinned
+   to the right edge, vertically centred - it can never spill onto a second line. Hub chip untouched. */
+.discard .bandchip { display: flex; align-items: center; }
+.discard .bandchip .beacon { flex-shrink: 0; }
+.discard .bandchip .dialinfo { flex-shrink: 0; margin-left: auto; padding-left: 10px; }
+/* Weather mechanism line under the 3 weather tiles. */
+.wxmech { font-size: 12px; line-height: 1.5; color: var(--pe-muted); margin: 11px 2px 0; }
+/* About-{disease} block. */
+.aboutp { font-size: 13.5px; line-height: 1.6; color: var(--pe-ink-2); margin: 2px 0 10px; }
+.fw-guidelink { font-weight: 700; font-size: 13px; }
+/* Disease switcher (sibling cross-links + hub). */
+.disswitch { margin: 0; }
+.disswitch-t { font-size: 12px; font-weight: 800; color: var(--pe-ink); margin-bottom: 9px; }
+.disswitch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.disswitch-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--pe-line); border-radius: 999px; padding: 7px 13px; font-size: 12.5px; color: var(--pe-ink); background: #fff; text-decoration: none; transition: border-color .12s ease; }
+.disswitch-chip b { font-weight: 800; }
+.disswitch-chip:hover { border-color: var(--pe-green); }
+.disswitch-chip.on { border-color: var(--pe-green); background: var(--pe-green-100); }
+.dsc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }

@@ -50,8 +50,8 @@ def main():
     gate = int((pos_cfg.get("gsheet_api") or {}).get("min_tests", 30))
 
     print("Fever Watch score derivation (live)  |  trends=%s  positivity=%s  ref_pct=%g  gate=%d tests" % (trends_p.name, positivity_p.name, ref, gate))
-    print("weights with-positivity = weather %.2f / trends %.2f / positivity %.2f ; forecast = weather %.2f / trends %.2f cap %d"
-          % (wp["weather"], wp["trends"], wp["positivity"], fo["weights"]["weather"], fo["weights"]["trends"], fo["score_cap"]))
+    print("weights with-positivity = weather %.2f / trends %.2f / positivity %.2f ; forecast = weather %.2f / trends %.2f soft-knee %g cap %d"
+          % (wp["weather"], wp["trends"], wp["positivity"], fo["weights"]["weather"], fo["weights"]["trends"], fo.get("soft_knee", fo["score_cap"]), fo["score_cap"]))
 
     for cid in want:
         c = cities.get(cid)
@@ -99,8 +99,13 @@ def main():
                 print("          score = round(min(100, %.1f x %.2f)) = %d" % (base, mult, r["score"]))
             else:
                 base = fo["weights"]["weather"] * W + fo["weights"]["trends"] * T
+                knee, capv = fo.get("soft_knee", fo["score_cap"]), fo["score_cap"]
                 print("  BLEND (forecast-only):  base = 0.60x%s + 0.40x%s = %.1f" % (W, T, base))
-                print("          score = round(min(%d, %.1f)) = %d  (capped, cannot reach HIGH)" % (fo["score_cap"], base, r["score"]))
+                if base <= knee:
+                    print("          score = round(%.1f) = %d  (below the %g soft-knee, unchanged; cannot reach HIGH)" % (base, r["score"], knee))
+                else:
+                    print("          score = round(%g + (%.1f-%g)x%d/%d) = %d  (soft-knee taper, cannot reach HIGH)" % (
+                        knee, base, knee, capv - knee, 100 - knee, r["score"]))
             print("  =>  SCORE %d  [%s]  %s  (%s)" % (r["score"], band(r["score"], consol)["label"], r["mode"], r["confidence"]))
 
 
