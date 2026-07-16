@@ -47,6 +47,7 @@ class CpcProvider(WeatherProvider):
         self._nasa = NasaPowerProvider()        # temp/humidity + the revert path
         self._cache_dir = cache_dir or os.path.join("data", "cpc_cache")
         self._var_cache: dict[int, object] = {}  # year -> xarray DataArray ('precip')
+        self._refetched: dict[int, bool] = {}    # year -> already re-downloaded a stale cache this process
 
     # ------------------------------------------------------------------ #
     # public interface
@@ -70,20 +71,60 @@ class CpcProvider(WeatherProvider):
     # ------------------------------------------------------------------ #
     # CPC rainfall extraction
     # ------------------------------------------------------------------ #
-    def _get_var(self, year: int):
-        """Return the cached 'precip' DataArray for `year`, downloading once."""
-        if year not in self._var_cache:
-            import xarray as xr  # lazy: only needed when CPC is actually used
+    def _download(self, year: int, path: str) -> None:
+        os.makedirs(self._cache_dir, exist_ok=True)
+        blob = get_bytes(CPC_URL.format(year=year), timeout=300)
+        tmp = path + ".tmp"
+        with open(tmp, "wb") as fh:
+            fh.write(blob)
+        os.replace(tmp, path)
 
-            path = os.path.join(self._cache_dir, f"precip.{year}.nc")
+    @staticmethod
+    def _last_day(var):
+        """Last date actually present in the DataArray, or None."""
+        import numpy as np
+
+        t = np.atleast_1d(var.time.values)
+        return date.fromisoformat(str(t[-1])[:10]) if t.size else None
+
+    def _get_var(self, year: int, need_through: date | None = None):
+        """Return the cached 'precip' DataArray for `year`, downloading once.
+
+        The CURRENT year's file GROWS as NOAA appends each day, so a cached copy goes
+        stale. If it does not reach `need_through`, re-download it ONCE per process.
+        This matters because a short file fails SILENTLY: dates past its end simply drop
+        out of _cpc_rainfall, _merge leaves precip_mm None, and the aggregate reads 0mm.
+        A stale cache therefore produces "zero rain" (and a waterborne score of 0) in
+        peak monsoon, which is exactly the silent garbage the fail-loud guard exists to
+        prevent. (Seen for real: a precip.2026.nc cached on 16 Jun served 0mm rain for
+        every date after 20 Jun, which corrupted the whole 2026 archive season line.)
+        """
+        import xarray as xr  # lazy: only needed when CPC is actually used
+
+        path = os.path.join(self._cache_dir, f"precip.{year}.nc")
+        if year not in self._var_cache:
             if not os.path.exists(path):
-                os.makedirs(self._cache_dir, exist_ok=True)
-                blob = get_bytes(CPC_URL.format(year=year), timeout=300)
-                tmp = path + ".tmp"
-                with open(tmp, "wb") as fh:
-                    fh.write(blob)
-                os.replace(tmp, path)
+                self._download(year, path)
             self._var_cache[year] = xr.open_dataset(path)["precip"]
+
+        if need_through is not None and not self._refetched.get(year):
+            last = self._last_day(self._var_cache[year])
+            if last is not None and last < need_through:
+                # Stale current-year cache: refresh once, then re-open.
+                self._refetched[year] = True
+                try:
+                    self._var_cache[year].close()
+                except Exception:
+                    pass
+                self._var_cache.pop(year, None)
+                self._download(year, path)
+                self._var_cache[year] = xr.open_dataset(path)["precip"]
+                fresh = self._last_day(self._var_cache[year])
+                if fresh is not None and fresh < need_through:
+                    # Still short after a fresh pull: normal for the last ~1-3 days (CPC
+                    # latency). Say so LOUDLY rather than quietly scoring those days as 0mm.
+                    print(f"WARNING: CPC precip.{year} reaches {fresh}, short of {need_through}; "
+                          f"days after {fresh} have NO rain data and must not be read as 0mm.")
         return self._var_cache[year]
 
     def _pick_cell(self, pr, lat: float, lon: float, t0: str, t1: str):
@@ -120,9 +161,10 @@ class CpcProvider(WeatherProvider):
         out: dict[str, float] = {}
         cell = None
         for year in range(start.year, end.year + 1):
-            pr = self._get_var(year)
+            need_through = min(end, date(year, 12, 31))
+            pr = self._get_var(year, need_through=need_through)
             t0 = max(start, date(year, 1, 1)).isoformat()
-            t1 = min(end, date(year, 12, 31)).isoformat()
+            t1 = need_through.isoformat()
             if cell is None:
                 cell = self._pick_cell(pr, lat, lon, t0, t1)
             glat, glon = cell
