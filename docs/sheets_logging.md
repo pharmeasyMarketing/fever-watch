@@ -27,6 +27,14 @@ container-bound or standalone - change `SHEET_ID` below to retarget.
   - `trends_score` (L) = `MAX(4, MIN(100, trends_state_interest))` - the state Google Trends index, floored.
   - `score` (T): ensemble over the weights (P/Q/R) and sub-scores (K/L/O), mirroring
     `config/consolidation.json`; OVERALL = `ROUND(0.8*top + 0.2*mean-of-rest)` over that city's disease rows.
+    The forecast (no-lab) branch is the **soft-knee taper** `ROUND(IF(FB<=55, FB, 55+(FB-55)*14/45))`
+    (2026-07-16, `FW-ENSEMBLE-0.2.0`; was a hard clip `ROUND(MIN(69, FB))`). **The logger is APPEND-ONLY and
+    `_setRawFormulas` writes formulas only for the rows it just appended, so re-deploying the Apps Script does
+    NOT revise history** - existing rows keep whatever formula was frozen into them. To migrate historical rows
+    after an engine change, run the one-off `scripts/apps_script_softknee_migration.gs` (dry-run, chunked +
+    resumable, then verify). It rewrites column T on per-disease rows ONLY: the `OVERALL` blend rows aggregate
+    `$T:$T` and recompute themselves, and band (U) reads `$T` and follows - blindly filling T down would CORRUPT
+    the OVERALL rows. Its formula is verified byte-identical to `src/backfill_sheetlog.py` `_f_score`.
   - `confidence` (S) downgrades one step (High->Moderate, Moderate->Low) when the cell is `stale` (Z) -
     i.e. it used a carried-forward reading.
   - **Labs build-up (live):** only `tests_booked` (AB) + `positives` (AC) are POSTed (the raw window-summed
