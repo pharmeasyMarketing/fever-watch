@@ -86,6 +86,9 @@ function rewriteScoreFormulasSoftKnee() {
   var sh = _skSheet(), last = sh.getLastRow();
   var props = PropertiesService.getScriptProperties();
   var start = Number(props.getProperty(SK_CURSOR_KEY) || 2);   // row 1 = header
+  // HARD GUARD: never let the write range reach row 1. The header row is consumed by CRM automation,
+  // so clobbering it would break downstream systems. Also catches a NaN/garbage cursor property.
+  if (!(start >= 2)) start = 2;
   if (start > last) { props.deleteProperty(SK_CURSOR_KEY); Logger.log('COMPLETE - nothing left to do.'); return; }
 
   var end = Math.min(start + SK_CHUNK - 1, last), n = end - start + 1;
