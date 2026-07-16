@@ -40,7 +40,12 @@
  */
 
 var SK_SHEET = 'raw_data';
-var SK_CHUNK = 5000;        // rows per execution slice
+// Rows per execution slice. Each slice is only ~4 batched Range calls, so this comfortably clears a
+// full season's sheet (~27k rows) in ONE run, well inside the 6-minute limit. Kept chunked + resumable
+// anyway: if a run ever times out, the cursor is only advanced AFTER a successful write, so simply
+// running the function again resumes safely (re-writing a row is idempotent - the formula is derived
+// purely from the row number). Lower this if you ever do hit a timeout.
+var SK_CHUNK = 30000;
 var SK_COL_DISEASE = 5;     // E
 var SK_COL_SCORE = 20;      // T
 var SK_CURSOR_KEY = 'sk_cursor';
