@@ -23,8 +23,8 @@
 > compression (same piecewise-linear construction as the AQI); honest story ("the closer a no-lab read climbs, the more
 > we hold it back") beats a silent clip. **Surfaces updated (all twins byte-consistent):** engine + config; the sheet
 > loggers (`src/backfill_sheetlog.py` `_f_score` in-cell formula AND the Apps Script in `docs/sheets_logging.md` line ~144
-> -> `ROUND(IF(FB<=55,FB,55+(FB-55)*14/45))`, forecast branch verified == engine on all 441 grid points; **USER MUST
-> RE-DEPLOY the Apps Script**); `method.js` worked-example (live) + dead setDial; every "capped at 69"/"maximum 69" copy
+> -> `ROUND(IF(FB<=55,FB,55+(FB-55)*14/45))`, forecast branch verified == engine on all 441 grid points; Apps Script
+> RE-DEPLOYED by the user 2026-07-16); `method.js` worked-example (live) + dead setDial; every "capped at 69"/"maximum 69" copy
 > -> "held below the HIGH band"/"eased back ... held below 70" across build_site.py (FAQ_ITEMS + faq_items + faq_items_disease
 > + METHOD_HTML + METHOD_SUMMARY + Dataset measurementTechnique), faq.js, mobile.js, desktop.js, method.js, build_daily.py
 > disclaimer, explain_score.py, build_score_workbook.py, analyze_alert_cadence_2025.py. **Data regenerated (engine-isolated,
@@ -40,6 +40,47 @@
 > threaded server) 0 console errors, leaderboard differentiated. Disease pages (gated OFF, unchanged for this
 > release) inherit the taper automatically - verified with `FW_DISEASE_PAGES=1` (parity 4/4). On the FIRST
 > production build after this, capped cities step down ~6 pts once (bands unchanged) - analytics pre-briefed.
+> **SHIPPED + LIVE-VERIFIED:** pushed as `0b2c445`. Staging (github.io) confirmed live by fetching its own
+> `data/grid.json`: engine `FW-ENSEMBLE-0.2.0`, forecast cells at 69 **184 -> 0**, max 68, 59 distinct, headlines at
+> 69 **9 -> 0**, headline range 24-70 (Delhi 70 = lab-confirmed HIGH), new copy present / "capped at 69" absent, 0
+> console errors. Production `deploy-cyberpanel.yml` ran green (rsync to the VPS OK) but `https://pharmeasy.in/fever-watch/`
+> is still UNREACHABLE - that is the PENDING edge reverse-proxy rule owned by another team, NOT a deploy failure.
+> **Git gotcha:** `git push` 403'd as `vaibhavjd` because the SYSTEM-level Windows `manager` credential helper is
+> consulted before any repo-local one, even though `gh` is authed as `pharmeasyMarketing` (admin). Fix, applied to
+> this repo's `.git/config`: `git config --local --add credential.helper ""` (empty string RESETS the inherited
+> chain) then `--add credential.helper "!gh auth git-credential"`.
+>
+> **SHEET HISTORY MIGRATED (2026-07-16, done + independently verified by reading the sheet):** re-deploying the Apps
+> Script only affects NEW rows - `doPost` does `getLastRow()+1` then `_setRawFormulas(sh, start, ...)`, so it is
+> **APPEND-ONLY** and every historical row kept the old `ROUND(MIN(69,...))` frozen in its own cell. One-off
+> `scripts/apps_script_softknee_migration.gs` (committed) fixes them: preview -> rewrite (looping, resumable) ->
+> verify. **Result, read back via the Sheets API (NOT the log): all 21,396 disease rows on the soft knee, 0 on the
+> old clip, 5,349 OVERALL rows preserved, 0 blank/corrupt cells, header `T1='score'`/`U1='band'` intact, 0 forecast
+> rows >= 70 (guardrail holds), confirmed rows max 87 (correct - labs may reach HIGH).** 316 -> **14** forecast rows
+> sit on exactly 69, all legitimate: every one is Kerala chikungunya at weather 98 + search 100 = raw 98.80, and the
+> knee only reaches 69 at raw >= 98.39 (0.07% of rows). **HARD-WON GOTCHAS (do not repeat):** (1) the migration must
+> rewrite column T on per-disease rows ONLY - the `disease="OVERALL"` blend row (every 5th) carries a MAXIFS/SUMIFS
+> formula and aggregates `$T:$T`, so it recomputes itself; a naive fill-down CORRUPTS it. Band (U) reads `$T` and
+> follows. (2) A 30k-row `setFormulas` makes the Spreadsheets service time out on flush ("Service Spreadsheets timed
+> out while accessing document") and **silently rolls back the ENTIRE write** - while the log had already printed
+> "COMPLETE". 5k chunks commit fine. (3) Therefore: `setFormulas` -> `SpreadsheetApp.flush()` -> and only THEN
+> advance the cursor, so a timeout throws before the cursor moves and the log can never lie. (4) The project may be
+> STANDALONE, so resolve the sheet via the logger's `openById(SHEET_ID)` global, never `getActive()` (null when
+> standalone; the WRONG file if bound elsewhere). (5) TRUST THE SHEET, NOT THE EXECUTION LOG.
+>
+> **BACKFILL SEASON FILES REBUILT (2026-07-16) on `FW-ENSEMBLE-0.2.0`** via `python src/backfill_sheetlog.py --years
+> {2025|2026} --format both` (`_f_score` emits the knee for the xlsx formulas; the csv literals come from the engine,
+> so both inherit it). `data/backfill/sheet/` is gitignored - these are import deliverables, never committed. Old
+> versions PRESERVED as `raw_data_{year}_OLD_hardcap.{xlsx,csv}` (renamed, not overwritten). Clean A/B on the SAME
+> rows (recomputing the old clip from each row's own K/L rather than mutating config): **2025** (158,840 rows, Jun-Oct)
+> forecast rows pinned at exactly 69 **65,697 (54.0%) -> 1,496 (1.2%)**, biggest cluster 65,697@69 -> 9,511@57, **0
+> band changes**, 0 rows > 69, drops median 5 (max 10) - last season was the wetter monsoon, so the wall was far worse
+> than 2026's. **2026 June** (31,350 rows) **2,091 (8.6%) -> 0 (0.0%)**, biggest cluster 2,091@69 -> 876@56, 0 band
+> changes, drops median 6. **CAVEAT for anyone diffing 2025 old-vs-new:** the old 2025 file (13 Jun) is NOT a
+> like-for-like baseline - it predates the real-labs switch, so it used MOCK positivity (94% fake "confirmed", 26
+> columns) whereas the new one uses the REAL feed + 30-test gate (4% confirmed, 96% forecast, 30 columns incl.
+> tests_booked/positives/positivity_pct). The confirmed/forecast split moving 94%->4% is that switch, NOT the taper.
+> The old 2026 file (9 Jul) IS like-for-like (same 30 cols, same 709/24,371 split), so only its scores moved.
 >
 > **DE-SATURATION SIMULATED AND REJECTED (2026-07-16) - do NOT redo this experiment without new information.** After the
 > soft-knee shipped, the leaderboard still showed runs of identical scores (e.g. 10 cities at 62; 201/209 cities occupy

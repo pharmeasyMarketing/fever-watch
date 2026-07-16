@@ -14,7 +14,7 @@ question: *should I worry, and what do I do about it?*
 
 **Critical framing (non-negotiable):** a **risk indicator**, NOT a diagnosis, NOT a count of actual
 mosquitoes or cases, NOT medical advice. It is loud only when signals agree; forecast-only locations
-are capped and can never show HIGH. No medical schema in JSON-LD.
+are held below the HIGH band and can never show HIGH. No medical schema in JSON-LD.
 
 ## The engine: 3 signals, confirmation-weighted (NOT a flat average)
 
@@ -41,7 +41,20 @@ Clubbing logic lives in `src/consolidate.py` + `config/consolidation.json`:
   the legacy hard clip. Only forecast cells change; confirmed (lab-backed) cells are untouched, and
   all per-disease cell BANDS are invariant (the taper lives entirely inside the MODERATE band 45-69).
 - per-city z-score normalization vs a baseline (kills big-city bias): hook now, real baselines later.
+  **De-saturating the (heavily saturated) weather signal was simulated and REJECTED 2026-07-16** - it fails
+  directional similarity (Spearman 0.62 vs live, zeroes out the HIGH band) because breaking the leaderboard's
+  score ties IS re-ranking the risk: the ties mean the cities genuinely ARE at equal risk in peak monsoon.
+  Full numbers + why in the PROJECT_STATE banner. Do not redo it without new information.
 - the score is ALWAYS decomposable in the UI; never a mystery number.
+
+**CHANGING THE ENGINE? The score math lives in FIVE twins - keep them in sync or surfaces silently disagree:**
+`src/consolidate.py` (source of truth) - `assets/js/method.js` worked example - `src/backfill_sheetlog.py` `_f_score`
+(in-cell Sheets formula) - the Apps Script twin in `docs/sheets_logging.md` (~line 144) - `scripts/build_score_workbook.py`.
+Then: (1) `build_archive.py --history` + `--daily` or the season trend cliffs; (2) re-deploy the Apps Script, which
+is **APPEND-ONLY** - it only reformulas rows it appends, so historical sheet rows keep the OLD formula frozen in
+their cells and need a one-off migration (`scripts/apps_script_softknee_migration.gs` is the worked example; rewrite
+per-disease rows ONLY - the `OVERALL` blend rows aggregate `$T:$T` and self-recompute, band `U` follows `$T`);
+(3) rebuild the deliverables `python src/backfill_sheetlog.py --years {2025|2026} --format both`.
 
 ## Locked architecture decisions
 
@@ -132,9 +145,21 @@ python scripts/gen_cities.py     # regenerate config/cities.json (228 cities)
 python src/build_weather.py      # NOAA CPC rain + NASA temp/humidity -> data/weather.json (daily)
 python src/build_daily.py        # compose the grid (reads config/signals.json) -> data/grid.json
 python src/build_trends.py       # WEEKLY: SerpApi -> data/trends.json (needs SERPAPI_KEY)
-python src/consolidate.py        # smoke-test the ensemble engine
-python -m http.server 8137       # preview prototypes/mobile.html , prototypes/desktop.html
+python src/consolidate.py        # smoke-test the ensemble engine (asserts the soft-knee invariants)
+python src/build_archive.py --history   # REQUIRED after ANY engine change: re-derives the whole
+                                        # 2025+2026 season under the new engine. CI's daily only runs
+                                        # --daily (latest weekly point), so skipping this leaves an
+                                        # old-engine history and a visible CLIFF in the season trend.
+                                        # Follow with --daily to pin ty[-1] to the live grid.
+python src/build_site.py         # -> dist/fever-watch (210 pages; FW_DISEASE_PAGES=1 -> 1,046)
+node scripts/parity_check.js     # SSR<->JS above-fold twins (4 fixtures; needs the gated build for 2 of them)
+python scripts/serve_dist.py     # preview the BUILT site at http://127.0.0.1:8138 (threaded)
 ```
+Preview with `scripts/serve_dist.py` (or `.claude/launch.json` -> `fever-watch-dist`), NOT `python -m http.server`:
+the stdlib server is single-threaded and RESETS the ~600KB `data/grid.json` fetch, so the page hydrates with a
+"grid load/boot failed: TypeError: Failed to fetch" console error and an empty leaderboard - a local artifact only,
+not reproducible on the VPS. (Also: `curl` cannot reach external hosts from the agent sandbox - verify live URLs
+through the browser tool or `gh`, not curl.)
 Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 2026 DoD data(TC Data)" sheet tab via the Google Sheets API + a service account (`daily.yml` sets `POSITIVITY_PROVIDER=gsheet_api`; secret `GOOGLE_SHEETS_SA_JSON`; local key `secrets/gsheets_sa.json`). The committed `config/signals.json` default stays `mock` so local builds without the key still work. Full status + SSG spec + open refinements: `docs/PROJECT_STATE.md` (2026-06-17 banner).
 
 ## Data cadence (LOCKED)
