@@ -20,14 +20,23 @@
  * FB is parenthesised so the spreadsheet's <= precedence is unambiguous. The confirmed branch
  * (positivity present) is IDENTICAL to the old one - confirmed cells are untouched by design.
  *
- * HOW TO RUN (Apps Script editor, bound to the logging spreadsheet):
+ * INSTALL - this is an ADD-ON, it does NOT replace the logger:
+ *   Open the SAME Apps Script project as the logger (the one with doPost/_setRawFormulas), then
+ *   Files > "+" > Script, name it `softknee_migration`, delete the myFunction() stub, paste this
+ *   whole file, Save. Do NOT edit or overwrite the logger file. Nothing here collides with it (all
+ *   names are SK_/_sk-prefixed) and no re-Deploy is needed - these are run by hand, not by the webhook.
+ *
+ * HOW TO RUN (pick the function in the editor's dropdown, press Run):
  *   1. previewSoftKneeRewrite()   - DRY RUN. Writes nothing. Check the log, then:
  *   2. rewriteScoreFormulasSoftKnee()  - run repeatedly until the log says COMPLETE.
  *      It is chunked + resumable (cursor in ScriptProperties) to stay inside the 6-min limit.
  *   3. verifySoftKneeRewrite()    - sanity: forecast rows sitting on exactly 69 should be ~0.
  *   resetSoftKneeCursor() restarts from the top if you need to re-run.
+ *   Afterwards this file can simply be deleted - it is one-off.
  *
  * SAFETY: take a copy of the sheet first (this rewrites in place and is not undoable at scale).
+ * The ONLY write is setFormulas on column T, rows >= 2 - the header row (used by CRM automation),
+ * the column count and the column order are never touched.
  */
 
 var SK_SHEET = 'raw_data';
@@ -46,9 +55,26 @@ function _skScoreFormula(r) {
   return '=IF($O' + r + '="",' + forecast + ',' + confirmed + ')';
 }
 
+/**
+ * Resolve the raw_data sheet the SAME way the logger does - by ID. The project may be STANDALONE
+ * (script.google.com) rather than container-bound, where SpreadsheetApp.getActive() returns null;
+ * and if it were bound to some OTHER spreadsheet, getActive() would target the wrong file. SHEET_ID
+ * is the global the logger file already defines (all .gs files in a project share one scope), so we
+ * always hit the same spreadsheet the logger writes to. getActive() is only a fallback.
+ */
 function _skSheet() {
-  var sh = SpreadsheetApp.getActive().getSheetByName(SK_SHEET);
-  if (!sh) throw new Error('Sheet not found: ' + SK_SHEET);
+  var ss = null;
+  try {
+    if (typeof SHEET_ID !== 'undefined' && SHEET_ID) ss = SpreadsheetApp.openById(SHEET_ID);
+  } catch (e) {
+    throw new Error('Could not open SHEET_ID (' + e.message + ') - is this script in the same project as the logger?');
+  }
+  if (!ss) ss = SpreadsheetApp.getActive();   // container-bound fallback
+  if (!ss) throw new Error('No spreadsheet: SHEET_ID is undefined and the script is not bound to a sheet. ' +
+                           'Paste this file into the SAME Apps Script project as the logger (which defines SHEET_ID).');
+  Logger.log('target spreadsheet: %s', ss.getName());
+  var sh = ss.getSheetByName(SK_SHEET);
+  if (!sh) throw new Error('Sheet/tab not found: ' + SK_SHEET + ' (in "' + ss.getName() + '")');
   return sh;
 }
 
