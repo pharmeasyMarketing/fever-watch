@@ -5,6 +5,22 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
+> **PRODUCTION IS LIVE (discovered 2026-07-17): `https://pharmeasy.in/fever-watch/` now RESOLVES.** The
+> pharmeasy.in edge reverse-proxy route to the VPS origin - the last launch blocker, owned by another team and
+> recorded as PENDING/UNREACHABLE everywhere until now - has LANDED. Verified end to end:
+> `pharmeasy.in/fever-watch/mumbai/` returns **200**, `robots: index,follow,max-image-preview:large`, canonical
+> `https://pharmeasy.in/fever-watch/mumbai/`, title dated IST ("17 Jul 2026"), and
+> `pharmeasy.in/fever-watch/crm/FeverWatch_Cities_catalog.csv` returns 200 (98 rows, prod deep links). **So the site
+> is publicly reachable AND indexable to Google right now** - treat every user-facing string as shipped, and route
+> anything new through the medical/legal pass before it lands (the CLAUDE.md guardrail "re-check copy with
+> compliance / counsel before any public launch" is no longer hypothetical).
+> **DEPLOY GOTCHA that this surfaced:** `deploy-cyberpanel.yml` is **`workflow_dispatch` ONLY - it is NOT triggered
+> by push.** Only `daily.yml`'s `dispatch-production` job (once a day, ~05:30 IST) or a manual
+> `gh workflow run deploy-cyberpanel.yml --ref master` fires it. So a code fix pushed to master hits STAGING
+> instantly (deploy.yml on push) but the VPS not until the next daily. On 2026-07-17 production sat 4 commits
+> behind master (the fever-LP CTA, the trend gate fix, the method fix, the CRM CI fix) until dispatched manually.
+> **If you push a user-facing fix and want it live today, dispatch production explicitly.**
+>
 > **CRM FEED 404 FIXED (2026-07-17, reported by the team):** `/crm/FeverWatch_Cities_catalog.csv` (the CleverTap
 > catalog feed the CRM team pulls, by download or a Sheet `=IMPORTDATA()`) was intermittently 404ing on staging.
 > ROOT CAUSE: **three workflows publish the site, but only `daily.yml` built the feed.** A Pages deploy REPLACES the
@@ -77,7 +93,9 @@
 > `data/grid.json`: engine `FW-ENSEMBLE-0.2.0`, forecast cells at 69 **184 -> 0**, max 68, 59 distinct, headlines at
 > 69 **9 -> 0**, headline range 24-70 (Delhi 70 = lab-confirmed HIGH), new copy present / "capped at 69" absent, 0
 > console errors. Production `deploy-cyberpanel.yml` ran green (rsync to the VPS OK) but `https://pharmeasy.in/fever-watch/`
-> is still UNREACHABLE - that is the PENDING edge reverse-proxy rule owned by another team, NOT a deploy failure.
+> was still UNREACHABLE - the PENDING edge reverse-proxy rule owned by another team, NOT a deploy failure.
+> [**RESOLVED 2026-07-17: the edge rule LANDED and production is LIVE + indexable - see the PRODUCTION IS LIVE
+> banner at the top.**]
 > **Git gotcha:** `git push` 403'd as `vaibhavjd` because the SYSTEM-level Windows `manager` credential helper is
 > consulted before any repo-local one, even though `gh` is authed as `pharmeasyMarketing` (admin). Fix, applied to
 > this repo's `.git/config`: `git config --local --add credential.helper ""` (empty string RESETS the inherited
