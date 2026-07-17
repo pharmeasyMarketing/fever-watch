@@ -58,6 +58,11 @@
   var IC_VACC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="m17 4 3 3M18.5 5.5 8 16l-3.2 1.2L6 14 16.5 3.5M12.5 7l2 2M9.5 10l2 2"/></svg>';
   var IC_THERMO = _IC.replace("<svg ", '<svg stroke="#E4572E" ') + '<path d="M14 14.5V5.5a2 2 0 0 0-4 0v9a3.5 3.5 0 1 0 4 0Z"/><path d="M12 9.5v5"/></svg>';
   var IC_DOC = _IC.replace("<svg ", '<svg stroke="#10847E" ') + '<path d="M6 4v4.5a4 4 0 0 0 8 0V4M10 18.2a4.4 4.4 0 0 0 8.8 0v-2"/><circle cx="18.8" cy="13.5" r="2.2"/></svg>';
+  // The "Book a fever panel test" CTA target: PharmEasy's dedicated MONSOON FEVER landing page (the Jaanch
+  // fever panels covering dengue / malaria / typhoid / chikungunya). One link everywhere; keep byte-identical
+  // to build_site.py DIAG_HREF and the other flow. It replaced the per-city diag_url deep-link (retired
+  // 2026-07-17); the CTA LABEL stays city-personalised ("... in Mumbai").
+  var DIAG_HREF = "https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch";
   var ACTIONS = [
     { ic: IC_SHIELD, t: "Monsoon precautions", s: "Cut mosquito sites and bites", href: "https://pharmeasy.in/blog/17-simple-health-tips-for-the-monsoons/?src=feverwatch" },
     { ic: IC_VACC, t: "Vaccination: does it work?", s: "What helps, what does not", href: "https://pharmeasy.in/blog/vaccine-vaccination-what-it-is-how-it-works-and-why-it-matters/?src=feverwatch" },
@@ -685,7 +690,7 @@
       return '<a class="actcard" href="' + a.href + '"><span class="ic">' + a.ic + '</span><span class="tx"><b>' + a.t + '</b><span>' + a.s + '</span></span><span class="go">›</span></a>';
     }).join("");
     return '<section id="s-do"><div class="card"><h2 class="sechead">What you can do</h2><p class="secsub">Practical follow-through for ' + c.name + ' today.</p>' +
-      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test in ' + esc(c.name) + '</a></div></section>';
+      '<div class="actrow">' + cards + '</div><a class="ctabig" style="background:var(--pe-green)" href="' + DIAG_HREF + '">Book a fever panel test in ' + esc(c.name) + '</a></div></section>';
   }
 
   function methodSection() {
@@ -737,7 +742,7 @@
       '<p class="secsub">As of ' + fmtDate(DATA.generated_at) + ', ' + esc(c.name) + "'s overall risk is " + b.score + '/100 (' + b.band + '). If a fever shows up and sticks around, testing is how it gets identified - here is what doctors typically order.</p>' +
       rows +
       '<p class="bandline">' + testBandLine(esc(c.name), b.band) + '</p>' +
-      '<a class="ctabig" style="background:var(--pe-green)" href="' + (c.diag_url || "https://pharmeasy.in/diagnostics/health-checkup-packages?src=feverwatch&page=2#:~:text=Fever") + '">Book a fever panel test in ' + esc(c.name) + '</a>' +
+      '<a class="ctabig" style="background:var(--pe-green)" href="' + DIAG_HREF + '">Book a fever panel test in ' + esc(c.name) + '</a>' +
       '<p class="fwdisc">Fever Watch is a risk indicator, not a diagnosis. Which test fits, and what a result means, is a doctor\'s call.</p></div></section>';
   }
   function seasonBits(c) {

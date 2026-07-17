@@ -260,13 +260,22 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   deliberately NOT chased in the title (no case counts). Twins kept byte-identical (above-fold `parity_check` + a
   `faq_items` vs `faq.js build()` render-diff both pass). STILL DEFERRED: the dynamic driver-led meta description
   (lead with the actual top disease + its live number).
+- **2026-07-17 fever-panel CTA -> the dedicated fever LP (committed + pushed):** The **"Book a fever panel test in
+  {City}" CTA** (in-content `What you can do`; SSR fallback + both JS flows) now points at ONE link,
+  `https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch` - PharmEasy's Monsoon Fever landing page
+  (the Jaanch panels covering dengue / malaria / typhoid / chikungunya, i.e. exactly the four fevers we score).
+  It is fever-specific by construction, so it **SUPERSEDES the per-city diagnostics deep-link** shipped 2026-07-06
+  (see below): `config/diag_links.json` is **DELETED**, the `city.diag_url` grid enrichment and its
+  `DIAG_DEFAULT`/`DIAG_SUFFIX` (`?src=feverwatch&page=2#:~:text=Fever`, a text-fragment scroll hack) are **GONE**,
+  and the served `dist/data/grid.json` no longer carries `diag_url` (209 fewer redundant fields). One constant,
+  `DIAG_HREF`, now lives in THREE twins that must stay byte-identical: `src/build_site.py`, `assets/js/mobile.js`,
+  `assets/js/desktop.js`. The CTA **LABEL stays city-personalised** ("... in Mumbai"); only the target is generic.
+  `config/med_links.json` (header "Medicines") is now the ONLY per-city outbound link. Verified: 210 pages,
+  0 pages carrying the old packages link, 209/210 personalised labels, parity 4/4.
 - **2026-07-06 per-city localized outbound links (committed + pushed):** Two PharmEasy links now point at the
-  visitor's CITY page for local-SEO authority, each with an honest generic fallback. (1) The **"Book a fever panel
-  test" CTA** (in-content `What you can do`, SSR fallback + both JS flows) uses `config/diag_links.json` (**100/209**
-  cities, from the diagnostics `local-all-package.xml`, 102 pages); the URL is stored as `city.diag_url` on every grid
-  city (build_site enriches the in-memory grid + re-serializes the served `dist/data/grid.json`, seed carries the
-  current city's) so the CTA tracks the CLIENT-SIDE-SWITCHED city, not just the landed page; params
-  `?src=feverwatch&page=2#:~:text=Fever` (same deeplink everywhere, locked with marketing). (2) The **header
+  visitor's CITY page for local-SEO authority, each with an honest generic fallback. (1) ~~The **"Book a fever panel
+  test" CTA** uses `config/diag_links.json` (100/209 cities) + `city.diag_url`~~ **SUPERSEDED 2026-07-17 by the
+  single fever LP above; diag_links.json and diag_url no longer exist.** (2) The **header
   "Medicines" nav link** (`nav_html`, SSR, per page) uses `config/med_links.json` (**204/209**, from the 1322-page meds
   sitemap); `?src=feverwatch` (old `?src=homecard` dropped from Medicines ONLY - Lab tests / Healthcare / Blog keep
   theirs); the header is static per-page SSR so it reflects the page's city and does NOT re-render on client-side

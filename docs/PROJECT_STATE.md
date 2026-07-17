@@ -5,6 +5,25 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
+> **CTA: per-city diagnostics deeplink -> the dedicated FEVER LP (SHIPPED 2026-07-17, user-directed):**
+> The "Book a fever panel test in {City}" CTA (in-content `What you can do`; SSR fallback + both JS flows) now points at
+> ONE link for every city: `https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch` - PharmEasy's Monsoon
+> Fever landing page (the Jaanch panels covering dengue / malaria / typhoid / chikungunya, i.e. EXACTLY the four fevers
+> this tool scores; verified live: "Monsoon Fever Basic ... 34 Tests"). Because that LP is fever-specific by
+> construction, the whole per-city localisation it replaced was RETIRED rather than left computing a constant:
+> `config/diag_links.json` **DELETED**; the `city.diag_url` grid enrichment, `DIAG_DEFAULT` and `DIAG_SUFFIX`
+> (`?src=feverwatch&page=2#:~:text=Fever`, a text-fragment scroll hack into a generic packages page) **GONE**; the
+> served `dist/data/grid.json` no longer carries `diag_url` (209 redundant fields dropped). ONE constant `DIAG_HREF`
+> now lives in THREE twins that must stay byte-identical: `src/build_site.py`, `assets/js/mobile.js`,
+> `assets/js/desktop.js`. **The CTA LABEL stays city-personalised ("... in Mumbai"); only the TARGET is generic** -
+> a deliberate trade: the fever LP converts better than a city packages page, and `config/med_links.json` (header
+> "Medicines") remains the per-city local-SEO link. This supersedes item 1 of the 2026-07-06 banner (annotated there)
+> and finally lands the fever-LP intent from the original CTA wiring, whose `Fever_LP` slug was wrong.
+> **Verified:** URL live (200, fever panels, `?src=feverwatch` preserved); build clean 210 pages; **0** pages carrying
+> the old packages link; 209/210 city-personalised labels; mumbai renders
+> `href=.../p_diag_lp_fever?src=feverwatch` + label `Book a fever panel test in Mumbai`; served grid `diag_url` x0;
+> **parity 4/4** (hub + disease x mobile + desktop).
+>
 > **SCORING: forecast hard-cap -> SOFT-KNEE taper (SHIPPED 2026-07-16; user-approved after independent QA = SHIP, 0 blockers):**
 > Leadership flag: with no lab data the score was `min(69, 0.60*weather + 0.40*trends)` - a HARD CLIP. In peak monsoon
 > 184/790 forecast cells (and 9/209 city headlines) displayed EXACTLY 69, whose true uncapped blends ranged 69-98
@@ -286,8 +305,8 @@
 >    hrefs for crawlers; `data-act=pickrow` switches in-app. JS renders only once the full grid is loaded.
 > 6. **Dated weather sub** (byte-identical 3-way, parity-gated): `Conditions as of {date} and what they mean for
 >    fever risk.` - the AI-citability pass: every new block leads with a dated quotable sentence.
-> 7. **CTA personalization**: the "What you can do" CTA reads `Book a fever panel test in {City}` (SSR + both flows;
->    fallback cities get the generic packages URL with the city-named label).
+> 7. **CTA personalization**: the "What you can do" CTA reads `Book a fever panel test in {City}` (SSR + both flows).
+>    The LABEL is per-city; the TARGET is one fever landing page for every city (`DIAG_HREF`, 2026-07-17).
 > 8. **"Fever tests: which test confirms what?" block - BUILT, NOT SHIPPED.** Full implementation exists in all
 >    three renderers (band-tied nudge lines, per-city diag CTA, doctor-deferring copy) but is GATED pending the
 >    medical/counsel review planned ~2026-07-15: `FW_TESTS_ENABLED = False` in build_site.py + `FW_TESTS_ON = false`
@@ -330,14 +349,13 @@
 > **(2026-07-06, PER-CITY LOCALIZED OUTBOUND LINKS - diagnostics CTA + Medicines nav - committed + pushed):**
 > Two outbound PharmEasy links now resolve to the visitor's CITY page (local-SEO authority + relevance), each with an
 > honest generic fallback for unmatched cities:
-> 1. **"Book a fever panel test" CTA** (the in-content `What you can do` button; SSR fallback + both JS flows) ->
->    `config/diag_links.json` maps {city_id -> local `diagnostics/health-checkup-packages/{slug}-{id}` page}. **100/209**
->    matched (95 exact + 5 alias) from the 102-page `sitemaps/diagnostic/local-all-package.xml`; rest -> the generic
->    packages page. Params LOCKED with marketing: `?src=feverwatch&page=2#:~:text=Fever`, SAME deeplink everywhere.
->    Because the JS flows swap city client-side (`setCity`/`pickCity`/geo), the URL is stored as `city.diag_url` on
->    EVERY grid city: `build_site.main()` enriches the in-memory grid and RE-SERIALIZES the served `dist/data/grid.json`
->    (no longer a raw copy), and the inlined seed carries the current city's - so the CTA tracks the rendered city, not
->    just the landed page. Log line: `Diagnostics CTA: 100/209 cities mapped to a local page (rest -> default).`
+> 1. ~~**"Book a fever panel test" CTA** -> `config/diag_links.json` (100/209 local packages pages), stored as
+>    `city.diag_url` on every grid city, params `?src=feverwatch&page=2#:~:text=Fever`.~~
+>    **>>> SUPERSEDED 2026-07-17 (see the fever-LP banner at the top).** The CTA now points at ONE fever landing page,
+>    `https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch`. `config/diag_links.json` is DELETED, the
+>    `city.diag_url` enrichment + `DIAG_DEFAULT`/`DIAG_SUFFIX` are GONE, and the served grid no longer carries
+>    `diag_url`. The city-personalised LABEL survives; only the target is generic. Everything below about the
+>    diagnostics map is HISTORICAL. Item 2 (Medicines nav) is UNCHANGED and is now the only per-city outbound link.
 > 2. **Header "Medicines" nav link** (`nav_html`, now takes a per-page `meds_href`; SSR, baked per page) ->
 >    `config/med_links.json` maps {city_id -> local `online-medicine-order/location/city/{slug}-{id}` page}. **204/209**
 >    matched (185 exact + 19 alias) from the user-provided 1322-page meds sitemap; rest + the national LANDING -> the
@@ -1076,7 +1094,9 @@
 >   `MEDICAL_DISCLAIMER` + `DASHBOARD_NOTE` in `build_site.py`; mirrored as `DASHNOTE` in `mobile.js`/`desktop.js`;
 >   `.dashnote` CSS in `tokens.css`. The footer lab attribution updated to "PharmEasy Labs and its Partner
 >   Affiliates"; the legal "0-100" en-dash normalized to an ASCII hyphen per house style.
-> - **CTA landing pages wired:** "Book a fever panel test" -> `pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch`;
+> - **CTA landing pages wired:** "Book a fever panel test" -> `pharmeasy.in/diag-pwa/content/Fever_LP?src=feverwatch`
+>   [SUPERSEDED twice: by the per-city packages deeplink 2026-07-06, then back to a fever LP 2026-07-17 with the
+>   CORRECT slug `pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch` - the `Fever_LP` slug here was wrong];
 >   "Book a consult" / "Not sure? Talk to a doctor" -> `pharmeasy.in/doctor-consultation/landing?src=feverwatch`. [UPDATED
 >   2026-07-07: the consult CTA now points to `pharmeasy.in/online-doctor-consultation/?src=feverwatch`; the "Book a
 >   fever panel test" CTA is now per-city - see the 2026-07-06 banner.]

@@ -120,10 +120,14 @@ ACTIONS = [
     ("Not sure? Talk to a doctor", "Online consult on PharmEasy", CONSULT_HREF),
 ]
 CTA_LABEL = "Book a fever panel test"
-# Per-city diagnostics deep-link for the CTA (same link in the SSR fallback and both JS flows; params locked
-# with marketing). config/diag_links.json maps {city_id -> clean local packages URL}; unmatched -> DIAG_DEFAULT.
-DIAG_SUFFIX = "?src=feverwatch&page=2#:~:text=Fever"
-DIAG_DEFAULT = "https://pharmeasy.in/diagnostics/health-checkup-packages"
+# The "Book a fever panel test" CTA target: PharmEasy's dedicated MONSOON FEVER landing page (the Jaanch fever
+# panels covering dengue / malaria / typhoid / chikungunya, i.e. exactly the four fevers this tool scores). One
+# link everywhere (SSR fallback + both JS flows); ?src=feverwatch is the locked attribution param.
+# This REPLACED the per-city diagnostics deep-link (config/diag_links.json -> a local "health checkup packages"
+# page + "?src=feverwatch&page=2#:~:text=Fever", which relied on a text-fragment to scroll to the fever packages).
+# The fever LP is fever-specific by construction, so the per-city mapping and its diag_url grid field were retired
+# 2026-07-17 rather than left computing a constant. The CTA LABEL stays city-personalised ("... in Mumbai").
+DIAG_HREF = "https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch"
 # Legal-provided disclaimers (verbatim except en-dash normalized to ASCII hyphen per the house style).
 MEDICAL_DISCLAIMER = ("Fever Watch is a risk indicator and not a diagnosis or representation of actual case "
                       "counts. It is for informational purposes only and should not constitute medical advice; "
@@ -208,8 +212,11 @@ def load_json(path: str) -> dict:
 
 
 # Per-city header "Medicines" nav target: config/med_links.json maps {city_id -> local online-medicine-order
-# page}; unmatched cities (and the national landing) use MED_DEFAULT. Same alias map as diag_links. The header
-# is baked per page (SSR) and reflects the page's city; it does not re-render on client-side city switch.
+# page}; unmatched cities (and the national landing) use MED_DEFAULT. (It uses the same city aliases the retired
+# diag_links map did: gurugram->gurgaon, mysuru->mysore, prayagraj->allahabad, mangaluru->mangalore,
+# belagavi->belgaum.) The header is baked per page (SSR) and reflects the page's city; it does not re-render on
+# client-side city switch. This is now the ONLY per-city outbound link: the diagnostics CTA went to a single
+# fever landing page on 2026-07-17 (see DIAG_HREF).
 MED_SUFFIX = "?src=feverwatch"
 MED_DEFAULT = "https://pharmeasy.in/online-medicine-order"
 try:
@@ -1420,7 +1427,7 @@ def _tests_sec(city: dict, generated_at: str) -> str:
     return ('<section><h2>Fever tests: which test confirms what?</h2>'
             '<p>' + esc(lead) + '</p><ul>' + rows + '</ul>'
             '<p>' + esc(_tests_band_line(nm, b["band"])) + '</p>'
-            '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX))
+            '<p><a class="fw-cta" href="' + esc(DIAG_HREF)
             + '">Book a fever panel test in ' + esc(nm) + '</a></p>'
             '<p class="microcopy">Fever Watch is a risk indicator, not a diagnosis. Which test fits, '
             'and what a result means, is a doctor\'s call.</p></section>')
@@ -1831,7 +1838,7 @@ def render_disease_content(city: dict, disease: dict, diseases: list, cells_by: 
         if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
         for t, s, h in ACTIONS)
     do_sec = ('<section id="s-do"><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
-              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">'
+              '<p><a class="fw-cta" href="' + esc(DIAG_HREF) + '">'
               + esc(CTA_LABEL + " in " + city["name"]) + '</a></p></section>')
     switch_sec = ('<section><h2>Explore other fevers in ' + esc(city["name"]) + '</h2>'
                   + _disease_switcher(city, rel, diseases, cells_by, active=did) + '</section>')
@@ -1925,7 +1932,7 @@ def render_content(city: dict, diseases: list, cells_by: dict, all_cities: list,
         if h else ('<li><strong>' + esc(t) + '</strong> - ' + esc(s) + '</li>')
         for t, s, h in ACTIONS)
     do_sec = ('<section><h2>What you can do</h2><ul class="fw-actions">' + acts + '</ul>'
-              '<p><a class="fw-cta" href="' + esc(city.get("diag_url") or (DIAG_DEFAULT + DIAG_SUFFIX)) + '">' + esc(CTA_LABEL + " in " + city["name"]) + '</a></p></section>')
+              '<p><a class="fw-cta" href="' + esc(DIAG_HREF) + '">' + esc(CTA_LABEL + " in " + city["name"]) + '</a></p></section>')
 
     near = _nearest_cities(city, all_cities)
     near_p = ('<p class="fw-near">Nearby: ' + ", ".join(
@@ -2179,20 +2186,11 @@ def main() -> int:
     cities, diseases = grid["cities"], grid["diseases"]
     cells_by = {(r["city"], r["disease"]): r for r in grid["grid"]}
 
-    # Per-city diagnostics CTA target: stored on each city as diag_url so the "Book a fever panel test" CTA
-    # tracks the rendered city in the SSR fallback AND the JS flows (which swap city client-side without reload).
-    diag_links = {}
-    try:
-        diag_links = {k: v for k, v in load_json(os.path.join(ROOT, "config", "diag_links.json")).items()
-                      if not k.startswith("_")}
-    except Exception as _e:
-        print("WARN: config/diag_links.json not loaded (%s); CTAs use the default packages page." % _e, file=sys.stderr)
-    for _c in cities:
-        _c["diag_url"] = diag_links.get(_c["id"], DIAG_DEFAULT) + DIAG_SUFFIX
-
+    # The "Book a fever panel test" CTA points at ONE fever landing page (DIAG_HREF) in the SSR fallback and both
+    # JS flows, so it needs no per-city target and nothing has to be carried on the grid for a client-side city
+    # swap. The retired per-city mapping (config/diag_links.json -> each city's diag_url) is in git history.
     print("SITE_ENV=" + env + "  base_url=" + cfg["base_url"])
-    print("Diagnostics CTA: %d/%d cities mapped to a local page (rest -> default)."
-          % (sum(1 for _c in cities if _c["id"] in diag_links), len(cities)))
+    print("Diagnostics CTA: " + DIAG_HREF)
     print("Cities: %d  diseases: %d  grid cells: %d" % (len(cities), len(diseases), len(grid["grid"])))
 
     # fresh output
@@ -2205,7 +2203,8 @@ def main() -> int:
     os.makedirs(os.path.join(DIST, "assets", "css"), exist_ok=True)
     shutil.copy(os.path.join(ROOT, "prototypes", "tokens.css"), os.path.join(DIST, "assets", "css", "tokens.css"))
     os.makedirs(os.path.join(DIST, "data"), exist_ok=True)
-    # Re-serialize (not a raw copy) so the per-city diag_url enrichment above ships in the fetched grid.
+    # Re-serialize (not a raw copy) so the served grid is minified consistently, independent of how
+    # data/grid.json happens to be formatted by the daily build.
     with open(os.path.join(DIST, "data", "grid.json"), "w", encoding="utf-8") as _gf:
         json.dump(grid, _gf, ensure_ascii=False, separators=(",", ":"))
     arch_path = os.path.join(ROOT, "data", "archive", "trend_series.json")
