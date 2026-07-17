@@ -66,9 +66,16 @@
     // ALL series are REAL (from the committed archive; both years share one normalisation). A metric with no
     // usable real data -> { avail: false } (honest "coming soon"); there is NO synthetic fallback. The gate is
     // LENIENT on the this-year length (ty may trail asOf by a week before the daily archive cron extends it;
-    // realSeries() charts up to the last real point). The last-year line (ly) must be the full 22-week season.
-    var wReal = arch && arch.weather && arch.weather.ly && arch.weather.ly.length === NW && arch.weather.ty && arch.weather.ty.length >= 1 && arch.weather.ty.length <= asOf + 1;
-    var sReal = arch && arch.search && arch.search.ly && arch.search.ly.length === NW && arch.search.ty && arch.search.ty.length >= 1 && arch.search.ty.length <= asOf + 1;
+    // realSeries() charts up to the last real point). The last-year line (ly) must be the full 22-week season
+    // AND not all-zero.
+    // lyReal: a full-season last-year line that is NOT all-zero. An all-zero ly means "we have no data
+    // for this metric", not "the value was zero": charting it draws a flat zero line and a fabricated
+    // "0% vs last monsoon" delta - the fabrication-by-omission the honest ladder exists to prevent. Same
+    // rule the labs gate below applies. Mirrors build_site.py _lyreal().
+    function lyReal(b) { return !!(b && b.ly && b.ly.length === NW && b.ly.some(function (v) { return v > 0; })); }
+    function tyLen(b) { return !!(b && b.ty && b.ty.length >= 1 && b.ty.length <= asOf + 1); }
+    var wReal = arch && lyReal(arch.weather) && tyLen(arch.weather);
+    var sReal = arch && lyReal(arch.search) && tyLen(arch.search);
     // Labs is REAL when the archive carries a full-season last-year line that is not all-zero (all-zero/missing
     // = no 2025 lab history for this city -> "coming soon"). labs.ty seeds from the grid (signals.positivity);
     // if it is short/missing we carry the live labs MEAN flat across the weeks (real-derived, not synthetic).
@@ -79,8 +86,7 @@
     var labsTyFinal = labsTyOk ? labsTy
       : (labsNow != null ? Array.apply(null, { length: asOf + 1 }).map(function () { return labsNow; }) : null);
     var labsReal = labsHasLy && labsTyFinal;
-    var oReal = arch && arch.overall && arch.overall.ly && arch.overall.ly.length === NW
-      && arch.overall.ty && arch.overall.ty.length >= 1 && arch.overall.ty.length <= asOf + 1;
+    var oReal = arch && lyReal(arch.overall) && tyLen(arch.overall);
     var metrics = {
       overall: oReal ? realSeries(arch.overall, asOf) : { avail: false },
       weather: wReal ? realSeries(arch.weather, asOf) : { avail: false },

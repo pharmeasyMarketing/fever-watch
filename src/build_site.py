@@ -1169,15 +1169,23 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
     # ALL series are REAL (from the committed archive). A metric with no usable real data -> {"avail": False}
     # (honest "coming soon"); there is NO synthetic fallback. The gate is LENIENT on the this-year length (ty
     # may trail asOf by a week before the daily cron extends it; _t_real_series charts up to the last real
-    # point), and the last-year line (ly) must be the full 22-week season. Mirrors trend.js build().
+    # point), and the last-year line (ly) must be the full 22-week season AND not all-zero. Mirrors trend.js build().
     def _lenty(b):
         return bool(b) and bool(b.get("ty")) and 1 <= len(b["ty"]) <= as_of + 1
+
+    def _lyreal(b):
+        """Full-season last-year line that is NOT all-zero. An all-zero ly means "we have no data for
+        this metric", not "the value was zero": charting it draws a flat zero line and a fabricated
+        "0% vs last monsoon" delta, which is the fabrication-by-omission the honest ladder exists to
+        prevent. Same rule the labs gate below already applies. Mirrors trend.js lyReal()."""
+        ly = (b or {}).get("ly") or []
+        return len(ly) == TREND_NW and any(v > 0 for v in ly)
     weather_blk = (archive_city or {}).get("weather") if archive_city else None
     search_blk = (archive_city or {}).get("search") if archive_city else None
     overall_blk = (archive_city or {}).get("overall") if archive_city else None
-    w_real = bool(weather_blk) and len(weather_blk.get("ly", [])) == TREND_NW and _lenty(weather_blk)
-    s_real = bool(search_blk) and len(search_blk.get("ly", [])) == TREND_NW and _lenty(search_blk)
-    o_real = bool(overall_blk) and len(overall_blk.get("ly", [])) == TREND_NW and _lenty(overall_blk)
+    w_real = bool(weather_blk) and _lyreal(weather_blk) and _lenty(weather_blk)
+    s_real = bool(search_blk) and _lyreal(search_blk) and _lenty(search_blk)
+    o_real = bool(overall_blk) and _lyreal(overall_blk) and _lenty(overall_blk)
     # Labs: real when the archive's last-year line is full-season and not all-zero; this-year carries the live
     # mean flat across the weeks if its archive ty is short/missing (real-derived, never synthetic).
     labs_blk = (archive_city or {}).get("labs") if archive_city else None
