@@ -174,11 +174,19 @@
     return fl;
   }
   function SW(col) { return '<span class="sw" style="background:' + col + '"></span>'; }
+  // The exact pre-multiplier blend, trailing zeros trimmed (44.62 -> "44.62", 42.00 -> "42"). Exact, not
+  // rounded: 0.30w + 0.22t + 0.48p over integer signals never has more than 2 decimals.
+  function exBase(x) { return String(Math.round(x * 100) / 100); }
   function exCard(cell, disease, city) {
     var s = cell.signals || {}, w = +s.weather || 0, t = +s.trends || 0, p = s.positivity,
         conf = (cell.mode === "confirmed" && p != null), rows, capped = false;
     if (conf) {
-      var pw = 0.30 * w, pt = 0.22 * t, pp = 0.48 * p, blended = Math.round(pw + pt + pp),
+      // The engine rounds ONCE, at the end: score = round(base * mult). So the multiplier row must show
+      // the UNROUNDED base as its operand - printing the rounded "Blended" integer there would assert an
+      // equation that does not hold (e.g. base 44.62 shows as 45, and 45 x 1.08 = 49, but the score is
+      // round(44.62 x 1.08) = 48). base always has at most 2 decimals exactly (0.30w + 0.22t + 0.48p over
+      // integer signals), so exBase() is exact, not an approximation, and reconciles on all 836 cells.
+      var pw = 0.30 * w, pt = 0.22 * t, pp = 0.48 * p, base = pw + pt + pp, blended = Math.round(base),
           parts = apportion([pw, pt, pp], blended),
           agree = (Math.max(w, t, p) - Math.min(w, t, p)) < 22;
       rows = '<div class="exrow">' + SW("var(--sig-weather)") + '<span class="l">Weather ' + w + '</span><span class="c">x 0.30</span><span class="o">' + parts[0] + '</span></div>' +
@@ -186,7 +194,7 @@
         '<div class="exrow">' + SW("var(--sig-lab)") + '<span class="l">Lab ' + p + '</span><span class="c">x 0.48</span><span class="o">' + parts[2] + '</span></div>' +
         '<div class="exhr"></div>' +
         '<div class="exrow">' + SW("var(--pe-muted-2)") + '<span class="l">Blended</span><span class="c">' + parts[0] + '+' + parts[1] + '+' + parts[2] + '</span><span class="o">' + blended + '</span></div>' +
-        '<div class="exrow">' + SW(agree ? "var(--pe-green)" : "var(--risk-mod)") + '<span class="l">' + (agree ? "Signals agree, +8%" : "Signals diverge, -4%") + '</span><span class="c">' + blended + ' x ' + (agree ? "1.08" : "0.96") + '</span><span class="o">' + cell.score + '</span></div>';
+        '<div class="exrow">' + SW(agree ? "var(--pe-green)" : "var(--risk-mod)") + '<span class="l">' + (agree ? "Signals agree, +8%" : "Signals diverge, -4%") + '</span><span class="c">' + exBase(base) + ' x ' + (agree ? "1.08" : "0.96") + '</span><span class="o">' + cell.score + '</span></div>';
     } else {
       var fw = 0.60 * w, ft = 0.40 * t, fblend = Math.round(fw + ft), fparts = apportion([fw, ft], fblend);
       capped = fblend > cell.score;
