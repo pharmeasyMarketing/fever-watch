@@ -41,6 +41,14 @@ jobs:
           python src/build_assets.py        # brand favicons / PWA icons / default OG
           python src/build_share_cards.py   # per-city share cards: og/ (1200x630) + share/ (1080x1440)
           python src/build_site.py          # dist/fever-watch/ : pages + robots/sitemap/manifest
+      # MUST run after build_site (which rmtree's dist/) and before the artifact upload. A Pages deploy REPLACES
+      # the whole site, so if this is missing here, every push republishes a site with no crm/ and silently deletes
+      # the CRM catalog feed that the daily run published - which is exactly how /crm/FeverWatch_Cities_catalog.csv
+      # went 404 (the CRM team's =IMPORTDATA() pull broke on the next push after each daily). Keep in sync with
+      # daily.yml and deploy-cyberpanel.yml: EVERY workflow that publishes the site must also build this feed.
+      - name: Build CRM catalog feed
+        continue-on-error: true        # soft feature; never block the staging deploy
+        run: python src/build_crm_feed.py   # -> dist/fever-watch/crm/FeverWatch_Cities_catalog.csv
       - uses: actions/configure-pages@v6
         with:
           enablement: true

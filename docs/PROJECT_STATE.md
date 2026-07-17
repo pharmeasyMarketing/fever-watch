@@ -5,6 +5,20 @@
 > **LIVE on GitHub Pages staging: https://pharmeasymarketing.github.io/fever-watch/**; PRODUCTION now deploys to a
 > Hostinger CyberPanel / OpenLiteSpeed VPS behind the pharmeasy.in `/fever-watch/` reverse-proxy (see the 2026-07-02 banner).
 >
+> **CRM FEED 404 FIXED (2026-07-17, reported by the team):** `/crm/FeverWatch_Cities_catalog.csv` (the CleverTap
+> catalog feed the CRM team pulls, by download or a Sheet `=IMPORTDATA()`) was intermittently 404ing on staging.
+> ROOT CAUSE: **three workflows publish the site, but only `daily.yml` built the feed.** A Pages deploy REPLACES the
+> whole site and `build_site.py` starts with `shutil.rmtree(dist/)`, so every **push** ran `deploy.yml`, republished a
+> site with no `crm/`, and silently DELETED the feed the daily run had published. It worked only between a daily run
+> and the next push - and pushes are frequent, so it was broken most of the time. Timeline that proved it: daily
+> 07-16 23:23 published it; pushes 07-17 04:44 + 06:11 wiped it; the link 404'd. **Production was worse: it never had
+> the feed at all** - `deploy-cyberpanel.yml` does its own build (no CRM step) and rsyncs `--delete`, which would
+> remove it even if it existed. FIX: added the `Build CRM catalog feed` step to BOTH `deploy.yml` and
+> `deploy-cyberpanel.yml`, mirroring `daily.yml` (after `build_site`, before publish, `continue-on-error: true` so a
+> soft feature never blocks a deploy), plus a prod sanity-check that WARNS if the CSV is missing/empty. **RULE: every
+> workflow that publishes the site MUST also build this feed** (the generator writes into `dist/`, which is rebuilt
+> from scratch each time - it is NOT a committed artifact). The generator itself was never broken (98 rows, real data).
+>
 > **CTA: per-city diagnostics deeplink -> the dedicated FEVER LP (SHIPPED 2026-07-17, user-directed):**
 > The "Book a fever panel test in {City}" CTA (in-content `What you can do`; SSR fallback + both JS flows) now points at
 > ONE link for every city: `https://pharmeasy.in/diag-pwa/content/p_diag_lp_fever?src=feverwatch` - PharmEasy's Monsoon

@@ -76,10 +76,19 @@ jobs:
           python src/build_share_cards.py   # per-city OG + share cards
           python src/build_site.py          # dist/fever-watch/ : 210 pages + robots/sitemap/manifest
 
+      # MUST run after build_site (which rmtree's dist/) and before the rsync. rsync uses --delete, so a build
+      # without crm/ does not just omit the feed, it DELETES it from the VPS. Keep in sync with daily.yml and
+      # deploy.yml: EVERY workflow that publishes the site must also build this feed. The prod rows use the
+      # *_prod columns (pharmeasy.in), which build_crm_feed emits regardless of SITE_ENV.
+      - name: Build CRM catalog feed
+        continue-on-error: true        # soft feature; never block the production deploy
+        run: python src/build_crm_feed.py   # -> dist/fever-watch/crm/FeverWatch_Cities_catalog.csv
+
       - name: Sanity-check the production build
         run: |
           test -f dist/fever-watch/index.html
           grep -q 'index,follow' dist/fever-watch/indore/index.html || { echo "::error::prod robots meta missing - is SITE_ENV=production?"; exit 1; }
+          test -s dist/fever-watch/crm/FeverWatch_Cities_catalog.csv || echo "::warning::CRM catalog feed missing or empty - the CRM team's pull will 404"
           echo "Pages: $(find dist/fever-watch -mindepth 2 -name index.html | wc -l) cities + landing"
 
       # Deploy to the VPS with up to 2 automatic retries (3 attempts total). The rsync/SSH step is the only
