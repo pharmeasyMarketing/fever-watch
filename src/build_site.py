@@ -1153,13 +1153,23 @@ def _t_real_series(blk: dict, asOf: int) -> dict:
     """REAL last-year + this-year series from the committed archive block ({ly, ty}); mirror of trend.js
     realSeries(). Peak is the real last-year MAX. The this-year line may trail the current week by one (if the
     daily archive cron has not extended it yet); we chart up to the last real point (cur) so a short ty degrades
-    to a real partial line, never a fabricated one."""
+    to a real partial line, never a fabricated one.
+
+    blk["ly"] may be None: THIS-YEAR-ONLY mode. We chart the real ty alone and flag lyAvail False so the
+    renderer drops every comparison affordance (gray band, YoY delta, last-year peak + reference labels, the
+    "Last year" legend key, the tooltip's last-year row) instead of charting a flat zero line and a
+    fabricated "0%" delta."""
     ly, ty = blk["ly"], blk["ty"]
     cur = asOf if asOf < len(ty) - 1 else len(ty) - 1
-    a, b = ty[cur], ly[cur]
-    delta = _t_r((a - b) / b * 100) if b > 0 else 0
+    a = ty[cur]
     slope = ty[cur] - ty[cur - 1] if cur >= 1 else 0
-    return {"now": a, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": max(ly), "avail": True}
+    if not ly:
+        return {"now": a, "series": ty, "last": None, "delta": None, "slope": slope, "peak": None,
+                "avail": True, "lyAvail": False}
+    b = ly[cur]
+    delta = _t_r((a - b) / b * 100) if b > 0 else 0
+    return {"now": a, "series": ty, "last": ly, "delta": delta, "slope": slope, "peak": max(ly),
+            "avail": True, "lyAvail": True}
 
 
 def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict | None = None) -> dict:
@@ -1193,8 +1203,32 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
     w_real = bool(weather_blk) and _lyreal(weather_blk) and _lenty(weather_blk)
     s_real = bool(search_blk) and _lyreal(search_blk) and _lenty(search_blk)
     o_real = bool(overall_blk) and _lyreal(overall_blk) and _lenty(overall_blk)
-    # Labs: real when the archive's last-year line is full-season and not all-zero; this-year carries the live
-    # mean flat across the weeks if its archive ty is short/missing (real-derived, never synthetic).
+    # Labs has TWO real modes. BOTH LINES when the archive's last-year line is full-season and not all-zero.
+    # THIS YEAR ONLY when there is no such last-year line but this season's line is genuinely MEASURED - for a
+    # city with confirmed lab data but no 2025 history, suppressing the metric entirely hid a real line behind
+    # a "no confirmed lab data yet" that the dial on the same page contradicted (Panaji, for one, runs
+    # CONFIRMED at 48% lab weight while its lab line climbs 39 -> 62 -> 71).
+    #
+    # Qualifying for ty-only takes BOTH tests below, and a non-zero ty is NOT one of them. build_archive.py
+    # upsert() PADS skipped weeks by carrying the last value forward (`vec.append(vec[-1])`) and never writes
+    # when the live value is None, so a non-zero ty proves nothing: on 2026-07-27, 107 of the 117 cities with a
+    # non-zero ty and no ly had a PERFECTLY FLAT line built entirely from padding, on pages whose own breakdown
+    # reads "No confirmed lab data yet, conditions-only forecast". Charting that is worse fabrication than the
+    # all-zero ly this ladder already blocks - a flat non-zero line reads as measurement.
+    #   1. labs_now is not None - the city has a live confirmed lab signal at all (>=1 disease past the
+    #      30-test gate). This is the same condition that puts the dial in confirmed mode, so the chart and
+    #      the score can no longer disagree in either direction.
+    #   2. >= 2 distinct values in ty - evidence of real week-to-week measurement rather than one value
+    #      smeared across the season. Also catches the disease-page path, where byDisease.{d}.labs is usually
+    #      absent and labs_ty_final degrades to today's live value repeated (a flat, wholly synthetic line).
+    # Together these admitted 7 cities on 2026-07-27 (4 against a 12-day-older grid); the count moves as
+    # cities cross or fall off the 30-test gate. Everything else keeps the honest "coming soon".
+    # KNOWN RESIDUAL: distinctness is a PROXY for measurement, not proof of it - one fresh reading on top of
+    # a padded run passes, so an admitted line can still carry 2-4 carry-forward weeks (3 of the 8 admitted
+    # cells are padding-free; the rest run 22-44%). That is strictly better than the both-lines path already
+    # shipping, where 10 of 24 cities chart padded weeks and 4 are 6/9 padded and perfectly flat. The durable
+    # fix belongs in build_archive.py upsert(): record WHICH weeks were measured (write None and let the
+    # renderer break the line) instead of smearing vec[-1], then gate on that directly. Mirrors trend.js build().
     labs_blk = (archive_city or {}).get("labs") if archive_city else None
     labs_ly = labs_blk.get("ly") if labs_blk else None
     labs_has_ly = bool(labs_ly) and len(labs_ly) == TREND_NW and any(v > 0 for v in labs_ly)
@@ -1206,12 +1240,21 @@ def _trend_series(city: dict, cells: list, generated_at: str, archive_city: dict
         labs_ty_final = [labs_now] * (as_of + 1)
     else:
         labs_ty_final = None
+    labs_ty_measured = (labs_ty_final is not None and labs_now is not None
+                        and any(v != labs_ty_final[0] for v in labs_ty_final))
     labs_real = labs_has_ly and labs_ty_final is not None
+    labs_ty_only = (not labs_has_ly) and labs_ty_measured
+    if labs_real:
+        labs_metric = _t_real_series({"ly": labs_ly, "ty": labs_ty_final}, as_of)
+    elif labs_ty_only:
+        labs_metric = _t_real_series({"ly": None, "ty": labs_ty_final}, as_of)
+    else:
+        labs_metric = {"avail": False}
     metrics = {
         "overall": _t_real_series(overall_blk, as_of) if o_real else {"avail": False},
         "weather": _t_real_series(weather_blk, as_of) if w_real else {"avail": False},
         "search": _t_real_series(search_blk, as_of) if s_real else {"avail": False},
-        "labs": _t_real_series({"ly": labs_ly, "ty": labs_ty_final}, as_of) if labs_real else {"avail": False},
+        "labs": labs_metric,
     }
     # No real Overall line -> the whole widget is "unavailable" (honest empty state, never fabricated). In
     # production this is unreachable: the build asserts every city has a real overall line before writing pages.
@@ -1244,6 +1287,13 @@ def _trend_caption(model: dict, metric: str) -> str:
     m = model["metrics"][metric]
     if not m.get("avail"):
         return "Lab positivity history is not available for " + model["city"] + " yet."
+    # This-year-only: there is no delta to describe, so state the direction of THIS season's line and be
+    # explicit that no comparison exists. Only labs can reach this (overall/weather/search always have a
+    # real last-year line), so the wording names positivity. Mirrors trend.js caption().
+    if m.get("lyAvail") is False:
+        _d = "rising" if m["slope"] >= 2 else ("easing" if m["slope"] <= -2 else "steady")
+        return ("Lab positivity is " + _d + " this season. No last-year lab data for "
+                + model["city"] + " to compare against yet.")
     lvl = "below" if m["delta"] <= -6 else ("above" if m["delta"] >= 6 else "inline")
     if metric == "overall":
         return {"rising": "Risk is climbing as the monsoon builds.", "falling": "Risk is easing as rainfall tapers.",

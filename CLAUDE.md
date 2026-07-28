@@ -202,6 +202,16 @@ Lab positivity is now LIVE: the `gsheet_api` provider reads the private "Year 20
   is lenient on the this-year length (a short `ty` charts as a real partial). Keep `trend.js` `build()`/`forCity()`/
   `realSeries()` byte-identical to `build_site.py` `_trend_series()`/`_t_real_series()` (verified by a JS<->Python
   parity check; the SSR<->JS above-fold twin by `scripts/parity_check.js`).
+- **2026-07-28 season-trend Labs "this year only" mode (SHIPPED; QA caught a blocker on the first cut):** A city
+  with real 2026 lab data but no 2025 history had its whole Labs metric suppressed, showing "No confirmed lab data
+  yet" while the dial on the same page ran CONFIRMED at 48% lab weight (Panaji). `realSeries()` now accepts
+  `ly: null` -> `lyAvail:false` and the renderer drops every comparison affordance (gray band, YoY delta,
+  last-year peak/labels, the "Last year" legend key, the tooltip's last-year row). **A non-zero `ty` is NOT a
+  valid "has data" test:** `build_archive.py upsert()` pads skipped weeks by carrying `vec[-1]` forward, so 107
+  of 117 candidate cities had a flat padding-only line. The gate needs BOTH `labsNow != null` (same condition as
+  the dial's confirmed mode) AND **>= 2 distinct values in `ty`**. Now 24 both-lines / 7 this-year-only / 178
+  "coming soon". Twins: `trend.js` `realSeries()`/`build()` <-> `build_site.py` `_t_real_series()`/
+  `_trend_series()`/`_trend_caption()`. Residual + the `upsert()` provenance fix: PROJECT_STATE 2026-07-28 banner.
 - **"Why this score?" breakdown is CONTRIBUTION-based** (not raw sub-score bars): each signal's bar + `+N` = its
   largest-remainder share of the displayed integer score, so the three contributions SUM EXACTLY to the score (the
   agree/disagree multiplier + forecast cap are absorbed); coloured per signal, with a per-signal "what this measures"

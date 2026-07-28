@@ -35,13 +35,20 @@
   // the real last-year MAX. The this-year line (ty) may trail the current week by one (if the daily archive
   // cron has not extended it yet); we chart up to the last real point (cur = min(asOf, ty.length-1)) so a
   // short ty degrades to a real partial line - never a fabricated one. Mirrors build_site.py _t_real_series.
+  // blk.ly may be null: THIS-YEAR-ONLY mode. We chart the real ty alone and flag lyAvail:false so the renderer
+  // drops every comparison affordance (gray band, YoY delta, last-year peak + reference labels, the "Last year"
+  // legend key, the tooltip's last-year row) instead of charting a flat zero line and a fabricated "0%" delta.
   function realSeries(blk, asOf) {
     var ly = blk.ly, ty = blk.ty;
     var cur = asOf < ty.length - 1 ? asOf : ty.length - 1;   // last real this-year index actually present
-    var a = ty[cur], b = ly[cur];
-    var delta = b > 0 ? r((a - b) / b * 100) : 0;
+    var a = ty[cur];
     var slope = cur >= 1 ? ty[cur] - ty[cur - 1] : 0;
-    return { now: a, series: ty, last: ly, delta: delta, slope: slope, peak: Math.max.apply(null, ly), avail: true };
+    // !ly.length as well as !ly: Python's `if not ly` is true for [] but JS `!ly` is not, and this function is
+    // required to stay byte-identical to _t_real_series.
+    if (!ly || !ly.length) return { now: a, series: ty, last: null, delta: null, slope: slope, peak: null, avail: true, lyAvail: false };
+    var b = ly[cur];
+    var delta = b > 0 ? r((a - b) / b * 100) : 0;
+    return { now: a, series: ty, last: ly, delta: delta, slope: slope, peak: Math.max.apply(null, ly), avail: true, lyAvail: true };
   }
 
   function meanSignal(cells, key) {
@@ -76,22 +83,49 @@
     function tyLen(b) { return !!(b && b.ty && b.ty.length >= 1 && b.ty.length <= asOf + 1); }
     var wReal = arch && lyReal(arch.weather) && tyLen(arch.weather);
     var sReal = arch && lyReal(arch.search) && tyLen(arch.search);
-    // Labs is REAL when the archive carries a full-season last-year line that is not all-zero (all-zero/missing
-    // = no 2025 lab history for this city -> "coming soon"). labs.ty seeds from the grid (signals.positivity);
-    // if it is short/missing we carry the live labs MEAN flat across the weeks (real-derived, not synthetic).
+    // Labs has TWO real modes. BOTH LINES when the archive carries a full-season last-year line that is not
+    // all-zero. THIS YEAR ONLY when there is no such last-year line but this season's line is genuinely
+    // MEASURED - for a city with confirmed lab data but no 2025 history, suppressing the metric entirely hid a
+    // real line behind a "no confirmed lab data yet" that the dial on the same page contradicted (Panaji, for
+    // one, runs CONFIRMED at 48% lab weight while its lab line climbs 39 -> 62 -> 71).
+    //
+    // Qualifying for ty-only takes BOTH tests below, and a non-zero ty is NOT one of them. build_archive.py
+    // upsert() PADS skipped weeks by carrying the last value forward (`vec.append(vec[-1])`) and never writes
+    // when the live value is None, so a non-zero ty proves nothing: on 2026-07-27, 107 of the 117 cities with
+    // a non-zero ty and no ly had a PERFECTLY FLAT line built entirely from padding, on pages whose own
+    // breakdown reads "No confirmed lab data yet, conditions-only forecast". Charting that is worse
+    // fabrication than the all-zero ly this ladder already blocks - a flat non-zero line reads as measurement.
+    //   1. labsNow != null - the city has a live confirmed lab signal at all (>=1 disease past the 30-test
+    //      gate). This is the same condition that puts the dial in confirmed mode, so the chart and the score
+    //      can no longer disagree in either direction.
+    //   2. >= 2 distinct values in ty - evidence of real week-to-week measurement rather than one value
+    //      smeared across the season. Also catches the disease-page path, where byDisease.{d}.labs is usually
+    //      absent and labsTyFinal degrades to today's live value repeated (a flat, wholly synthetic line).
+    // Together these admitted 7 cities on 2026-07-27 (4 against a 12-day-older grid); the count moves as
+    // cities cross or fall off the 30-test gate. Everything else keeps the honest "coming soon".
+    // KNOWN RESIDUAL: distinctness is a PROXY for measurement, not proof of it - one fresh reading on top of
+    // a padded run passes, so an admitted line can still carry 2-4 carry-forward weeks (3 of the 8 admitted
+    // cells are padding-free; the rest run 22-44%). That is strictly better than the both-lines path already
+    // shipping, where 10 of 24 cities chart padded weeks and 4 are 6/9 padded and perfectly flat. The durable
+    // fix belongs in build_archive.py upsert(): record WHICH weeks were measured (write None and let the
+    // renderer break the line) instead of smearing vec[-1], then gate on that directly.
     var labsLy = arch && arch.labs && arch.labs.ly;
     var labsHasLy = labsLy && labsLy.length === NW && labsLy.some(function (v) { return v > 0; });
     var labsTy = arch && arch.labs && arch.labs.ty ? arch.labs.ty : [];
     var labsTyOk = labsTy.length >= 1 && labsTy.length <= asOf + 1 && labsTy.every(function (v) { return v != null; });
     var labsTyFinal = labsTyOk ? labsTy
       : (labsNow != null ? Array.apply(null, { length: asOf + 1 }).map(function () { return labsNow; }) : null);
+    var labsTyMeasured = !!labsTyFinal && labsNow != null
+      && labsTyFinal.some(function (v) { return v !== labsTyFinal[0]; });
     var labsReal = labsHasLy && labsTyFinal;
+    var labsTyOnly = !labsHasLy && labsTyMeasured;
     var oReal = arch && lyReal(arch.overall) && tyLen(arch.overall);
     var metrics = {
       overall: oReal ? realSeries(arch.overall, asOf) : { avail: false },
       weather: wReal ? realSeries(arch.weather, asOf) : { avail: false },
       search: sReal ? realSeries(arch.search, asOf) : { avail: false },
-      labs: labsReal ? realSeries({ ly: labsLy, ty: labsTyFinal }, asOf) : { avail: false }
+      labs: labsReal ? realSeries({ ly: labsLy, ty: labsTyFinal }, asOf)
+        : labsTyOnly ? realSeries({ ly: null, ty: labsTyFinal }, asOf) : { avail: false }
     };
 
     // No real Overall line -> the whole widget is unavailable (an honest empty state, never a fabricated chart).
@@ -188,6 +222,13 @@
   function caption(model, metric) {
     var m = model.metrics[metric];
     if (!m || !m.avail) return "Lab positivity history is not available for " + model.city + " yet.";
+    // This-year-only: there is no delta to describe, so state the direction of THIS season's line and be
+    // explicit that no comparison exists. Only labs can reach this (overall/weather/search always have a
+    // real last-year line), so the wording names positivity. Mirrors build_site.py _trend_caption.
+    if (m.lyAvail === false) {
+      return "Lab positivity is " + (m.slope >= 2 ? "rising" : m.slope <= -2 ? "easing" : "steady")
+        + " this season. No last-year lab data for " + model.city + " to compare against yet.";
+    }
     var lvl = m.delta <= -6 ? "below" : (m.delta >= 6 ? "above" : "inline");
     if (metric === "overall") return model.dir === "rising" ? "Risk is climbing as the monsoon builds."
       : model.dir === "falling" ? "Risk is easing as rainfall tapers." : "Risk is holding close to last year.";
@@ -208,7 +249,9 @@
   function f1(n) { return Math.round(n * 10) / 10; }
   function metricCol(model, metric) { return metric === "overall" ? RISK[bandOf(model.metrics.overall.now)] : SIGCOL[metric]; }
   function chartGeom(mini, mode, m) {
-    var dataMax = Math.max(m.peak, m.series.length ? Math.max.apply(null, m.series) : 0);
+    // This-year-only mode has no last-year peak, so the y-axis zooms to the ty line alone.
+    var seriesMax = m.series.length ? Math.max.apply(null, m.series) : 0;
+    var dataMax = m.lyAvail === false ? seriesMax : Math.max(m.peak, seriesMax);
     return {
       W: 340, PADL: mini ? 12 : 26, PADR: 12, PADT: 6, PADB: 4,
       H: mini ? 120 : (mode === "desktop" ? 92 : 150),
@@ -246,11 +289,15 @@
         + '<stop offset="1" stop-color="' + col + '" stop-opacity="0.12"/></linearGradient></defs>'
         + '<rect x="' + g.PADL + '" y="' + f1(g.PADT) + '" width="' + (g.W - g.PADL - g.PADR) + '" height="' + f1(g.H - g.PADT - g.PADB) + '" fill="url(#' + gid + ')"/>';
     }
-    // last-year soft gray band (area to baseline + edge line)
-    var lyLine = lp(m.last);
-    var area = "M" + f1(X(0)) + " " + f1(baseY) + lyLine.replace(/^M/, "L") + "L" + f1(X(NW - 1)) + " " + f1(baseY) + "Z";
-    var lyArea = '<path d="' + area + '" fill="#9fb0c4" opacity="0.16"/>';
-    var lyStroke = '<path d="' + lyLine + '" fill="none" stroke="#aab6c6" stroke-width="' + (mini ? 1.3 : 1.6) + '" stroke-linejoin="round"/>';
+    // last-year soft gray band (area to baseline + edge line). Omitted entirely in this-year-only mode
+    // (m.last null) - there is no last-year line to draw, and a flat zero band would read as real data.
+    var lyArea = "", lyStroke = "";
+    if (m.last) {
+      var lyLine = lp(m.last);
+      var area = "M" + f1(X(0)) + " " + f1(baseY) + lyLine.replace(/^M/, "L") + "L" + f1(X(NW - 1)) + " " + f1(baseY) + "Z";
+      lyArea = '<path d="' + area + '" fill="#9fb0c4" opacity="0.16"/>';
+      lyStroke = '<path d="' + lyLine + '" fill="none" stroke="#aab6c6" stroke-width="' + (mini ? 1.3 : 1.6) + '" stroke-linejoin="round"/>';
+    }
     // this-year bold line + you-are-here dot
     var ty = m.series, tyLine = ty.length > 1 ? '<path d="' + lp(ty) + '" fill="none" stroke="' + col + '" stroke-width="' + (mini ? 2 : 2.6) + '" stroke-linecap="round" stroke-linejoin="round"/>' : "";
     var dot = '<circle cx="' + f1(X(ty.length - 1)) + '" cy="' + f1(Y(ty[ty.length - 1])) + '" r="' + (mini ? 3 : 4.2) + '" fill="' + col + '" stroke="#fff" stroke-width="' + (mini ? 1.5 : 2.2) + '"/>';
@@ -269,16 +316,18 @@
       var nv = ty[ty.length - 1];
       labels += '<text x="' + f1(X(ty.length - 1)) + '" y="' + f1(Math.max(fs + 2, Y(nv) - 7)) + '" text-anchor="middle" font-size="' + (fs + 0.5) + '" font-weight="800" fill="' + col + '">' + nv + '</text>';
       var lbi = [6, 13, 19], li2;
-      for (li2 = 0; li2 < lbi.length; li2++) {
-        var lx = lbi[li2]; if (Math.abs(lx - model.asOf) < 2) continue;
-        var lv = m.last[lx];
-        labels += '<text x="' + f1(X(lx)) + '" y="' + f1(Math.max(fs, Y(lv) - 5)) + '" text-anchor="middle" font-size="' + (fs - 1) + '" font-weight="600" fill="#8995a3">' + lv + '</text>';
+      if (m.last) {  // last-year reference points; none to label in this-year-only mode
+        for (li2 = 0; li2 < lbi.length; li2++) {
+          var lx = lbi[li2]; if (Math.abs(lx - model.asOf) < 2) continue;
+          var lv = m.last[lx];
+          labels += '<text x="' + f1(X(lx)) + '" y="' + f1(Math.max(fs, Y(lv) - 5)) + '" text-anchor="middle" font-size="' + (fs - 1) + '" font-weight="600" fill="#8995a3">' + lv + '</text>';
+        }
       }
     }
     // Month labels are HTML (.fwtrend-months); the SVG carries only the baseline axis rule.
     var axis = mini ? "" : '<line x1="' + g.PADL + '" y1="' + f1(baseY) + '" x2="' + (g.W - g.PADR) + '" y2="' + f1(baseY) + '" stroke="#edf0f5" stroke-width="1"/>';
     var hit = mini ? "" : '<rect class="fwtrend-hit" x="' + g.PADL + '" y="' + g.PADT + '" width="' + (g.W - g.PADL - g.PADR) + '" height="' + (g.H - g.PADT - g.PADB) + '" fill="transparent"/>';
-    return '<svg viewBox="0 0 ' + g.W + ' ' + g.H + '" class="fwtrend-svg' + (mini ? " mini" : "") + '" role="img" aria-label="' + esc(metric) + ' this year versus last year">'
+    return '<svg viewBox="0 0 ' + g.W + ' ' + g.H + '" class="fwtrend-svg' + (mini ? " mini" : "") + '" role="img" aria-label="' + esc(metric) + (m.lyAvail === false ? ' this year (no last-year data)' : ' this year versus last year') + '">'
       + zones + bg + yaxis + lyArea + lyStroke + tyLine + dot + labels + axis + hit + '</svg>';
   }
 
@@ -296,9 +345,15 @@
     }).join("");
   }
 
+  // Empty state for a metric with no usable data. UNREACHABLE TODAY and at HEAD: renderCard resolves an
+  // unavailable metric back to "overall", and a model with no overall line short-circuits to unavailableCard,
+  // so nothing calls this - the 178 no-lab cities just get a dimmed Labs tab. Kept as a guard, and reworded
+  // because the audience it describes changed: every city that would reach it has no confirmed lab data in
+  // EITHER season (verified: positivity null on all four diseases for all of them), so "last year's" /
+  // "historic" no longer fits.
   function soonHtml(model) {
     return '<div class="fwtrend-soon"><span class="i">🧪</span><b>Lab trend coming soon</b>'
-      + '<p>We will chart last year\'s lab positivity for ' + esc(model.city) + ' here once PharmEasy historic lab data is available.</p></div>';
+      + '<p>We will chart lab positivity for ' + esc(model.city) + ' here once confirmed PharmEasy lab data is available for this city.</p></div>';
   }
 
   function smallsHtml(model, metric, mode) {
@@ -338,6 +393,7 @@
     // "-21% vs the same week last year" rather than implying vs last year's peak/average.
     var phrase = "vs the same week last year";
     var avail = model.metrics[metric].avail;
+    var lyOn = model.metrics[metric].lyAvail !== false;  // false only in this-year-only mode (labs, no 2025 history)
     st.geo = avail ? chartGeom(false, st.mode, model.metrics[metric]) : null;  // for the tooltip's coords
     var title = st.disease ? ("This monsoon vs last for " + esc(st.diseaseLabel) + " in " + esc(model.city))
       : ("This monsoon vs last in " + esc(model.city));
@@ -351,9 +407,12 @@
       + '<div class="fwtrend-tip" hidden></div></div>'
       + monthsRow
       + '<p class="fwtrend-axiscap">Vertical scale starts at 0; higher means greater risk.</p>'
-      + '<div class="fwtrend-legend"><span><i class="ly"></i>Last year</span>'
+      // In this-year-only mode there is no gray line to explain, so the "Last year" key is replaced by an
+      // explicit note - the chart must never look like the comparison is merely missing by accident.
+      + '<div class="fwtrend-legend">' + (lyOn ? '<span><i class="ly"></i>Last year</span>' : "")
       + '<span><i class="ty" style="background:' + col + '"></i>This year</span>'
-      + '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span></div>'
+      + '<span class="here"><i class="dot" style="background:' + col + '"></i>You are here</span>'
+      + (lyOn ? "" : '<span class="noly">This year only, no last-year data</span>') + '</div>'
       + '<p class="fwtrend-caption">' + esc(caption(model, metric)) + '</p>'
       + (st.mode === "desktop" ? smallsHtml(model, metric, st.mode) : "")
       + '<p class="fwtrend-sources">Sources: NOAA CPC, NASA POWER, Google Trends, PharmEasy labs. A risk indicator, not a case count.</p>';
@@ -445,15 +504,18 @@
       if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom + 2) { hide(); return; }
       var stepPx = (g.W - g.PADL - g.PADR) / (NW - 1) * (rect.width / g.W);
       var i = clamp(Math.round((e.clientX - rect.left - g.PADL * rect.width / g.W) / stepPx), 0, NW - 1);
-      var m = model.metrics[metric], ly = m.last[i], tyHas = i < m.series.length, ty = tyHas ? m.series[i] : null;
+      // In this-year-only mode there is no last-year value to read out, so the row is dropped rather than
+      // showing a fabricated 0 (m.last is null there).
+      var m = model.metrics[metric], lyHas = m.lyAvail !== false, ly = lyHas ? m.last[i] : null;
+      var tyHas = i < m.series.length, ty = tyHas ? m.series[i] : null;
       var col = metricCol(model, metric);
       var wrapRect = wrap.getBoundingClientRect();
       var xPx = X(i) * (rect.width / g.W) + (rect.left - wrapRect.left);
-      var yRef = tyHas ? Y(ty) : Y(ly);
+      var yRef = tyHas ? Y(ty) : (lyHas ? Y(ly) : Y(0));
       var yPx = yRef * (rect.height / g.H) + (rect.top - wrapRect.top);
       tip.innerHTML = '<b>Week of ' + esc(model.weeks[i]) + '</b>'
         + '<span><i style="background:' + col + '"></i>This year ' + (tyHas ? ty : "n/a") + '</span>'
-        + '<span><i style="background:#aab6c6"></i>Last year ' + ly + '</span>';
+        + (lyHas ? '<span><i style="background:#aab6c6"></i>Last year ' + ly + '</span>' : "");
       tip.style.left = clamp(xPx, 38, wrapRect.width - 38) + "px";
       tip.style.top = Math.max(2, yPx - 10) + "px";
       tip.hidden = false;

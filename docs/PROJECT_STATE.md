@@ -21,6 +21,44 @@
 > behind master (the fever-LP CTA, the trend gate fix, the method fix, the CRM CI fix) until dispatched manually.
 > **If you push a user-facing fix and want it live today, dispatch production explicitly.**
 >
+> **SEASON TREND: Labs gained a "this year only" mode (SHIPPED 2026-07-28; independent QA caught a BLOCKER on
+> the first attempt, re-review after the fix = SHIP):** Reported from production: Panaji's "Signals at a glance"
+> read **"No confirmed lab data yet"** while the same page's dial ran **confirmed** at 48% lab weight with
+> positivity 95. ROOT CAUSE: the trend gate required a full-season, non-all-zero LAST-YEAR line
+> (`labsReal = labsHasLy && labsTyFinal`), so a city with real 2026 lab data but no 2025 history had its whole
+> Labs metric suppressed and its real line thrown away. FIX = a THIS-YEAR-ONLY mode: `realSeries()` accepts
+> `ly: null` and returns `lyAvail:false`, and the renderer drops every comparison affordance (gray band, YoY
+> delta, last-year peak + reference labels, the "Last year" legend key, the tooltip's last-year row; y-axis
+> zooms to the ty line; aria-label says "no last-year data"). The all-zero-ly guard from `bacb24e` is UNTOUCHED.
+> **THE TRAP, and why the first cut was wrong:** the obvious gate ("ty is not all-zero") is NOT symmetric with
+> the ly rule, because `build_archive.py upsert()` **PADS skipped weeks by carrying the last value forward**
+> (`vec.append(vec[-1])`) and never writes when the live value is None. A non-zero ty therefore proves nothing:
+> on 2026-07-27, **107 of the 117** cities it would have admitted had a PERFECTLY FLAT line built entirely from
+> padding, on pages whose own breakdown reads "No confirmed lab data yet, conditions-only forecast" - worse
+> fabrication than the bug being fixed, since a flat non-zero line reads as measurement. **The shipped gate needs
+> BOTH:** (1) `labsNow != null` - the city has a live confirmed lab signal, the SAME condition that puts the dial
+> in confirmed mode, so chart and score cannot disagree in either direction; (2) **>= 2 distinct values in ty** -
+> evidence of week-to-week measurement, which also kills the disease-page path where `byDisease.{d}.labs` is
+> usually absent and ty degrades to today's live value repeated (10 of 11 disease cells were wholly synthetic).
+> Result: **24 both-lines (unchanged) / 7 this-year-only / 178 honest "coming soon"** (was 24/117/68 on the bad
+> gate). The 7 = bhagalpur, chandigarh, dewas, guwahati, haridwar, panaji, prayagraj. **Twins to keep in sync:**
+> `assets/js/trend.js` `realSeries()`/`build()` <-> `src/build_site.py` `_t_real_series()`/`_trend_series()`/
+> `_trend_caption()` (a JS `!ly` vs Python `not ly` divergence on `[]` was caught and fixed to `!ly || !ly.length`).
+> **Verified:** twins identical on 209 hub + 836 disease models across both datasets; a 225-case synthetic gate
+> matrix, 0 differences; ZERO regression vs HEAD in all 4 engine x dataset combos; builds 210 / 1,046; **parity
+> 4/4**; browser-checked on all three states, both flows, no console errors.
+> **KNOWN RESIDUAL (accepted, ticketed):** distinctness is a PROXY for measurement - one fresh reading on top of
+> a padded run passes it, which is exactly what happens the day a city crosses the 30-test gate. 3 of the 8
+> admitted cells are padding-free; the rest carry 2-4 forward-filled weeks. Accepted because the path ALREADY IN
+> PRODUCTION is worse: **10 of the 24 both-lines cities chart padded weeks, and bareilly / nagpur / raipur /
+> surat are 6/9 padded, perfectly flat, with NO confirmed lab data at all** - live right now, and untouched by
+> this change. **The durable fix belongs in `build_archive.py upsert()`: record WHICH weeks were measured (write
+> None and let the renderer break the line) instead of smearing `vec[-1]`, then gate on that directly** and drop
+> the KNOWN RESIDUAL comments in both twins. Deliberately NOT fixed here (pre-existing, out of scope): the
+> unreachable `soonHtml` empty state (renderCard always resolves to an available metric, so no user sees it -
+> now marked as such), and the overall-derived "vs the same week last year" pill showing while a signal tab is
+> active (already true of the Weather and Search tabs).
+>
 > **CRM FEED 404 FIXED (2026-07-17, reported by the team):** `/crm/FeverWatch_Cities_catalog.csv` (the CleverTap
 > catalog feed the CRM team pulls, by download or a Sheet `=IMPORTDATA()`) was intermittently 404ing on staging.
 > ROOT CAUSE: **three workflows publish the site, but only `daily.yml` built the feed.** A Pages deploy REPLACES the
